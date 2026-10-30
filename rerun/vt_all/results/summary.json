@@ -2,7 +2,10 @@
  "gate": {
   "bench_dv": 0.02,
   "bench_z": 3.0,
-  "sps_dv": 0.02
+  "bench_chi2": 3.0,
+  "sps_dv": 0.02,
+  "sps_window_noise": 0.012459298327400909,
+  "sps_threshold": 0.05286032601678836
  },
  "bench": {
   "n_rows": 156,
@@ -35,11 +38,8 @@
  },
  "sps": {
   "n_rows": 11,
-  "n_correct": 2,
-  "correct": [
-   "run60_flush__ov09",
-   "run60_flush__ov12"
-  ]
+  "n_correct": 0,
+  "correct": []
  },
  "ntof": {
   "n_runs": 3,

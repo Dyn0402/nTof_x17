@@ -22,7 +22,8 @@ DATA = sys.argv[1] if len(sys.argv) > 1 else (os.environ.get('VT_ALL_DATA')
                                               or os.path.join(os.environ.get('WORK_DATA') or os.path.expanduser('~/x17'), 'vt_all'))
 sys.path.insert(0, HERE)
 from vt_bench import GATE_DV, GATE_Z, GATE_CHI2, gate  # noqa: E402
-SPS_GATE = 0.02            # SPS: first-to-last window change in both views, same sign
+SPS_GATE = 0.02            # SPS: first-to-last window change in both views, same sign, and above the window noise
+SPS_CONTROL = 'run63_flat__flat700'   # stable gas, 4 windows over 53 min: its window-to-window scatter is the noise
 NAME = {'mx17_2': 'det2', 'mx17_3': 'det3', 'mx17_4': 'det4', 'mx17_6': 'det6', 'mx17_7': 'det7'}
 plt.rcParams.update({'font.size': 10, 'axes.spines.top': False, 'axes.spines.right': False,
                      'axes.grid': True, 'grid.color': '#e6e6e3', 'grid.linewidth': 0.6})
@@ -59,6 +60,11 @@ if len(BT):
 S = {}
 for f in sorted(glob.glob(os.path.join(DATA, 'sps', '*', 'vt_sps.json'))):
     S.update(json.load(open(f)))
+# window noise: the control's rms of T / mean(T) - 1 over its windows, both views pooled (T is on a 10 ns grid)
+_c = [np.array([b[v]['T_box'] for b in S[SPS_CONTROL]['blocks'] if b.get(v, {}).get('T_box')], float)
+      for v in 'xy'] if SPS_CONTROL in S else []
+SIG_WIN = float(np.sqrt(np.mean(np.concatenate([(c / c.mean() - 1) ** 2 for c in _c if len(c) > 1])))) if _c else np.nan
+SPS_THR = max(SPS_GATE, 3 * np.sqrt(2) * SIG_WIN) if np.isfinite(SIG_WIN) else SPS_GATE
 srows = []
 for key, r in S.items():
     bl = [b for b in r['blocks'] if b.get('n')]
@@ -75,7 +81,7 @@ for key, r in S.items():
     d['dv_pct'] = float(np.mean(dvs)) if dvs else np.nan
     d['dv_sys_pct'] = float(abs(dvs[0] - dvs[1]) / 2) if len(dvs) == 2 else np.nan
     d['needs_correction'] = bool(len(dvs) == 2 and np.sign(dvs[0]) == np.sign(dvs[1])
-                                 and min(abs(x) for x in dvs) >= 100 * SPS_GATE)
+                                 and min(abs(x) for x in dvs) >= 100 * SPS_THR)
     d['verdict'] = ('correct' if d['needs_correction'] else 'flat' if len(dvs) == 2
                     else 'one view defined' if dvs else 'column not defined')
     srows.append(d)
@@ -110,11 +116,11 @@ if len(B):
     dets = sorted({r['det'] for r in B})
     fig, axs = plt.subplots(len(dets), 1, figsize=(10, 2.6 * len(dets)), squeeze=False)
     for ax, det in zip(axs[:, 0], dets):
-        runs = sorted({r['run'] for r in B if r['det'] == det})
+        runs = sorted({r['run'] for r in B if r['det'] == det and r['cls'] != 'skeptical'})
         for i, run in enumerate(runs):
             lab = run.replace('mx17_', '')
             for r in B:
-                if r['det'] != det or r['run'] != run or not r['blocks']:
+                if r['det'] != det or r['run'] != run or not r['blocks'] or r['cls'] == 'skeptical':
                     continue
                 t = np.array([b['t'] for b in r['blocks']])
                 v = np.array([np.nanmean([b[p]['kw'] if b[p]['kw'] is not None else np.nan for p in 'xy'])
@@ -127,8 +133,11 @@ if len(B):
         ax.legend(fontsize=7, ncol=3, frameon=False)
     axs[-1, 0].set_xlabel('hours since 2026-06-01 00:00')
     fig.tight_layout(); fig.savefig(os.path.join(FIG, 'bench_v_blocks.png'), dpi=110); plt.close(fig)
-    figs.append(('bench_v_blocks.png', 'Bench: the M3-ladder drift velocity per time block, every pass-1 row, per '
-                 'chamber against the clock. Each row is a connected line; colours are the runs (nights).'))
+    figs.append(('bench_v_blocks.png', 'Bench: the M3-ladder drift velocity per time block (v_drift x kw of the block, '
+                 'the v the angle mapping effectively uses), every non-skeptical pass-1 row with >= 2 blocks, per chamber '
+                 'against the clock. Each row is a connected line; colours are the runs (nights). Rows at other drift '
+                 'fields (det3 6-25, the det3 drift scan) sit at their own v. Skeptical rows (det3 6-22/6-23: micro-TPC '
+                 'angle unusable) are left out: their ladder gives no physical v.'))
     fig, ax = plt.subplots(figsize=(7, 4.2))
     for i, det in enumerate(sorted(BT.det.unique())):
         q = BT[(BT.det == det) & np.isfinite(BT.dv_pct)]
@@ -179,7 +188,8 @@ if N:
                  'tracks), every run tested; colours alternate between runs.'))
 
 # ---------------------------------------------------------------- summary + html
-summ = dict(gate=dict(bench_dv=GATE_DV, bench_z=GATE_Z, sps_dv=SPS_GATE))
+summ = dict(gate=dict(bench_dv=GATE_DV, bench_z=GATE_Z, bench_chi2=GATE_CHI2, sps_dv=SPS_GATE, sps_window_noise=SIG_WIN,
+                      sps_threshold=SPS_THR))
 if len(BT):
     summ['bench'] = dict(n_rows=int(len(BT)), n_measured=int(np.isfinite(BT.dv_pct).sum()),
                          n_correct=int(BT.needs_correction.sum()),
@@ -227,7 +237,9 @@ H = [f'<!doctype html><meta charset="utf-8"><title>v(t) in every data set</title
       f'(v jumps block to block, line χ²/dof &gt; {GATE_CHI2:.0f}); '
       f'{b.get("n_significant_small", 0)} drift significantly but by less than {100 * GATE_DV:.0f} %; '
       f'{b.get("n_too_few", 0)} are too short to measure. ' if b else ''),
-     (f'SPS: {s.get("n_correct", 0)} of {s.get("n_rows", 0)} long rows need one. ' if s else ''),
+     (f'SPS: {s.get("n_correct", 0)} of {s.get("n_rows", 0)} long rows need one; one 1000-event window measures T to '
+      f'{100 * SIG_WIN:.1f} % (the {SPS_CONTROL} control), so a within-row change below {100 * SPS_THR:.1f} % cannot be '
+      f'seen. ' if s else ''),
      (f'n_TOF: feasible per sub-run on arms {", ".join(n.get("arms", []))}, at {n.get("median_err_sub_pct", 0):.2f} % '
       f'per sub-run (within a sub-run, halves at {n.get("median_half_err_pct", 0):.2f} %).' if n else ''), '</div>']
 if len(BT):

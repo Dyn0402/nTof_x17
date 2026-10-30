@@ -7,9 +7,10 @@ import argparse, csv, os
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.abspath(os.path.join(HERE, '..', '..'))
 #: SPS rows with a defined column (vbox rule, rerun/sps_followup) and >= 6 min of plateau; blocks per row (equal
-#: wall-clock windows).  run60 ov07 is left out: beam off for 27 of its 30 minutes (sps_followup iii).
+#: wall-clock windows).  run60 ov07 is left out: beam off for 27 of its 30 minutes (sps_followup iii).  run61 op25 ran
+#: in the 2026-10-30 DAG but is 32 samples: zsstack skips it (the column overruns the window), so it is dropped here.
 SPS_ROWS = {**{f'run60_flush__ov{i:02d}': 3 for i in (1, 8, 9, 10, 11, 12, 13, 14)},
-            'run61_op25__op25': 4, 'run63_flat__flat700': 4, 'run71_raw__raw700': 3, 'run62_rot25_ladder__d700': 2}
+            'run63_flat__flat700': 4, 'run71_raw__raw700': 3, 'run62_rot25_ladder__d700': 2}
 
 
 def main():
