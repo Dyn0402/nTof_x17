@@ -34,6 +34,26 @@ ZS_BASELINE = 256.0
 RAW_PRE = 8
 RAW_CM_MASK = 10
 RAW_CM_BAD = (510, 372)
+#: Channels that may never SEED a window or enter the own-centroid ref: the H4 channel layer's dead list (both views,
+#: rerun/channel_layer/det4_sps_h4.json; the fit censors the same channels) plus RAW_CM_BAD.  Y ch 372 (158.34 mm) and
+#: ch 510 (250.38 mm) oscillate by +-400-900 ADC in some sub-runs.  Before 2026-10-30 (rerun/sps_audit) the
+#: brightest-strip seed picked them and the whole +-16-strip window sat on the oscillation: 43-46 % of the run71 RAW Y
+#: fits at 156-160.5 mm and 11-12 % at 248.5-252 mm, 25 % of run55 d700, 16 % of run57 d650/d700, 27 % of run60 ov07.
+H4_MASK = os.path.join(REPO, 'rerun', 'channel_layer', 'det4_sps_h4.json')
+
+
+def _seed_bad():
+    import json
+    bad = set(RAW_CM_BAD)
+    if os.path.exists(H4_MASK):
+        m = json.load(open(H4_MASK))
+        for p in ('x', 'y'):
+            bad.update(int(c) for c in m[p]['dead'])
+    out = np.zeros(512, bool); out[sorted(bad)] = True
+    return out
+
+
+SEED_BAD = _seed_bad()
 
 
 def _baseline(ch, sm, am, raw):
@@ -156,6 +176,42 @@ def build_cache(run, subrun, dataset, per_plateau=1000, half_win=16, tan=None, e
     return out
 
 
+def event_record(ch, sm, am, raw, nsmp, half_win=16, qmin=300.0, tan=0.0, seed_bad=None):
+    """One event's cache record ({'x': window, 'y': window, ref_mesh_x/y, seed_ch_x/y, tan_x/y}) from its decoded
+    samples, or None when a view is empty, its peak is below qmin or its window has < 4 strips.  Per view the brightest
+    strip that is not in ``seed_bad`` (default SEED_BAD) seeds a +-half_win-strip window in POSITION (the plugs are
+    inverted: det4_sps_map).  The window keeps every strip, bad ones included (the fit censors them); the own-centroid
+    ref leaves the bad ones out."""
+    bad = SEED_BAD if seed_bad is None else seed_bad
+    am = _baseline(ch, sm, am, raw)
+    rec = dict(tan_x=tan, tan_y=tan)
+    for view in ('x', 'y'):
+        k = VIEW[ch] == view
+        if not k.any():
+            return None
+        # brightest good strip of the view, then +-half_win strips in position
+        pk = np.zeros(512); np.maximum.at(pk, ch[k], am[k])
+        pk[bad] = 0.0
+        c0 = int(np.argmax(pk))
+        if pk[c0] < qmin:
+            return None
+        p0 = POSITION_MM[c0]
+        sel = k & (np.abs(POSITION_MM[ch] - p0) <= half_win * PITCH_MM)
+        cc, ss, aa = ch[sel], sm[sel], am[sel]
+        chs = np.unique(cc)
+        if len(chs) < 4:
+            return None
+        W = np.zeros((len(chs), nsmp), np.float32); ci = np.searchsorted(chs, cc); m = (ss >= 0) & (ss < nsmp)
+        W[ci[m], ss[m]] = aa[m]
+        o = np.argsort(POSITION_MM[chs])
+        q = np.where(bad[chs], 0.0, np.clip(W, 0, None).sum(1))
+        rec[view] = dict(ch=chs[o].astype(np.int16), pos=POSITION_MM[chs[o]].astype(np.float32), W=W[o],
+                         noise=np.full(len(chs), NOISE_ADC, np.float32))
+        rec[f'ref_mesh_{view}'] = float((q * POSITION_MM[chs]).sum() / max(q.sum(), 1e-9))
+        rec[f'seed_ch_{view}'] = c0
+    return rec
+
+
 def _fill(out, files, a, D, plateaus, t_lo, ts0, scale, nsmp, verbose, base):
     """Add one acquisition's events to out ({plateau: {eid: event}}); base = index of its first file in the sub-run's
     sorted file list (event keys eid + 1e7 * file index, as before the per-acquisition split)."""
@@ -171,33 +227,11 @@ def _fill(out, files, a, D, plateaus, t_lo, ts0, scale, nsmp, verbose, base):
                 if L is None or len(out.get(L, {})) >= a.per_plateau:
                     continue
                 ch = arr['channel'][j].astype(int); sm = arr['sample'][j].astype(int); am = arr['amplitude'][j].astype(np.float32)
-                am = _baseline(ch, sm, am, bool(D.get('raw', False)))
-                rec = dict(eid=int(arr['eventId'][j]), tan_x=a.tan, tan_y=a.tan, t_wall=float(tw[j]), file=os.path.basename(f),
-                           timestamp=int(arr['timestamp'][j]))
-                ok = True
-                for view in ('x', 'y'):
-                    k = VIEW[ch] == view
-                    if not k.any():
-                        ok = False; break
-                    # brightest strip of the view, then +-half_win strips in position
-                    pk = np.zeros(512); np.maximum.at(pk, ch[k], am[k])
-                    c0 = int(np.argmax(pk))
-                    if pk[c0] < a.qmin:
-                        ok = False; break
-                    p0 = POSITION_MM[c0]
-                    sel = k & (np.abs(POSITION_MM[ch] - p0) <= a.half_win * PITCH_MM)
-                    cc, ss, aa = ch[sel], sm[sel], am[sel]
-                    chs = np.unique(cc)
-                    if len(chs) < 4:
-                        ok = False; break
-                    W = np.zeros((len(chs), nsmp), np.float32); ci = np.searchsorted(chs, cc); m = (ss >= 0) & (ss < nsmp)
-                    W[ci[m], ss[m]] = aa[m]
-                    o = np.argsort(POSITION_MM[chs])
-                    q = np.clip(W, 0, None).sum(1)
-                    rec[view] = dict(ch=chs[o].astype(np.int16), pos=POSITION_MM[chs[o]].astype(np.float32), W=W[o],
-                                     noise=np.full(len(chs), NOISE_ADC, np.float32))
-                    rec[f'ref_mesh_{view}'] = float((q * POSITION_MM[chs]).sum() / max(q.sum(), 1e-9))
-                    rec[f'ftst_{view}'] = int(arr['ftst'][j])
+                rec = event_record(ch, sm, am, bool(D.get('raw', False)), nsmp, a.half_win, a.qmin, a.tan)
+                ok = rec is not None
+                if ok:
+                    rec.update(eid=int(arr['eventId'][j]), t_wall=float(tw[j]), file=os.path.basename(f),
+                               timestamp=int(arr['timestamp'][j]), ftst_x=int(arr['ftst'][j]), ftst_y=int(arr['ftst'][j]))
                 if ok:
                     out.setdefault(L, {})[rec['eid'] + 10_000_000 * (base + files.index(f))] = rec
         if verbose:
