@@ -11,4 +11,6 @@ request_memory = $(mem)
 environment    = "PYTHONDONTWRITEBYTECODE=1"
 +JobFlavour    = "workday"
 should_transfer_files = NO
+# a worker whose EOS FUSE mount times out reading the archive (pass1 10-30: all 18 status-126 failures)
+requirements   = (Machine != "b9g42p2031.cern.ch")
 queue
