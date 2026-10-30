@@ -5,14 +5,40 @@
   "sps_dv": 0.02
  },
  "bench": {
-  "n_rows": 2,
-  "n_measured": 2,
-  "n_correct": 2,
-  "n_significant_small": 0,
-  "n_too_few": 0,
+  "n_rows": 156,
+  "n_measured": 82,
+  "n_correct": 7,
+  "n_significant_small": 1,
+  "n_candidate": 4,
+  "n_views_disagree": 0,
+  "n_unstable": 1,
+  "unstable": [
+   "c26__mx17_det2_det3_overnight_6-22-26__long_run__mx17_3"
+  ],
+  "candidate": [
+   "c26__mx17_det2_det3_overnight_6-22-26__resist_490V_drift_1000V__mx17_3",
+   "c26__mx17_det2_det3_overnight_6-22-26__resist_465V_drift_1000V__mx17_3",
+   "c26__mx17_det2_det3_overnight_6-22-26__resist_455V_drift_1000V__mx17_3",
+   "c26__mx17_det6_det7_overnight_6-26-26__short_run__mx17_6"
+  ],
+  "views_disagree": [],
+  "n_too_few": 74,
   "correct": [
+   "c26__mx17_det2_det3_overnight_6-22-26__long_run__mx17_2",
    "c26__mx17_det3_det4_overnight_6-23-26__long_run__mx17_4",
-   "g_det6_long"
+   "g_det4",
+   "c26__mx17_det6_det7_overnight_6-26-26__longer_run__mx17_6",
+   "g_det6_long",
+   "c26__mx17_det6_det7_overnight_6-26-26__longer_run__mx17_7",
+   "g_det7_long"
+  ]
+ },
+ "sps": {
+  "n_rows": 11,
+  "n_correct": 2,
+  "correct": [
+   "run60_flush__ov09",
+   "run60_flush__ov12"
   ]
  },
  "ntof": {

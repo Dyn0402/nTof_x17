@@ -31,6 +31,7 @@ N_PER = 300                                # kw-window events per block and view
 N_MIN = 150                                # fewest per block; a row with < 2 x N_MIN gets no time measurement
 GATE_DV = 0.02                             # |v change over the row| that needs a correction (fraction)
 GATE_Z = 3.0                               # ... and the slope's significance (after the excess-scatter inflation)
+GATE_CHI2 = 3.0                            # line chi2/dof above this (dof >= 5): v jumps block to block, no line
 
 
 def clock_h(acq_tag, timestamp):
@@ -132,17 +133,64 @@ def measure(key, reg, root):
         tt = np.concatenate(tt)
         b['t'] = float(np.median(tt)) if len(tt) else np.nan
         out['blocks'].append(b)
+    return gate(out)
+
+
+def gate(out):
+    """The v(t) gate of VT_PLAN_2026-10-30 §3, on a row's blocks (also re-applied by make_report.py to stored JSONs).
+
+    correct          >= 3 blocks, |dv| >= GATE_DV over the row at >= GATE_Z sigma (error inflated by the line's
+                     chi2/dof), and the two views' own lines agree (|dv_x - dv_y| < 3 sigma): v is common to both views.
+    candidate        the same, on 2 blocks: one line through two points has no check of its own; take the
+                     chamber's night curve or the neighbouring rows before correcting.
+    views disagree   the joint line passes but the views' lines do not agree: a ladder problem, not v.
+    unstable         the line's chi2/dof > GATE_CHI2 (dof >= 5): the blocks jump rather than drift (det3 6-22: +-15 %
+                     between neighbouring 20-min blocks, both views together, while det2 on the same gas is smooth to
+                     1 %).  Not a v(t) correction; a per-block v or an exclusion, decided per row.
+    significant < 2 %, flat, too few tracks / too few blocks.
+    """
     out['n_blocks'] = len(out['blocks'])
-    f = line_fit(out['blocks'])
+    f = line_fit(out['blocks']) if out['blocks'] else None
     out['fit'] = f
+    out['needs_correction'] = False
     if f is None:
-        out['verdict'] = 'too few blocks'
+        out.setdefault('verdict', 'too few blocks')
         return out
     out['dv_total'] = f['slope_per_h'] * out['duration_h']
     out['dv_err'] = f['slope_err'] * f['inflate'] * out['duration_h']
-    out['needs_correction'] = bool(abs(out['dv_total']) >= GATE_DV and f['z'] >= GATE_Z)
-    out['verdict'] = 'correct' if out['needs_correction'] else ('significant, < 2 %' if f['z'] >= GATE_Z else 'flat')
+    out['views'] = {}
+    nan = dict(r=np.nan, r_err=np.nan)
+    for p in ('x', 'y'):
+        one = [{'t': b['t'], p: b[p], ('y' if p == 'x' else 'x'): nan} for b in out['blocks']]   # this view only
+        g = line_fit(one) or _two_point(out['blocks'], p)
+        if g:
+            out['views'][p] = dict(dv=g['slope_per_h'] * out['duration_h'],
+                                   dv_err=g['slope_err'] * g['inflate'] * out['duration_h'])
+    vx, vy = out['views'].get('x'), out['views'].get('y')
+    agree = not (vx and vy) or abs(vx['dv'] - vy['dv']) < 3 * np.hypot(vx['dv_err'], vy['dv_err'])
+    passes = abs(out['dv_total']) >= GATE_DV and f['z'] >= GATE_Z
+    if f['dof'] >= 5 and f['chi2'] / f['dof'] > GATE_CHI2:
+        out['verdict'] = 'unstable'
+    elif passes and not agree:
+        out['verdict'] = 'views disagree'
+    elif passes and out['n_blocks'] >= 3:
+        out['needs_correction'] = True
+        out['verdict'] = 'correct'
+    elif passes:
+        out['verdict'] = 'candidate (2 blocks)'
+    else:
+        out['verdict'] = 'significant, < 2 %' if f['z'] >= GATE_Z else 'flat'
     return out
+
+
+def _two_point(blocks, p):
+    """a view's line through exactly two blocks (no chi2 of its own)."""
+    b = [x for x in blocks if np.isfinite(x[p]['r']) and np.isfinite(x[p]['r_err'])]
+    if len(b) != 2 or b[1]['t'] == b[0]['t']:
+        return None
+    dt_ = b[1]['t'] - b[0]['t']
+    return dict(slope_per_h=(b[1][p]['r'] - b[0][p]['r']) / dt_, slope_err=np.hypot(b[0][p]['r_err'], b[1][p]['r_err']) / dt_,
+                inflate=1.0)
 
 
 def vt_map(res):
