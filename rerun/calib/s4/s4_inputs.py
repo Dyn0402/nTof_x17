@@ -11,7 +11,7 @@ For reference the same colsum estimator on the audit bundles (FA, 10-27) is read
 the pass templates is separated from the estimator's own offset against the stack T the inputs came from.
 
 <data dir> holds <golden row>/wft/{angles/per_event.npz, calib_bundle/bundle.json} (pulled from Analysis_pass1),
-<golden row>/fa/colsum.npz (S4, pass bundle) and fa_audit/<golden row>/fa/colsum.npz (FA, audit bundle).
+<golden row>/fa/colsum.npz (S4, pass bundle), <golden row>/s4/s4_stacks.json (s4_stacks.py) and fa_audit/<golden row>/fa/colsum.npz (FA, audit bundle).
 """
 import argparse
 import json
@@ -29,6 +29,9 @@ from vgas import clean, ladder  # noqa: E402
 PHYS = json.load(open(os.path.join(HERE, '..', 'physics_inputs.json')))
 # stated errors of the timing v (rerun/vladder/ladder_summary.py TIMING; det6 scaled x 28/30 with its v)
 V_ERR = dict(det2=1.2, det3=0.6, det4=0.7, det6=0.8 * 28.0 / 30.0, det7=1.1)
+# bootstrap errors of the stacks the Dp inputs came from (cloud_basics results/unsat_width.json, 'unsat'); det6 keeps 0.018
+# against its own window-limited 0.0142 +- 0.0044
+DP_ERR = dict(det2=0.0027, det3=0.0007, det4=0.0011, det6=0.0044, det7=0.0019)
 GAP_ERR = dict(det6=1.0)            # det6's adopted 28.0 +- 1.0 (gaps.py); the others are in physics_inputs.json
 
 
@@ -73,8 +76,30 @@ def main():
             r['gap_C19'] = r['ladder'] * T * 1e-3
             r['gap_C19_pull'] = (r['gap_C19'] - gap) / gap_err
             r['T_implied_by_input'] = gap / v_in * 1e3
+        sj = os.path.join(a.data, row, 's4', 's4_stacks.json')
+        if os.path.exists(sj):
+            S = json.load(open(sj))
+            u = S['stack'].get('unsat')
+            if u:
+                Ts, Te = u['T'], u['T'] * u['v_err'] / u['v']
+                r.update(stack_n=u['n'], stack_T=Ts, stack_T_err=Te, stack_sig0=u['sig0'], stack_sig0_err=u['sig0_err'],
+                         stack_Dp=u['Dp'], stack_Dp_err=u['Dp_err'])
+                r['v_stack'] = gap / Ts * 1e3
+                r['v_stack_err'] = r['v_stack'] * Te / Ts          # stack statistics only; the gap is the input's
+                r['v_stack_pull'] = (r['v_stack'] - v_in) / v_err
+                r['Dp_in_err'] = DP_ERR[det]
+                r['Dp_pull'] = (u['Dp'] - P['Dp']) / DP_ERR[det]
+                r['gap_C19_stack'] = r['ladder'] * Ts * 1e-3
+            g = S['gap']
+            if 'gap' in g:
+                r.update(gap_new=g['gap'], gap_new_err=g['gap_err'],
+                         gap_default=g['default']['half']['gap'], gap_satmask=g['satmask']['half']['gap'],
+                         gap_n=g['default']['n'],
+                         gap_by_sign={k: v['gap'] for k, v in g['default']['by_sign'].items()})
+                r['gap_pull'] = (g['gap'] - gap) / gap_err
+                r['gap_pull_comb'] = (g['gap'] - gap) / np.hypot(gap_err, g['gap_err'])
         out[det] = r
-        print(det, {k: (round(v, 3) if isinstance(v, float) else v) for k, v in r.items()})
+        print(det, {k: (round(v, 4) if isinstance(v, float) else v) for k, v in r.items()})
     os.makedirs(os.path.dirname(a.out), exist_ok=True)
     json.dump(out, open(a.out, 'w'), indent=1)
     print('->', a.out)
