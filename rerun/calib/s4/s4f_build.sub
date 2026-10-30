@@ -1,0 +1,12 @@
+# condor_submit s4f_build.sub jobfile=s4f_build_jobs.txt  (each line: <code> <key> <row> <gen>); run from ~/x17rerun/s4_followup
+executable     = $ENV(HOME)/x17rerun/s4_followup/s4f_build.sh
+arguments      = $(args)
+output         = log/$(Cluster).$(ProcId).out
+error          = log/$(Cluster).$(ProcId).err
+log            = log/s4f.log
+request_cpus   = 2
+request_memory = 8000
++JobFlavour    = "workday"
+requirements   = (Machine != "b9g42p2031.cern.ch")
+should_transfer_files = NO
+queue args from $(jobfile)
