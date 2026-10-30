@@ -44,13 +44,13 @@ Status key: [x] done · [ ] open · [~] partly / in progress
        with `FITTER='lm'`, `LM_HOPS=0` as the code defaults (`WFT_DIAG=model.FITTER=nm` = the old grid + Nelder–Mead).
        Report: `model_audit/algo_review/REPORT_LM.md`. Three post-gate fixes (NaN-step guard, t0 window ±180 ns,
        tighter polish) were checked locally on 5 × 100 events, not on condor: **G1 (item 12) is their gate**.
-5. [ ] **E1 bundle from nothing**: `rerun/calib/make_bundle.py` + `rerun/calib/physics_inputs.json` (σ0 0.30, Dp,
+5. [x] **E1 bundle from nothing**: `rerun/calib/make_bundle.py` + `rerun/calib/physics_inputs.json` (σ0 0.30, Dp,
        det4 D_rc,y 2.2e-4, gaps, timing v; provenance) — PASS_PLAN §2.
 6. [x] **E2 bow node**: `rerun/calib/bow_node.py` (10-29, reproduces the study block on det3). Wire into E3 (BOW2).
        10-29: tan form (`a_x/a_y`, done in wft/set_w0kw/set_bow), one block per chamber from the golden row (no
        per-mount/per-run bow, Dylan), per-view mesh height, and the cross-dataset transfer gate (`rerun/calib/bow/bow_finalize.py --manifest` on the
        pass tables). Evidence: `rerun/calib/bow/BOW_TRANSFER.md`.
-7. [ ] **E3 `make_pass_dag.py calib` phase** CAL0–CAL4 per golden chamber into `Analysis_pass1`, convergence
+7. [x] **E3 `make_pass_dag.py calib` phase** CAL0–CAL4 per golden chamber into `Analysis_pass1`, convergence
        criteria → `CALIB_CONVERGENCE.json`; **`--table` on every W0KW node** (finalize/vrefit/pass, make_pass_dag.py:89,
        112, 130 — without it they abort on a bow bundle, set_w0kw.py:95–97); vrefit keeps the golden bow.
        **Template study (10-28/29, `rerun/calib/templates/TEMPLATE_STUDY.md`), consequences for E1/E3:**
@@ -74,17 +74,17 @@ Status key: [x] done · [ ] open · [~] partly / in progress
        (Dylan):** a parameter goes in only if it wins on det3; none does, so none is added (det4 Y stretch recorded,
        not adopted). T16: the mean shape error is symmetric, so it cannot move angles; det3's remaining error is bow
        (E2), saturated/bright planes and δ-ray planes. **10-29 evening: closed, simple model locked (§A, §D).**
-8. [ ] **E4 SPS phase** (was B3): one node per `sps_registry.csv` row with the new det4 bundle (bench bow/v_map/w0/t0
+8. [x] **E4 SPS phase** (was B3): one node per `sps_registry.csv` row with the new det4 bundle (bench bow/v_map/w0/t0
        dropped — done 10-28 in sps_reco), `quality_flags`/timestamp in `sps_reco`, K fallback +5 → +15.
 9. [x] **Pre-flight checks** (PASS_PLAN F7–F12; all closed 10-29, `precheck_ga/README.md`: F8 ch 372 masked, F9 two groups → golden bundle/skeptical, F10 ok, F11 limitation + guard off, S0b no data): the 14 GA channels (item 2); H4 ch 372 oscillation → `det4_sps_h4.json`;
        the 10 rows without gas-time entries (det2 6-17 ×8, det3 6-23 short, det3 6-26 quick); det4 6-23 rows' M3
        clean fraction (skeptical if < ~40 %); g_det4 seeding on FEU 6 conn 7–8; optional S0b: decode + M3 + hits of
        the never-decoded det6/det7 6-26 points 455/460/470/475/490 V (raw in EOS `june_tests/`).
-10. [ ] **Dry run**: `calib` on det3 `--limit 300` + one vrefit and one pass row on its output; pytest wft/tests.
-11. [ ] **Code archive** (`code_<hash>` on EOS) of the final main (≥ `dc354cd`, so it carries the LM fitter; check
+10. [x] **Dry run** (10-29: dry run 3 clean, PASS_PLAN §1b): `calib` on det3 `--limit 300` + one vrefit and one pass row on its output; pytest wft/tests.
+11. [x] **Code archive** (`code_6a0bb1f`; `code_d34cf25` for 3 SPS rows) (`code_<hash>` on EOS) of the final main (≥ `dc354cd`, so it carries the LM fitter; check
        `grep "^FITTER = 'lm'" wft/model.py` in the archive); `lxstore status` (AFS 88 % on 10-28: offload old
        `code_*` first); regenerate `pass_registry.csv` (`python rerun/make_registry.py`).
-12. [ ] **Submit**: `calib` (S1) → gate G1 (convergence + held-out vs the audit fe numbers, `gate_compare.py`) →
+12. [x] **Submit** (DONE 10-30 11:08: G1 all PASS, `rerun/PASS1_STATUS_2026-10-30.md`, `rerun/PASS1_LEDGER.md`): `calib` (S1) → gate G1 (convergence + held-out vs the audit fe numbers, `gate_compare.py`) →
        `vrefit --keep-v` (117 rows) → `pass` (159) + `sps` (71). Order and gates: PASS_PLAN §3.
 
 ## C. After the pass (table-level, no refit)

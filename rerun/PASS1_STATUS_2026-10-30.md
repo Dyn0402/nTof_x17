@@ -1,5 +1,8 @@
 # Pass 1 (from scratch): overnight status, 2026-10-30
 
+**Complete 11:08.** Ledger (`PASS1_LEDGER.md`): 156/156 non-excluded bench rows and 71/71 SPS rows; no row missing, no
+overrides, code = the archive. 215,797 bench and 212,725 SPS events reconstructed. All five chambers pass G1.
+
 Code: `code_6a0bb1f` (git archive on EOS, `~/x17rerun/code_6a0bb1f`), LM fitter. Outputs: `/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1/`.
 DAGs and logs: `~/x17rerun/pass1/` on lxplus. Plan and rules: `PASS_PLAN_2026-10-28.md` §1b.
 
@@ -65,6 +68,6 @@ The five GA X channels cannot move Y. Needs an ablation (fe bundle + new templat
 | iter det2 / det4 / det6 | 4 each | done, all converged |
 | vrefit det2+det3 / det4 / det6 | 260 / 16 / 88 | done (det6 440 V rerun: stale EOS directory view; 450 V excluded) |
 | pass det2+det3 / det4 | 437 / 73 | **done** (det3 quick excluded) |
-| pass det6 | 118 | running |
+| pass det6 / det7 | 118 / 120 | **done** (rescues: EOS timeouts on worker b9g42p2031, now excluded) |
 | sps | 71 | **done**, 71/71 rows |
-| vrefit det7 | 92 | running |
+| vrefit det7 | 92 | done |
