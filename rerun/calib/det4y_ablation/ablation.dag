@@ -1,0 +1,85 @@
+JOB RECO_a stage1.sub
+VARS RECO_a code="/afs/cern.ch/user/d/dneff/x17rerun/code_6a0bb1f" args="g_det4 --eos-analysis /eos/user/d/dneff/x17rerun/det4y_ablation/Analysis --module wft.cli -- reco {key} --bundle {out}/wft/bundle_a --out {out}/wft/arm_a/events.parquet --matched-only --limit 8000 --jobs 16" cpus="16" mem="24000" node="RECO_a"
+RETRY RECO_a 3
+JOB ANG_a_pass stage1.sub
+VARS ANG_a_pass code="/afs/cern.ch/user/d/dneff/x17rerun/code_6a0bb1f" args="g_det4 --eos-analysis /eos/user/d/dneff/x17rerun/det4y_ablation/Analysis --parts run_config,m3,hits --script mx_june_wft/03_angles.py -- --table {out}/wft/arm_a/events.parquet --alignment {out}/wft/align_pass/alignment.json --out {out}/wft/arm_a/angles_pass" cpus="1" mem="8000" node="ANG_a_pass"
+RETRY ANG_a_pass 3
+PARENT RECO_a CHILD ANG_a_pass
+JOB ANG_a_prod stage1.sub
+VARS ANG_a_prod code="/afs/cern.ch/user/d/dneff/x17rerun/code_6a0bb1f" args="g_det4 --eos-analysis /eos/user/d/dneff/x17rerun/det4y_ablation/Analysis --parts run_config,m3,hits --script mx_june_wft/03_angles.py -- --table {out}/wft/arm_a/events.parquet --alignment {out}/wft/align_prod/alignment.json --out {out}/wft/arm_a/angles_prod" cpus="1" mem="8000" node="ANG_a_prod"
+RETRY ANG_a_prod 3
+PARENT RECO_a CHILD ANG_a_prod
+JOB BUD_a stage1.sub
+VARS BUD_a code="/afs/cern.ch/user/d/dneff/x17rerun/code_6a0bb1f" args="g_det4 --eos-analysis /eos/user/d/dneff/x17rerun/det4y_ablation/Analysis --parts run_config,m3,hits --script rerun/effbudget/budget.py -- det4 --table {out}/wft/arm_a/events.parquet --alignment {out}/wft/align_pass/alignment.json --out {out}/wft/arm_a/budget" cpus="1" mem="8000" node="BUD_a"
+RETRY BUD_a 3
+PARENT RECO_a CHILD BUD_a
+JOB RECO_b stage1.sub
+VARS RECO_b code="/afs/cern.ch/user/d/dneff/x17rerun/code_6a0bb1f" args="g_det4 --eos-analysis /eos/user/d/dneff/x17rerun/det4y_ablation/Analysis --module wft.cli -- reco {key} --bundle {out}/wft/bundle_b --out {out}/wft/arm_b/events.parquet --matched-only --limit 8000 --jobs 16" cpus="16" mem="24000" node="RECO_b"
+RETRY RECO_b 3
+JOB ANG_b_pass stage1.sub
+VARS ANG_b_pass code="/afs/cern.ch/user/d/dneff/x17rerun/code_6a0bb1f" args="g_det4 --eos-analysis /eos/user/d/dneff/x17rerun/det4y_ablation/Analysis --parts run_config,m3,hits --script mx_june_wft/03_angles.py -- --table {out}/wft/arm_b/events.parquet --alignment {out}/wft/align_pass/alignment.json --out {out}/wft/arm_b/angles_pass" cpus="1" mem="8000" node="ANG_b_pass"
+RETRY ANG_b_pass 3
+PARENT RECO_b CHILD ANG_b_pass
+JOB ANG_b_prod stage1.sub
+VARS ANG_b_prod code="/afs/cern.ch/user/d/dneff/x17rerun/code_6a0bb1f" args="g_det4 --eos-analysis /eos/user/d/dneff/x17rerun/det4y_ablation/Analysis --parts run_config,m3,hits --script mx_june_wft/03_angles.py -- --table {out}/wft/arm_b/events.parquet --alignment {out}/wft/align_prod/alignment.json --out {out}/wft/arm_b/angles_prod" cpus="1" mem="8000" node="ANG_b_prod"
+RETRY ANG_b_prod 3
+PARENT RECO_b CHILD ANG_b_prod
+JOB BUD_b stage1.sub
+VARS BUD_b code="/afs/cern.ch/user/d/dneff/x17rerun/code_6a0bb1f" args="g_det4 --eos-analysis /eos/user/d/dneff/x17rerun/det4y_ablation/Analysis --parts run_config,m3,hits --script rerun/effbudget/budget.py -- det4 --table {out}/wft/arm_b/events.parquet --alignment {out}/wft/align_pass/alignment.json --out {out}/wft/arm_b/budget" cpus="1" mem="8000" node="BUD_b"
+RETRY BUD_b 3
+PARENT RECO_b CHILD BUD_b
+JOB RECO_d stage1.sub
+VARS RECO_d code="/afs/cern.ch/user/d/dneff/x17rerun/code_6a0bb1f" args="g_det4 --eos-analysis /eos/user/d/dneff/x17rerun/det4y_ablation/Analysis --module wft.cli -- reco {key} --bundle {out}/wft/bundle_d --out {out}/wft/arm_d/events.parquet --matched-only --limit 8000 --jobs 16" cpus="16" mem="24000" node="RECO_d"
+RETRY RECO_d 3
+JOB ANG_d_pass stage1.sub
+VARS ANG_d_pass code="/afs/cern.ch/user/d/dneff/x17rerun/code_6a0bb1f" args="g_det4 --eos-analysis /eos/user/d/dneff/x17rerun/det4y_ablation/Analysis --parts run_config,m3,hits --script mx_june_wft/03_angles.py -- --table {out}/wft/arm_d/events.parquet --alignment {out}/wft/align_pass/alignment.json --out {out}/wft/arm_d/angles_pass" cpus="1" mem="8000" node="ANG_d_pass"
+RETRY ANG_d_pass 3
+PARENT RECO_d CHILD ANG_d_pass
+JOB ANG_d_prod stage1.sub
+VARS ANG_d_prod code="/afs/cern.ch/user/d/dneff/x17rerun/code_6a0bb1f" args="g_det4 --eos-analysis /eos/user/d/dneff/x17rerun/det4y_ablation/Analysis --parts run_config,m3,hits --script mx_june_wft/03_angles.py -- --table {out}/wft/arm_d/events.parquet --alignment {out}/wft/align_prod/alignment.json --out {out}/wft/arm_d/angles_prod" cpus="1" mem="8000" node="ANG_d_prod"
+RETRY ANG_d_prod 3
+PARENT RECO_d CHILD ANG_d_prod
+JOB BUD_d stage1.sub
+VARS BUD_d code="/afs/cern.ch/user/d/dneff/x17rerun/code_6a0bb1f" args="g_det4 --eos-analysis /eos/user/d/dneff/x17rerun/det4y_ablation/Analysis --parts run_config,m3,hits --script rerun/effbudget/budget.py -- det4 --table {out}/wft/arm_d/events.parquet --alignment {out}/wft/align_pass/alignment.json --out {out}/wft/arm_d/budget" cpus="1" mem="8000" node="BUD_d"
+RETRY BUD_d 3
+PARENT RECO_d CHILD BUD_d
+JOB W0KW_c stage1.sub
+VARS W0KW_c code="/afs/cern.ch/user/d/dneff/x17rerun/code_6a0bb1f" args="g_det4 --eos-analysis /eos/user/d/dneff/x17rerun/det4y_ablation/Analysis --parts run_config --script rerun/w12/set_w0kw.py -- --bundle {out}/wft/bundle_a --angles {out}/wft/arm_a/angles_pass --table {out}/wft/arm_a/events.parquet --bow-json {out}/wft/bow_block_pass.json --out {out}/wft/bundle_c" cpus="1" mem="4000" node="W0KW_c"
+RETRY W0KW_c 3
+PARENT ANG_a_pass CHILD W0KW_c
+JOB RECO_c stage1.sub
+VARS RECO_c code="/afs/cern.ch/user/d/dneff/x17rerun/code_6a0bb1f" args="g_det4 --eos-analysis /eos/user/d/dneff/x17rerun/det4y_ablation/Analysis --module wft.cli -- reco {key} --bundle {out}/wft/bundle_c --out {out}/wft/arm_c/events.parquet --matched-only --limit 8000 --jobs 16" cpus="16" mem="24000" node="RECO_c"
+RETRY RECO_c 3
+PARENT W0KW_c CHILD RECO_c
+JOB ANG_c_pass stage1.sub
+VARS ANG_c_pass code="/afs/cern.ch/user/d/dneff/x17rerun/code_6a0bb1f" args="g_det4 --eos-analysis /eos/user/d/dneff/x17rerun/det4y_ablation/Analysis --parts run_config,m3,hits --script mx_june_wft/03_angles.py -- --table {out}/wft/arm_c/events.parquet --alignment {out}/wft/align_pass/alignment.json --out {out}/wft/arm_c/angles_pass" cpus="1" mem="8000" node="ANG_c_pass"
+RETRY ANG_c_pass 3
+PARENT RECO_c CHILD ANG_c_pass
+JOB ANG_c_prod stage1.sub
+VARS ANG_c_prod code="/afs/cern.ch/user/d/dneff/x17rerun/code_6a0bb1f" args="g_det4 --eos-analysis /eos/user/d/dneff/x17rerun/det4y_ablation/Analysis --parts run_config,m3,hits --script mx_june_wft/03_angles.py -- --table {out}/wft/arm_c/events.parquet --alignment {out}/wft/align_prod/alignment.json --out {out}/wft/arm_c/angles_prod" cpus="1" mem="8000" node="ANG_c_prod"
+RETRY ANG_c_prod 3
+PARENT RECO_c CHILD ANG_c_prod
+JOB BUD_c stage1.sub
+VARS BUD_c code="/afs/cern.ch/user/d/dneff/x17rerun/code_6a0bb1f" args="g_det4 --eos-analysis /eos/user/d/dneff/x17rerun/det4y_ablation/Analysis --parts run_config,m3,hits --script rerun/effbudget/budget.py -- det4 --table {out}/wft/arm_c/events.parquet --alignment {out}/wft/align_pass/alignment.json --out {out}/wft/arm_c/budget" cpus="1" mem="8000" node="BUD_c"
+RETRY BUD_c 3
+PARENT RECO_c CHILD BUD_c
+JOB W0KW_e stage1.sub
+VARS W0KW_e code="/afs/cern.ch/user/d/dneff/x17rerun/code_6a0bb1f" args="g_det4 --eos-analysis /eos/user/d/dneff/x17rerun/det4y_ablation/Analysis --parts run_config --script rerun/w12/set_w0kw.py -- --bundle {out}/wft/bundle_b --angles {out}/wft/arm_b/angles_pass --table {out}/wft/arm_b/events.parquet --bow-json {out}/wft/bow_block_pass.json --out {out}/wft/bundle_e" cpus="1" mem="4000" node="W0KW_e"
+RETRY W0KW_e 3
+PARENT ANG_b_pass CHILD W0KW_e
+JOB RECO_e stage1.sub
+VARS RECO_e code="/afs/cern.ch/user/d/dneff/x17rerun/code_6a0bb1f" args="g_det4 --eos-analysis /eos/user/d/dneff/x17rerun/det4y_ablation/Analysis --module wft.cli -- reco {key} --bundle {out}/wft/bundle_e --out {out}/wft/arm_e/events.parquet --matched-only --limit 8000 --jobs 16" cpus="16" mem="24000" node="RECO_e"
+RETRY RECO_e 3
+PARENT W0KW_e CHILD RECO_e
+JOB ANG_e_pass stage1.sub
+VARS ANG_e_pass code="/afs/cern.ch/user/d/dneff/x17rerun/code_6a0bb1f" args="g_det4 --eos-analysis /eos/user/d/dneff/x17rerun/det4y_ablation/Analysis --parts run_config,m3,hits --script mx_june_wft/03_angles.py -- --table {out}/wft/arm_e/events.parquet --alignment {out}/wft/align_pass/alignment.json --out {out}/wft/arm_e/angles_pass" cpus="1" mem="8000" node="ANG_e_pass"
+RETRY ANG_e_pass 3
+PARENT RECO_e CHILD ANG_e_pass
+JOB ANG_e_prod stage1.sub
+VARS ANG_e_prod code="/afs/cern.ch/user/d/dneff/x17rerun/code_6a0bb1f" args="g_det4 --eos-analysis /eos/user/d/dneff/x17rerun/det4y_ablation/Analysis --parts run_config,m3,hits --script mx_june_wft/03_angles.py -- --table {out}/wft/arm_e/events.parquet --alignment {out}/wft/align_prod/alignment.json --out {out}/wft/arm_e/angles_prod" cpus="1" mem="8000" node="ANG_e_prod"
+RETRY ANG_e_prod 3
+PARENT RECO_e CHILD ANG_e_prod
+JOB BUD_e stage1.sub
+VARS BUD_e code="/afs/cern.ch/user/d/dneff/x17rerun/code_6a0bb1f" args="g_det4 --eos-analysis /eos/user/d/dneff/x17rerun/det4y_ablation/Analysis --parts run_config,m3,hits --script rerun/effbudget/budget.py -- det4 --table {out}/wft/arm_e/events.parquet --alignment {out}/wft/align_pass/alignment.json --out {out}/wft/arm_e/budget" cpus="1" mem="8000" node="BUD_e"
+RETRY BUD_e 3
+PARENT RECO_e CHILD BUD_e
