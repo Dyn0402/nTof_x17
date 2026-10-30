@@ -1,0 +1,5 @@
+/afs/cern.ch/user/d/dneff/x17rerun/code_b5a29af o22_long_det2 /eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1/mx17_det2_det3_overnight_6-22-26/longer_run/mx17_2/wft/calib_bundle
+/afs/cern.ch/user/d/dneff/x17rerun/code_b5a29af sat_det3 /eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1/mx17_det3_saturday_scan_6-27-26/long_run_resist_490V_drift_1000V/mx17_3/wft/calib_bundle
+/afs/cern.ch/user/d/dneff/x17rerun/code_b5a29af g_det4 /eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1/mx17_det4_day_6-24-26/long_run/mx17_4/wft/calib_bundle
+/afs/cern.ch/user/d/dneff/x17rerun/code_b5a29af g_det6_long /eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1/mx17_det6_det7_overnight_6-26-26/long_run/mx17_6/wft/calib_bundle
+/afs/cern.ch/user/d/dneff/x17rerun/code_b5a29af g_det7_long /eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1/mx17_det6_det7_overnight_6-26-26/long_run/mx17_7/wft/calib_bundle

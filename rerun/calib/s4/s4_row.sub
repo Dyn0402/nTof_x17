@@ -1,0 +1,12 @@
+# condor_submit s4_row.sub jobfile=s4_jobs.txt   (each line: <code> <key> <bundle>); run from ~/x17rerun/s4_inputs
+executable     = $ENV(HOME)/x17rerun/s4_inputs/s4_row.sh
+arguments      = $(args)
+output         = log/$(Cluster).$(ProcId).out
+error          = log/$(Cluster).$(ProcId).err
+log            = log/s4.log
+request_cpus   = 8
+request_memory = 16000
++JobFlavour    = "workday"
+requirements   = (Machine != "b9g42p2031.cern.ch")
+should_transfer_files = NO
+queue args from $(jobfile)
