@@ -74,7 +74,7 @@
   - The deployed archives are `6a0bb1f` (pass), `b5a29af` (post), `a72b889` (run71). `bow_node.py`'s `--table-out` dir fix (`5c76b7e3`) is not in an archive
     yet, so the bowgate phase writes into `wft/` for that reason.
 - EOS transient I/O errors (errno 5, bus errors): RETRY 3 plus a rescue DAG (`condor_submit_dag` the same .dag) covers them.
-- **The 18 GB `/media/dylan/data` local bench mirror is cleared.** Analysis reads pass products on EOS. The laptop has no `/media/ucla` (WORK_DATA unset).
+- **The local bench mirror under `/media/dylan/data/x17/cosmic_bench` is cleared.** Analysis reads pass products on EOS. The laptop has no `/media/ucla` (WORK_DATA unset).
 
 **Key files & commands:**
 - Products: `/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1/<run>/<subrun>/<det>/wft/`: events.parquet + meta,
