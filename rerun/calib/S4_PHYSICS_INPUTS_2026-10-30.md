@@ -153,3 +153,136 @@ From the pass's own timings (S1 4–6 h for all five chambers in parallel; vrefi
   (340 MB). Code `/eos/user/d/dneff/x17rerun/s4_inputs/code_75287c0`. Condor 4599742 (colsum) and 4599748 (stacks), lxplus
   `~/x17rerun/s4_inputs/`.
 - Analysis_pass1 was only read.
+
+## Follow-up (2026-10-30 evening): what moved det4's v and det7's Dp
+
+Dylan asked for two checks before any re-calibration: what moved det4's v, and a saturation-cut scan for det7's Dp.
+
+### Verdict
+
+**Neither move is a changed physics input. Neither chamber needs re-calibrating.**
+
+- **det4 v:** the −1.66 µm/ns splits into two parts.
+  - **The pass template, −0.7 µm/ns.** It is real: the template is the better electronics response (DET4Y_ABLATION).
+  - **The event sample, −0.9 µm/ns.** S4's sample is dominated by low-amplitude events, and the stack's T depends on
+    amplitude.
+  - At matched amplitude (1000–3500 ADC), with the pass template, **v = 32.36 ± 0.50 µm/ns**, which is −0.9σ from the input
+    33.0 ± 0.7. The decode contributes nothing and the alignment nothing.
+- **det7 Dp:** the move is the X region with the readout faults (ch < 256) entering S4's sample.
+  - On ch 256–511, the only part of det7 X that is quoted, **Dp = 0.0214 ± 0.0023**, which is −0.6σ from 0.0225 ± 0.0019.
+  - It holds across saturation cuts of 2000–3500 ADC (0.019–0.021).
+  - The cut scan on S4's full sample does not rescue the input: every cut ≤ 3500 ADC gives 0.010–0.019. So the cut was
+    never the cause; the region was.
+
+### How it was split
+
+S4 changed three things at once.
+- **The cache:** S4 used every M3 ray through the pass alignment ("ref-only"). The input used the hits chain's events
+  (has_x and has_y, radial residual < 10 mm).
+- **The decode:** rr1 against the pre-rerun `decoded_root`.
+- **The template:** the pass bundle against `calib_bundle_lp` (det4) / `calib_bundle_r06` (det7).
+
+`s4f_build.py` rebuilt the ref-only cache on the pre-rerun decode (`--gen prod`) and wrote both chains' hits-chain event
+lists. `s4f_fit.py` fits the S4 stack (x_width.measure, |tan_x| < 0.03, bootstrap 20) on every combination, plus
+amplitude bins on the X window maximum and the det7 channel restriction. The pass alignment and the hits alignment of
+g_det4 agree to 0.05° and 1 mm, and both chains' hits selections are the same events (2740 det4, 3166 det7).
+
+### det4: stack T (ns), gap 30.48 mm
+
+| decode | selection | old template | pass template |
+|---|---|---|---|
+| prod | hits chain (n 473) | **924.1 ± 13.9** (the input: 924.5) | 944.8 ± 14.3 |
+| rr1 | hits chain (n 476) | 925.2 ± 12.7 | 945.6 ± 14.8 |
+| prod | ref-only (n 1794) | 950.7 ± 13.8 | 972.0 ± 13.6 |
+| rr1 | ref-only (n 1799) | 951.4 ± 11.6 | **972.6 ± 11.9** (S4) |
+| rr1 | ref-only, 1000–3500 ADC (n 266) | 919.0 ± 13.3 | **941.8 ± 14.6** |
+| rr1 | hits chain, 1000–3500 ADC (n 215) | 922.2 ± 19.4 | 942.6 ± 18.8 |
+
+- **Closure:** the prod / hits / old arm gives 924.1 against the input's 924.5.
+- **Decode:** ≤ 1.1 ns.
+- **Template:** +20 to +23 ns in every row, which is −0.7 µm/ns.
+- **Selection:** +27 ns (−0.9 µm/ns) at all amplitudes, but **−0.8 ns at matched amplitude**.
+  - The stack's T depends on amplitude: 1002 ± 17 ns below 1000 ADC against 942 ± 15 above (ref-only, pass template).
+  - 45 % of the hits-chain head-on events are ≥ 1000 ADC (215/476) against 15 % of the ref-only ones (266/1799). The ref-only
+    sample adds ~1300 events that the hits chain had dropped, almost all below 1000 ADC.
+  - The amplitude bins are in `results/s4f/amp_det4.json`.
+- **Dp:** 0.0212 ± 0.0011 at matched amplitude (+1.1σ against 0.020). Below 1000 ADC it reads 0.0145.
+
+**Which v to believe:** 32.36 ± 0.50 µm/ns, from the pass template and events ≥ 1000 ADC.
+- The low-amplitude stacks fit a smaller Dp and a larger σ0, and their extra length is most likely the stack estimator on
+  weak signals rather than a slower drift. That is an inference: the data cannot separate the two.
+- S4's agreement with the pass ladder (30.8) is therefore no longer evidence for 31.3. The ladder's v is angle-implied and
+  carries kw, so it is not a timing measurement.
+
+### det7: Dp (mm/√ns)
+
+| sample | old template | pass template |
+|---|---|---|
+| hits chain, < 3500 ADC (n 144) | 0.0229 ± 0.0020 | **0.0225 ± 0.0019** (the input exactly) |
+| ref-only, < 3500 ADC (n 554) | 0.0191 ± 0.0014 | **0.0187 ± 0.0013** (S4) |
+| ref-only, ch 256–511, < 3500 ADC (n 170) | 0.0220 ± 0.0023 | **0.0214 ± 0.0023** |
+| ref-only, ch 256–511, 1000–3500 ADC (n 88) | 0.0232 ± 0.0024 | 0.0224 ± 0.0025 |
+| hits chain, ch 256–511 (n 67) | 0.0218 ± 0.0029 | 0.0213 ± 0.0029 |
+| not hits chain, ch 256–511 (n 103) | 0.0222 ± 0.0034 | 0.0216 ± 0.0034 |
+
+- **Decode:** the prod and rr1 caches give identical fits for this row.
+- **Template:** ≤ 0.0006.
+- **Where the move comes from:** the events S4 adds sit on the bad X region. 73 % of the non-hits-chain events at
+  1000–3500 ADC peak on ch < 256, against 48 % of the hits-chain ones. Those stacks fit σ0 ≈ 0.2 mm and Dp 0.012–0.015.
+  On ch 256–511, the hits-chain and added events agree (0.0213 against 0.0216).
+
+**Saturation-cut scan (X window maximum, ADC):**
+
+| cut | S4 sample (n) | S4 sample, ch 256–511 (n) | input sample (n) |
+|---|---|---|---|
+| 1000 | degenerate (332) | | < 120 events |
+| 1500 | 0.0098 ± 0.0031 (390) | | < 120 |
+| 2000 | 0.0153 ± 0.0033 (432) | 0.0190 ± 0.0024 (123) | < 120 (old cache: 0.024) |
+| 2500 | 0.0159 ± 0.0022 (470) | 0.0194 ± 0.0027 (138) | < 120 (old cache: 0.024) |
+| 3000 | 0.0186 ± 0.0020 (515) | 0.0203 ± 0.0022 (158) | 0.0227 ± 0.0027 (123) |
+| 3500 | 0.0187 ± 0.0013 (554) | 0.0214 ± 0.0023 (170) | 0.0229 ± 0.0020 (144) |
+| 4000 | 0.0273 (1252, saturated events enter) | | 0.0281 (680) |
+| none | 0.0358 (1672) | | 0.0294 (821) |
+
+- Above 3500 ADC, saturated events enter and Dp climbs in every sample. 3500 stays the right ceiling.
+- Below it, the full S4 sample falls with the cut because the faulty-region and low-amplitude events make up more of it.
+
+### Updated recommendation
+
+- **det4: do not re-calibrate.**
+  - The timing v at matched amplitude is 32.4 ± 0.5 against 33.0 ± 0.7 (−0.9σ), inside the PASS_PLAN test.
+  - The remaining shift is the template, which the pass already uses.
+  - v sets only the reconstruction windows, since the angles are scaled against M3 per row.
+  - Optionally, record 32.4 ± 0.5 (pass template, ≥ 1000 ADC) in `physics_inputs.json` for bookkeeping. No re-run follows from
+    it.
+  - A re-run would cost 4–6 h of calibration, then 17 bench rows and the 34 SPS rows that borrow det4's bench v.
+- **det7: do not re-calibrate.**
+  - On the quoted X region, Dp 0.0214 ± 0.0023 is −0.6σ from the input.
+  - A re-run would cost 4–6 h of calibration, then 25 bench rows.
+- **The S4 estimator itself needs two changes before it is used again:**
+  - apply each chamber's documented masks (det7 X ch 256–511);
+  - quote the head-on stack at an amplitude floor (≥ 1000 ADC), or report T and Dp per amplitude bin.
+  - As run, its sample is set by whatever the ref-only reference admits, and both T and Dp depend on that mix.
+
+### What this does not rule out
+
+- **Not re-checked with the floor and masks:** det2, det3 and det6. Their S4 values held, but they were measured the
+  same way. det3 is the reference and has no documented X fault; det6's stack is window-limited anyway.
+- **Why T rises at low amplitude is not separated.** It could be the estimator on weak signals or a real drift difference
+  in the weak-gain regions (det4's dead stripes). Both read the same in the stack.
+- **The matched-amplitude det4 number rests on 266 events.** Its 0.50 µm/ns error is bootstrap only.
+- **det7's ch 256–511 numbers rest on 67–170 events.** The 120-event floor was lowered to 50 for the matched subsets.
+
+### Files
+
+- Tools:
+  - `rerun/calib/s4/s4f_build.py` (+ `s4f_build.sh` / `.sub`): the head-on cache on a chosen decode, plus the hits-chain
+    event lists;
+  - `s4f_fit.py`: the arm grid;
+  - `s4f_specs.py`: every grid above.
+- Results: `rerun/calib/s4/results/s4f/*.json`.
+- Products:
+  - `/eos/user/d/dneff/x17rerun/s4_followup/Analysis_prod/<row>/s4f/{headon.pkl, selections.json}`;
+  - the fit inputs and results are in `/eos/user/d/dneff/x17rerun/s4_followup/fits/`.
+- Code: `code_16587ac6`. Condor 4599810, lxplus `~/x17rerun/s4_followup/`. The fits ran locally (seconds each).
+- Analysis_pass1, the audit trees and `physics_inputs.json` were not modified.
