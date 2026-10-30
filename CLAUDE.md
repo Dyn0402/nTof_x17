@@ -73,6 +73,9 @@ position, and write that fact next to the constant. Frame, conventions and the e
   under "Two n_TOF conditions" below; read them before comparing anything
   across 23 July or using chamber A in run_79.
 - `common/` — strip maps, active area, shared config.
+- `docs/PARAMETERS.md` — every reconstruction and analysis parameter (fit outputs, footprint model, v/w0/kw and the
+  bow, registry columns, alignment, efficiency/s68 definitions, gates, SPS specifics): what it means and where it is set.
+  Update it in the same commit when a parameter changes.
 - Bench data: `/media/dylan/data/x17/cosmic_bench` (mirror at
   `~/x17/cosmic_bench`); waveforms in `<run>/<subrun>/decoded_root`.
 - venv is `.venv` (`../../.venv/bin/python` from a subdirectory).
