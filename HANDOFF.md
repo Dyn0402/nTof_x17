@@ -1,64 +1,45 @@
 # Handoff
 
-## From-scratch pass 1 (bench + SPS): reviewed, fixed, bow gate passed — next: det4 Y ablation — updated 2026-10-30 (dylan-Yoga)
+## From-scratch pass 1 (bench + SPS): steps 1–4 of the follow-ups done — next: two re-run decisions, then Paper I — updated 2026-10-30 (dylan-MS-7C84)
 
-**Resume:** pass 1 is complete, reviewed and clean; next is the det4 Y −0.25° ablation (step 1), then S4 physics inputs.
+**Resume:** the four follow-ups below ran in parallel and are on main. Two decisions for Dylan (det4/det7 re-calibration, the 8 SPS v rows) come
+before the Paper I numbers.
 
 **Goal:** finish validating the from-scratch pass (`Analysis_pass1`), then derive the paper numbers from it.
 
-**Done (10-30):**
-- **Pass 1 complete:** calib (S1) → G1 (all five chambers pass) → vrefit → pass (156 bench rows) → sps (71 rows).
-  Records: `rerun/PASS1_STATUS_2026-10-30.md`, `rerun/calib/G1_RESULT_2026-10-30.md`.
-- **Independent review of the products** (`rerun/pass1_review/REVIEW_2026-10-30.md`, per-row tables + scripts in that folder).
-  - **P1 — four rows had their alignment z railed to the scan edge.** A few ok fits with |tan| up to 6e8 gave absurd mesh positions, and the z
-    scan's RMS fallback went flat. Fixed in `b5a29af`:
-    - `wft.compat.apply_fit_sanity` (|tan| ≤ 3, p0 on the plate) runs on load;
-    - `_robust_sigma` falls back to the MAD;
-    - 01–04 were re-run on every bench row (`make_pass_dag.py post`).
+**Done (10-30, earlier):** pass 1 complete and reviewed (`rerun/PASS1_STATUS_2026-10-30.md`, `rerun/pass1_review/REVIEW_2026-10-30.md`);
+P1 railed-alignment fix `b5a29af`, P2 run71 common-mode fix `a72b889`; ledger clean 156/156 + 71/71 (`rerun/PASS1_LEDGER.md`); bow gate PASS
+(`rerun/calib/bow/results_pass1/GATE_RESULT_2026-10-30.md`); `docs/PARAMETERS.md`.
 
-    The four rows recover (det7 6-26 longer_run 6.5 → 61.4 % within 5 mm). Golden rows are unchanged (≤ 0.05 pt, ≤ 0.017°), so G1 stands.
-  - **P2 — SPS RAW run71.** The data are good: it is the clean head-on, no-ZS set. The pass-1 cache had no common-mode subtraction (a chip common mode of
-    ~260 ADC against 11 ADC noise). Fixed in `a72b889` (masked block median, the `extract_det4_only --cm masked` recipe) and re-run: fit ok
-    100 %, χ²/dof 2.2, head-on angle s68 1.4–3.8° against 8.5–23° on ZS.
-  - **Ledger** (`rerun/pass1_ledger.py`) now also checks: alignment z within 5 mm of its night, z_x ≈ z_y, far ≤ 15 %, 01–04 on
-    `b5a29af`, run71 on `a72b889`. It is clean: 156/156 + 71/71 (`rerun/PASS1_LEDGER.md`).
-- **Bow transfer gate: PASS** (`rerun/calib/bow/results_pass1/GATE_RESULT_2026-10-30.md`).
-  - One block per chamber plus per-row w0/kw improves every row in angle (−0.06…−0.53°, ≥ 2.3σ) and in position, including the det3 6-25 bottom slot.
-  - With the golden w0/kw too (the strict arm), other-day rows get worse, so w0/kw must stay per row.
-  - `wft.reco.bow_UW` now ignores an off-plate view (`BOW_UW_MAX`). This affects ≤ 0.2 % of events in the pass-1 tables, kept as a stated effect.
-- **`docs/PARAMETERS.md`:** a reference for every model and analysis parameter (Dylan asked for it). Keep it updated in the same commit
-  when a parameter changes.
+**Done (10-30, follow-ups, four parallel sessions):**
+1. **det4 Y −0.25° ablation** (`rerun/calib/DET4Y_ABLATION_2026-10-30.md`, `4ee73a3e`): it is the pass's from-scratch **template**
+   (−0.233°), not the bow (−0.013°); code drift +0.010°, rest −0.009°. Five arms (added e = template + bow) close the breakdown; arm d
+   reproduces G1's 2.348°. det4 Y 2.35° can be quoted. Caveat: in-sample on g_det4 only. Don't quote arm b (2.269°, stale kw).
+2. **S4 physics inputs** (`rerun/calib/S4_PHYSICS_INPUTS_2026-10-30.md`, `14fd76b2`): det2/det3 hold. **det4 v 33.0 ± 0.7 → 31.34 ± 0.38
+   µm/ns (−2.4σ)**, agrees with the pass ladder (30.8); **det7 Dp 0.0225 → 0.0187 ± 0.0013 (−2.0σ)**, default saturation cut only.
+   det4 gap not measurable on the pass alignment (± tan halves 3.7 mm apart); det6 Dp/gap cut by the window as before; σ0 not re-checked.
+   Nothing re-run; `physics_inputs.json` unchanged.
+3. **v(t) within rows** (`rerun/vt_within_rows/README.md`, `46a27ac9`): v **rises** through the 6-26 night (the old "falls 35 %" read the
+   rows out of clock order): det6 17.3 → 31.5, det7 31.5 → 39.1 µm/ns, same time-shape (det6 = 2.80 × det7), knee ~10:30 → gas, not gain
+   or attachment. Correction v·r(t), one curve per chamber, held-out χ² 322 → 24–33. det6 angles up to 2.2°, depths up to 2.5 mm;
+   det7 ≤ 0.8°. Corrected tables: `/eos/user/d/dneff/x17rerun/vt_correction/`. Not done: det4 6-23/6-24, det2 6-23.
+4. **SPS** (`rerun/sps_followup/README.md`, `a07f9464`):
+   - run71 RAW **det4 X 193 ± 36 µm** against the uRWELL telescope (raw residual 359 µm; telescope subtraction from run 53, range
+     ~90–210 µm); det4 Y dead under the telescope.
+   - 34 no-v rows: **8 get a v** (run60 ov01, ov07–09, ov11–14; 10.0–13.6 µm/ns, column duration), 26 stay positions-only.
+   - run60 ov07: beam off for the first ~27 min; cut t_wall ≥ 91170 s → x_ok 94 %.
+   - Found: 44 % of run71 raw700 Y fits pile at det4's dead Y band edge (the review's head-on Y s68 includes them); CF4 ladder rows
+     below ~220 V/cm carry the retired v estimate (angles off up to 2×).
 
 **Next steps (in this order):**
-1. **det4 Y −0.25° ablation**, before anyone quotes it. G1: det4 Y s68 2.348° pass against 2.593° on the audit's `fe_lm` arm.
-   - **Suspect:** the bow. It is worth −0.43° on det4 Y in-sample (gate table), and the audit's det4 fe bundle had no tan-form block.
-   - **The three differences** between the two bundles: the template (3.5 % of peak), the bow (Y tilt terms up to 0.016 in tan), and kw (2–3 % lower).
-   - **Arms on the golden row `g_det4`**, same events as G1:
-     - (a) the audit fe bundle as is;
-     - (b) fe + the pass template;
-     - (c) fe + the pass bow (`set_w0kw --bow-json`);
-     - (d) the pass bundle.
-   - **Inputs:** the audit's bundle and arm are under `/eos/user/d/dneff/x17rerun/followups/fe/Analysis_fe/mx17_det4_day_6-24-26/long_run/mx17_4/wft/`
-     (`calib_bundle_*`, `fe_lm/`); the pass's are under `Analysis_pass1/<same>/wft/{calib/r3, calib_bundle}`.
-   - **Tools:** `rerun/calib/g1_gate.py --arm/--base` and `rerun/model_audit/gate_compare.py` read both sides.
-   - **Cost:** a reco of 8000 events, ~1 h per arm on condor (`make_pass_dag.py` stage1 nodes). Write the result next to `G1_RESULT_2026-10-30.md`.
-2. **S4: re-measure the physics inputs on the pass tables** (`rerun/calib/physics_inputs.json`: σ0, Dp, gaps, timing v per chamber). If
-   one moves beyond its stated error, re-run that chamber's calibration phase and write the cost down (PASS_PLAN §0).
-3. **v(t) within rows** for the det6/det7 6-26 overnight rows. det6's effective v falls ~35 % over the night (folded v: 31 hv-scan → 24
-   golden → 19.9 longer_run → 17.9 short_run µm/ns). Post-correctable from the event `timestamp` (GC). Nothing from those rows' angles or
-   depths is quoted before this.
-4. **SPS:**
-   - position resolution of the RAW run71 rows against the **uRWELL telescope**, never against `ref_x/ref_y` (det4's own centroid);
-   - decide the 34 rows with no v_span: derive a v, or keep them positions-only (P3 in the review);
-   - check run60 ov07 (x_ok 65 % against 83–86 % on the other plateaus).
-5. **Paper I numbers** (PASS_PLAN §4):
-   - resolutions vs HV and drift field;
-   - loss budget (`rerun/effbudget`) and the A1 fractions;
-   - det7 X ch 256–511 only; the interior ≥ 30 mm fiducial region;
-   - charge from unsaturated events;
-   - the bow section wording (skeptic review);
-   - every figure from `papers/*/figures.toml`, dated against pass 1;
-   - then the INFN–IN2P3 abstract and MPGD numbers.
+1. **Decide (Dylan):** re-calibrate det4 (v; 4–6 h + 17 bench rows + the SPS rows on det4's bench v) and/or det7 (Dp; 4–6 h + 25 rows).
+   Before det4: an arm with the old template on the new cache to separate what moved its v (S4 open risk). Before det7: a saturation-cut scan.
+2. **Decide (Dylan):** the 8 SPS v values — rescale tan by 33.0/v afterwards, or put them in `rerun/sps_registry.csv` and re-run those rows.
+   Same question for the CF4 ladder rows below ~220 V/cm. Mask the run71 Y edge pile-up before quoting any head-on Y.
+3. Apply the v(t) correction (from `vt_correction/`) to any det6/det7 6-26 angle or depth that is quoted; extend to det4 6-23/6-24, det2 6-23.
+4. **Paper I numbers** (PASS_PLAN §4): resolutions vs HV and drift field; loss budget (`rerun/effbudget`) and the A1 fractions; det7 X
+   ch 256–511 only; the interior ≥ 30 mm fiducial region; charge from unsaturated events; the bow section wording; every figure from
+   `papers/*/figures.toml`, dated against pass 1; then the INFN–IN2P3 abstract and MPGD numbers.
 
 **Gotchas / decisions:**
 - **v and kw** (details in `docs/PARAMETERS.md` §3.1): own-v rows have the mean kw **folded into v** (`set_w0kw --fold-kw`), so their reco
