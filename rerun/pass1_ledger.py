@@ -4,7 +4,8 @@ show no overrides, code hash = the archive).  Run on lxplus (reads EOS).
 
 Per non-excluded pass_registry row: the pass table (wft/events.parquet + meta), its 02/03/04 outputs, the bundle it used,
 and every STAGES/*.json of the row: code commit and diagnostic overrides.  Per sps_registry row: events.parquet + meta
-(code, bundle).  Expected code: 6a0bb1f everywhere, d34cf25 for the three run_61 rows whose clock was fixed.
+(code, bundle).  Expected code: 6a0bb1f everywhere, d34cf25 for the three run_61 rows whose clock was fixed, a72b889 for
+the three RAW run_71 rows (common-mode subtraction in the cache, REVIEW_2026-10-30.md P2).
 
 Since the post phase (2026-10-30, rerun/pass1_review/REVIEW_2026-10-30.md P1): the latest 01 (rows that align themselves),
 02, 03 and 04 stage of a row must be on CODE_POST, and two checks the presence ledger could not make:
@@ -25,7 +26,8 @@ CODE_POST = {'b5a29af'}
 POST_STAGES = ('01_alignment', '02_efficiency', '03_angles', '04_maps')
 ALIGN_TOL_MM = 5.0
 FAR_MAX_PCT = 15.0
-CODE_SPS_FIX = {'run61_rot15_ladder__d210', 'run61_rot15_ladder__d140', 'run61_rot15_ladder__d070'}
+CODE_SPS_FIX = {k: 'd34cf25' for k in ('run61_rot15_ladder__d210', 'run61_rot15_ladder__d140', 'run61_rot15_ladder__d070')}
+CODE_SPS_FIX.update({k: 'a72b889' for k in ('run71_raw__raw700', 'run71_raw__raw450', 'run71_raw__raw275')})
 
 
 def bench(root):
@@ -102,7 +104,7 @@ def sps(root):
         d = os.path.join(root, 'sps', r['key'])
         mp = os.path.join(d, 'events.meta.json')
         m = json.load(open(mp)) if os.path.exists(mp) else {}
-        want = {'d34cf25'} if r['key'] in CODE_SPS_FIX else CODE
+        want = {CODE_SPS_FIX[r['key']]} if r['key'] in CODE_SPS_FIX else CODE
         problems = []
         if not os.path.exists(os.path.join(d, 'events.parquet')):
             problems.append('table')
@@ -125,7 +127,7 @@ def main():
     B, Bbad = bench(a.root); S, Sbad = sps(a.root)
     L = [f'# Pass 1 completion ledger', '',
          f'Bench: {len(B)} non-excluded rows, {len(B) - len(Bbad)} complete; SPS: {len(S)} rows, {len(S) - len(Sbad)} complete.',
-         f'Expected code: {sorted(CODE)} (SPS run_61 clock rows: d34cf25); 01-04: {sorted(CODE_POST)}. Alignment within '
+         f'Expected code: {sorted(CODE)} (SPS run_61 clock rows: d34cf25, run_71 RAW rows: a72b889); 01-04: {sorted(CODE_POST)}. Alignment within '
          f'{ALIGN_TOL_MM:g} mm of its night, reco_far <= {FAR_MAX_PCT:g} %.', '']
     if Bbad:
         L += ['## Bench rows with problems', '| row | cls | n | problems |', '|---|---|---|---|']
