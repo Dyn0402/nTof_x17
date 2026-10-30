@@ -25,7 +25,7 @@ _EV = None
 _RAW = False
 
 
-def _init(cache, bundle, k, v, nsamp, mask='h4', raw=False):
+def _init(cache, bundle, k, v, nsamp, mask='h4', raw=False, extra_dead=None):
     global _EV, _RAW
     from wft.calib import CalibrationBundle
     from wft import model as wm
@@ -34,6 +34,9 @@ def _init(cache, bundle, k, v, nsamp, mask='h4', raw=False):
     _RAW = bool(raw)
     cal = CalibrationBundle.load(bundle)
     sps_mask.apply(cal, mask)
+    # the row's hot (oscillating) channels found by the cache builder's seed probe: censored like the dead ones
+    for p, chs in (extra_dead or {}).items():
+        cal.dead[p] = sorted(set(cal.dead.get(p, [])) | {int(c) for c in chs})
     if v:
         cal.v_drift = float(v)
     cal.t0_abs, cal.t0_prior_sigma = {}, 0.0        # the beam trigger is asynchronous to the DREAM clock
@@ -94,19 +97,22 @@ def main():
         print(f'[sps] {sub}: {len(got)} events in {row["plateau"]} ({len(evs)} total)', flush=True)
         if len(evs) >= a.per_plateau:
             break
+    hot = sorted({c for (r_, s_, L), cs in sbc.HOT_LAST.items() if r_ == row['run'] and L == row['plateau'] for c in cs})
+    from det4_sps_map import VIEW
+    extra_dead = {p: [c for c in hot if VIEW[c] == p] for p in ('x', 'y')}
     os.makedirs(a.out, exist_ok=True)
     cache = os.path.join(a.work, f'sps_cache_{a.key}.pkl'); pickle.dump(evs, open(cache, 'wb'), protocol=4)
     v = float(row['v_span_um_ns']) if row['v_span_um_ns'] else None
     # K fallback for rows without v_span: the column at v (or 12 um/ns) plus the registry's +15 margin (PASS_PLAN E4)
     k = int(row['K']) if row['K'] else int(np.ceil(28800.0 / (v or 12.0) / 60.0)) + 15
-    with ProcessPoolExecutor(a.jobs, initializer=_init, initargs=(cache, a.bundle, k, v, nsamp, a.mask, raw)) as pool:
+    with ProcessPoolExecutor(a.jobs, initializer=_init, initargs=(cache, a.bundle, k, v, nsamp, a.mask, raw, extra_dead)) as pool:
         rows = list(pool.map(one, sorted(evs), chunksize=4))
     from wft import reco as wr
     df = pd.DataFrame(rows).sort_values('event_id').reset_index(drop=True)
     df, q_med = wr.quality_flags(df)          # chi2/dof flag, CHI2DOF_REL x the table median per view (GE)
     df.to_parquet(os.path.join(a.out, 'events.parquet'), index=False)
     meta = dict(n_events=len(df), registry_row=row, quality_rule=wr.quality_rule(q_med), bundle=a.bundle, v_drift=v, n_depth_bins=k, n_samples=nsamp, zeros='missing (RAW)' if raw else 'measured (ZS)',
-                channel_layer=a.mask, seeding='own brightest strip +- half_win', half_win=a.half_win,
+                channel_layer=a.mask, hot_seed_channels=hot, seeding='own brightest strip +- half_win (not RAW_CM_BAD, not the hot channels)', half_win=a.half_win,
                 env={k_: v_ for k_, v_ in os.environ.items() if k_.startswith('WFT_')},
                 diagnostic_overrides={k_: str(v_) for k_, v_ in __import__('wft.diag').diag.ACTIVE.items()},
                 code=os.environ.get('RERUN_CODE_COMMIT', '?'))

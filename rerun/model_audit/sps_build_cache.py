@@ -34,26 +34,37 @@ ZS_BASELINE = 256.0
 RAW_PRE = 8
 RAW_CM_MASK = 10
 RAW_CM_BAD = (510, 372)
-#: Channels that may never SEED a window or enter the own-centroid ref: the H4 channel layer's dead list (both views,
-#: rerun/channel_layer/det4_sps_h4.json; the fit censors the same channels) plus RAW_CM_BAD.  Y ch 372 (158.34 mm) and
-#: ch 510 (250.38 mm) oscillate by +-400-900 ADC in some sub-runs.  Before 2026-10-30 (rerun/sps_audit) the
-#: brightest-strip seed picked them and the whole +-16-strip window sat on the oscillation: 43-46 % of the run71 RAW Y
-#: fits at 156-160.5 mm and 11-12 % at 248.5-252 mm, 25 % of run55 d700, 16 % of run57 d650/d700, 27 % of run60 ov07.
-H4_MASK = os.path.join(REPO, 'rerun', 'channel_layer', 'det4_sps_h4.json')
+#: Channels that may never SEED a window or enter the own-centroid ref: the oscillating RAW_CM_BAD.  Y ch 372
+#: (158.34 mm) and ch 510 (250.38 mm) swing by +-400-900 ADC in some sub-runs (known since
+#: sps_beam_test_26/analysis/RAW_RUN71_REANALYSIS_2026-08-04.md, never carried into this builder).  Before 2026-10-30
+#: (rerun/sps_audit) the brightest-strip seed picked them and the whole +-16-strip window sat on the oscillation: 41-44 %
+#: of the run71 RAW Y fits at 156-160.5 mm and 9-12 % at 248.5-252 mm, 24 % of run55 d700, 16 % of run57 d650/d700, 37 %
+#: of run60 ov07.  The census-dead channels (det4_sps_h4.json 'dead') are NOT excluded: some carry as much charge as
+#: their neighbours (X ch 2, 64 on run66), the fit censors them anyway and a window seeded on one still holds the track.
+SEED_BAD = np.zeros(512, bool)
+SEED_BAD[list(RAW_CM_BAD)] = True
+#: Which channel oscillates changes with the sub-run: on ZS run55 d700 it is ch 373 (157.56 mm), the neighbour of 372,
+#: and 25 % of that row's Y windows were seeded on it.  So each plateau is also probed: the first HOT_SCAN events are
+#: seeded with SEED_BAD, and a channel that seeds more than HOT_FRAC of them AND more than HOT_RATIO x the median of its
+#: +-4 position neighbours in the same view is excluded from seeding for that plateau (HOT_LAST records it).  A real
+#: beam strip seeds ~1 % (Y) to ~7 % (X, inside a 12 mm live band) with neighbours at the same level, a band-edge strip
+#: at most ~3x its neighbours; the oscillating strips seed 4-45 % against 0-15 / 3000 around them (rerun/sps_audit/README.md).
+HOT_SCAN = 2000
+HOT_FRAC = 0.03
+HOT_RATIO = 10.0
+HOT_LAST = {}
 
 
-def _seed_bad():
-    import json
-    bad = set(RAW_CM_BAD)
-    if os.path.exists(H4_MASK):
-        m = json.load(open(H4_MASK))
-        for p in ('x', 'y'):
-            bad.update(int(c) for c in m[p]['dead'])
-    out = np.zeros(512, bool); out[sorted(bad)] = True
+def hot_channels(seed_counts, n):
+    """bool[512]: channels whose seed count (array[512]) over n events is > HOT_FRAC n and > HOT_RATIO x the median
+    of their +-4 position neighbours in the same view."""
+    cnt = np.asarray(seed_counts, float); out = np.zeros(512, bool)
+    for view in ('x', 'y'):
+        chs = np.flatnonzero(VIEW == view); o = chs[np.argsort(POSITION_MM[chs])]
+        for i, c in enumerate(o):
+            nb = np.r_[o[max(0, i - 4):i], o[i + 1:i + 5]]
+            out[c] = cnt[c] > HOT_FRAC * n and cnt[c] > HOT_RATIO * max(np.median(cnt[nb]), 1.0)
     return out
-
-
-SEED_BAD = _seed_bad()
 
 
 def _baseline(ch, sm, am, raw):
@@ -153,10 +164,24 @@ def acquisitions(files, spans):
     return out
 
 
-def build_cache(run, subrun, dataset, per_plateau=1000, half_win=16, tan=None, edge_s=20.0, qmin=300.0, only=None, verbose=True):
-    """{plateau: {eid: event}} for the decoded FEU 03 files of one sub-run (``only``: restrict to these plateaus)."""
+def build_cache(run, subrun, dataset, per_plateau=1000, half_win=16, tan=None, edge_s=20.0, qmin=300.0, only=None, verbose=True,
+                hot_scan=HOT_SCAN):
+    """{plateau: {eid: event}} for the decoded FEU 03 files of one sub-run (``only``: restrict to these plateaus).
+    hot_scan > 0: probe that many events per plateau first and keep its hot channels out of the seed (HOT_LAST)."""
     a = argparse.Namespace(run=run, subrun=subrun, dataset=dataset, per_plateau=per_plateau, half_win=half_win,
-                           tan=float(np.tan(np.radians(25.64))) if tan is None else tan, edge_s=edge_s, qmin=qmin)
+                           tan=float(np.tan(np.radians(25.64))) if tan is None else tan, edge_s=edge_s, qmin=qmin, seed_bad={})
+    if hot_scan and per_plateau > 0:
+        probe = build_cache(run, subrun, dataset, hot_scan, half_win, tan, edge_s, qmin, only, False, hot_scan=0)
+        for L, evs in probe.items():
+            cnt = np.zeros(512)
+            for e in evs.values():
+                cnt[e['seed_ch_x']] += 1; cnt[e['seed_ch_y']] += 1
+            hot = hot_channels(cnt, len(evs))
+            a.seed_bad[L] = SEED_BAD | hot
+            HOT_LAST[(run, subrun, L)] = [int(c) for c in np.flatnonzero(hot)]
+            if hot.any():
+                print(f'{subrun} {L}: hot seed channels {HOT_LAST[(run, subrun, L)]} kept out of the seed '
+                      f'({", ".join(f"{int(cnt[c])}/{len(evs)}" for c in np.flatnonzero(hot))})', flush=True)
     import uproot
     D = datasets.get(a.dataset); nsmp = int(D['n_samples'])
     files = sorted(glob.glob(os.path.join(RUNS, a.run, a.subrun, 'decoded_root_fa80c06', '*_datrun_*_03.root')))
@@ -180,9 +205,8 @@ def event_record(ch, sm, am, raw, nsmp, half_win=16, qmin=300.0, tan=0.0, seed_b
     """One event's cache record ({'x': window, 'y': window, ref_mesh_x/y, seed_ch_x/y, tan_x/y}) from its decoded
     samples, or None when a view is empty, its peak is below qmin or its window has < 4 strips.  Per view the brightest
     strip that is not in ``seed_bad`` (default SEED_BAD) seeds a +-half_win-strip window in POSITION (the plugs are
-    inverted: det4_sps_map).  The window keeps every strip, bad ones included (the fit censors them); the own-centroid
-    ref leaves out the oscillating RAW_CM_BAD channels (pure noise) and keeps the census-dead ones, which do carry some
-    charge (X ch 2 and 64 on run66: as much as their neighbours)."""
+    inverted: det4_sps_map).  The window keeps every strip, bad ones included; the own-centroid ref leaves the bad
+    (oscillating) ones out."""
     bad = SEED_BAD if seed_bad is None else seed_bad
     am = _baseline(ch, sm, am, raw)
     rec = dict(tan_x=tan, tan_y=tan)
@@ -205,7 +229,7 @@ def event_record(ch, sm, am, raw, nsmp, half_win=16, qmin=300.0, tan=0.0, seed_b
         W = np.zeros((len(chs), nsmp), np.float32); ci = np.searchsorted(chs, cc); m = (ss >= 0) & (ss < nsmp)
         W[ci[m], ss[m]] = aa[m]
         o = np.argsort(POSITION_MM[chs])
-        q = np.where(np.isin(chs, RAW_CM_BAD), 0.0, np.clip(W, 0, None).sum(1))
+        q = np.where(bad[chs], 0.0, np.clip(W, 0, None).sum(1))
         rec[view] = dict(ch=chs[o].astype(np.int16), pos=POSITION_MM[chs[o]].astype(np.float32), W=W[o],
                          noise=np.full(len(chs), NOISE_ADC, np.float32))
         rec[f'ref_mesh_{view}'] = float((q * POSITION_MM[chs]).sum() / max(q.sum(), 1e-9))
@@ -228,7 +252,7 @@ def _fill(out, files, a, D, plateaus, t_lo, ts0, scale, nsmp, verbose, base):
                 if L is None or len(out.get(L, {})) >= a.per_plateau:
                     continue
                 ch = arr['channel'][j].astype(int); sm = arr['sample'][j].astype(int); am = arr['amplitude'][j].astype(np.float32)
-                rec = event_record(ch, sm, am, bool(D.get('raw', False)), nsmp, a.half_win, a.qmin, a.tan)
+                rec = event_record(ch, sm, am, bool(D.get('raw', False)), nsmp, a.half_win, a.qmin, a.tan, seed_bad=a.seed_bad.get(L))
                 ok = rec is not None
                 if ok:
                     rec.update(eid=int(arr['eventId'][j]), t_wall=float(tw[j]), file=os.path.basename(f),

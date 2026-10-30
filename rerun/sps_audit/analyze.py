@@ -46,7 +46,14 @@ DATASETS = {
 }
 
 
-def pointing(z, pitch, f=BINARY):
+#: back-plane resolution / pitch, MEASURED on run 53 (spatial_resolution/results.json fit; reproduced in baseline.json)
+F_BACK = 0.301
+#: depth [mm] below the mesh at which the wft track is read for 'pass_mid' (p0 + H_MID tan): where the p0-w
+#: correlation of a head-on fit vanishes.  Chosen on run63 flat700 (the scan 0-12.5 mm in README), applied unchanged.
+H_MID = 7.5
+
+
+def pointing(z, pitch, f=F_BACK):
     return float(np.sqrt((z / Z_BACK) ** 2 * (f * pitch) ** 2 + (1 - z / Z_BACK) ** 2 * (BINARY * 1.0) ** 2))
 
 
@@ -168,7 +175,7 @@ def decompose(r, b, coord, z):
         s, e, n = gauss_sigma(r[zp == p])
         if np.isfinite(s) and n >= 150:
             pt = pointing(z, p)
-            rows.append(dict(pitch=p, n=int(n), sigma_res=float(s), err=float(e), pointing_binary=pt,
+            rows.append(dict(pitch=p, n=int(n), sigma_res=float(s), err=float(e), pointing=pt,
                              sigma_det4=float(np.sqrt(max(s ** 2 - pt ** 2, 0.0)))))
     fit = None
     if len(rows) == 3:
@@ -182,7 +189,12 @@ def decompose(r, b, coord, z):
                    sigma_det4_err=float(0.5 * np.sqrt(cov[0, 0]) / np.sqrt(max(bb[0], 1e-9))),
                    chi2=float((y - X @ bb) @ Ci @ (y - X @ bb)))
     s, e, n = gauss_sigma(r)
-    return dict(n_core=int(n), sigma_res=float(s), err=float(e), zones=rows, fit=fit,
+    # all zones together: the binary pointing averaged in quadrature over this sample's zone mix
+    m = np.isfinite(zp) & (np.abs(r - np.median(r)) < 1.2)
+    pmix = float(np.sqrt(np.mean([pointing(z, p) ** 2 for p in zp[m]]))) if m.any() else np.nan
+    mix = dict(pointing=pmix, sigma_det4=float(np.sqrt(max(s ** 2 - pmix ** 2, 0.0))) if np.isfinite(s) else np.nan,
+               err=float(s * e / np.sqrt(max(s ** 2 - pmix ** 2, 1e-12))) if np.isfinite(s) else np.nan)
+    return dict(n_core=int(n), sigma_res=float(s), err=float(e), zones=rows, fit=fit, mix=mix,
                 core_frac=float(np.mean(np.abs(r - np.median(r)) < 1.2)),
                 s68=float(np.percentile(np.abs(r - np.median(r)), 68.27)))
 
@@ -198,6 +210,8 @@ def one_dataset(d, hits, gate):
     qo = quality(d.assign(**{f'old_{v}_{c}': np.where(d[f'old_seed_{v}'].values >= 0, d[f'old_{v}_{c}'].values, d[f'new_{v}_{c}'].values)
                              for v in 'xy' for c in ('ok', 'chi2', 'dof')}), 'old')
     est['pass_old'] = (oldx, oldy, qo['x'] & qo['y'])
+    est['pass_mid'] = (d.new_x_p0.values + H_MID * d.new_x_tan_theta.values, d.new_y_p0.values + H_MID * d.new_y_tan_theta.values,
+                        qn['x'] & qn['y'])
     est['centroid'] = (d.new_ref_x.values, d.new_ref_y.values, np.isfinite(d.new_ref_x.values) & np.isfinite(d.new_ref_y.values))
     if hits:
         h = hits_estimator(d, hits, gate)
@@ -250,7 +264,7 @@ def main():
                 V = E[view]
                 zs = ' '.join(f'{q["pitch"]}:{q["sigma_res"] * 1e3:.0f}->{q["sigma_det4"] * 1e3:.0f}' for q in V['zones'])
                 fit = f' FIT f={V["fit"]["f_back"]:.3f} det4={V["fit"]["sigma_det4"] * 1e3:.0f}+-{V["fit"]["sigma_det4_err"] * 1e3:.0f}' if V['fit'] else ''
-                line += f' | {view[-1]}: n {V["n_fid"]} res {V["sigma_res"] * 1e3:.0f} [{zs}]{fit}'
+                line += f' | {view[-1]}: n {V["n_fid"]} res {V["sigma_res"] * 1e3:.0f}+-{V["err"] * 1e3:.0f} mix->{V["mix"]["sigma_det4"] * 1e3:.0f}+-{V["mix"]["err"] * 1e3:.0f} [{zs}]{fit}'
             print(line)
             zmin_x = min(E['zscan'], key=lambda t: t[2] if np.isfinite(t[2]) else 9)[0]
             zmin_y = min(E['zscan'], key=lambda t: t[1] if np.isfinite(t[1]) else 9)[0]

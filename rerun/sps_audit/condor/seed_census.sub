@@ -1,0 +1,10 @@
+executable = seed_census_job.sh
+arguments = $(key)
+output = log/sc_$(key).out
+error = log/sc_$(key).err
+log = log/sc.log
+request_cpus = 1
+request_memory = 24000
++JobFlavour = "workday"
+should_transfer_files = NO
+queue key from keys.txt

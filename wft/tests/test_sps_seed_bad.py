@@ -60,3 +60,24 @@ def test_bad_channel_kept_in_window_for_censoring():
 def test_no_signal_but_oscillation_is_rejected():
     ch, sm, am = _zs_event(track_mm=(185.0, -999.0))                    # no Y track at all
     assert sbc.event_record(ch, sm, am, raw=False, nsmp=32) is None
+
+
+def _seed_counts(n=3000, hot=None, hot_frac=0.25, band=None):
+    """Seed counts of a beam spread over Y 160-290 mm and X live bands, plus one oscillating channel."""
+    rng = np.random.default_rng(1); cnt = np.zeros(512)
+    for view, lo, hi in (('x', 150, 161) if band else ('x', 100, 240), ('y', 160, 290)):
+        chs = np.flatnonzero((VIEW == view) & (POSITION_MM >= lo) & (POSITION_MM <= hi))
+        np.add.at(cnt, rng.choice(chs, n), 1)
+    if hot is not None:
+        cnt[hot] += hot_frac * n
+    return cnt
+
+
+def test_hot_channel_found_per_plateau():
+    hot = sbc.hot_channels(_seed_counts(hot=373), 3000)
+    assert list(np.flatnonzero(hot)) == [373]                        # run55 d700: the neighbour of 372 oscillates
+
+
+def test_beam_and_narrow_live_band_not_hot():
+    assert not sbc.hot_channels(_seed_counts(), 3000).any()
+    assert not sbc.hot_channels(_seed_counts(band=True), 3000).any()  # all X seeds inside one 12 mm live band

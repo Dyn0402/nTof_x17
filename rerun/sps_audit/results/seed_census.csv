@@ -1,0 +1,69 @@
+key,n_events,n_changed,frac,hot,seeds_on_excluded,rerun
+run60_flush__ov07,3000,1376,0.4587,70 74 128 510,70:500 74:502 128:343 510:1335,True
+run55_flatdrift__d700,3000,926,0.3087,173 373,173:135 373:819 510:2,True
+run57_rot25_co2__d700,3000,488,0.1627,372,372:485 510:3,True
+run57_rot25_co2__d650,3000,469,0.1563,372,372:467 510:2,True
+run55_flatdrift__d500,3000,311,0.1037,172 173,172:101 173:160 510:56,True
+run60_flush__ov01,3000,309,0.1030,373,373:305 510:4,True
+run60_flush__ov09,3000,304,0.1013,373,373:292 510:12,True
+run60_flush__ov03,3000,282,0.0940,373,373:281 510:1,True
+run60_flush__ov05,3000,252,0.0840,373,373:250 510:2,True
+run55_flatdrift__d600,3000,227,0.0757,172 173,172:86 173:140 510:1,True
+run61_rot15_ladder__d070,2725,133,0.0488,373,373:129 510:4,True
+run61_rot15_ladder__d140,3000,131,0.0437,373,373:129 510:2,True
+run61_rot15_ladder__d280,3000,95,0.0317,373,373:93 510:2,True
+run60_flush__ov00,3000,91,0.0303,75,75:89 510:2,True
+run60_flush__ov13,3000,68,0.0227,373,373:58 510:10,True
+run55_flatdrift__d400,3000,12,0.0040,,510:12,True
+run60_flush__ov10,3000,11,0.0037,,510:11,True
+run60_flush__ov14,3000,11,0.0037,,510:11,True
+run60_flush__ov11,3000,10,0.0033,,510:10,True
+run63_rot25__d525,3000,9,0.0030,,510:9,True
+run56_m70V__625V,3000,8,0.0027,,510:8,True
+run60_flush__ov12,3000,7,0.0023,,510:7,True
+run63_rot25__d675,3000,7,0.0023,,510:7,True
+run56_m70V__590V,3000,7,0.0023,,510:7,True
+run63_rot25__d325,3000,6,0.0020,,510:6,True
+run63_flat__flat700,3000,6,0.0020,,510:6,True
+run62_rot25_ladder__d700,3000,5,0.0017,,510:5,True
+run63_rot25__d425,3000,4,0.0013,,510:4,True
+run63_rot25__d475,3000,4,0.0013,,510:4,True
+run63_rot25__d625,3000,4,0.0013,,510:4,True
+run70_flat_drift__d100,3000,4,0.0013,,510:4,True
+run66_flat_resist__r730,3000,4,0.0013,,510:4,True
+run66_flat_resist__r630,3000,4,0.0013,,510:4,True
+run62_rot25_ladder__d400,3000,3,0.0010,,510:3,True
+run62_rot25_ladder__d200,3000,3,0.0010,,510:3,True
+run70_flat_drift__d200,3000,3,0.0010,,510:3,True
+run70_flat_drift__d600,3000,3,0.0010,,510:3,True
+run70_flat_drift__d300,3000,3,0.0010,,510:3,True
+run70_flat_drift__d700,3000,3,0.0010,,510:3,True
+run62_rot25_ladder__d500,3000,3,0.0010,,510:3,True
+run63_rot25__d575,3000,3,0.0010,,510:3,True
+run70_flat_drift__d500,3000,2,0.0007,,510:2,True
+run66_flat_resist__r680,3000,2,0.0007,,510:2,True
+run61_rot15_ladder__d700,3000,2,0.0007,,510:2,True
+run66_flat_resist__r780,3000,2,0.0007,,510:2,True
+run60_flush__ov06,3000,2,0.0007,,510:2,True
+run70_flat_drift__d700b,3000,2,0.0007,,510:2,True
+run66_flat_resist__r705,3000,2,0.0007,,510:2,True
+run61_rot15_ladder__d560,3000,2,0.0007,,510:2,True
+run61_rot15_ladder__d630,3000,1,0.0003,,510:1,True
+run57_rot25_co2__d600,3000,1,0.0003,,510:1,True
+run59_co2__co2,3000,1,0.0003,,510:1,True
+run60_flush__ov02,3000,1,0.0003,,510:1,True
+run70_flat_drift__d400,3000,1,0.0003,,510:1,True
+run62_rot25_ladder__d600,3000,1,0.0003,,510:1,True
+run61_rot15_ladder__d420,3000,1,0.0003,,510:1,True
+run61_rot15_ladder__d210,3000,1,0.0003,,510:1,True
+run57_rot25_co2__d550,3000,0,0.0000,,,False
+run60_flush__ov04,3000,0,0.0000,,,False
+run60_flush__ov08,3000,0,0.0000,,,False
+run61_rot15_ladder__d490,3000,0,0.0000,,,False
+run61_rot15_ladder__d350,3000,0,0.0000,,,False
+run61_op25__op25,3000,0,0.0000,,,False
+run62_rot25_ladder__d300,3000,0,0.0000,,,False
+run66_flat_resist__r580,3000,0,0.0000,,,False
+run66_flat_resist__r755,3000,0,0.0000,,,False
+run66_flat_resist__r605,3000,0,0.0000,,,False
+run66_flat_resist__r655,3000,0,0.0000,,,False

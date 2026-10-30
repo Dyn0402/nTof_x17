@@ -67,7 +67,7 @@ def fig_resid(A):
     bins = np.linspace(-3, 3, 61)
     for j, s in enumerate(sets):
         for i, v in enumerate('xy'):
-            for est, col in (('pass', 'C0'), ('centroid', 'C1'), ('pass_old', 'C3')):
+            for est, col in (('pass', 'C0'), ('pass_mid', 'C2'), ('centroid', 'C1'), ('pass_old', 'C3')):
                 key = f'{s}|{est}|{v}'
                 if key not in R.files:
                     continue
@@ -89,7 +89,7 @@ def main():
     A = json.load(open(os.path.join(RES, 'audit.json')))
     B = json.load(open(os.path.join(RES, 'baseline.json')))
     P = pd.read_csv(os.path.join(RES, 'pile_rows.csv'))
-    S = pd.read_csv(os.path.join(RES, 'seed_diff.csv')) if os.path.exists(os.path.join(RES, 'seed_diff.csv')) else None
+    S = pd.read_csv(os.path.join(RES, 'seed_census.csv'), keep_default_na=False) if os.path.exists(os.path.join(RES, 'seed_census.csv')) else None
     fig_pass_hists()
     if os.path.isdir(a.tel):
         fig_scatter(a.tel)
@@ -118,10 +118,10 @@ def main():
         h.append('<tr>' + ''.join(f'<td>{r[c]:.3f}</td>' if isinstance(r[c], float) else f'<td>{r[c]}</td>' for c in cols) + '</tr>')
     h.append('</table>')
     if S is not None:
-        h.append('<p>Events whose seed changes under the fix (seed_diff.py, rows with any change):</p><table><tr><th>row</th><th>events</th>'
-                 '<th>changed X</th><th>changed Y</th><th>dropped</th><th>fraction</th></tr>')
+        h.append('<p>Events whose pre-fix seed the fix excludes (seed_census.py), i.e. the rows to re-run:</p><table><tr><th>row</th><th>events</th>'
+                 '<th>changed</th><th>fraction</th><th>hot channels (this row)</th><th>pre-fix seeds on excluded channels</th></tr>')
         for _, r in S[S.n_changed > 0].sort_values('frac', ascending=False).iterrows():
-            h.append(f'<tr><td>{r.key}</td><td>{r.n_events}</td><td>{r.n_changed_x}</td><td>{r.n_changed_y}</td><td>{r.n_dropped}</td><td>{r.frac:.4f}</td></tr>')
+            h.append(f'<tr><td>{r.key}</td><td>{r.n_events}</td><td>{r.n_changed}</td><td>{float(r.frac):.4f}</td><td>{r.hot}</td><td>{r.seeds_on_excluded}</td></tr>')
         h.append('</table>')
     # resolution
     h.append('<h2>3. det4 against the telescope, per dataset and estimator</h2><img src="figures/scatter.png">'

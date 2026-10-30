@@ -243,7 +243,8 @@ These caught four rows whose scan had railed to the window edge.
 | bundle | `make_pass_dag.py sps` | the pass-1 det4 golden bundle with bench bow, v map, w0 and t0_abs **dropped** | bench geometry and trigger do not transfer |
 | v | `sps_registry.csv` `v_span_um_ns` | 11.5–14.0 µm/ns where measured; **34 rows have none** (angle scale uncalibrated: positions only) | |
 | K | registry | v_span-based + 15 bins (50–57) | |
-| seed window | `sps_build_cache.py` | brightest strip ± 16 strips per view, peak ≥ 300 ADC | self-seeded, no uRWELL |
+| seed window | `sps_build_cache.py` | brightest strip ± 16 strips per view, peak ≥ 300 ADC, ≥ 4 strips with samples | self-seeded, no uRWELL; on low-gain ZS rows (run53-like) the ≥ 4-strip cut keeps only the high-charge tail (`rerun/sps_audit`) |
+| seed exclusion | `sps_build_cache.SEED_BAD`, `hot_channels` | ch 372, 510 always; per plateau, a channel seeding > 3 % (`HOT_FRAC`) of the first 2000 (`HOT_SCAN`) events and > 10× (`HOT_RATIO`) the median of its ±4 neighbours | oscillating Y strips (and ch 373, some X) won the seed: 41–44 % of run71 Y fits on ch 372 before 2026-10-30; `sps_reco` censors the hot ones in the fit (`hot_seed_channels` in the meta) |
 | ZS rows: zeros | `sps_reco.py` | a suppressed sample = a measured zero (below threshold) | closest to the RAW answer (ws_sps) |
 | RAW rows (run71): zeros | `sps_reco.py` | an absent sample = the FEU dropped it (~23 %): censored | |
 | RAW baseline | `sps_build_cache._baseline` | per-channel pre-sample median, then the per-sample median of each 64-channel block excluding ±10 strips around each view's lead and channels 510/372 (`RAW_CM_MASK`, `RAW_CM_BAD`), then the pre-sample median again | without the common-mode step every strip carries ~260 ADC (pass-1 review P2) |
