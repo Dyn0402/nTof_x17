@@ -37,6 +37,7 @@ def main():
     from fbcommon import load_path
     from set_bow import block_from_table
     tab = a.table_out or os.path.join(tempfile.mkdtemp(prefix='bow_node_'), 'table.parquet')
+    os.makedirs(os.path.dirname(os.path.abspath(tab)), exist_ok=True)
     build(a.det, key=a.key, table=a.events, alignment=a.alignment, out=tab, m3dir=a.m3dir)
     b = json.load(open(os.path.join(a.bundle, 'bundle.json')))
     T = load_path(tab, b, a.det, name=a.key)

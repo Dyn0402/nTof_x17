@@ -30,7 +30,7 @@ pass      every non-excluded row (S2 + S3).  RECO (all M3-matched events, the ro
           it is a calibration row, else its group's) -> [calibration rows] ALIGN -> EFF (02), ANGLES (03), MAPS (04)
           with the group's waveform alignment.
 bowgate   the bow transfer gate's inputs (PASS_PLAN E2), rows in --only: bow_node.py on the row's pass table, alignment and
-          staged M3 rays -> <row>/wft/bow_gate/table.parquet (the joined ws_v_w0 table) + the row's own block (a check);
+          staged M3 rays -> <row>/wft/bow_gate_table.parquet (the joined ws_v_w0 table; in wft/ because bow_node.py before 2026-10-30 evening made no directory for --table-out) + the row's own block (a check);
           rerun/calib/bow/bow_finalize.py --manifest then scores the golden block on them.
 post      the pass without RECO: ALIGN (alignment rows) -> EFF, ANGLES, MAPS on the existing tables (2026-10-30: the fit
           sanity cut and the z-scan MAD fallback, rerun/pass1_review/REVIEW_2026-10-30.md P1).
@@ -219,7 +219,7 @@ def main():
             b = '{out}/wft/calib_bundle' if k == r['calib_key'] else f"{A}/{rel(by_key[r['calib_key']])}/wft/calib_bundle"
             node(L, f'BOWT_{n}', 'stage1.sub', f"{k} --parts run_config,m3 --script rerun/calib/bow_node.py -- "
                  f"det{r['det'][-1]} --events {{out}}/wft/events.parquet --alignment {al} --bundle {b} "
-                 f"--out {{out}}/wft/bow_gate/bow_block_row.json --table-out {{out}}/wft/bow_gate/table.parquet",
+                 f"--out {{out}}/wft/bow_gate_block_row.json --table-out {{out}}/wft/bow_gate_table.parquet",
                  1, 8000, a.code)
     elif a.phase == 'finalize':
         its = dict(g.split('=') for g in a.golden)            # det2=it1 ...
