@@ -1,0 +1,59 @@
+r53 run_53 cfg_gain4.5_peaktime200_deflt 000 decoded_root 32 - 300
+r53q100 run_53 cfg_gain4.5_peaktime200_deflt 000 decoded_root 32 - 100
+r53 run_53 cfg_gain4.5_peaktime200_deflt 001 decoded_root 32 - 300
+r53q100 run_53 cfg_gain4.5_peaktime200_deflt 001 decoded_root 32 - 100
+r53 run_53 cfg_gain4.5_peaktime200_deflt 002 decoded_root 32 - 300
+r53q100 run_53 cfg_gain4.5_peaktime200_deflt 002 decoded_root 32 - 100
+r53 run_53 cfg_gain4.5_peaktime200_deflt 003 decoded_root 32 - 300
+r53q100 run_53 cfg_gain4.5_peaktime200_deflt 003 decoded_root 32 - 100
+r55 run_55 meshscan_m00V 000 decoded_root_fa80c06 64 run55_flatdrift__d700+run55_flatdrift__d600 300
+r55 run_55 meshscan_m00V 001 decoded_root_fa80c06 64 run55_flatdrift__d700+run55_flatdrift__d600 300
+r63op02 run_63 operating_02 000 decoded_root_fa80c06 64 run63_flat__flat700 300
+r63op02 run_63 operating_02 001 decoded_root_fa80c06 64 run63_flat__flat700 300
+r63op02 run_63 operating_02 002 decoded_root_fa80c06 64 run63_flat__flat700 300
+r63op02 run_63 operating_02 003 decoded_root_fa80c06 64 run63_flat__flat700 300
+r63op03 run_63 operating_03 000 decoded_root_fa80c06 64 run63_flat__flat700 300
+r63op03 run_63 operating_03 001 decoded_root_fa80c06 64 run63_flat__flat700 300
+r63op03 run_63 operating_03 002 decoded_root_fa80c06 64 run63_flat__flat700 300
+r63op03 run_63 operating_03 003 decoded_root_fa80c06 64 run63_flat__flat700 300
+r63op03 run_63 operating_03 004 decoded_root_fa80c06 64 run63_flat__flat700 300
+r66 run_66 cfg_gain4.5_peaktime200_opt 000 decoded_root_fa80c06 32 run66_flat_resist__r580+run66_flat_resist__r605+run66_flat_resist__r630+run66_flat_resist__r655+run66_flat_resist__r680+run66_flat_resist__r705+run66_flat_resist__r730+run66_flat_resist__r755+run66_flat_resist__r780 300
+r66 run_66 cfg_gain4.5_peaktime200_opt 001 decoded_root_fa80c06 32 run66_flat_resist__r580+run66_flat_resist__r605+run66_flat_resist__r630+run66_flat_resist__r655+run66_flat_resist__r680+run66_flat_resist__r705+run66_flat_resist__r730+run66_flat_resist__r755+run66_flat_resist__r780 300
+r66 run_66 cfg_gain4.5_peaktime200_opt 002 decoded_root_fa80c06 32 run66_flat_resist__r580+run66_flat_resist__r605+run66_flat_resist__r630+run66_flat_resist__r655+run66_flat_resist__r680+run66_flat_resist__r705+run66_flat_resist__r730+run66_flat_resist__r755+run66_flat_resist__r780 300
+r66 run_66 cfg_gain4.5_peaktime200_opt 003 decoded_root_fa80c06 32 run66_flat_resist__r580+run66_flat_resist__r605+run66_flat_resist__r630+run66_flat_resist__r655+run66_flat_resist__r680+run66_flat_resist__r705+run66_flat_resist__r730+run66_flat_resist__r755+run66_flat_resist__r780 300
+r71 run_71 cfg_gain4.5_peaktime50 000 decoded_root_fa80c06 64 run71_raw__raw700+run71_raw__raw450+run71_raw__raw275 300 /eos/user/d/dneff/x17rerun/sps_followup/scan/scan_000.npz
+r71 run_71 cfg_gain4.5_peaktime50 001 decoded_root_fa80c06 64 run71_raw__raw700+run71_raw__raw450+run71_raw__raw275 300 /eos/user/d/dneff/x17rerun/sps_followup/scan/scan_001.npz
+r71 run_71 cfg_gain4.5_peaktime50 002 decoded_root_fa80c06 64 run71_raw__raw700+run71_raw__raw450+run71_raw__raw275 300 /eos/user/d/dneff/x17rerun/sps_followup/scan/scan_002.npz
+r71 run_71 cfg_gain4.5_peaktime50 003 decoded_root_fa80c06 64 run71_raw__raw700+run71_raw__raw450+run71_raw__raw275 300 /eos/user/d/dneff/x17rerun/sps_followup/scan/scan_003.npz
+r71 run_71 cfg_gain4.5_peaktime50 004 decoded_root_fa80c06 64 run71_raw__raw700+run71_raw__raw450+run71_raw__raw275 300 /eos/user/d/dneff/x17rerun/sps_followup/scan/scan_004.npz
+r71 run_71 cfg_gain4.5_peaktime50 005 decoded_root_fa80c06 64 run71_raw__raw700+run71_raw__raw450+run71_raw__raw275 300 /eos/user/d/dneff/x17rerun/sps_followup/scan/scan_005.npz
+r71 run_71 cfg_gain4.5_peaktime50 006 decoded_root_fa80c06 64 run71_raw__raw700+run71_raw__raw450+run71_raw__raw275 300 /eos/user/d/dneff/x17rerun/sps_followup/scan/scan_006.npz
+r71 run_71 cfg_gain4.5_peaktime50 007 decoded_root_fa80c06 64 run71_raw__raw700+run71_raw__raw450+run71_raw__raw275 300 /eos/user/d/dneff/x17rerun/sps_followup/scan/scan_007.npz
+r71 run_71 cfg_gain4.5_peaktime50 008 decoded_root_fa80c06 64 run71_raw__raw700+run71_raw__raw450+run71_raw__raw275 300 /eos/user/d/dneff/x17rerun/sps_followup/scan/scan_008.npz
+r71 run_71 cfg_gain4.5_peaktime50 009 decoded_root_fa80c06 64 run71_raw__raw700+run71_raw__raw450+run71_raw__raw275 300 /eos/user/d/dneff/x17rerun/sps_followup/scan/scan_009.npz
+r71 run_71 cfg_gain4.5_peaktime50 010 decoded_root_fa80c06 64 run71_raw__raw700+run71_raw__raw450+run71_raw__raw275 300 /eos/user/d/dneff/x17rerun/sps_followup/scan/scan_010.npz
+r71 run_71 cfg_gain4.5_peaktime50 011 decoded_root_fa80c06 64 run71_raw__raw700+run71_raw__raw450+run71_raw__raw275 300 /eos/user/d/dneff/x17rerun/sps_followup/scan/scan_011.npz
+r71 run_71 cfg_gain4.5_peaktime50 012 decoded_root_fa80c06 64 run71_raw__raw700+run71_raw__raw450+run71_raw__raw275 300 /eos/user/d/dneff/x17rerun/sps_followup/scan/scan_012.npz
+r71 run_71 cfg_gain4.5_peaktime50 013 decoded_root_fa80c06 64 run71_raw__raw700+run71_raw__raw450+run71_raw__raw275 300 /eos/user/d/dneff/x17rerun/sps_followup/scan/scan_013.npz
+r71 run_71 cfg_gain4.5_peaktime50 014 decoded_root_fa80c06 64 run71_raw__raw700+run71_raw__raw450+run71_raw__raw275 300 /eos/user/d/dneff/x17rerun/sps_followup/scan/scan_014.npz
+r71 run_71 cfg_gain4.5_peaktime50 015 decoded_root_fa80c06 64 run71_raw__raw700+run71_raw__raw450+run71_raw__raw275 300 /eos/user/d/dneff/x17rerun/sps_followup/scan/scan_015.npz
+r71 run_71 cfg_gain4.5_peaktime50 016 decoded_root_fa80c06 64 run71_raw__raw700+run71_raw__raw450+run71_raw__raw275 300 /eos/user/d/dneff/x17rerun/sps_followup/scan/scan_016.npz
+r71 run_71 cfg_gain4.5_peaktime50 017 decoded_root_fa80c06 64 run71_raw__raw700+run71_raw__raw450+run71_raw__raw275 300 /eos/user/d/dneff/x17rerun/sps_followup/scan/scan_017.npz
+r71 run_71 cfg_gain4.5_peaktime50 018 decoded_root_fa80c06 64 run71_raw__raw700+run71_raw__raw450+run71_raw__raw275 300 /eos/user/d/dneff/x17rerun/sps_followup/scan/scan_018.npz
+r71 run_71 cfg_gain4.5_peaktime50 019 decoded_root_fa80c06 64 run71_raw__raw700+run71_raw__raw450+run71_raw__raw275 300 /eos/user/d/dneff/x17rerun/sps_followup/scan/scan_019.npz
+r71 run_71 cfg_gain4.5_peaktime50 020 decoded_root_fa80c06 64 run71_raw__raw700+run71_raw__raw450+run71_raw__raw275 300 /eos/user/d/dneff/x17rerun/sps_followup/scan/scan_020.npz
+r71 run_71 cfg_gain4.5_peaktime50 021 decoded_root_fa80c06 64 run71_raw__raw700+run71_raw__raw450+run71_raw__raw275 300 /eos/user/d/dneff/x17rerun/sps_followup/scan/scan_021.npz
+r71 run_71 cfg_gain4.5_peaktime50 022 decoded_root_fa80c06 64 run71_raw__raw700+run71_raw__raw450+run71_raw__raw275 300 /eos/user/d/dneff/x17rerun/sps_followup/scan/scan_022.npz
+r71 run_71 cfg_gain4.5_peaktime50 023 decoded_root_fa80c06 64 run71_raw__raw700+run71_raw__raw450+run71_raw__raw275 300 /eos/user/d/dneff/x17rerun/sps_followup/scan/scan_023.npz
+r71 run_71 cfg_gain4.5_peaktime50 024 decoded_root_fa80c06 64 run71_raw__raw700+run71_raw__raw450+run71_raw__raw275 300 /eos/user/d/dneff/x17rerun/sps_followup/scan/scan_024.npz
+r71 run_71 cfg_gain4.5_peaktime50 025 decoded_root_fa80c06 64 run71_raw__raw700+run71_raw__raw450+run71_raw__raw275 300 /eos/user/d/dneff/x17rerun/sps_followup/scan/scan_025.npz
+r71 run_71 cfg_gain4.5_peaktime50 026 decoded_root_fa80c06 64 run71_raw__raw700+run71_raw__raw450+run71_raw__raw275 300 /eos/user/d/dneff/x17rerun/sps_followup/scan/scan_026.npz
+r71 run_71 cfg_gain4.5_peaktime50 027 decoded_root_fa80c06 64 run71_raw__raw700+run71_raw__raw450+run71_raw__raw275 300 /eos/user/d/dneff/x17rerun/sps_followup/scan/scan_027.npz
+r71 run_71 cfg_gain4.5_peaktime50 028 decoded_root_fa80c06 64 run71_raw__raw700+run71_raw__raw450+run71_raw__raw275 300 /eos/user/d/dneff/x17rerun/sps_followup/scan/scan_028.npz
+r71 run_71 cfg_gain4.5_peaktime50 029 decoded_root_fa80c06 64 run71_raw__raw700+run71_raw__raw450+run71_raw__raw275 300 /eos/user/d/dneff/x17rerun/sps_followup/scan/scan_029.npz
+r71 run_71 cfg_gain4.5_peaktime50 030 decoded_root_fa80c06 64 run71_raw__raw700+run71_raw__raw450+run71_raw__raw275 300 /eos/user/d/dneff/x17rerun/sps_followup/scan/scan_030.npz
+r71 run_71 cfg_gain4.5_peaktime50 031 decoded_root_fa80c06 64 run71_raw__raw700+run71_raw__raw450+run71_raw__raw275 300 /eos/user/d/dneff/x17rerun/sps_followup/scan/scan_031.npz
+r71 run_71 cfg_gain4.5_peaktime50 032 decoded_root_fa80c06 64 run71_raw__raw700+run71_raw__raw450+run71_raw__raw275 300 /eos/user/d/dneff/x17rerun/sps_followup/scan/scan_032.npz
+r71 run_71 cfg_gain4.5_peaktime50 033 decoded_root_fa80c06 64 run71_raw__raw700+run71_raw__raw450+run71_raw__raw275 300 /eos/user/d/dneff/x17rerun/sps_followup/scan/scan_033.npz
+r71 run_71 cfg_gain4.5_peaktime50 034 decoded_root_fa80c06 64 run71_raw__raw700+run71_raw__raw450+run71_raw__raw275 300 /eos/user/d/dneff/x17rerun/sps_followup/scan/scan_034.npz
+r71 run_71 cfg_gain4.5_peaktime50 035 decoded_root_fa80c06 64 run71_raw__raw700+run71_raw__raw450+run71_raw__raw275 300 /eos/user/d/dneff/x17rerun/sps_followup/scan/scan_035.npz

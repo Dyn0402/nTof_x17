@@ -1,0 +1,10 @@
+executable = r71v2_job.sh
+arguments = $(g)
+output = log/r71v2_$(g).out
+error = log/r71v2_$(g).err
+log = log/r71v2.log
+request_cpus = 8
+request_memory = 16000
++JobFlavour = "workday"
+should_transfer_files = NO
+queue g from groups71.txt

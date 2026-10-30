@@ -1,0 +1,10 @@
+executable = seed_diff_job.sh
+arguments = $(key)
+output = log/sd_$(key).out
+error = log/sd_$(key).err
+log = log/sd.log
+request_cpus = 1
+request_memory = 8000
++JobFlavour = "workday"
+should_transfer_files = NO
+queue key from keys.txt

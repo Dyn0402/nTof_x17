@@ -181,7 +181,8 @@ def event_record(ch, sm, am, raw, nsmp, half_win=16, qmin=300.0, tan=0.0, seed_b
     samples, or None when a view is empty, its peak is below qmin or its window has < 4 strips.  Per view the brightest
     strip that is not in ``seed_bad`` (default SEED_BAD) seeds a +-half_win-strip window in POSITION (the plugs are
     inverted: det4_sps_map).  The window keeps every strip, bad ones included (the fit censors them); the own-centroid
-    ref leaves the bad ones out."""
+    ref leaves out the oscillating RAW_CM_BAD channels (pure noise) and keeps the census-dead ones, which do carry some
+    charge (X ch 2 and 64 on run66: as much as their neighbours)."""
     bad = SEED_BAD if seed_bad is None else seed_bad
     am = _baseline(ch, sm, am, raw)
     rec = dict(tan_x=tan, tan_y=tan)
@@ -204,7 +205,7 @@ def event_record(ch, sm, am, raw, nsmp, half_win=16, qmin=300.0, tan=0.0, seed_b
         W = np.zeros((len(chs), nsmp), np.float32); ci = np.searchsorted(chs, cc); m = (ss >= 0) & (ss < nsmp)
         W[ci[m], ss[m]] = aa[m]
         o = np.argsort(POSITION_MM[chs])
-        q = np.where(bad[chs], 0.0, np.clip(W, 0, None).sum(1))
+        q = np.where(np.isin(chs, RAW_CM_BAD), 0.0, np.clip(W, 0, None).sum(1))
         rec[view] = dict(ch=chs[o].astype(np.int16), pos=POSITION_MM[chs[o]].astype(np.float32), W=W[o],
                          noise=np.full(len(chs), NOISE_ADC, np.float32))
         rec[f'ref_mesh_{view}'] = float((q * POSITION_MM[chs]).sum() / max(q.sum(), 1e-9))

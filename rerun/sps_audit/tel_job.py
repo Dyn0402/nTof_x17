@@ -30,6 +30,7 @@ from sps_build_cache import POSITION_MM, VIEW                    # noqa: E402
 URW_MAP = os.path.join(REPO, 'sps_beam_test_26', 'analysis', 'urw_mapping', 'mapping_urwell.csv')
 GAP_MM = 3.0
 DET4_AMP_MIN = 60.0
+CHUNK = 5000
 
 
 def urwell_map():
@@ -85,6 +86,9 @@ def telescope_zs(ch_file):
 def telescope_raw(scan):
     """The followup's FEU 1 scan of one run71 group: events with front and back lit in at least one coordinate."""
     S = np.load(scan)
+    if 'fx_size' in S.files:          # urw_raw_scan.py: ZS-like clusters; keep the four-view events as telescope_zs
+        keep = np.all([S[f'{p}_n'] >= 1 for p in ('fx', 'fy', 'bx', 'by')], axis=0)
+        return {k: S[k][keep] for k in S.files if k != 'n_bad'}, None
     lit = {p: S[p + '_s3'] > 100.0 for p in ('fx', 'fy', 'bx', 'by')}
     keep = (lit['fx'] & lit['bx']) | (lit['fy'] & lit['by'])
     out = dict(eid=S['eid'][keep].astype(np.int64))
@@ -116,6 +120,7 @@ def main():
     ap.add_argument('--nsamp', type=int, default=64); ap.add_argument('--raw', type=int, default=0)
     ap.add_argument('--feu3-dir', default='decoded_root_fa80c06'); ap.add_argument('--scan', default='')
     ap.add_argument('--jobs', type=int, default=8); ap.add_argument('--max-tel', type=int, default=0)
+    ap.add_argument('--qmin', type=float, default=300.0, help='seed peak threshold (the pass: 300 ADC)')
     ap.add_argument('--strict', type=int, default=1, help='ZS: keep only single-cluster four-view tracks for the reco')
     ap.add_argument('--work', default=os.environ.get('_CONDOR_SCRATCH_DIR', '/tmp'))
     ap.add_argument('--bundle', default=sps_reco.BUNDLE)
@@ -128,12 +133,21 @@ def main():
         chf = sorted(glob.glob(os.path.join(sub_dir, 'combined_hits_root', f'*_{a.group}_feu-combined_hits.root')))[0]
         tel, hits = telescope_zs(chf)
     print(f'{a.run} {a.subrun} {a.group}: {len(tel["eid"])} telescope events', flush=True)
-    row = None; plateau = None
+    rows_k = {}
     if a.key:
-        row = {r['key']: r for r in csv.DictReader(open(os.path.join(REPO, 'rerun', 'sps_registry.csv')))}[a.key]
-        a.nsamp, a.raw, plateau = int(row['n_samples']), int(row['raw']), (float(row['t_lo_s']) + 20, float(row['t_hi_s']) - 20)
+        reg = {r['key']: r for r in csv.DictReader(open(os.path.join(REPO, 'rerun', 'sps_registry.csv')))}
+        rows_k = {k_: reg[k_] for k_ in a.key.split(',')}
+        r0 = next(iter(rows_k.values()))
+        a.nsamp, a.raw = int(r0['n_samples']), int(r0['raw'])
+    plateau = bool(rows_k)
+
+    def key_of(tw):
+        for k_, r_ in rows_k.items():
+            if float(r_['t_lo_s']) + 20 <= tw < float(r_['t_hi_s']) - 20:
+                return k_
+        return None
     reco_sel = np.ones(len(tel['eid']), bool)
-    if a.strict and not a.scan:
+    if a.strict and 'fx_size' in tel:
         reco_sel = np.all([tel[f'{d}{v}_n'] == 1 for d in 'fb' for v in 'xy'], axis=0)
     want = set(tel['eid'][reco_sel].astype(int).tolist())
     if a.max_tel and len(want) > a.max_tel:
@@ -143,20 +157,22 @@ def main():
         files = sorted(glob.glob(os.path.join(sub_dir, a.feu3_dir, '*_datrun_*_03.root')))
         clock = wall_clock(a.run, a.subrun, files)[f3]
     import uproot
-    t = uproot.open(f3)['nt']; new, old, twall = {}, {}, {}
-    for lo in range(0, t.num_entries, 20000):
+    t = uproot.open(f3)['nt']; new, old, twall, keyof = {}, {}, {}, {}
+    for lo in range(0, t.num_entries, CHUNK):
         arr = t.arrays(['eventId', 'timestamp', 'sample', 'channel', 'amplitude'], entry_start=lo,
-                       entry_stop=min(lo + 20000, t.num_entries), library='np')
+                       entry_stop=min(lo + CHUNK, t.num_entries), library='np')
         for j, eid in enumerate(arr['eventId']):
             eid = int(eid)
             if eid not in want:
                 continue
             tw = clock[0] + (float(arr['timestamp'][j]) - clock[1]) * clock[2] if clock else np.nan
-            if plateau and not (plateau[0] <= tw < plateau[1]):
+            kk = key_of(tw) if plateau else ''
+            if kk is None:
                 continue
+            keyof[eid] = kk
             ch = arr['channel'][j].astype(int); sm = arr['sample'][j].astype(int); am = arr['amplitude'][j].astype(np.float32)
-            r_new = sbc.event_record(ch, sm, am, bool(a.raw), a.nsamp)
-            r_old = sbc.event_record(ch, sm, am, bool(a.raw), a.nsamp, seed_bad=np.zeros(512, bool))
+            r_new = sbc.event_record(ch, sm, am, bool(a.raw), a.nsamp, qmin=a.qmin)
+            r_old = sbc.event_record(ch, sm, am, bool(a.raw), a.nsamp, qmin=a.qmin, seed_bad=np.zeros(512, bool))
             if r_new is not None:
                 new[eid] = dict(r_new, eid=eid, t_wall=tw, file=os.path.basename(f3), timestamp=int(arr['timestamp'][j]))
             if r_old is not None and (r_new is None or r_old['seed_ch_x'] != r_new['seed_ch_x']
@@ -164,22 +180,27 @@ def main():
                 old[eid] = dict(r_old, eid=eid, t_wall=tw, file=os.path.basename(f3), timestamp=int(arr['timestamp'][j]))
             twall[eid] = tw
     print(f'  det4 records: {len(new)} (seed changed / old-only: {len(old)})', flush=True)
-    v = float(row['v_span_um_ns']) if row and row['v_span_um_ns'] else None
-    k = int(row['K']) if row and row['K'] else int(np.ceil(28800.0 / (v or 12.0) / 60.0)) + 15
-    fits = {}
-    for tag, evs in (('new', new), ('old', old)):
-        if not evs:
-            fits[tag] = {}; continue
-        cache = os.path.join(a.work, f'tel_{a.run}_{a.group}_{tag}.pkl'); pickle.dump(evs, open(cache, 'wb'), protocol=4)
-        with ProcessPoolExecutor(a.jobs, initializer=sps_reco._init, initargs=(cache, a.bundle, k, v, a.nsamp, 'h4', bool(a.raw))) as pool:
-            fits[tag] = {r['event_id']: r for r in pool.map(sps_reco.one, sorted(evs), chunksize=4)}
-        os.remove(cache)
+    fits = {'new': {}, 'old': {}}
+    for kk in sorted(set(keyof.values())):
+        row = rows_k.get(kk)
+        v = float(row['v_span_um_ns']) if row and row['v_span_um_ns'] else None
+        k = int(row['K']) if row and row['K'] else int(np.ceil(28800.0 / (v or 12.0) / 60.0)) + 15
+        for tag, evs_all in (('new', new), ('old', old)):
+            evs = {e: r for e, r in evs_all.items() if keyof[e] == kk}
+            if not evs:
+                continue
+            cache = os.path.join(a.work, f'tel_{a.run}_{a.group}_{tag}.pkl'); pickle.dump(evs, open(cache, 'wb'), protocol=4)
+            with ProcessPoolExecutor(a.jobs, initializer=sps_reco._init,
+                                     initargs=(cache, a.bundle, k, v, a.nsamp, 'h4', bool(a.raw))) as pool:
+                fits[tag].update({r['event_id']: r for r in pool.map(sps_reco.one, sorted(evs), chunksize=4)})
+            os.remove(cache)
+        print(f'  {kk or "(no plateau)"}: v {v}, K {k}, {sum(keyof[e] == kk for e in new)} events fitted', flush=True)
     rows = []
     ti = {int(e): i for i, e in enumerate(tel['eid'])}
     cols = ['ok', 'p0', 'tan_theta', 'chi2', 'dof', 'n_strips', 'q_sum', 'p0_err']
     for eid in sorted(set(new) | set(old)):
         i = ti[eid]
-        o = dict(run=a.run, subrun=a.subrun, group=a.group, key=a.key, eid=eid, t_wall=twall.get(eid, np.nan))
+        o = dict(run=a.run, subrun=a.subrun, group=a.group, key=keyof.get(eid, ''), eid=eid, t_wall=twall.get(eid, np.nan))
         for kk, vv in tel.items():
             if kk != 'eid':
                 o[kk] = vv[i]
