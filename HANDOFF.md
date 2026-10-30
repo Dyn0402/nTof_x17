@@ -22,7 +22,8 @@ pass1_ledger.py` on lxplus). Then go downstream (PASS_PLAN §4), starting with t
 found four rows with railed alignment z: a few ok fits with |tan| up to 6e8 gave absurd mesh positions, and the z scan's RMS
 fallback went flat. This is fixed in `b5a29af` (`wft.compat.apply_fit_sanity`, MAD fallback). 01–04 were re-run on all bench rows
 (`make_pass_dag.py post`). The ledger now also checks the alignment z against its night and far ≤ 15 %, and it is clean. The pre-fix outputs are in
-`/eos/user/d/dneff/x17rerun/pass1_backup_1030/`. Still open from the review: SPS run71 RAW rows are unusable; 34 SPS rows have no v
+`/eos/user/d/dneff/x17rerun/pass1_backup_1030/`. SPS run71 RAW: the cache had no common-mode subtraction. This is fixed in `a72b889` and the run was re-run: head-on angle
+s68 is 1.4–3.8°, against 8.5–23° on ZS, and χ²/dof is 2.2. SPS `ref_x/ref_y` is det4's own window centroid, not a reference. Still open: 34 SPS rows have no v
 (positions only); `Analysis_pass1` still holds the excluded det3 6-26 quick row (read rows through the registry).
 
 **Next steps:**
