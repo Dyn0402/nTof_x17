@@ -1,58 +1,95 @@
 # Handoff
 
-## From-scratch pass 1 (bench + SPS): done, downstream analysis next — updated 2026-10-30 (dylan-Yoga)
+## From-scratch pass 1 (bench + SPS): reviewed, fixed, bow gate passed — next: det4 Y ablation — updated 2026-10-30 (dylan-Yoga)
 
-**Resume:** read `rerun/PASS1_STATUS_2026-10-30.md` (G1 table, findings) and the ledger (`~/x17rerun/pass1/tools/rerun/
-pass1_ledger.py` on lxplus). Then go downstream (PASS_PLAN §4), starting with the bow transfer gate and the det4 Y ablation.
+**Resume:** pass 1 is complete, reviewed and clean; next is the det4 Y −0.25° ablation (step 1), then S4 physics inputs.
 
-**Done:**
-- **S1 calib from nothing**: 116 nodes, all 5 chambers. `Analysis_pass1/<golden row>/wft/{calib/, calib_bundle}`.
-- **G1: all five chambers PASS** (`rerun/calib/G1_RESULT_2026-10-30.md`), equal to or better than the audit fe_lm: det4 Y s68
-  −0.245°, det7 Y −0.060° and far −0.15 pt, no chamber worse beyond tolerance.
-- **Convergence**: det3 and det7 converged at the first check. det2, det4 and det6 needed one extra CAL4 iteration (Dylan's
-  rule: `make_pass_dag.py calib_iter` + `rerun/calib/conv_iter.py`). Their only first-check failure was alignment z,
-  because ALIGN2 has no bow and ALIGN3 does. Like for like (r3 vs r4), they converge to ≤ 2e-4 mm.
-- **vrefit** (keep-v, 112 rows) → **pass** (156 non-excluded rows) → **sps** (71 rows): complete; the ledger shows no row
-  missing, no overrides, code `6a0bb1f` (`d34cf25` for the 3 run_61 SPS rows).
-- **New exclusions**: det3 6-26 quick (no usable data); det6/det7 6-26 450 V (empty M3 ray file).
-- **SPS fixes**: decoded run_56 m70V and run_61 m30V 16H08 (never decoded with fa80c06); the clock is now calibrated per
-  acquisition (`sps_build_cache.py`).
+**Goal:** finish validating the from-scratch pass (`Analysis_pass1`), then derive the paper numbers from it.
 
-**Review + fix (10-30 afternoon):** an independent review of the products (`rerun/pass1_review/REVIEW_2026-10-30.md`)
-found four rows with railed alignment z: a few ok fits with |tan| up to 6e8 gave absurd mesh positions, and the z scan's RMS
-fallback went flat. This is fixed in `b5a29af` (`wft.compat.apply_fit_sanity`, MAD fallback). 01–04 were re-run on all bench rows
-(`make_pass_dag.py post`). The ledger now also checks the alignment z against its night and far ≤ 15 %, and it is clean. The pre-fix outputs are in
-`/eos/user/d/dneff/x17rerun/pass1_backup_1030/`. SPS run71 RAW: the cache had no common-mode subtraction. This is fixed in `a72b889` and the run was re-run: head-on angle
-s68 is 1.4–3.8°, against 8.5–23° on ZS, and χ²/dof is 2.2. SPS `ref_x/ref_y` is det4's own window centroid, not a reference. Still open: 34 SPS rows have no v
-(positions only); `Analysis_pass1` still holds the excluded det3 6-26 quick row (read rows through the registry).
+**Done (10-30):**
+- **Pass 1 complete:** calib (S1) → G1 (all five chambers pass) → vrefit → pass (156 bench rows) → sps (71 rows).
+  Records: `rerun/PASS1_STATUS_2026-10-30.md`, `rerun/calib/G1_RESULT_2026-10-30.md`.
+- **Independent review of the products** (`rerun/pass1_review/REVIEW_2026-10-30.md`, per-row tables + scripts in that folder).
+  - **P1 — four rows had their alignment z railed to the scan edge.** A few ok fits with |tan| up to 6e8 gave absurd mesh positions, and the z
+    scan's RMS fallback went flat. Fixed in `b5a29af`:
+    - `wft.compat.apply_fit_sanity` (|tan| ≤ 3, p0 on the plate) runs on load;
+    - `_robust_sigma` falls back to the MAD;
+    - 01–04 were re-run on every bench row (`make_pass_dag.py post`).
 
-**Bow transfer gate: PASS** (`rerun/calib/bow/results_pass1/GATE_RESULT_2026-10-30.md`): every row improves in angle
-(−0.06…−0.53°, ≥ 2.3σ) and position; det3 6-25 (bottom slot) too. `wft.reco.bow_UW` now ignores an off-plate view.
+    The four rows recover (det7 6-26 longer_run 6.5 → 61.4 % within 5 mm). Golden rows are unchanged (≤ 0.05 pt, ≤ 0.017°), so G1 stands.
+  - **P2 — SPS RAW run71.** The data are good: it is the clean head-on, no-ZS set. The pass-1 cache had no common-mode subtraction (a chip common mode of
+    ~260 ADC against 11 ADC noise). Fixed in `a72b889` (masked block median, the `extract_det4_only --cm masked` recipe) and re-run: fit ok
+    100 %, χ²/dof 2.2, head-on angle s68 1.4–3.8° against 8.5–23° on ZS.
+  - **Ledger** (`rerun/pass1_ledger.py`) now also checks: alignment z within 5 mm of its night, z_x ≈ z_y, far ≤ 15 %, 01–04 on
+    `b5a29af`, run71 on `a72b889`. It is clean: 156/156 + 71/71 (`rerun/PASS1_LEDGER.md`).
+- **Bow transfer gate: PASS** (`rerun/calib/bow/results_pass1/GATE_RESULT_2026-10-30.md`).
+  - One block per chamber plus per-row w0/kw improves every row in angle (−0.06…−0.53°, ≥ 2.3σ) and in position, including the det3 6-25 bottom slot.
+  - With the golden w0/kw too (the strict arm), other-day rows get worse, so w0/kw must stay per row.
+  - `wft.reco.bow_UW` now ignores an off-plate view (`BOW_UW_MAX`). This affects ≤ 0.2 % of events in the pass-1 tables, kept as a stated effect.
+- **`docs/PARAMETERS.md`:** a reference for every model and analysis parameter (Dylan asked for it). Keep it updated in the same commit
+  when a parameter changes.
 
-**Next steps:**
-1. det4 Y −0.25° ablation before it is quoted: the fe bundle + the new template, then + the bow.
-2. S4: re-measure the physics inputs on the pass tables (σ0, Dp, gaps, timing v); re-run a chamber's calibration if one moves.
-3. Downstream list, PASS_PLAN §4 (v(t), SPS gas fit, loss budget, resolutions, figures).
+**Next steps (in this order):**
+1. **det4 Y −0.25° ablation**, before anyone quotes it. G1: det4 Y s68 2.348° pass against 2.593° on the audit's `fe_lm` arm.
+   - **Suspect:** the bow. It is worth −0.43° on det4 Y in-sample (gate table), and the audit's det4 fe bundle had no tan-form block.
+   - **The three differences** between the two bundles: the template (3.5 % of peak), the bow (Y tilt terms up to 0.016 in tan), and kw (2–3 % lower).
+   - **Arms on the golden row `g_det4`**, same events as G1:
+     - (a) the audit fe bundle as is;
+     - (b) fe + the pass template;
+     - (c) fe + the pass bow (`set_w0kw --bow-json`);
+     - (d) the pass bundle.
+   - **Inputs:** the audit's bundle and arm are under `/eos/user/d/dneff/x17rerun/followups/fe/Analysis_fe/mx17_det4_day_6-24-26/long_run/mx17_4/wft/`
+     (`calib_bundle_*`, `fe_lm/`); the pass's are under `Analysis_pass1/<same>/wft/{calib/r3, calib_bundle}`.
+   - **Tools:** `rerun/calib/g1_gate.py --arm/--base` and `rerun/model_audit/gate_compare.py` read both sides.
+   - **Cost:** a reco of 8000 events, ~1 h per arm on condor (`make_pass_dag.py` stage1 nodes). Write the result next to `G1_RESULT_2026-10-30.md`.
+2. **S4: re-measure the physics inputs on the pass tables** (`rerun/calib/physics_inputs.json`: σ0, Dp, gaps, timing v per chamber). If
+   one moves beyond its stated error, re-run that chamber's calibration phase and write the cost down (PASS_PLAN §0).
+3. **v(t) within rows** for the det6/det7 6-26 overnight rows. det6's effective v falls ~35 % over the night (folded v: 31 hv-scan → 24
+   golden → 19.9 longer_run → 17.9 short_run µm/ns). Post-correctable from the event `timestamp` (GC). Nothing from those rows' angles or
+   depths is quoted before this.
+4. **SPS:**
+   - position resolution of the RAW run71 rows against the **uRWELL telescope**, never against `ref_x/ref_y` (det4's own centroid);
+   - decide the 34 rows with no v_span: derive a v, or keep them positions-only (P3 in the review);
+   - check run60 ov07 (x_ok 65 % against 83–86 % on the other plateaus).
+5. **Paper I numbers** (PASS_PLAN §4):
+   - resolutions vs HV and drift field;
+   - loss budget (`rerun/effbudget`) and the A1 fractions;
+   - det7 X ch 256–511 only; the interior ≥ 30 mm fiducial region;
+   - charge from unsaturated events;
+   - the bow section wording (skeptic review);
+   - every figure from `papers/*/figures.toml`, dated against pass 1;
+   - then the INFN–IN2P3 abstract and MPGD numbers.
 
-**Gotchas:**
-- Worker `b9g42p2031.cern.ch` has a broken EOS mount (status 126). It is excluded in `rerun/condor/*.sub`.
-- Code archives go only through `git archive` → tgz → scp → extract on lxplus. A `cp -a` copy on EOS was unreadable from workers.
-- Stale EOS directory views: a node can miss a file its parent just pushed. RETRY 3 plus a rescue DAG covers it.
-- The local `/media/dylan/data/x17/cosmic_bench` was cleared by another session (Dylan approved; raw is on EOS). Local runs of
-  qa_config keys like det3/, det4_day/ need regenerated inputs. Analysis should read the pass products on EOS.
+**Gotchas / decisions:**
+- **v and kw** (details in `docs/PARAMETERS.md` §3.1): own-v rows have the mean kw **folded into v** (`set_w0kw --fold-kw`), so their reco
+  ran with their own v; the remaining kw is the X/Y split (0.96–1.04). Golden rows keep the unfolded kw (1.00–1.08). In `w0kw.json`, `kw`
+  is unfolded and `kw_folded` is what the bundle carries.
+- **SPS `ref_x/ref_y` is not a reference.** It is det4's own window centroid. My first review called run71 "unusable" from that metric, which was wrong and has been corrected.
+- **The ledger checks presence and these new sanity checks.** G1 sees golden rows only. A railed alignment hides from both, so run the
+  ledger after any re-run.
+- **Condor and EOS:**
+  - Worker `b9g42p2031.cern.ch` (broken EOS mount) is excluded in `rerun/condor/*.sub`.
+  - b9p17p6659 once ran a stage that exited 0 having done nothing. The ledger caught it: re-run that row.
+  - Code archives go only through `git archive` → tgz → scp → extract on EOS, behind an AFS symlink (`~/x17rerun/code_<h>`).
+  - The deployed archives are `6a0bb1f` (pass), `b5a29af` (post), `a72b889` (run71). `bow_node.py`'s `--table-out` dir fix (`5c76b7e3`) is not in an archive
+    yet, so the bowgate phase writes into `wft/` for that reason.
+- EOS transient I/O errors (errno 5, bus errors): RETRY 3 plus a rescue DAG (`condor_submit_dag` the same .dag) covers them.
+- **The 18 GB `/media/dylan/data` local bench mirror is cleared.** Analysis reads pass products on EOS. The laptop has no `/media/ucla` (WORK_DATA unset).
 
 **Key files & commands:**
-- Products: `/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1/<run>/<subrun>/<det>/wft/` (events.parquet + meta,
-  efficiency/, angles/, maps/, calib_bundle; golden rows also calib/ with CALIB_CONVERGENCE*.json); SPS in `Analysis_pass1/sps/<key>/`.
-- Record: `rerun/PASS1_STATUS_2026-10-30.md` (what happened, findings), `rerun/PASS1_LEDGER.md` (+ .json, per-row table),
-  `rerun/calib/G1_RESULT_2026-10-30.md`, `rerun/PASS_PLAN_2026-10-28.md` §1b (decisions), `rerun/precheck_ga/README.md` (pre-flight).
-- Registry: `rerun/pass_registry.csv` (`make_registry.py`; `align_key`, `N_MIN_V`, `EXCLUDED_ROWS`), `rerun/sps_registry.csv`.
-- Calibration: `rerun/calib/{make_bundle.py,physics_inputs.json,convergence.py,conv_iter.py,g1_gate.py,bow_node.py}`.
-- DAGs: `python3 rerun/make_pass_dag.py {calib,calib_iter,vrefit --keep-v,pass,sps} <code dir> [--only k1,k2] [--skip-dets det7]
-  [--limit N --analysis-root R]`; submit files `rerun/condor/*.sub`. Condor dir on lxplus `~/x17rerun/pass1/` (logs, rescue DAGs).
-- Checks on lxplus: `~/x17rerun/pass1/tools/` (repo copies + `wft` from the archive): `python3 rerun/pass1_ledger.py`,
-  `python3 pass1_vcheck.py mx17_2,mx17_3`, and `g1_gate.py` with the lock venv
-  `/eos/user/d/dneff/venvs/ntof-lock-cvmfs/bin/python`.
+- Products: `/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1/<run>/<subrun>/<det>/wft/`: events.parquet + meta,
+  alignment/, efficiency/, angles/, maps/, calib_bundle, bow_gate_table.parquet (gate rows). SPS: `Analysis_pass1/sps/<key>/`.
+- Backups of what was overwritten: `/eos/user/d/dneff/x17rerun/pass1_backup_1030/` (01–04 before post; run71 before the CM fix).
+- Records: `rerun/pass1_review/REVIEW_2026-10-30.md`, `rerun/PASS1_STATUS_2026-10-30.md`, `rerun/PASS1_LEDGER.md`,
+  `rerun/calib/G1_RESULT_2026-10-30.md`, `rerun/calib/bow/results_pass1/`, `docs/PARAMETERS.md`, `rerun/PASS_PLAN_2026-10-28.md`.
+- Registry: `rerun/pass_registry.csv` (`make_registry.py`), `rerun/sps_registry.csv`.
+- DAGs: `python3 rerun/make_pass_dag.py {calib,calib_iter,vrefit --keep-v,pass,post,bowgate,sps} <code dir> --registry <reg>
+  [--only k1,k2] [--analysis-root R] [--limit N]`. Copy `rerun/condor/stage1.sub` (or `sps.sub`) into the DAG dir and make `log/`.
+  The pass dir on lxplus is `~/x17rerun/pass1/`; this session's are `~/x17rerun/{bowgate,sps_cm,post_fix1}/`.
+- Checks on lxplus: `cd ~/x17rerun/pass1/tools/rerun && python3 pass1_ledger.py [--out f.md]` (copy the repo's version there
+  first). The per-row collector is `rerun/pass1_review/collect.py` (lock venv `/eos/user/d/dneff/venvs/ntof-lock-cvmfs/bin/python`).
+- Bow gate: `make_pass_dag.py bowgate` then `rerun/calib/bow/bow_finalize.py --manifest M --out-dir D` locally (manifest format in
+  `results_pass1/manifest.json`; the no-bow arm needs the golden bundle with `bow` set to null).
 
 ## Chamber bow (FB): skeptical review — updated 2026-10-28 (dylan-Yoga)
 
