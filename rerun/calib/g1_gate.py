@@ -44,6 +44,11 @@ def main():
         P, B = read(a.pass_root, det, a.arm), read(a.audit_root, det, a.base)
         conv_p = os.path.join(a.pass_root, ROWS[det], 'wft', 'calib', 'CALIB_CONVERGENCE.json')
         conv = json.load(open(conv_p)) if os.path.exists(conv_p) else None
+        # the extra iteration (Dylan 10-29) supersedes a failed first check: conv_iter.py, like-for-like with the bow
+        it4 = os.path.join(a.pass_root, ROWS[det], 'wft', 'calib', 'CALIB_CONVERGENCE_it4.json')
+        if conv is not None and not conv.get('converged') and os.path.exists(it4):
+            c4 = json.load(open(it4))
+            conv = dict(conv, converged=c4['converged'], failed=c4['failed'], superseded_by='it4')
         if not P or not B:
             res[det] = dict(missing=('pass' if not P else 'audit'))
             L.append(f'| {det} | missing {res[det]["missing"]} | | | | | | – |')
