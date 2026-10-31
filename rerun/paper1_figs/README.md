@@ -44,6 +44,20 @@ All inputs are pass-1 products, and `Analysis_pass1` was only read. Outputs are 
    - **Discharges, det6 17 % and det7 24 %** (the biggest losses in the fleet): real discharges, not random coherent
      noise. A median of 300–360 of 512 strips are above SNR 6 and 230–260 ring below −10σ, in both views, and the
      chip-wide blocks start at the muon's crossing.
+   - **Discharge vs burst** (decision H; the §4 session's definition: a vetoed trigger is a discharge if a chip has
+     ≥ 8 strips over 3000 ADC, otherwise a burst; `a1_burst_split.py`, `results/a1_burst_split.json`). The pass's veto is
+     unchanged. Interior_good, % of tracks:
+
+     | | det2 | det3 | det4 | det6 | det7 |
+     |---|---|---|---|---|---|
+     | one spark class (discharge + muon+other + shower) | 2.50 | 1.56 | 6.48 | 18.13 | 24.95 |
+     | of which true discharge | 1.80 | 0.88 | 1.82 | 16.73 | 24.18 |
+     | of which burst | 0.71 | 0.68 | 4.66 | 1.40 | 0.77 |
+
+     det6/det7's spark losses are 92–97 % true discharges. det4's are 72 % bursts: its A1 "discharge" class (strip
+     count) is 1.66 % true + 2.05 % burst. The A1 strip-count rule and the ADC-chip rule are different definitions; the
+     paper should use one, and the ADC-chip one is the physical one. (det4 here is all of interior_good, n = 11 482, not
+     interior_live.)
    - **The muon track is still visible in both views in most det6 discharge displays.** A fit with the ringing chip
      blocks censored might recover part of that loss. That's a reconstruction change, so it's not done here.
    - **The band, multi, delta, FIT_SAT, POS_TAIL and EDGE classes look as defined on every chamber.**
@@ -56,7 +70,8 @@ All inputs are pass-1 products, and `Analysis_pass1` was only read. Outputs are 
 4. **Figures rebuilt on pass 1:** `efficiency_map` (all five chambers, 8 mm), `edge_turnon` (det3, three panels),
    `det4_stripes` (bench vs SPS profiles), and all 14 `loss_*` displays (det3, the pass fit, rr1 waveforms). 8 of the
    11 deck events keep their class and are reused; the rest were re-picked by eye from the sheets. `loss_headon` now
-   shows the one `fit_failed` event. Only `hv_scan` and `spark_deadtime` (§4, outside this scope) are still stale.
+   shows the one `fit_failed` event. With the §4 figures rebuilt by the paper1_ops session, no Paper I figure is stale
+   (`papers/FIGURE_PROVENANCE_2026-10-31.md`).
 
 ## Numbers
 

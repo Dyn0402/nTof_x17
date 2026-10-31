@@ -26,6 +26,7 @@ Sources (main, 2026-10-31):
 | FD | `rerun/model_audit/followups/fd_floor_realism/REPORT.md` § Pass-1 update (toy re-run on the pass-1 bundles) | c144af21, toy re-run in the commit after it |
 | FLOOR | `rerun/paper1_floor/README.md` (§8: the unexplained term ranked, xasym systematic, bench position vs SPS, H0 vs W) | d6a6184d |
 | OPS | `rerun/paper1_ops/README.md` (§4: HV-scan optima, discharges and bursts, dead time, det4 SPS gain, M3-free gain proxy) | this commit |
+| FIGS | `rerun/paper1_figs/README.md` (§5 edge zone and efficiency map, §9 det4 stripes bench vs SPS, A1 displays and the class audit) | the paper1_figs commit |
 
 ## Paper I
 
@@ -67,6 +68,8 @@ Sources (main, 2026-10-31):
 | det4 42 % | 40.9 ± 0.5 % (71.3 % in the live bands) | **WRONG** | EFF |
 | det6 75 % | 74.4 ± 0.5 % | OK (rounds to 74; within 1 pt) | EFF |
 | det7 57 % | 68.0 ± 0.7 % (X on ch 256–511); 62.9 % with all X | **WRONG** | EFF |
+| (edge turn-on, D4: the hits −3° edge tilt) | the x sides (no passivation) carry a drift-field fringe over 20–30 mm: tan bias up to 0.1–0.36 within 5–20 mm, ≤ 0.016 at 30–45 mm; column duration longer and more charge there; efficiency plateau by ~5 mm (y sides) / 10–20 mm (x sides); the 0–5 mm strip on every side loses the column (truncation). A 10–30 mm y band keeps full efficiency but its Y-angle s68 is 1.3–1.9× the interior's (det2/det3) | NEW (replaces the hits number) + **CHOICE** (fiducial: 30 mm all sides, or 10 mm on y for efficiency only) | FIGS |
+| (edge T, S4 re-check: −86 / +40 / +60 ns unexplained) | column duration edge − interior −4 / +26 / +78 / +27 / −115 ns (det2/3/4/6/7); the bow alone predicts −45 to −64 ns; the fringe has the opposite sign | EXPLAINED (fringe at the x sides) | FIGS |
 
 ### §6 Gas
 
@@ -123,7 +126,8 @@ paper figures show.
 
 | text | pass 1 | status | source |
 |---|---|---|---|
-| 62 % of det4's area does not amplify | the A1 class "dead / low-gain stripes" is 34 % of interior M3 tracks (interior_good, g_det4); the 62 % area fraction is from the SPS assessment, not re-derived; the dead-stripe map is the pre-pass one | NOT RE-DERIVED (34 % is a different quantity) | EFF |
+| 62 % of det4's area does not amplify | the A1 class "dead / low-gain stripes" is 34 % of interior M3 tracks (interior_good, g_det4). Re-derived on pass 1 without a stripe map (FIGS): 52 % of the interior x range is below half the X plateau; two-view detection over the interior area 41 % | **WRONG** (re-word or replace with 52 % of the x range) | EFF, FIGS |
+| (stripe map bench vs SPS) | live/dead per 1 mm bin agree on 82 % (85 % at +0.5 mm) between bench g_det4 and SPS run63 over x 152–231 mm; the mirror agrees on 52 %. Run53 (lower gain) loses the marginal bands: the stripes are a gain continuum | NEW | FIGS |
 
 ### Appendix A1 (det3, sat_det3, interior_good, n = 6 454; text: 6 451, 91.18 % detected)
 
@@ -145,7 +149,10 @@ paper figures show.
 | second deposit, not particle-like | 0.17 | 0.19 | OK |
 | other | 0.08 | 0.05 (cut 0.02, charge elsewhere 0.02, fit_failed 0.02) | OK |
 | satblob recovery 71.1 → 73.7 %; 93 % | not re-run on pass 1 (satstudy) | NOT RE-DERIVED |
-| det2/det4/det6/det7 columns | available (EFF a1.json: det2/det3 ≤ 1.7 % per class; det4 stripes 34 %; det6/det7 discharges 17 / 24 %) | new (decision E) |
+| det2/det4/det6/det7 columns | available (EFF a1.json: det2/det3 ≤ 1.7 % per class; det4 stripes 34 %; det6/det7 discharges 17 / 24 %); table in FIGS | new (decision E) |
+| (the class rules on other chambers) | audited by eye, 6 events per class per chamber (FIGS): the rules hold, no change. det6/det7 discharges are real (300–360 strips above SNR 6, chip ringing from the crossing), with the muon usually still visible. ~22 % of the `far` losses (32 % on det7; 0.3–0.7 % of tracks) are fits 5–8 mm from M3, the radius meeting the resolution tail | NEW | FIGS |
+| (spark classes split, decision H) | interior_good, one spark class → true discharge + burst (a chip ≥ 8 strips over 3000 ADC): det2 2.50 → 1.80 + 0.71, det3 1.56 → 0.88 + 0.68, det4 6.48 → 1.82 + 4.66, det6 18.13 → 16.73 + 1.40, det7 24.95 → 24.18 + 0.77 %. det3's A1 "discharge" 0.50 % is 0.37 true + 0.12 burst | NEW (both ways, for H) | FIGS |
+| (displays) | all 14 rebuilt on pass 1; the deck's band and head-on events are now detected; `loss_headon` shows the single fit_failed event | NEW | FIGS |
 
 (Each A1 class is one row in the counts; "WRONG (small)" and "WRONG (trivial)" count as WRONG.)
 
@@ -197,6 +204,11 @@ paper figures show.
 - **H. The spark veto's bursts (OPS):** the pass's > 50-strip veto removes interior tracks with no discharge (g_det4
   6.3 %, det6 7–10 % at 400–445 V). Re-label them in the loss budget ("burst", not "spark"), or keep one class and state
   it. Removing them would need a reco change (not done).
+- **I. Fiducial (FIGS):** keep ≥ 30 mm from every side (needed for angles: the x-side fringe, and the y-band Y-angle s68
+  is 1.3–1.9× worse), or use ≥ 10 mm from the y sides for efficiency-only numbers (+9–10 % tracks, efficiency equal or
+  higher).
+- **J. det6/det7 discharges (FIGS):** the muon is usually still visible under the chip ringing; a fit with the ringing
+  blocks censored could recover part of the 17 / 24 % loss. That's a reconstruction change, not done.
 
 ## Stated limitations to carry into the text
 

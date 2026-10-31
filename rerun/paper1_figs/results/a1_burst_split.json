@@ -1,0 +1,117 @@
+{
+ "det2": {
+  "key": "o22_long_det2",
+  "n": 3395,
+  "unmatched_spark": 0,
+  "spark_pct": 2.503681885125184,
+  "discharge_pct": 1.7967599410898378,
+  "burst_pct": 0.7069219440353461,
+  "spark:discharge": {
+   "pct": 1.4138438880706923,
+   "as_discharge_pct": 1.0898379970544918,
+   "as_burst_pct": 0.3240058910162003
+  },
+  "spark:muon+other": {
+   "pct": 0.3829160530191458,
+   "as_discharge_pct": 0.17673048600883653,
+   "as_burst_pct": 0.2061855670103093
+  },
+  "spark:shower": {
+   "pct": 0.7069219440353461,
+   "as_discharge_pct": 0.5301914580265096,
+   "as_burst_pct": 0.17673048600883653
+  }
+ },
+ "det3": {
+  "key": "sat_det3",
+  "n": 6454,
+  "unmatched_spark": 0,
+  "spark_pct": 1.5649209792376821,
+  "discharge_pct": 0.8831732259064147,
+  "burst_pct": 0.6817477533312675,
+  "spark:discharge": {
+   "pct": 0.4958165478772854,
+   "as_discharge_pct": 0.37186241090796407,
+   "as_burst_pct": 0.12395413696932135
+  },
+  "spark:muon+other": {
+   "pct": 0.4028509451502944,
+   "as_discharge_pct": 0.09296560272699102,
+   "as_burst_pct": 0.30988534242330334
+  },
+  "spark:shower": {
+   "pct": 0.6662534862101023,
+   "as_discharge_pct": 0.41834521227145954,
+   "as_burst_pct": 0.2479082739386427
+  }
+ },
+ "det4": {
+  "key": "g_det4",
+  "n": 11482,
+  "unmatched_spark": 0,
+  "spark_pct": 6.479707368054346,
+  "discharge_pct": 1.820240376241073,
+  "burst_pct": 4.6594669918132725,
+  "spark:discharge": {
+   "pct": 3.710155025256924,
+   "as_discharge_pct": 1.6634732624978228,
+   "as_burst_pct": 2.046681762759101
+  },
+  "spark:muon+other": {
+   "pct": 0.836091273297335,
+   "as_discharge_pct": 0.060964988677930675,
+   "as_burst_pct": 0.7751262846194042
+  },
+  "spark:shower": {
+   "pct": 1.9334610695000871,
+   "as_discharge_pct": 0.09580212506531963,
+   "as_burst_pct": 1.8376589444347675
+  }
+ },
+ "det6": {
+  "key": "g_det6_long",
+  "n": 8358,
+  "unmatched_spark": 0,
+  "spark_pct": 18.126346015793253,
+  "discharge_pct": 16.726489590811198,
+  "burst_pct": 1.399856424982053,
+  "spark:discharge": {
+   "pct": 17.145250059822924,
+   "as_discharge_pct": 15.972720746590094,
+   "as_burst_pct": 1.1725293132328307
+  },
+  "spark:muon+other": {
+   "pct": 0.2632208662359416,
+   "as_discharge_pct": 0.16750418760469013,
+   "as_burst_pct": 0.0957166786312515
+  },
+  "spark:shower": {
+   "pct": 0.7178750897343862,
+   "as_discharge_pct": 0.5862646566164154,
+   "as_burst_pct": 0.1316104331179708
+  }
+ },
+ "det7": {
+  "key": "g_det7_long",
+  "n": 3920,
+  "unmatched_spark": 0,
+  "spark_pct": 24.948979591836736,
+  "discharge_pct": 24.183673469387756,
+  "burst_pct": 0.7653061224489796,
+  "spark:discharge": {
+   "pct": 24.285714285714285,
+   "as_discharge_pct": 23.75,
+   "as_burst_pct": 0.5357142857142857
+  },
+  "spark:muon+other": {
+   "pct": 0.2295918367346939,
+   "as_discharge_pct": 0.05102040816326531,
+   "as_burst_pct": 0.17857142857142858
+  },
+  "spark:shower": {
+   "pct": 0.4336734693877551,
+   "as_discharge_pct": 0.3826530612244898,
+   "as_burst_pct": 0.05102040816326531
+  }
+ }
+}
