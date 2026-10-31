@@ -18,9 +18,10 @@ Report: [`report.html`](report.html) (built by `make_report.py`). Paper figure: 
 - **The trigger is not a term on the clean runs.** cov(start, end) of the column is ≈ 0: a trigger error would shift
   both column ends together.
   - **The exception is the det4-era runs (6-23 and 6-24):** a common shift of both ends of ≈ 40–60 ns rms.
-- **SPS (det4 at H4) is not rescued.** The same estimator gives 160–200 ns per view on ZS data. That is the
-  low-amplitude end of the bench curve (det4's gain, CF₄ at 14 µm/ns, ZS), an upper bound and not det4's intrinsic floor.
-  The SPS session's limitation stands, now with the reason measured.
+- **SPS (det4 at H4) is not rescued.** The same estimator gives 160–205 ns per view on ZS data and 140–218 ns on RAW
+  run71. That is the low-amplitude end of the bench curve (det4's gain, CF₄ at 14 µm/ns, ZS), an upper bound and not
+  det4's intrinsic floor. At equal early amplitude, RAW run71 times like the bench in drift units (1.0–1.4 against
+  0.8–1.3 mm). The SPS session's limitation stands, now with the reason measured.
 - **The hits-based 33 ns** (PLAN_42, MPGD proceedings) is the X−Y plane-to-plane number of single-strip leading edges.
   - The waveform equivalent on the same row (sat_det3) is **22 ns** per view.
   - The hits "absolute" 37.7 ns compares with the waveform event time **42 ns**.
@@ -112,10 +113,20 @@ Statistical errors (bootstrap) are 0.2–1 ns on det2 and det3 and 2–4 ns on d
 - **ZS rows** (run55/56/63/66/70):
   - edge25: X−Y/√2 = 160–205 ns, against the trigger 160–235 ns, with or without the ftst correction;
   - cf20: X−Y/√2 = 115–145 ns.
-- **RAW run71:** see `results/sps_timing.json` (filled when its condor rows finish).
-- **The amplitude curve** (figure (b)): at an early amplitude of 1000–4000 ADC the bench reads 20–45 ns and SPS
-  110–160 ns. In drift-distance units (14 against ~36 µm/ns) that is 1.5–2.2 mm against 0.8–1.6 mm: the same physics
-  at a worse S/N and with ZS, not a different mechanism. No intrinsic det4 number can be quoted from SPS.
+- **RAW run71:**
+  - edge25: X−Y/√2 = 140 (raw700), 171 (raw450), 218 ns (raw275); against the trigger 254–288 ns;
+  - cf20: X−Y/√2 = 128–249 ns.
+- **The amplitude curve** (figure (b)), at an early amplitude of 1000–3000 ADC:
+
+  | | in time | in drift distance |
+  |---|---|---|
+  | bench det3 | 22–36 ns | 0.8–1.3 mm |
+  | SPS ZS | 110–160 ns | 1.5–2.2 mm |
+  | SPS RAW run71 | 72–97 ns | 1.0–1.4 mm |
+
+  So in drift units, at equal signal, det4 at SPS without zero suppression times like the bench. ZS is most of the SPS
+  penalty, and det4's small signal is the rest: same physics, worse S/N. No intrinsic det4 number can be quoted from SPS.
+  The run71 sample is about 3700 events per plateau, nearly all at early amplitudes below 1000 ADC.
 
 ## What this does not rule out
 
