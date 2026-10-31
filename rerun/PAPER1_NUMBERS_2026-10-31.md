@@ -73,7 +73,7 @@ Sources (main, 2026-10-31):
 | det6 75 % | 74.4 ± 0.5 % | OK (rounds to 74; within 1 pt) | EFF |
 | det7 57 % | 68.0 ± 0.7 % (X on ch 256–511); 62.9 % with all X | **WRONG** | EFF |
 | (edge turn-on, D4: the hits −3° edge tilt) | the x sides (no passivation) carry a drift-field fringe over 20–30 mm: tan bias up to 0.1–0.36 within 5–20 mm, ≤ 0.016 at 30–45 mm; column duration longer and more charge there; efficiency plateau by ~5 mm (y sides) / 10–20 mm (x sides); the 0–5 mm strip on every side loses the column (truncation). A 10–30 mm y band keeps full efficiency but its Y-angle s68 is 1.3–1.9× the interior's (det2/det3) | NEW (replaces the hits number) + **CHOICE** (fiducial: 30 mm all sides, or 10 mm on y for efficiency only) | FIGS |
-| (edge T, S4 re-check: −86 / +40 / +60 ns unexplained) | column duration edge − interior −4 / +26 / +78 / +27 / −115 ns (det2/3/4/6/7); the bow alone predicts −45 to −64 ns; the fringe has the opposite sign | EXPLAINED (fringe at the x sides) for det3/det4 (stack +40 / +60 vs column +26 / +78, agree within errors); **det2 open** (CONS 11-01): the head-on stack's −86 ± 33 ns vs the column's −4 ns is a 2.5σ tension, on the chamber whose x-side tan bias also has the same sign on both sides | FIGS, CONS |
+| (edge T, S4 re-check: −86 / +40 / +60 ns unexplained) | column duration edge − interior −4 / +26 / +78 / +27 / −115 ns (det2/3/4/6/7); the bow alone predicts −45 to −64 ns; the fringe has the opposite sign | EXPLAINED (fringe at the x sides) for det3/det4 (stack +40 / +60 vs column +26 / +78, agree within errors); **det2 closed** (SPSFIGS 11-01): the two edge zones are different bands of a non-monotonic T(d) — the stack's out30 is < 30 mm from ANY side and 40 % of it lies in the outer 0–5 mm where the column runs off the strips (T ≈ 584 ns); the column-duration profile weighted with the stack sample's distances predicts −78.5 ns vs the stack's −86 ± 33. Quote edge T only with its band | FIGS, CONS |
 
 ### §6 Gas
 
@@ -247,5 +247,5 @@ paper figures show.
   they were audited by eye, 6 events per class per chamber, and the rules hold. The det4 stripe map was re-derived on
   pass 1, and bench and SPS agree on 82–85 % of 1 mm bins (`rerun/paper1_figs/README.md`). What remains: the audit is
   visual, not a measured purity.
-- det2's edge-zone drift time disagrees between the head-on stack (−86 ± 33 ns) and the column duration (−4 ns), at
-  2.5σ; det3 and det4 agree (CONS 11-01). Open.
+- det2's edge-zone drift time: the head-on stack (−86 ± 33 ns) and the column duration (−4 ns) use different edge bands of a
+  non-monotonic T(d); weighted to the same band the column predicts −78.5 ns (SPSFIGS 11-01, `rerun/paper1_spsfigs/det2_edge_check.py`). Closed.

@@ -1,0 +1,12 @@
+{
+ "n_out": 606,
+ "n_in": 1666,
+ "out_frac_0_5mm": 0.399,
+ "out_frac_5_15mm": 0.249,
+ "out_frac_nearest_y_side": 0.69,
+ "colsum_T_out_pred": 754.7,
+ "colsum_T_in_pred": 833.3,
+ "colsum_dT_pred": -78.5,
+ "edge_study_dT": -3.8,
+ "s4_dT": -85.9
+}

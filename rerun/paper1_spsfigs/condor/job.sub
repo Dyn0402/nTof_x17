@@ -1,0 +1,12 @@
+executable     = job.sh
+arguments      = $(kind) $(k)
+output         = log/$(kind)_$(k).out
+error          = log/$(kind)_$(k).err
+log            = log/jobs.log
+request_cpus   = 1
+request_memory = $(mem)
++JobFlavour    = "workday"
+should_transfer_files = NO
+requirements   = (Machine != "b9g42p2031.cern.ch")
+max_retries    = 3
+queue kind, k, mem from jobs.txt

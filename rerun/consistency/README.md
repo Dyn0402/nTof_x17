@@ -101,7 +101,7 @@ by the v2 rays (LESSONS, 2026-06-24), and is not a third effect.
 
 | quantity | values (source) | consistent? | explanation / fix |
 |---|---|---|---|
-| det2 edge T (edge zone − interior) | −86 ± 33 ns (S4 re-check, head-on stack, mask) vs −4 ns (FIGS, column duration, all triggers) | **open, 2.5σ** | different estimators and samples (the head-on stack edge sample is small). det3 (+40 vs +26) and det4 (+60 vs +78) agree within errors. det2 is also the chamber whose x-side tan bias has the same sign on both sides (FIGS open item). Sheet §5 row amended. |
+| det2 edge T (edge zone − interior) | −86 ± 33 ns (S4 re-check, head-on stack, mask) vs −4 ns (FIGS, column duration, all triggers) | **yes (definitional), closed 11-01** | the two "edge zones" are different bands of a non-monotonic T(d): S4's out30 is the M3 reference < 30 mm from ANY side, and 40 % of it sits in the outer 0–5 mm where the column runs off the strips (column T ≈ 584 ns), 69 % nearest a y side. Weighting the edge study's own column-duration profile T(d) with the S4 sample's distance distribution predicts −78.5 ns, against S4's −86 ± 33. `rerun/paper1_spsfigs/det2_edge_check.py`, `results/det2_edge_check.json`. det3 (+40 vs +26) and det4 (+60 vs +78) agree as before. Quote edge T only with its band definition. |
 | golden vs optimum efficiency | EFF golden 90.3 / 92.6 / 40.9 / 74.4 / 68.0 vs OPS optima 92.2 / 93.8 / – / 85.8 / 89.8 | yes | different HV: the golden rows ran 10–65 V above the optima (decision G). OPS reproduces EFF on the same rows (o22 90.31, sat_det3 92.64, g_det4 40.92, g_det6 74.43, g_det7 68.04). |
 | det3 headline efficiency | 92.6 (sat_det3, 6 454 tracks) vs 92.2 (6-27 sanity row, 20 088) | yes | two golden rows; pick one per text (the sheet's INFN row lists both). |
 | det6/det7 discharge losses | OPS f_in_discharge 16.77 / 24.69 % vs A1 split 16.73 / 24.18 %; OPS loss_spark 18.27 / 25.97 vs A1 one-class 18.13 / 24.95 | yes (definitional) | OPS counts tracks in a discharge/vetoed trigger; A1 assigns each lost track to one class. Quote A1's in the loss table, OPS's for "tracks in a discharge trigger". |
@@ -117,8 +117,8 @@ by the v2 rays (LESSONS, 2026-06-24), and is not a third effect.
 | A1 class audit / det4 stripe map | sheet limitation "not checked by eye on other chambers; stripe map pre-pass" vs FIGS: audited (rules hold), stripe map re-derived on pass 1 (bench vs SPS agree 82–85 %) | **stale → fixed** | sheet limitation updated. |
 | det4 no bench gain curve | sheet "(6-23 night flat; degraded M3 matching or a gain drift)" vs OPS (M3-free proxy flat too) and §1 above | **stale → fixed** | sheet limitation updated to the measured reason. |
 
-**Counts:** 13 quantities checked: 9 consistent (5 of them only once the definitions are stated), 1 not contradictory
-(g_det4's in-row v), 1 open (det2 edge T, 2.5σ), 3 stale sheet entries fixed. No product is wrong. The §6 det4 6-23 water
+**Counts:** 13 quantities checked: 10 consistent (6 of them only once the definitions are stated; det2's edge T closed
+11-01, see its row), 1 not contradictory (g_det4's in-row v), 3 stale sheet entries fixed. No product is wrong. The §6 det4 6-23 water
 needs a caveat (attachment-free assumption) and the §5 edge-T row a det2 caveat; both are added.
 
 ## Still to fold in (running when this was written)
