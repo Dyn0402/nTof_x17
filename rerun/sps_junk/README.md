@@ -7,8 +7,8 @@ compares a channel with its live neighbours only. Code archive `c36322ec`.
 
 **Re-run:**
 - The 30 ZS rows whose events change (census) were re-run, staged and promoted (`results/promoted_rows.txt`).
-- The 41 others are unchanged under the rule, bit-identical in refs, hot set and event set, so they keep `3ac0e79`.
-- The census of the three RAW run71 rows did not finish. Those rows were not re-run (see open items).
+- The 38 others are unchanged under the rule, bit-identical in refs, hot set and event set, so they keep `3ac0e79`.
+- The three RAW run71 rows were re-run and promoted afterwards (code `48244778`; see open items).
 
 **Y-fit excess at the oscillation**, over the beam's own density (`compare.py`; 4.5 mm bins at 155.6 and 158.0 mm,
 summed, before → after):
@@ -98,10 +98,14 @@ Tests: `wft/tests/test_sps_coupled.py`, `wft/tests/test_sps_seed_bad.py` (stripe
 
 ## Open items / limitations
 
-- **RAW run71 rows not re-run.** Their census (reading 3000+ RAW events twice from ~600 MB files) did not finish in the
-  session. They keep `3ac0e79`: seed fix + blanking, with a 0.27 % residual at 156–160 mm (rerun/sps_audit).
-  - To close it: `condor_submit code=~/x17rerun/code_c36322ec census.sub` with only the three run71 keys.
-  - Then `make_stage_dag.py` and `condor/promote_rows.sh` for those that change.
+- **RAW run71 rows: CLOSED (2026-10-31, code `48244778`).**
+  - The census shows all three change. In RAW, ch 372 couples onto 373 (and 371 in raw275), with 68–74 events
+    censored per row.
+  - All three were re-run and promoted (`results/compare_raw.csv`). The excess at 155–158 mm is now ≤ 0 on all three
+    (it was 0.4 / −0.03 / 0.02 % on raw275 / raw450 / raw700), and outside the coupled events ≤ 3 fits moved.
+  - Backup: `/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/pass1_backup_2026-10-31/sps_run71_before_coupled/`.
+  - All 71 SPS rows are now on the final rule: 33 re-run (`results/promoted_rows.txt`), 38 unchanged under it. The
+    ledger is clean: 156/156 + 71/71.
 - **The rules are thresholds.**
   - Near-oscillator rule: 1 % ON at ≥ 5× live neighbours, and since `48244778` at least 20 ON events
     (`OSC_MIN_EVENTS`). Without the floor, a 315-event telescope file (run53 group 003) flagged Y ch 371.

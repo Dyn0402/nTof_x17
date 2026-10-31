@@ -28,3 +28,6 @@ run61_rot15_ladder__d490
 run61_rot15_ladder__d560
 run61_rot15_ladder__d630
 run61_rot15_ladder__d700
+run71_raw__raw275
+run71_raw__raw450
+run71_raw__raw700
