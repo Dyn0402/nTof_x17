@@ -37,21 +37,26 @@ def main():
     row = {r['key']: r for r in csv.DictReader(open(os.path.join(REPO, 'rerun', 'sps_registry.csv')))}[a.key]
     dead = json.load(open(os.path.join(REPO, 'rerun', 'channel_layer', 'det4_sps_h4.json')))
     orig = sbc.event_record
+
+    def record(ch, sm, am, raw, nsmp, half_win=16, qmin=300.0, tan=0.0, seed_bad=None, min_strips=4, couple=None,
+               keep_peaks=False):
+        # the build_cache's own hot / coupled-channel probe (keep_peaks=True) runs on the PASS selection; the records
+        # themselves drop the pass's 300 ADC / 4-strip cut (footprint.py's resolution sample)
+        if keep_peaks:
+            return orig(ch, sm, am, raw, nsmp, half_win, qmin, tan, seed_bad=seed_bad, min_strips=min_strips,
+                        couple=couple, keep_peaks=True)
+        return orig(ch, sm, am, raw, nsmp, half_win, QMIN, tan, seed_bad=seed_bad, min_strips=MIN_STRIPS, couple=couple)
+
+    sbc.event_record = record
     evs = {}
     for sub in row['subruns'].split():
         sbc.HOT_LAST.clear()
-        sbc.event_record = orig
+        got = sbc.build_cache(row['run'], sub, row['dataset'], per_plateau=a.n - len(evs), tan=0.0, only=[row['plateau']],
+                              verbose=False).get(row['plateau'], {})
         hot = np.zeros(512, bool)
-        probe = sbc.build_cache(row['run'], sub, row['dataset'], sbc.HOT_SCAN, tan=0.0, only=[row['plateau']], verbose=False, hot_scan=0)
-        for L, pe in probe.items():
-            cnt = np.zeros(512)
-            for e in pe.values():
-                cnt[e['seed_ch_x']] += 1; cnt[e['seed_ch_y']] += 1
-            hot |= sbc.hot_channels(cnt, max(len(pe), 1))
-        sbc.event_record = lambda ch, sm, am, raw, nsmp, hw=16, qmin=300.0, tan=0.0, seed_bad=None, _h=hot: \
-            orig(ch, sm, am, raw, nsmp, hw, QMIN, tan, seed_bad=sbc.SEED_BAD | _h, min_strips=MIN_STRIPS)
-        got = sbc.build_cache(row['run'], sub, row['dataset'], a.n - len(evs), tan=0.0, only=[row['plateau']], verbose=False,
-                              hot_scan=0).get(row['plateau'], {})
+        for (r_, s_, L_), chs in sbc.HOT_LAST.items():
+            if s_ == sub and L_ == row['plateau']:
+                hot[chs] = True
         for k, e in got.items():
             e['_hot'] = hot
         evs.update(got)
