@@ -8,7 +8,7 @@ Band definition = rerun/satstudy/bands.py (the 10-26 characterisation, unchanged
   first N_PED_EVENTS, as wft.io.FeuReader) is "offset" when |mean| > OFF_SIG x its noise while its RMS about that mean
   stays < FLAT_RMS x noise (shifted, not pulsing); a chip (64 channels) is in a band when >= 8 of its channels are.
 Writes <out>/<rel>/bands.npz: per view eid, ts, chip bitmask (uint8) and the number of offset channels, plus per-view
-noise, and census.json (rates per view / chip, x-y coincidence, events scanned).  Spark-like triggers (> 150 strips
+noise, the number of discharge chips (>= 8 strips of a chip above 3000 ADC, bands.py nulls item 6), and census.json (rates per view / chip, x-y coincidence, events scanned).  Spark-like triggers (> 150 strips
 above 6 sigma in x + y, bands.py nulls) are counted apart so a band riding on a discharge is not confused with one on
 a quiet trigger.
 """
@@ -29,7 +29,7 @@ def scan_file(path, nmax):
     import uproot
     r = wio.FeuReader(path); t = uproot.open(path)['nt']
     stop = min(r.n_entries, nmax) if nmax else r.n_entries
-    E, TS, MASK, NOFF, NSIG = [], [], [], [], []
+    E, TS, MASK, NOFF, NSIG, NDIS = [], [], [], [], [], []
     for lo in range(0, stop, 1000):
         a = t.arrays(['eventId', 'timestamp', 'amplitude'], entry_start=lo, entry_stop=min(lo + 1000, stop),
                      library='np')
@@ -44,9 +44,11 @@ def scan_file(path, nmax):
             chips = off.reshape(8, 64).sum(1) >= CHIP_MIN
             E.append(int(e)); TS.append(int(ts)); NOFF.append(int(off.sum()))
             MASK.append(int(np.packbits(chips[::-1].astype(np.uint8))[0]))
-            NSIG.append(int((wc.max(0) > 6 * r.noise).sum()))
+            mx = wc.max(0)
+            NSIG.append(int((mx > 6 * r.noise).sum()))
+            NDIS.append(int(((mx > 3000).reshape(8, 64).sum(1) >= CHIP_MIN).sum()))
     return dict(eid=np.array(E, np.int64), ts=np.array(TS, np.int64), mask=np.array(MASK, np.uint8),
-                noff=np.array(NOFF, np.int16), nsig=np.array(NSIG, np.int16)), r.noise, r.n_entries
+                noff=np.array(NOFF, np.int16), nsig=np.array(NSIG, np.int16), ndis=np.array(NDIS, np.int8)), r.noise, r.n_entries
 
 
 def main():
@@ -66,7 +68,7 @@ def main():
             d, nz, ntot = scan_file(src, a.max_per_file)
             parts.append(d); noise.append(nz); info['files'][name] = dict(n_entries=int(ntot), scanned=int(len(d['eid'])))
             print(v, name, len(d['eid']), 'of', ntot, flush=True)
-        for k in ('eid', 'ts', 'mask', 'noff', 'nsig'):
+        for k in ('eid', 'ts', 'mask', 'noff', 'nsig', 'ndis'):
             res[f'{k}_{v}'] = np.concatenate([p[k] for p in parts]) if parts else np.zeros(0)
         res[f'noise_{v}'] = np.median(np.array(noise), axis=0) if noise else np.zeros(512)
     rel = os.path.join(row['run'], row['subrun'], row['det'])
@@ -77,9 +79,11 @@ def main():
     common, ix, iy = np.intersect1d(ex, ey, return_indices=True)
     bx, by = res['mask_x'][ix] > 0, res['mask_y'][iy] > 0
     spark = (res['nsig_x'][ix].astype(int) + res['nsig_y'][iy].astype(int)) > SPARK_STRIPS
+    dis = (res['ndis_x'][ix] > 0) | (res['ndis_y'][iy] > 0)
     chips = lambda m: np.unpackbits(m[:, None], axis=1)[:, ::-1]
     S = dict(info, rel=rel, det=row['det'], resist_V=row.get('resist_V'), drift_V=row.get('drift_V'),
-             n_triggers=int(len(common)), n_spark=int(spark.sum()),
+             n_triggers=int(len(common)), n_spark=int(spark.sum()), n_discharge=int(dis.sum()),
+             p_band_no_discharge=float((bx | by)[~dis].mean()) if (~dis).any() else None,
              p_band_any=float((bx | by).mean()) if len(common) else None,
              p_band_x=float(bx.mean()) if len(common) else None, p_band_y=float(by.mean()) if len(common) else None,
              p_band_both=float((bx & by).mean()) if len(common) else None,
