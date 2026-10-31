@@ -1,7 +1,7 @@
 # Paper I numbers on pass 1 (2026-10-31)
 
 Every number that `papers/paper1/*.tex` quotes or keeps a placeholder for, set against the from-scratch pass
-(`Analysis_pass1`, code `6a0bb1f`; SPS `3ac0e79`), with its source. Then the INFN–IN2P3 abstract and the MPGD
+(`Analysis_pass1`, code `6a0bb1f`; SPS `3ac0e79`, re-run rows `c36322ec`/`48244778`: `rerun/sps_junk`), with its source. Then the INFN–IN2P3 abstract and the MPGD
 proceedings. **WRONG** = the text's number no longer holds; **CHOICE** = it depends on a decision listed at the end;
 **OK** = it holds; **NOT RE-DERIVED** = nothing on pass 1 checks it. The .tex files were not edited.
 
@@ -32,7 +32,7 @@ Sources (main, 2026-10-31):
 | text | pass 1 | status | source |
 |---|---|---|---|
 | X/Y charge balance 0.49/0.53 | 0.485 (det3) / 0.513 (det2) → "0.49/0.51" | **WRONG** (det2) | CHG |
-| intrinsic resolution 176 µm in the SPS beam | run 63 Y 190 ± 10 (p0) / X 209 ± 11 (p_mid); run 53 Y 177 ± 10 (hits) | **CHOICE** (A, B) | SPS §2 |
+| intrinsic resolution 176 µm in the SPS beam | run 63 Y 190 ± 10 (p0) / X 209 ± 11 (p_mid); run 53 Y 176 ± 10 (hits) | **CHOICE** (A, B) | SPS §2 |
 | "(0.30 × pitch)" | 176 µm / 0.78 mm = **0.23 × pitch**; 0.30 × pitch is the back **uRWELL's** resolution (0.301 × its pitch) | **WRONG** (independent of pass 1) | SPS, sps-spatial-resolution memory |
 | cosmic angular resolution 1.15–2.51° | 0.90–2.41° (s68, interior_good, golden rows, both views; v(t) arm 0.90–2.41) | **WRONG** + **CHOICE** (C, D) | RES §Verdict 1 |
 | no dead time after a spark | not re-measured on pass 1 (spark_deadtime figure stale) | NOT RE-DERIVED | FIGURE_PROVENANCE |
@@ -153,7 +153,7 @@ paper figures show.
 |---|---|---|
 | angular resolution 1.2° | det3 headline 0.99 / 0.90° (s68, interior_good) → "1.0°" or "0.9–1.0°" | **WRONG** |
 | 93 % efficiency | 92.6 % (det3 golden), 92.2 % (det3 quoted golden row) | OK |
-| spatial resolution 180 µm | run 63: Y 190 ± 10 (p0), X 209 ± 11 (p_mid); run 53 Y 177 ± 10 | **CHOICE** (A, B) |
+| spatial resolution 180 µm | run 63: Y 190 ± 10 (p0), X 209 ± 11 (p_mid); run 53 Y 176 ± 10 | **CHOICE** (A, B) |
 | source note "176 µm, 0.30 × pitch" | 0.23 × pitch | **WRONG** |
 | angles "about 4° too steep" from hit times | from RECONSTRUCTION_BASIS (hits), unaffected by pass 1 | OK |
 
@@ -181,7 +181,7 @@ paper figures show.
 - **A. SPS run:** run 63 flat700 (CF4; telescope calibrated in the same run; recommended by the final SPS pass) or
   run 53 (the original 176 ± 10, Ar/CO2, Y only has all three zones).
 - **B. SPS position estimator, per view:** fit p0, p_mid (p0 at 7.5 mm), charge centroid, or hits. On run 63 the best
-  is p_mid in X (209) and p0 in Y (190); on run 53 the centroid/hits (154/177 Y). Up to 1.6× between estimators.
+  is p_mid in X (209) and p0 in Y (190); on run 53 the centroid/hits (155/176 Y). Up to 1.6× between estimators.
 - **C. v(t) arm for the bench angles:** quote the pass table or the v(t)-corrected table. It moves det4 Y −0.06°, det6
   −0.05°, det7 −0.01°; it is always lower.
 - **D. s68 convention:** 03_angles' (no ±5° clip; the headline above) or FD/G1-style with a ±5° clip. They differ by

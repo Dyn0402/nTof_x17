@@ -23,8 +23,8 @@ use run 71 (RAW) for a resolution.**
   - Its FEU 3 data were re-decoded with the pinned decoder fa80c06. The first 20 000 events are identical, byte for
     byte, to banco's decode.
   - Through the fixed chain with no pass cut it gives 91 832 telescope tracks with det4.
-  - On the same events, the run-53 hits estimator gives **det4 Y = 177 ± 10 µm** (3-zone fit, f = 0.293). That is the
-    2026-08-13 176 ± 10 µm again.
+  - On the same events, the run-53 hits estimator gives **det4 Y = 176 ± 10 µm** (3-zone fit, f = 0.294; 177 ± 10 before the
+    2026-10-31 telescope remake, `rerun/sps_junk`). That is the 2026-08-13 176 ± 10 µm again.
   - Its limits:
     - only Y has the 0.5 mm zone; X has two zones, so X is pointing-model dependent;
     - the gas (Ar/CO2/iso 95/3/2) and gain (resist 505–535 V) are not those of the CF4 data;
@@ -48,10 +48,14 @@ use run 71 (RAW) for a resolution.**
 | | Y | **190 ± 10** (f 0.276) | 217 ± 12 (f 0.285) | 199 ± 10 (f 0.252) | n/a |
 | run 66 r580–r730, CF4 ZS32 (27–33 k) | X | 335 ± 11 | 270 ± 14 | 240 ± 7 | n/a |
 | | Y | 197 ± 13 | 165 ± 15 | 173 ± 9 | n/a |
-| run 53, Ar/CO2/iso ZS32 (35–39 k) | X | 2 zones: 1.0 → 395, 1.5 → 375 | 312 / 308 | 170 / 157 | 189 / 133 |
-| | Y | 262 ± 12 | 286 ± 17 | **154 ± 8** (f 0.254) | **177 ± 10** (f 0.293) |
+| run 53, Ar/CO2/iso ZS32 (35–39 k) | X | 2 zones: 1.0 → 393, 1.5 → 355 | 311 / 290 | 170 / 98 | 189 / 134 |
+| | Y | 262 ± 12 | 292 ± 17 | **155 ± 7** (f 0.254) | **176 ± 10** (f 0.294) |
 | run 71 raw700, CF4 RAW64 (1.5–1.9 k) | X | 1.0 zone residual 338 ± 13 | 269 ± 10 | 340 ± 10 | — |
 | | Y | 1.0 zone residual 247 ± 8 | 232 ± 7 | 239 ± 7 | — |
+
+The run 53 rows are from the telescope tables remade on 2026-10-31 on the final oscillator rules (`rerun/sps_junk`):
+X ch 173, a stripe-edge beam strip, is no longer censored as hot. Y moves by ≤ 5 µm (hits 177 → 176, centroid 154 →
+155, p_mid 286 → 292); the X residuals by up to −20 µm. run 63 is unchanged (≤ 1 µm).
 
 Read the table as follows:
 - **The estimator matters by up to 1.6×, and differently per view.**

@@ -40,7 +40,7 @@ SPS_COLUMNS = ('x_p_mid', 'y_p_mid', 'x_c_pos', 'y_c_pos', 'x_c_n_strips', 'y_c_
 #: coupled-channel meta and per-event columns.  The other rows' events do not change under it (rerun/sps_junk census),
 #: so they stay on CODE_SPS.
 SPS_COUPLED_ROWS = os.path.join(HERE, 'sps_junk', 'results', 'promoted_rows.txt')
-CODE_SPS_COUPLED = {'c36322ec'}
+CODE_SPS_COUPLED = {'c36322ec', '48244778'}   # 48244778 = c36322ec + the near-oscillator event floor (no pass row changes)
 SPS_COUPLED_META = ('hot_seed_channels', 'coupled_channels', 'n_events_coupled_censored')
 SPS_COUPLED_COLUMNS = SPS_COLUMNS + ('x_n_coupled', 'y_n_coupled')
 

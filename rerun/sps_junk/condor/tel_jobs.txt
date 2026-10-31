@@ -1,0 +1,13 @@
+F53 run_53 cfg_gain4.5_peaktime200_deflt 000 /eos/user/d/dneff/x17rerun/sps_audit/run53_fa80c06 32 - 50
+F53 run_53 cfg_gain4.5_peaktime200_deflt 001 /eos/user/d/dneff/x17rerun/sps_audit/run53_fa80c06 32 - 50
+F53 run_53 cfg_gain4.5_peaktime200_deflt 002 /eos/user/d/dneff/x17rerun/sps_audit/run53_fa80c06 32 - 50
+F53 run_53 cfg_gain4.5_peaktime200_deflt 003 /eos/user/d/dneff/x17rerun/sps_audit/run53_fa80c06 32 - 50
+F6302 run_63 operating_02 000 decoded_root_fa80c06 64 run63_flat__flat700 50
+F6302 run_63 operating_02 001 decoded_root_fa80c06 64 run63_flat__flat700 50
+F6302 run_63 operating_02 002 decoded_root_fa80c06 64 run63_flat__flat700 50
+F6302 run_63 operating_02 003 decoded_root_fa80c06 64 run63_flat__flat700 50
+F6303 run_63 operating_03 000 decoded_root_fa80c06 64 run63_flat__flat700 50
+F6303 run_63 operating_03 001 decoded_root_fa80c06 64 run63_flat__flat700 50
+F6303 run_63 operating_03 002 decoded_root_fa80c06 64 run63_flat__flat700 50
+F6303 run_63 operating_03 003 decoded_root_fa80c06 64 run63_flat__flat700 50
+F6303 run_63 operating_03 004 decoded_root_fa80c06 64 run63_flat__flat700 50

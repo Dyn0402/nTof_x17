@@ -1,0 +1,13 @@
+# run53 + run63 telescope tables on the final oscillator rules: condor_submit code=<code dir> tel.sub
+executable     = tel_job.sh
+arguments      = $(code) $(tag) $(run) $(sub) $(grp) $(f3) $(ns) $(keys) $(qmin)
+output         = log/tel_$(tag)_$(grp).out
+error          = log/tel_$(tag)_$(grp).err
+log            = log/tel.log
+request_cpus   = 8
+request_memory = 16000
++JobFlavour    = "workday"
+should_transfer_files = NO
+requirements   = (Machine != "b9g42p2031.cern.ch")
+max_retries    = 2
+queue tag,run,sub,grp,f3,ns,keys,qmin from tel_jobs.txt

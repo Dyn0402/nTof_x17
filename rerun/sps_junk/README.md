@@ -103,15 +103,26 @@ Tests: `wft/tests/test_sps_coupled.py`, `wft/tests/test_sps_seed_bad.py` (stripe
   - To close it: `condor_submit code=~/x17rerun/code_c36322ec census.sub` with only the three run71 keys.
   - Then `make_stage_dag.py` and `condor/promote_rows.sh` for those that change.
 - **The rules are thresholds.**
-  - Near-oscillator rule: 1 % ON at ≥ 5× live neighbours. It has no absolute count floor. On a 315-event telescope file
-    (run53 group 003) it flags Y ch 371, which is not a pass row. Every pass-row detection is ch 373, at ON rates
-    ≥ 4 % over ≥ 2000 events.
+  - Near-oscillator rule: 1 % ON at ≥ 5× live neighbours, and since `48244778` at least 20 ON events
+    (`OSC_MIN_EVENTS`). Without the floor, a 315-event telescope file (run53 group 003) flagged Y ch 371.
+    - The census on `48244778` against the promoted products shows the floor changes no pass row. On all 68 ZS rows the
+      event sets, refs, hot sets and coupled sets are identical (`results/census_48244778.csv`).
+    - So `c36322ec` and `48244778` are the same rule on every pass row, and the ledger accepts both.
   - Seed rule in blocks: it newly flags X ch 149 in run61 d070/d140. That is one block's fluctuation of a strip in the
     232 mm band, probably real. It is censored there: unknown charge, no bias, a little less information on 131–142 X
     fits.
 - **The H4 layer's `dead_stripes` does not list every low-gain X strip.** That is why the rate rules stay at 3 % in X and
   the weak-oscillator extension is restricted to the neighbourhood of ch 372/510.
-- **The run53 telescope tables still carry X ch 173 as hot** (see above). They were not remade.
+- **Telescope tables remade on the final rules (`48244778`, `condor/tel.sub`, tables in
+  `/eos/user/d/dneff/x17rerun/sps_junk/telG/`).** `tel_job.py` now uses the same probe as the pass: blocked live-neighbour
+  seed rule, near oscillators, coupled channels. On run53 no channel is hot any more (X ch 173 was before); on run63 none
+  was and none is.
+  - Re-measured with `analyze_final.py`, giving `results/final_rule.json`.
+  - **run63 flat700 is unchanged** (≤ 1 µm in every estimator and view): X p_mid 209 ± 11, Y p0 190 ± 10.
+  - **run53 Y moves ≤ 5 µm**: hits 177 → **176 ± 10**, centroid 154 → 155 ± 7, p0 261 → 262 ± 12, p_mid 287 → 292 ± 17.
+    Its X residuals shrink by 13–20 µm (p0, p_mid, centroid; hits unchanged). That is the edge of the beam spot coming
+    back.
+  - `rerun/sps_audit/README.md` (table §2) and `rerun/PAPER1_NUMBERS_2026-10-31.md` are updated to these numbers.
 - **Hash.** The products' meta records `c36322ec`, the deployed archive (a pre-rebase commit). The SPS-chain files on
   `main` are identical to it.
 
