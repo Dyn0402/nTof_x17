@@ -1,0 +1,208 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>Paper I §7: timing on waveforms</title>
+<style>body{font-family:sans-serif;max-width:1150px;margin:auto;line-height:1.45}table{border-collapse:collapse;font-size:13px;margin:8px 0}td,th{border:1px solid #ccc;padding:3px 6px;text-align:right}th{background:#eee}img{max-width:100%}.v{background:#eef6ee;padding:10px;border-left:4px solid #2e7d32}</style></head><body>
+<h1>Paper I §7 — chamber timing from the waveforms (pass 1)</h1>
+<div class="v"><b>Verdict.</b> On a cosmic muon the chamber gives its own event time to <b>σ ≈ 40–46 ns</b> (det2, det3, det7; 1.4–1.7 mm of drift), from the start of the charge column, at any track angle. Of that, ≈ 22–28 ns per view is not shared by the two views (noise, sampling) and falls with the signal size (roughly as amplitude<sup>−0.7</sup>); ≈ 35–40 ns is common to X and Y — the arrival of the first electrons next to the mesh — and sets the floor. The trigger adds nothing measurable on those runs (cov(start, end) ≈ 0), but ≈ 40–60 ns on the 6-23 / 6-24 runs (det4). At SPS (det4, CF₄, 14 µm/ns) the same estimator gives 160–200 ns per view (ZS): the low-amplitude end of the bench curve, not a measurement of the intrinsic floor.</div>
+<h2>The paper figure</h2><img src="figures/timing.png">
+<p>(a) mesh-HV scans; (b) the uncorrelated part against the early amplitude, bench and SPS; (c) the golden rows split into event time, the part common to both views and X−Y/√2, with the trigger term where cov(start, end) &gt; 0.</p>
+<h2>Golden rows (M3-matched single tracks)</h2>
+<table><tr><th>chamber</th><th>row</th><th>n</th><th>sigma_evt</th><th>sigma_xy</th><th>sigma_common</th><th>trigger</th><th>v</th><th>evt_mm</th><th>xy_mm</th></tr>
+<tr><td>det2</td><td>c26__mx17_det2_det3_overnight_6-22-26__long_run__mx17_2</td><td>5659</td><td>41.7</td><td>27.6</td><td>36.9</td><td>4</td><td>38.3</td><td>1.60</td><td>1.05</td></tr>
+<tr><td>det2</td><td>o22_long_det2</td><td>1153</td><td>39.9</td><td>28.7</td><td>34.3</td><td>-5</td><td>38.2</td><td>1.53</td><td>1.10</td></tr>
+<tr><td>det3</td><td>c26__mx17_det3_p2_det1_overnight_6-27-26__long_run_p2_det1_sanity_check__mx17_3</td><td>10044</td><td>40.3</td><td>22.2</td><td>37.1</td><td>-8</td><td>36.6</td><td>1.47</td><td>0.81</td></tr>
+<tr><td>det3</td><td>sat_det3</td><td>3523</td><td>41.6</td><td>22.4</td><td>38.4</td><td>-7</td><td>36.0</td><td>1.50</td><td>0.81</td></tr>
+<tr><td>det7</td><td>g_det7_long</td><td>433</td><td>45.6</td><td>25.5</td><td>41.9</td><td>6</td><td>36.8</td><td>1.68</td><td>0.94</td></tr>
+<tr><td>det6</td><td>g_det6_long</td><td>366</td><td>78.1</td><td>52.5</td><td>68.7</td><td>-15</td><td>24.8</td><td>1.93</td><td>1.30</td></tr>
+<tr><td>det4</td><td>g_det4</td><td>2109</td><td>110.9</td><td>38.7</td><td>107.5</td><td>42</td><td>32.7</td><td>3.63</td><td>1.27</td></tr>
+</table>
+<p>ns unless marked; trigger = sign × √|cov(start, end)| (≈ 0 means no common shift of both column ends); v = timing v of the row [µm/ns].</p>
+<h2>Per run (M3-matched, rows with ≥ 150 tracks)</h2>
+<table><tr><th>run</th><th>det</th><th>rows</th><th>n</th><th>evt</th><th>xy</th><th>trig</th></tr>
+<tr><td>mx17_det2_det3_overnight_6-22-26</td><td>mx17_2</td><td>14</td><td>12524</td><td>45.8</td><td>31.9</td><td>-14</td></tr>
+<tr><td>mx17_det2_det3_overnight_6-22-26</td><td>mx17_3</td><td>12</td><td>8155</td><td>87.5</td><td>34.1</td><td>-13</td></tr>
+<tr><td>mx17_det3_day_6-25-26</td><td>mx17_3</td><td>1</td><td>866</td><td>55.9</td><td>23.3</td><td>-6</td></tr>
+<tr><td>mx17_det3_det4_overnight_6-23-26</td><td>mx17_4</td><td>1</td><td>1285</td><td>123.0</td><td>34.7</td><td>49</td></tr>
+<tr><td>mx17_det3_p2_det1_overnight_6-27-26</td><td>mx17_3</td><td>1</td><td>10044</td><td>40.3</td><td>22.2</td><td>-8</td></tr>
+<tr><td>mx17_det3_saturday_scan_6-27-26</td><td>mx17_3</td><td>19</td><td>10594</td><td>44.5</td><td>27.8</td><td>-8</td></tr>
+<tr><td>mx17_det3_test_6-22-26</td><td>mx17_3</td><td>1</td><td>286</td><td>93.4</td><td>27.5</td><td>-6</td></tr>
+<tr><td>mx17_det4_day_6-24-26</td><td>mx17_4</td><td>1</td><td>2109</td><td>110.9</td><td>38.7</td><td>42</td></tr>
+<tr><td>mx17_det6_det7_hv_scan_6-26-26</td><td>mx17_6</td><td>5</td><td>1328</td><td>90.7</td><td>100.7</td><td>-28</td></tr>
+<tr><td>mx17_det6_det7_hv_scan_6-26-26</td><td>mx17_7</td><td>4</td><td>806</td><td>61.9</td><td>41.0</td><td>-9</td></tr>
+<tr><td>mx17_det6_det7_overnight_6-26-26</td><td>mx17_6</td><td>3</td><td>1471</td><td>78.1</td><td>75.4</td><td>-15</td></tr>
+<tr><td>mx17_det6_det7_overnight_6-26-26</td><td>mx17_7</td><td>3</td><td>907</td><td>51.6</td><td>28.4</td><td>-16</td></tr>
+</table>
+<h2>Angle</h2><img src="figures/angle.png"><p>The column start does not move with the track angle (median shift ≤ 8 ns from head-on to |tan θ| = 0.5 on det2/det3), and its width is the same head-on as inclined: the estimator is a time, also at normal incidence. The wft fit's t0 is not (it is pinned to the trigger in the pass, σ = 0.05 ns).</p>
+<h2>Drift field (det3, 490 V)</h2><img src="figures/drift.png">
+<table><tr><th>E</th><th>t</th><th>xy</th><th>mm</th></tr>
+<tr><td>104</td><td>114.0</td><td>46.3</td><td>2.25</td></tr>
+<tr><td>174</td><td>79.3</td><td>34.5</td><td>1.44</td></tr>
+<tr><td>243</td><td>52.1</td><td>26.5</td><td>1.33</td></tr>
+<tr><td>312</td><td>41.4</td><td>22.8</td><td>1.37</td></tr>
+<tr><td>347</td><td>39.6</td><td>23.2</td><td>1.43</td></tr>
+<tr><td>382</td><td>38.5</td><td>21.5</td><td>1.45</td></tr>
+</table>
+<h2>Estimator choice (σ_evt, all clean triggers)</h2>
+<table><tr><th>row</th><th>edge25</th><th>edge15</th><th>edge40</th><th>cf10</th><th>fixT</th><th>box</th></tr>
+<tr><td>c26__mx17_det3_p2_det1_overnight_6-27-26__long_run_p2_det1_sanity_check__mx17_3</td><td>41.6</td><td>44.3</td><td>47.4</td><td>48.8</td><td>72.2</td><td>83.8</td></tr>
+<tr><td>sat_det3</td><td>42.2</td><td>44.3</td><td>47.8</td><td>49.3</td><td>72.6</td><td>85.0</td></tr>
+<tr><td>c26__mx17_det2_det3_overnight_6-22-26__long_run__mx17_2</td><td>43.1</td><td>43.2</td><td>49.2</td><td>50.3</td><td>75.0</td><td>85.0</td></tr>
+</table>
+<p>box = colsum's free (t0, T) fit (t0 and T trade off); fixT = T fixed to the row median; cf10 = 10 % constant fraction; edgeNN = a template step fitted to the rising edge up to NN % of the maximum. A noise-set cut (dev_edgeabs.py) gives 37–48 ns with 1.5 % failures: the common part stays at 33–44 ns whatever the cut.</p>
+<h2>SPS (det4 at H4)</h2>
+<table><tr><th>row</th><th>n</th><th>xy_edge</th><th>abs_edge</th><th>abs_ftst</th><th>xy_cf20</th><th>q</th></tr>
+<tr><td>run55_flatdrift__d400</td><td>2199</td><td>175</td><td>214</td><td>208</td><td>141</td><td>[344.0, 328.0]</td></tr>
+<tr><td>run55_flatdrift__d500</td><td>2452</td><td>183</td><td>225</td><td>217</td><td>146</td><td>[380.0, 361.5]</td></tr>
+<tr><td>run55_flatdrift__d600</td><td>2584</td><td>185</td><td>225</td><td>214</td><td>136</td><td>[380.0, 367.5]</td></tr>
+<tr><td>run55_flatdrift__d700</td><td>2886</td><td>199</td><td>220</td><td>219</td><td>141</td><td>[406.0, 383.0]</td></tr>
+<tr><td>run56_m70V__590V</td><td>3738</td><td>195</td><td>229</td><td>216</td><td>135</td><td>[529.0, 521.0]</td></tr>
+<tr><td>run56_m70V__625V</td><td>3919</td><td>183</td><td>235</td><td>222</td><td>131</td><td>[607.0, 589.0]</td></tr>
+<tr><td>run63_flat__flat700</td><td>4702</td><td>198</td><td>210</td><td>212</td><td>140</td><td>[522.5, 496.0]</td></tr>
+<tr><td>run66_flat_resist__r580</td><td>3999</td><td>192</td><td>173</td><td>172</td><td>124</td><td>[426.0, 386.0]</td></tr>
+<tr><td>run66_flat_resist__r605</td><td>4240</td><td>196</td><td>166</td><td>165</td><td>122</td><td>[437.0, 395.0]</td></tr>
+<tr><td>run66_flat_resist__r630</td><td>4281</td><td>195</td><td>161</td><td>160</td><td>125</td><td>[452.0, 420.0]</td></tr>
+<tr><td>run66_flat_resist__r655</td><td>4288</td><td>195</td><td>164</td><td>166</td><td>127</td><td>[447.0, 412.0]</td></tr>
+<tr><td>run66_flat_resist__r680</td><td>4383</td><td>198</td><td>164</td><td>162</td><td>127</td><td>[458.0, 437.0]</td></tr>
+<tr><td>run66_flat_resist__r705</td><td>4458</td><td>200</td><td>159</td><td>157</td><td>126</td><td>[464.0, 440.0]</td></tr>
+<tr><td>run66_flat_resist__r730</td><td>4405</td><td>191</td><td>166</td><td>165</td><td>120</td><td>[463.0, 432.0]</td></tr>
+<tr><td>run66_flat_resist__r755</td><td>4492</td><td>192</td><td>163</td><td>162</td><td>123</td><td>[483.0, 444.0]</td></tr>
+<tr><td>run66_flat_resist__r780</td><td>4472</td><td>204</td><td>166</td><td>165</td><td>128</td><td>[491.0, 464.0]</td></tr>
+<tr><td>run70_flat_drift__d100</td><td>3042</td><td>171</td><td>232</td><td>231</td><td>117</td><td>[402.0, 372.0]</td></tr>
+<tr><td>run70_flat_drift__d200</td><td>2994</td><td>161</td><td>234</td><td>236</td><td>115</td><td>[408.0, 376.0]</td></tr>
+<tr><td>run70_flat_drift__d300</td><td>3272</td><td>184</td><td>209</td><td>206</td><td>119</td><td>[406.0, 377.5]</td></tr>
+<tr><td>run70_flat_drift__d400</td><td>3643</td><td>191</td><td>193</td><td>192</td><td>121</td><td>[431.0, 401.0]</td></tr>
+<tr><td>run70_flat_drift__d500</td><td>4021</td><td>195</td><td>178</td><td>176</td><td>125</td><td>[427.0, 411.0]</td></tr>
+<tr><td>run70_flat_drift__d600</td><td>4366</td><td>198</td><td>169</td><td>167</td><td>127</td><td>[467.0, 435.0]</td></tr>
+<tr><td>run70_flat_drift__d700b</td><td>3598</td><td>191</td><td>191</td><td>190</td><td>132</td><td>[417.0, 391.0]</td></tr>
+<tr><td>run70_flat_drift__d700</td><td>4373</td><td>194</td><td>164</td><td>164</td><td>120</td><td>[492.0, 456.0]</td></tr>
+</table>
+<h2>Does the trigger error reach the positions? (det4)</h2><pre>{
+ &quot;g_det4&quot;: {
+  &quot;n&quot;: 2249,
+  &quot;x_start&quot;: {
+   &quot;n&quot;: 2147,
+   &quot;slope_mm_per_ns&quot;: 0.00633089209994303,
+   &quot;slope_err&quot;: 0.0005985638694432205,
+   &quot;s68_before&quot;: 0.7396056970187836,
+   &quot;s68_after&quot;: 0.7179881230379481,
+   &quot;s68_before_big_tan&quot;: 0.8213705396360661,
+   &quot;s68_after_big_tan&quot;: 0.7704314214215802
+  },
+  &quot;x_mid&quot;: {
+   &quot;n&quot;: 2147,
+   &quot;slope_mm_per_ns&quot;: 0.005359329677589146,
+   &quot;slope_err&quot;: 0.0006902218647566102,
+   &quot;s68_before&quot;: 0.7396056970187836,
+   &quot;s68_after&quot;: 0.7204872986244799,
+   &quot;s68_before_big_tan&quot;: 0.8213705396360661,
+   &quot;s68_after_big_tan&quot;: 0.7911807304190427
+  },
+  &quot;y_start&quot;: {
+   &quot;n&quot;: 2146,
+   &quot;slope_mm_per_ns&quot;: 0.0020101676042484696,
+   &quot;slope_err&quot;: 0.0009039959454758864,
+   &quot;s68_before&quot;: 0.6112465728725568,
+   &quot;s68_after&quot;: 0.6065696459626886,
+   &quot;s68_before_big_tan&quot;: 0.7796865886761905,
+   &quot;s68_after_big_tan&quot;: 0.7597786363782406
+  },
+  &quot;y_mid&quot;: {
+   &quot;n&quot;: 2146,
+   &quot;slope_mm_per_ns&quot;: 0.0021276477288055436,
+   &quot;slope_err&quot;: 0.0008390804221122273,
+   &quot;s68_before&quot;: 0.6112465728725568,
+   &quot;s68_after&quot;: 0.6061783826143652,
+   &quot;s68_before_big_tan&quot;: 0.7796865886761905,
+   &quot;s68_after_big_tan&quot;: 0.7590702551501989
+  },
+  &quot;x_vs_tan&quot;: {
+   &quot;bins&quot;: [
+    {
+     &quot;tan&quot;: 0.026350389037522605,
+     &quot;n&quot;: 276,
+     &quot;s68&quot;: 0.6548007493298396
+    },
+    {
+     &quot;tan&quot;: 0.07581934144835799,
+     &quot;n&quot;: 433,
+     &quot;s68&quot;: 0.6520900649960614
+    },
+    {
+     &quot;tan&quot;: 0.12310405639854659,
+     &quot;n&quot;: 428,
+     &quot;s68&quot;: 0.7899618032943592
+    },
+    {
+     &quot;tan&quot;: 0.1751604643390152,
+     &quot;n&quot;: 410,
+     &quot;s68&quot;: 0.7358309561480034
+    },
+    {
+     &quot;tan&quot;: 0.24011383475636902,
+     &quot;n&quot;: 503,
+     &quot;s68&quot;: 0.7811850142882196
+    },
+    {
+     &quot;tan&quot;: 0.32228499818923023,
+     &quot;n&quot;: 101,
+     &quot;s68&quot;: 0.9222224897271264
+    }
+   ],
+   &quot;a_mm&quot;: 0.6700349897367693,
+   &quot;c_mm&quot;: 1.9180250247754138
+  },
+  &quot;y_vs_tan&quot;: {
+   &quot;bins&quot;: [
+    {
+     &quot;tan&quot;: 0.025691972569912267,
+     &quot;n&quot;: 561,
+     &quot;s68&quot;: 0.538104423121504
+    },
+    {
+     &quot;tan&quot;: 0.0732517830532288,
+     &quot;n&quot;: 586,
+     &quot;s68&quot;: 0.5744406845088793
+    },
+    {
+     &quot;tan&quot;: 0.1226313627037521,
+     &quot;n&quot;: 478,
+     &quot;s68&quot;: 0.6755483981665269
+    },
+    {
+     &quot;tan&quot;: 0.17153453689976217,
+     &quot;n&quot;: 291,
+     &quot;s68&quot;: 0.6015962323948723
+    },
+    {
+     &quot;tan&quot;: 0.23182969111201088,
+     &quot;n&quot;: 199,
+     &quot;s68&quot;: 0.7749358987681721
+    }
+   ],
+   &quot;a_mm&quot;: 0.5501026297799386,
+   &quot;c_mm&quot;: 2.2448804377498104
+  }
+ },
+ &quot;sat_det3&quot;: {
+  &quot;n&quot;: 3810,
+  &quot;x_start&quot;: {
+   &quot;n&quot;: 3770,
+   &quot;slope_mm_per_ns&quot;: 0.005951719223159242,
+   &quot;slope_err&quot;: 0.0017741354343892447,
+   &quot;s68_before&quot;: 0.5588966658510554,
+   &quot;s68_after&quot;: 0.5539036990372237,
+   &quot;s68_before_big_tan&quot;: 0.7111664873675448,
+   &quot;s68_after_big_tan&quot;: 0.7068909148118361
+  },
+  &quot;x_mid&quot;: {
+   &quot;n&quot;: 3770,
+   &quot;slope_mm_per_ns&quot;: 0.00027118401971324053,
+   &quot;slope_err&quot;: 0.001798391159915376,
+   &quot;s68_before&quot;: 0.5588966658510554,
+   &quot;s68_after&quot;: 0.5585796369736009,
+   &quot;s68_before_big_tan&quot;: 0.7111664873675448,
+   &quot;s68_after_big_tan&quot;: 0.7109294140622896
+  },
+  &quot;y_start&quot;: {
+   &quot;n&quot;: 3769,
+   &quot;slope_mm_per_ns&quot;: 0.00677953844069</pre>
+<h2>What this does not rule out</h2><ul><li>The common 35–40 ns could hold a trigger part below the method's reach: cov(start, end) carries an estimator bias of about −60 ns² (det3), so a trigger jitter ≲ 10 ns is not excluded.</li><li>The physical origin of the common part (first-electron arrival: primary-cluster positions, gain of the first electrons, the threshold set relative to the column maximum) is inferred, not simulated.</li><li>det6's uncorrelated part is 2× the others at the same HV; not chased (det6 depths already carry the v limitation).</li><li>The 6-23 / 6-24 trigger term is measured on the column; its cost on det4's positions is not established (the signed regression matches, the angle-specific widening is not seen).</li><li>SPS: only an upper bound; the intrinsic floor needs a higher-gain chamber or RAW data at the bench S/N.</li></ul>
+</body></html>
