@@ -104,7 +104,10 @@ class Model:
     def current(self, comp, E):
         key = (round(comp[0], 5), round(comp[1], 5), round(E, 3))
         if key not in self.C:
-            self.C[key] = P.current_field(lambda e: self.G(comp[0], comp[1], e), E, self.gap, self.k)
+            # a field profile k reaches past the grid's last field (275 V/cm) at the short gap: hold the transport at the
+            # grid edge instead of extrapolating it (the linear extrapolation of D_L / eta goes non-physical)
+            lo, hi = float(self.G.E.min()), float(self.G.E.max())
+            self.C[key] = P.current_field(lambda e: self.G(comp[0], comp[1], min(max(e, lo), hi)), E, self.gap, self.k)
         return self.C[key]
 
 
@@ -120,10 +123,13 @@ def fit_stack(t, y, e, I, par, zsd=None):
     # way (plateau window), scaled by the free amplitude, then the distortion is added.
     def full(q):
         c = np.interp(t, P.FINE + off + q[0], s)
-        return c / max(np.mean(c[nm]), 1e-12) * q[1] + add
+        mn = float(np.mean(c[nm]))
+        return c / (mn if np.isfinite(mn) and mn > 1e-12 else 1e-12) * q[1] + add
     res = lambda q: ((full(q) - y) / e)[m]
     t0s = np.arange(-700.0, 1400.0, 25.0)            # the shaper carries its own delay (n tau): t0 is relative to it
     c2 = np.array([np.sum(res((x, 1.0)) ** 2) for x in t0s]); c2[~np.isfinite(c2)] = np.inf   # NaN: model empty in NORM
+    if not np.isfinite(c2).any():
+        return 1e12, int(m.sum()), np.full_like(t, np.nan), np.array([np.nan, np.nan])
     t00 = t0s[int(np.argmin(c2))]
     sol = least_squares(res, [t00, 1.0], x_scale=[20, 0.05])
     return float(np.sum(sol.fun ** 2)), int(m.sum()), full(sol.x), sol.x
@@ -150,6 +156,8 @@ def group_data(sdir, keys, a, zsd_tab):
                 ks = int(round(float(meta['zs_sigma'] or 4)))
                 near = min(zsd_tab, key=lambda kk: abs(kk[0] - E) if kk[1] == v and kk[2] == ks else 1e9)
                 zsd = a.zs_scale * zsd_tab[near]
+            if not raw and a.zs_win_hi:
+                e = np.where(T > a.zs_win_hi, 1e6, e)       # arm: ZS rows only up to the drift end
             out.append(dict(key=key, view=v, V=float(REG[key]['drift_V']), E=E, t=T, y=y, e=e, zsd=zsd, raw=raw, n=meta['n'],
                             n_sat=meta['n_sat']))
     return out
@@ -183,7 +191,7 @@ def summarise(chi, W, A, ndf):
     i, j = np.unravel_index(np.nanargmin(chi), chi.shape); c0 = float(chi[i, j]); s = max(1.0, c0 / max(ndf, 1))
     ok = chi <= c0 + 2.30 * s
     wr = [float(W[ok.any(1)].min()), float(W[ok.any(1)].max())]; ar = [float(A[ok.any(0)].min()), float(A[ok.any(0)].max())]
-    edge = dict(water=i in (0, len(W) - 1), air=j in (0, len(A) - 1) and A[j] > 0)
+    edge = dict(water=bool(i in (0, len(W) - 1)), air=bool(j in (0, len(A) - 1) and A[j] > 0))
     return dict(water=float(W[i]), air=float(A[j]), o2_ppm=float(A[j]) * 2095, water_68=wr, air_68=ar,
                 o2_68=[x * 2095 for x in ar], chi2=c0, ndf=int(ndf), scale=s, edge=edge)
 
@@ -197,8 +205,13 @@ def fit_shaper(Mo, data, comp, par0):
             _, _, mc, _ = fit_stack(d['t'], d['y'], d['e'], Mo.current(comp, Mo.E(d)), p, d['zsd'])
             m = (d['t'] >= WIN[0]) & (d['t'] <= WIN[1])
             out.append(((mc - d['y']) / d['e'])[m])
-        return np.concatenate(out)
-    sol = least_squares(fsh, par0, x_scale=[0.3, 10, 0.01, 100], diff_step=[1e-2] * 4)
+        r = np.concatenate(out)
+        return np.where(np.isfinite(r), r, 1e3)     # a shaper/transport combination with an empty plateau window
+    # physical bounds: CR-RC order and time, a non-negative undershoot, its time constant within the 3.8 us window
+    # scale (unbounded, the k = +0.1 arm ran tu to 2e9 ns with u < 0 and a non-finite stack fit)
+    lo, hi = np.array([0.5, 5.0, 0.0, 50.0]), np.array([60.0, 400.0, 1.5, 2e4])
+    sol = least_squares(fsh, np.clip(par0, lo + 1e-6, hi - 1e-6), x_scale=[0.3, 10, 0.01, 100], diff_step=[1e-2] * 4,
+                        bounds=(lo, hi))
     return sol.x
 
 
@@ -240,6 +253,7 @@ def main():
     ap.add_argument('--raw-eta', action='store_true'); ap.add_argument('--source', default='air_hs')
     ap.add_argument('--groups', nargs='*', default=None); ap.add_argument('--nw', type=int, default=33)
     ap.add_argument('--na', type=int, default=14); ap.add_argument('--jobs', type=int, default=6)
+    ap.add_argument('--zs-win-hi', type=float, default=None, help='arm: fit ZS stacks only up to this time [ns]')
     ap.add_argument('--gaps', type=float, nargs='*', default=[27.0, 27.9, 28.8, 30.0],
                     help='drift gaps profiled [mm] (ws_spsv: slope x duration 26.2-27.0, registry 28.8, nominal 30)')
     a = ap.parse_args()
@@ -262,7 +276,7 @@ def main():
         data = group_data(a.stacks, spec['keys'], a, ZTAB)
         if not data:
             continue
-        ndf = sum(int(((d['t'] >= WIN[0]) & (d['t'] <= WIN[1])).sum()) - 2 for d in data) - 3
+        ndf = sum(int(((d['t'] >= WIN[0]) & (d['t'] <= WIN[1]) & (d['e'] < 1e5)).sum()) - 2 for d in data) - 3
         per_gap = {}
         for gp in gaps:
             chi, W, A = scans[(g, gp)]

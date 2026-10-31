@@ -1,11 +1,12 @@
 # gas-fit stacks, one node per SPS row (rerun/sps_gasfit); outputs written to EOS from inside the job
+# RAW rows: the builder holds a CHUNK of ~100 kB RAW entries; run71 raw275 peaked at 11.3 GB (held at 6000 on 10-31)
 executable     = /bin/bash
 arguments      = $(code)/rerun/sps_gasfit/condor/gs_job.sh $(code) $(out) $(key)
 output         = log/$(key).out
 error          = log/$(key).err
 log            = log/gs.log
 request_cpus   = 1
-request_memory = 6000
+request_memory = 16000
 +JobFlavour    = "workday"
 should_transfer_files = NO
 requirements   = (Machine != "b9g42p2031.cern.ch")

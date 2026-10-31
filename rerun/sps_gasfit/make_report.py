@@ -14,7 +14,7 @@ MAIN = ['co2_run55', 'co2_run56', 'co2_run57', 'co2_run59', 'cf4_run62_ladder', 
 WHEN = {'co2_run55': 'Sat 08-01 14:25', 'co2_run56': 'Sat 15:47', 'co2_run57': 'Sat 18:14', 'co2_run59': 'Sat 20:02',
         'cf4_run62_ladder': 'Sun 22:07', 'cf4_run63_ladder': 'Sun 23:53', 'cf4_run63_flat': 'Mon 01:00', 'cf4_run71_raw': 'Mon 05:22'}
 ARMS = {'zs05': 'ZS distortion x0.5', 'zs15': 'ZS distortion x1.5', 'kp': 'field profile k = +0.1', 'km': 'k = -0.1',
-        'sat': 'saturated events kept', 'h1': 'strip sums X+-1 / Y+-4', 'h4': 'strip sums X+-4 / Y+-12', 'raweta': 'unsmoothed Magboltz eta'}
+        'zswin': 'ZS rows fitted only to 2.9 µs', 'sat': 'saturated events kept', 'h1': 'strip sums X+-1 / Y+-4', 'h4': 'strip sums X+-4 / Y+-12', 'raweta': 'unsmoothed Magboltz eta'}
 
 
 def f2(x, n=2):
@@ -97,7 +97,19 @@ def main():
          '<h1>SPS gas composition (H₂O + O₂) from the final pass</h1>']
     if V.get('verdict'):
         H.append(f'<div class="v"><b>Verdict.</b> {html.escape(V["verdict"])}</div>')
-    H.append('<h2>Compositions per epoch (gap profiled over 27.0–30.0 mm)</h2><table><tr><th>group</th><th>when</th><th>stacks</th>'
+    if V.get('table'):
+        H.append(f'<h2>Quoted compositions (one gap for all: {V["gap_quoted"]} mm, from RAW run71 '
+                 f'{V["gap_raw"]:.1f}' + (f' ± {V["gap_raw_sigma"]:.1f}' if V.get('gap_raw_sigma') else '') + ' mm)</h2>'
+                 '<table><tr><th>group</th><th>when</th><th>water %</th><th>± total</th><th>stat</th><th>gap</th><th>arms</th>'
+                 '<th>O₂ ppm</th><th>± total</th><th>stat</th><th>gap</th><th>arms</th><th>χ²/ndf</th><th>grid edge</th></tr>')
+        for r in V['table']:
+            H.append(f'<tr><td>{r["group"]}</td><td>{WHEN.get(r["group"], "")}</td><td>{r["water"]:.2f}</td><td>{r["err_w"]:.2f}</td>'
+                     f'<td>{r["stat_w"]:.2f}</td><td>{r["gap_w"]:.2f}</td><td>{r["arms_w"]:.2f}</td><td>{r["o2_ppm"]:.0f}</td>'
+                     f'<td>{r["err_o2"]:.0f}</td><td>{r["stat_a"] * 2095:.0f}</td><td>{r["gap_a"] * 2095:.0f}</td>'
+                     f'<td>{r["arms_a"] * 2095:.0f}</td><td>{r["chi2"]:.0f}/{r["ndf"]}</td><td>{"yes" if r["edge"] else ""}</td></tr>')
+        H.append('</table><p>Errors: stat = 68 % half-width at the quoted gap (χ² scaled by χ²/ndf); gap = half the spread over '
+                 f'the gaps {V["gap_band"]} mm; arms = the systematic arms below in quadrature (pairs: the larger shift).</p>')
+    H.append('<h2>Each group at its own best gap (reference only: the ZS groups pull to the edge of the gap range)</h2><table><tr><th>group</th><th>when</th><th>stacks</th>'
              '<th>water %</th><th>68 % (gap profiled)</th><th>O₂ ppm</th><th>68 % (gap profiled)</th><th>best gap</th>'
              '<th>gap 68 %</th><th>χ²/ndf</th><th>edge</th></tr>')
     for g in MAIN:
