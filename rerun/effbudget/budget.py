@@ -42,10 +42,9 @@ from M3RefTracking import M3RefTracking, get_xy_angles, get_xy_positions  # noqa
 from wft import compat  # noqa: E402
 from wft.io import strip_position_map  # noqa: E402
 from wft.seed import SIG_REL_FLOOR, SPARK_VETO_HITS  # noqa: E402
-from common.mx17_active_area import TRUE_ACTIVE_BY_DET  # noqa: E402
+from common.mx17_fiducial import ray_regions, good_x, DET7_X_CARD1_MM  # noqa: E402
 
-GAP, EDGE_OWN, EDGE_PASSIV, NEAR = 30.0, 30.0, 8.0, 5.0
-BANDS = ((0, 5), (5, 10), (10, 15), (15, 20), (20, 30))
+NEAR = 5.0
 OUT = os.path.expanduser('~/x17/cosmic_bench/outliers')
 LADDER = ['detected', 'rejected_cut', 'spark', 'no_hit', 'hw_known', 'one_view_silent', 'charge_elsewhere',
           'not_seeded', 'fit_failed', 'far']
@@ -73,34 +72,11 @@ def rays_table(cfg, params):
 
 
 def regions(R, det):
-    act = TRUE_ACTIVE_BY_DET[det]
-    # an edge zone exists where the coordinate is not passivated (X on every chamber; Y passivated ~18 mm)
-    passiv = {'x': act['x'][0] > 1.0, 'y': act['y'][0] > 1.0}
-    out = {}
-    for v in 'xy':
-        a, b = R[f'mesh_{v}'], R[f'mesh_{v}'] + GAP * R[f'tan_{v}']
-        lo, hi = np.minimum(a, b), np.maximum(a, b)
-        R[f'lo_{v}'], R[f'hi_{v}'] = lo, hi
-        out[v] = np.minimum(lo - act[v][0], act[v][1] - hi)
-    reg = {}
-    for v in 'xy':
-        o = 'y' if v == 'x' else 'x'
-        d, od = out[v], out[o]
-        r = np.full(len(R), 'interior', dtype=object)
-        lim_o = EDGE_PASSIV if passiv[o] else EDGE_OWN
-        r[od < lim_o] = 'edge-other'
-        if not passiv[v]:
-            for a, b in BANDS:
-                r[(d >= a) & (d < b)] = f'edge {a}-{b}'
-        else:
-            r[(d >= 0) & (d < EDGE_PASSIV)] = 'edge 0-5'
-        r[(d < 0) | (od < 0)] = 'outside'
-        reg[v] = r
-    R['region_x'], R['region_y'] = reg['x'], reg['y']
-    rank = {k: i for i, k in enumerate(['interior', 'edge-other', 'edge 20-30', 'edge 15-20', 'edge 10-15', 'edge 5-10',
-                                        'edge 0-5', 'outside'])}
-    R['region'] = [a if rank[a] >= rank[b] else b for a, b in zip(reg['x'], reg['y'])]
-    R['dist_x'], R['dist_y'] = out['x'], out['y']
+    """Fiducial region of every ray (common.mx17_fiducial: the one definition 03_angles / 04_maps use too)."""
+    F = ray_regions(R.mesh_x.to_numpy(), R.mesh_y.to_numpy(), R.tan_x.to_numpy(), R.tan_y.to_numpy(), det)
+    for k in ('lo_x', 'hi_x', 'lo_y', 'hi_y', 'region_x', 'region_y', 'region', 'dist_x', 'dist_y'):
+        R[k] = F[k]
+    R['good_x'] = good_x(det, F['lo_x'])
     return R
 
 
@@ -151,7 +127,7 @@ def not_measured(cfg):
 def hw_mask(R, short):
     hw = np.zeros(len(R), bool); hwv = {'x': np.zeros(len(R), bool), 'y': np.zeros(len(R), bool)}
     if short == 'det7':
-        hwv['x'] = (R.lo_x < 199.3).to_numpy(); hw = hwv['x'].copy()
+        hwv['x'] = (R.lo_x < DET7_X_CARD1_MM).to_numpy(); hw = hwv['x'].copy()
     if short == 'det4':
         # dead / low-gain bands along x from the C22 per-event charge ratio, mapped onto position (2 mm bins)
         J = pd.read_parquet(os.path.join(OUT, 'joined_det4.parquet'))[['event_id', 'ref_mesh_x']]
@@ -163,11 +139,77 @@ def hw_mask(R, short):
     return hw, hwv
 
 
+HW_SOURCE = {'mx17_7': f'X card 1: footprint x < {DET7_X_CARD1_MM} mm (ch 0-255)',
+             'det7': f'X card 1: footprint x < {DET7_X_CARD1_MM} mm (ch 0-255)',
+             'det4': 'dead / low-gain bands, 2 mm bins with C22 live ratio < 0.3 (OUT/an/live_det4.parquet, pre-pass)'}
+
+
+def cand_arms(R, path, radii):
+    """Per ray, from the fit's candidates sidecar (rank >= 0 and plausible: the particle candidates production
+    ranked), three ways to pick one candidate per view:
+      prod   rank 0 (what the table holds)
+      rule   the trigger-track rule (Dylan 10-28: a downstream selection): the most vertical candidate, smallest
+             |tan_theta|, ties to production's rank. Parameter-free, uses only det's own fit; the cosmic trigger's
+             muon is steeper-limited than the knock-on electrons it makes in the material above (multiparticle/
+             choose.py: 'most_vertical'). Not for beam data.
+      near   the candidate nearest the M3 footprint (uses the reference: multi-track CREDIT, never a selection)
+    det_rule_R: both views' rule picks within R (raw-frame hypot) with n_dropped <= MAX_DROPPED on the picked
+    candidate; det_any_R: the same with the near picks.  n_cand_v: particle candidates in view v."""
+    C = pd.read_parquet(path)
+    C = C[(C['rank'] >= 0) & (C['plausible'] if 'plausible' in C else True)]
+    C = C[C.event_id.isin(set(R.event_id))].drop_duplicates(['event_id', 'plane', 'rank'])
+    M = R.set_index('event_id')[['mesh_x', 'mesh_y']]
+    C = C.join(M, on='event_id')
+    C['res'] = np.where(C.plane == 'x', C.p0 - C.mesh_x, C.p0 - C.mesh_y)
+    C['ares'] = C.res.abs(); C['atan'] = C.tan_theta.abs()
+    picks = {'rule': C.sort_values(['event_id', 'plane', 'atan', 'rank']).groupby(['event_id', 'plane']).head(1),
+             'near': C.sort_values(['event_id', 'plane', 'ares', 'rank']).groupby(['event_id', 'plane']).head(1)}
+    n = C.groupby(['event_id', 'plane']).size().unstack().reindex(columns=['x', 'y'])
+    for v in 'xy':
+        R[f'n_cand_{v}'] = R.event_id.map(n[v]).fillna(0).astype(int)
+    for arm, P in picks.items():
+        P = P.set_index(['event_id', 'plane'])
+        for v in 'xy':
+            Q = P.xs(v, level='plane')
+            R[f'{arm}_res_{v}'] = R.event_id.map(Q.res)
+            R[f'{arm}_nd_{v}'] = R.event_id.map(Q.n_dropped)
+            R[f'{arm}_rank_{v}'] = R.event_id.map(Q['rank'])
+        r = np.hypot(R[f'{arm}_res_x'], R[f'{arm}_res_y']).to_numpy()
+        nd = ((R[f'{arm}_nd_x'].fillna(99) <= compat.MAX_DROPPED) & (R[f'{arm}_nd_y'].fillna(99) <= compat.MAX_DROPPED)).to_numpy()
+        for Rmm in radii:
+            key = 'any' if arm == 'near' else arm
+            R[f'det_{key}_{Rmm:g}'] = np.nan_to_num(r, nan=1e9) <= Rmm
+            if arm == 'rule':
+                R[f'det_{key}_{Rmm:g}'] &= nd
+    return True
+
+
+def cand_summary(U, radii):
+    """How often each pick is the M3 particle on the views with >= 2 particle candidates where the M3 particle is a
+    candidate (its nearest candidate within R in that view), and the event-level detection with each pick."""
+    out = {}
+    for Rmm in radii:
+        e = dict(n=int(len(U)))
+        for v in 'xy':
+            m = (U[f'n_cand_{v}'] >= 2) & (U[f'near_res_{v}'].abs() <= Rmm)
+            e[f'multi_views_{v}'] = int(m.sum())
+            e[f'prod_right_{v}'] = int((m & (U[f'near_rank_{v}'] == 0)).sum())
+            e[f'rule_right_{v}'] = int((m & (U[f'rule_rank_{v}'] == U[f'near_rank_{v}'])).sum())
+        e['frac_events_multi'] = float(((U.n_cand_x >= 2) | (U.n_cand_y >= 2)).mean()) if len(U) else np.nan
+        for arm in ('rule', 'any'):
+            e[f'detected_{arm}'] = float(100 * U[f'det_{arm}_{Rmm:g}'].mean()) if len(U) else np.nan
+        out[f'{Rmm:g}'] = e
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('run_key'); ap.add_argument('det', help='short name: det2 det3 det4 det6 det7')
     ap.add_argument('--table', required=True); ap.add_argument('--alignment', required=True)
     ap.add_argument('--out', required=True); ap.add_argument('--r', type=float, nargs='+', default=[5.0, 3.0])
+    ap.add_argument('--classified', default=None, help='C22 classified_<det>.parquet made on this table (far classes)')
+    ap.add_argument('--cand', default=None, help='the table\'s events.candidates.parquet: multi-candidate accounting, '
+                                                  'the trigger-track rule and the multi-track credit (cand_arms)')
     a = ap.parse_args()
     cfg = get_config(a.run_key); det = cfg.DET_NAME
     params = cm.load_alignment(a.alignment)
@@ -210,8 +252,10 @@ def main():
     for v in 'xy':
         R[f'hw_{v}'] = hwv[v]
 
-    C = os.path.join(OUT, f'classified_{a.det}.parquet')
-    if os.path.exists(C):
+    # C22 far classes: only from a classification made on THIS table (--classified); a file from another table would
+    # put that table's classes on these rays (before 2026-10-31 it was picked up implicitly from OUT)
+    C = a.classified
+    if C and os.path.exists(C):
         K = pd.read_parquet(C)[['event_id', 'cls', 'outlier']]
         R = R.merge(K[K.outlier][['event_id', 'cls']], on='event_id', how='left')
     else:
@@ -242,6 +286,8 @@ def main():
         for v in 'xy':
             R[f'cat_{v}_{Rmm:g}'] = ladder(R, Rmm, v)
 
+    S_cand = cand_arms(R, a.cand, a.r) if a.cand else None
+
     os.makedirs(a.out, exist_ok=True)
     R.drop(columns=[c for c in R.columns if R[c].dtype == object and c.startswith('h') and c.endswith('_cl')],
            errors='ignore').to_parquet(os.path.join(a.out, f'rays_{a.det}.parquet'))
@@ -249,12 +295,16 @@ def main():
     M = R[~R.not_measured]
     groups = {'active': M.region != 'outside', 'interior': M.region == 'interior',
               'edge': ~M.region.isin(['interior', 'outside']),
-              'interior_live': (M.region == 'interior') & ~M.hw}
-    S = dict(run_key=a.run_key, det=a.det, table=a.table, alignment=a.alignment, n_rays_recipe=n_all,
+              'interior_live': (M.region == 'interior') & ~M.hw,
+              'interior_good': (M.region == 'interior') & M.good_x}
+    S = dict(run_key=a.run_key, det=a.det, table=a.table, alignment=a.alignment, classified=C, cand=a.cand,
+             hw_map=HW_SOURCE.get(a.det), n_rays_recipe=n_all,
              n_events_multi_ray=n_multi, n_in_event_range=n_range, n_beyond_table=n_beyond, n_not_measured=int(R.not_measured.sum()),
              incomplete_list=have_nm, n_outside=int((M.region == 'outside').sum()), radii=a.r, budget={})
     for g, m in groups.items():
         U = M[m]
+        if not len(U):
+            continue
         for Rmm in a.r:
             for v in ('xy', 'x', 'y'):
                 col = f'cat_{v}_{Rmm:g}'
@@ -263,10 +313,17 @@ def main():
                 far = U[U[col] == 'far'].cls.fillna('unclassified').value_counts()
                 ent['far_by_cls'] = {k: float(100 * n / len(U)) for k, n in far.items()}
                 ent['n'] = int(len(U))
+                if v == 'xy' and S_cand is not None:
+                    for arm in ('rule', 'any'):
+                        ent[f'detected_{arm}'] = float(100 * U[f'det_{arm}_{Rmm:g}'].sum() / len(U))
                 S['budget'][f'{g}|{v}|{Rmm:g}'] = ent
+    if S_cand is not None:
+        S['cand'] = {g: cand_summary(M[m], a.r) for g, m in groups.items() if m.any()}
     json.dump(S, open(os.path.join(a.out, f'budget_{a.det}.json'), 'w'), indent=1)
     b = S['budget']
     for g in groups:
+        if f'{g}|xy|5' not in b:
+            continue
         e = b[f'{g}|xy|5']
         print(f"{a.det} {g:9s} n {e['n']:6d}  " + '  '.join(f'{k} {e[k]:.2f}' for k in LADDER if e[k] > 0))
 

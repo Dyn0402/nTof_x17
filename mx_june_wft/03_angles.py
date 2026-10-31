@@ -50,6 +50,7 @@ import matplotlib.pyplot as plt                          # noqa: E402
 import cosmic_micro_tpc_analysis as cm                   # noqa: E402
 from M3RefTracking import M3RefTracking, get_xy_angles   # noqa: E402
 from wft import compat                                   # noqa: E402
+from common.mx17_fiducial import KINDS, fiducial_mask   # noqa: E402
 
 ANGLE_BINS = [(0.08, 0.14), (0.14, 0.20), (0.20, 0.28), (0.28, 0.45)]
 
@@ -67,6 +68,10 @@ def main():
     ap.add_argument('--alignment', default=None)
     ap.add_argument('--out', default=None,
                     help='output dir (default: the standard wft/angles)')
+    ap.add_argument('--fiducial', choices=KINDS, default='all',
+                    help='reference rays kept (common.mx17_fiducial): all (default, the pass) | active | interior '
+                         '(>= 30 mm from an unpassivated edge, 8 mm from a passivated one) | good (det7: X footprint '
+                         'on ch 256-511) | interior_good (the headline selection)')
     args = ap.parse_args()
 
     cfg = get_config(args.run_key)
@@ -95,7 +100,12 @@ def main():
         if np.isnan(r.ref_tan_theta_x) or np.isnan(r.ref_mesh_x_mm):
             continue
         tx, ty = cm._rotate_ref_tangents(r, params)
-        ref[int(r.event_id)] = (tx, ty)
+        ref[int(r.event_id)] = (tx, ty, r.ref_mesh_x_mm, r.ref_mesh_y_mm)
+    if args.fiducial != 'all':
+        k = list(ref); V = np.array([ref[e] for e in k], float).reshape(-1, 4)
+        keep = fiducial_mask(args.fiducial, V[:, 2], V[:, 3], V[:, 0], V[:, 1], cfg.DET_NAME)
+        print(f'fiducial {args.fiducial}: {int(keep.sum()):,} of {len(k):,} reference rays kept')
+        ref = {e: ref[e] for e, m in zip(k, keep) if m}
 
     # duplicate event ids (multi-datrun collisions) crash .loc lookups and are
     # untrustworthy rows anyway — keep neither copy
@@ -109,6 +119,7 @@ def main():
                'basis': 'waveform-first (wft)',
                'coverage': 'full — slope_reliable not gated (2026-08-13); '
                            'implied-v unchanged (|tan_ref| >= 0.08 bins)',
+               'fiducial': args.fiducial,
                'planes': {}}
     LT5 = 0.0875                              # tan(5 deg)
     per_event = {}                            # for PAIRED arm comparisons

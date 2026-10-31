@@ -1,0 +1,13 @@
+# band census of one bench row (band_census.py), from the frozen code archive; reads decoded files on EOS directly
+executable     = /bin/bash
+arguments      = $(code)/rerun/effbudget/pass1/census.sh $(code) $(args)
+output         = log/$(node).out
+error          = log/$(node).err
+log            = log/p1eff.log
+request_cpus   = $(cpus)
+request_memory = $(mem)
+environment    = "PYTHONDONTWRITEBYTECODE=1"
++JobFlavour    = "workday"
+should_transfer_files = NO
+requirements   = (Machine != "b9g42p2031.cern.ch")
+queue
