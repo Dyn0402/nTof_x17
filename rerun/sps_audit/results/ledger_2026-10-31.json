@@ -1,0 +1,4954 @@
+{
+ "bench": [
+  {
+   "key": "c26__mx17_det1_det2_overnight_6-17-26__longer_run__mx17_2",
+   "det": "mx17_2",
+   "cls": "skeptical",
+   "run": "mx17_det1_det2_overnight_6-17-26",
+   "n": 759,
+   "bundle": "/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1/mx17_det2_det3_overnight_6-22-26/longer_run/mx17_2/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af",
+    "03_angles": "b5a29af"
+   },
+   "z": [
+    713.0,
+    712.0
+   ],
+   "far": 1.438618925831202,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det1_det2_overnight_6-17-26__quick_run__mx17_2",
+   "det": "mx17_2",
+   "cls": "skeptical",
+   "run": "mx17_det1_det2_overnight_6-17-26",
+   "n": 31,
+   "bundle": "/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1/mx17_det2_det3_overnight_6-22-26/longer_run/mx17_2/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af",
+    "03_angles": "b5a29af"
+   },
+   "z": null,
+   "far": 0.0,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det1_det2_overnight_6-17-26__resist_450V_drift_1000V__mx17_2",
+   "det": "mx17_2",
+   "cls": "skeptical",
+   "run": "mx17_det1_det2_overnight_6-17-26",
+   "n": 196,
+   "bundle": "/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1/mx17_det2_det3_overnight_6-22-26/longer_run/mx17_2/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": null,
+   "far": 1.4492753623188406,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det1_det2_overnight_6-17-26__resist_460V_drift_1000V__mx17_2",
+   "det": "mx17_2",
+   "cls": "skeptical",
+   "run": "mx17_det1_det2_overnight_6-17-26",
+   "n": 138,
+   "bundle": "/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1/mx17_det2_det3_overnight_6-22-26/longer_run/mx17_2/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": null,
+   "far": 1.075268817204301,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det1_det2_overnight_6-17-26__resist_470V_drift_1000V__mx17_2",
+   "det": "mx17_2",
+   "cls": "skeptical",
+   "run": "mx17_det1_det2_overnight_6-17-26",
+   "n": 181,
+   "bundle": "/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1/mx17_det2_det3_overnight_6-22-26/longer_run/mx17_2/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": null,
+   "far": 1.6025641025641026,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det1_det2_overnight_6-17-26__resist_480V_drift_1000V__mx17_2",
+   "det": "mx17_2",
+   "cls": "skeptical",
+   "run": "mx17_det1_det2_overnight_6-17-26",
+   "n": 303,
+   "bundle": "/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1/mx17_det2_det3_overnight_6-22-26/longer_run/mx17_2/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": null,
+   "far": 3.7914691943127963,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det1_det2_overnight_6-17-26__resist_490V_drift_1000V__mx17_2",
+   "det": "mx17_2",
+   "cls": "skeptical",
+   "run": "mx17_det1_det2_overnight_6-17-26",
+   "n": 318,
+   "bundle": "/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1/mx17_det2_det3_overnight_6-22-26/longer_run/mx17_2/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "04_maps": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af"
+   },
+   "z": null,
+   "far": 2.2429906542056073,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det1_det2_overnight_6-17-26__resist_500V_drift_1000V__mx17_2",
+   "det": "mx17_2",
+   "cls": "skeptical",
+   "run": "mx17_det1_det2_overnight_6-17-26",
+   "n": 341,
+   "bundle": "/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1/mx17_det2_det3_overnight_6-22-26/longer_run/mx17_2/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af",
+    "03_angles": "b5a29af"
+   },
+   "z": null,
+   "far": 2.2629310344827585,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det1_det2_overnight_6-17-26__resist_510V_drift_1000V__mx17_2",
+   "det": "mx17_2",
+   "cls": "skeptical",
+   "run": "mx17_det1_det2_overnight_6-17-26",
+   "n": 626,
+   "bundle": "/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1/mx17_det2_det3_overnight_6-22-26/longer_run/mx17_2/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": null,
+   "far": 5.045278137128072,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det1_det2_overnight_6-17-26__resist_520V_drift_1000V__mx17_2",
+   "det": "mx17_2",
+   "cls": "skeptical",
+   "run": "mx17_det1_det2_overnight_6-17-26",
+   "n": 513,
+   "bundle": "/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1/mx17_det2_det3_overnight_6-22-26/longer_run/mx17_2/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af",
+    "03_angles": "b5a29af"
+   },
+   "z": null,
+   "far": 4.7976011994003,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det2_det3_overnight_6-22-26__long_run__mx17_2",
+   "det": "mx17_2",
+   "cls": "golden_quoted",
+   "run": "mx17_det2_det3_overnight_6-22-26",
+   "n": 19253,
+   "bundle": "/pool/condor/dir_2637908/Analysis/mx17_det2_det3_overnight_6-22-26/long_run/mx17_2/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f",
+    "a72b889"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    712.0,
+    713.0
+   ],
+   "far": 2.98209691814984,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": [
+    "code ['6a0bb1f', 'a72b889']"
+   ]
+  },
+  {
+   "key": "o22_long_det2",
+   "det": "mx17_2",
+   "cls": "golden_calib",
+   "run": "mx17_det2_det3_overnight_6-22-26",
+   "n": 3695,
+   "bundle": "/pool/condor/dir_808571/Analysis/mx17_det2_det3_overnight_6-22-26/longer_run/mx17_2/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f",
+    "a72b889"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    712.0,
+    713.0
+   ],
+   "far": 2.7233115468409586,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": [
+    "code ['6a0bb1f', 'a72b889']"
+   ]
+  },
+  {
+   "key": "c26__mx17_det2_det3_overnight_6-22-26__resist_450V_drift_1000V__mx17_2",
+   "det": "mx17_2",
+   "cls": "consistency",
+   "run": "mx17_det2_det3_overnight_6-22-26",
+   "n": 899,
+   "bundle": "/pool/condor/dir_3419486/Analysis/mx17_det2_det3_overnight_6-22-26/resist_450V_drift_1000V/mx17_2/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    712.0,
+    713.0
+   ],
+   "far": 2.96377607025247,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det2_det3_overnight_6-22-26__resist_455V_drift_1000V__mx17_2",
+   "det": "mx17_2",
+   "cls": "consistency",
+   "run": "mx17_det2_det3_overnight_6-22-26",
+   "n": 906,
+   "bundle": "/pool/condor/dir_2348516/Analysis/mx17_det2_det3_overnight_6-22-26/resist_455V_drift_1000V/mx17_2/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    712.0,
+    713.0
+   ],
+   "far": 2.854006586169045,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det2_det3_overnight_6-22-26__resist_460V_drift_1000V__mx17_2",
+   "det": "mx17_2",
+   "cls": "consistency",
+   "run": "mx17_det2_det3_overnight_6-22-26",
+   "n": 883,
+   "bundle": "/pool/condor/dir_3588612/Analysis/mx17_det2_det3_overnight_6-22-26/resist_460V_drift_1000V/mx17_2/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    712.0,
+    714.0
+   ],
+   "far": 2.708803611738149,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det2_det3_overnight_6-22-26__resist_465V_drift_1000V__mx17_2",
+   "det": "mx17_2",
+   "cls": "consistency",
+   "run": "mx17_det2_det3_overnight_6-22-26",
+   "n": 877,
+   "bundle": "/pool/condor/dir_1383577/Analysis/mx17_det2_det3_overnight_6-22-26/resist_465V_drift_1000V/mx17_2/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "04_maps": "b5a29af",
+    "02_efficiency": "b5a29af"
+   },
+   "z": [
+    713.0,
+    713.0
+   ],
+   "far": 3.4364261168384878,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det2_det3_overnight_6-22-26__resist_470V_drift_1000V__mx17_2",
+   "det": "mx17_2",
+   "cls": "consistency",
+   "run": "mx17_det2_det3_overnight_6-22-26",
+   "n": 943,
+   "bundle": "/pool/condor/dir_1826862/Analysis/mx17_det2_det3_overnight_6-22-26/resist_470V_drift_1000V/mx17_2/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    713.0,
+    714.0
+   ],
+   "far": 2.985074626865672,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det2_det3_overnight_6-22-26__resist_475V_drift_1000V__mx17_2",
+   "det": "mx17_2",
+   "cls": "consistency",
+   "run": "mx17_det2_det3_overnight_6-22-26",
+   "n": 898,
+   "bundle": "/pool/condor/dir_290878/Analysis/mx17_det2_det3_overnight_6-22-26/resist_475V_drift_1000V/mx17_2/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    713.0,
+    713.0
+   ],
+   "far": 2.9579067121729237,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det2_det3_overnight_6-22-26__resist_480V_drift_1000V__mx17_2",
+   "det": "mx17_2",
+   "cls": "consistency",
+   "run": "mx17_det2_det3_overnight_6-22-26",
+   "n": 866,
+   "bundle": "/pool/condor/dir_2764374/Analysis/mx17_det2_det3_overnight_6-22-26/resist_480V_drift_1000V/mx17_2/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    713.0,
+    713.0
+   ],
+   "far": 2.2538552787663106,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det2_det3_overnight_6-22-26__resist_485V_drift_1000V__mx17_2",
+   "det": "mx17_2",
+   "cls": "consistency",
+   "run": "mx17_det2_det3_overnight_6-22-26",
+   "n": 877,
+   "bundle": "/pool/condor/dir_3512479/Analysis/mx17_det2_det3_overnight_6-22-26/resist_485V_drift_1000V/mx17_2/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    713.0,
+    713.0
+   ],
+   "far": 3.348729792147806,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det2_det3_overnight_6-22-26__resist_490V_drift_1000V__mx17_2",
+   "det": "mx17_2",
+   "cls": "consistency",
+   "run": "mx17_det2_det3_overnight_6-22-26",
+   "n": 908,
+   "bundle": "/pool/condor/dir_449857/Analysis/mx17_det2_det3_overnight_6-22-26/resist_490V_drift_1000V/mx17_2/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    712.0,
+    713.0
+   ],
+   "far": 2.6696329254727473,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det2_det3_overnight_6-22-26__resist_495V_drift_1000V__mx17_2",
+   "det": "mx17_2",
+   "cls": "consistency",
+   "run": "mx17_det2_det3_overnight_6-22-26",
+   "n": 918,
+   "bundle": "/pool/condor/dir_3328739/Analysis/mx17_det2_det3_overnight_6-22-26/resist_495V_drift_1000V/mx17_2/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    712.0,
+    713.0
+   ],
+   "far": 3.3916849015317285,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det2_det3_overnight_6-22-26__resist_500V_drift_1000V__mx17_2",
+   "det": "mx17_2",
+   "cls": "consistency",
+   "run": "mx17_det2_det3_overnight_6-22-26",
+   "n": 839,
+   "bundle": "/pool/condor/dir_587086/Analysis/mx17_det2_det3_overnight_6-22-26/resist_500V_drift_1000V/mx17_2/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    712.0,
+    713.0
+   ],
+   "far": 2.843601895734597,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det2_det3_overnight_6-22-26__resist_505V_drift_1000V__mx17_2",
+   "det": "mx17_2",
+   "cls": "consistency",
+   "run": "mx17_det2_det3_overnight_6-22-26",
+   "n": 858,
+   "bundle": "/pool/condor/dir_197353/Analysis/mx17_det2_det3_overnight_6-22-26/resist_505V_drift_1000V/mx17_2/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    712.0,
+    713.0
+   ],
+   "far": 2.1396396396396398,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det2_det3_overnight_6-22-26__resist_510V_drift_1000V__mx17_2",
+   "det": "mx17_2",
+   "cls": "consistency",
+   "run": "mx17_det2_det3_overnight_6-22-26",
+   "n": 815,
+   "bundle": "/pool/condor/dir_4190420/Analysis/mx17_det2_det3_overnight_6-22-26/resist_510V_drift_1000V/mx17_2/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "04_maps": "b5a29af",
+    "02_efficiency": "b5a29af"
+   },
+   "z": [
+    712.0,
+    713.0
+   ],
+   "far": 2.296211251435132,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det2_det3_overnight_6-22-26__resist_515V_drift_1000V__mx17_2",
+   "det": "mx17_2",
+   "cls": "consistency",
+   "run": "mx17_det2_det3_overnight_6-22-26",
+   "n": 646,
+   "bundle": "/pool/condor/dir_2820387/Analysis/mx17_det2_det3_overnight_6-22-26/resist_515V_drift_1000V/mx17_2/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    711.0,
+    713.0
+   ],
+   "far": 0.8771929824561403,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det2_det3_overnight_6-22-26__resist_520V_drift_1000V__mx17_2",
+   "det": "mx17_2",
+   "cls": "consistency",
+   "run": "mx17_det2_det3_overnight_6-22-26",
+   "n": 516,
+   "bundle": "/pool/condor/dir_1125571/Analysis/mx17_det2_det3_overnight_6-22-26/resist_520V_drift_1000V/mx17_2/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "04_maps": "b5a29af",
+    "02_efficiency": "b5a29af"
+   },
+   "z": [
+    712.0,
+    713.0
+   ],
+   "far": 1.5810276679841897,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det2_det3_overnight_6-22-26__resist_525V_drift_1000V__mx17_2",
+   "det": "mx17_2",
+   "cls": "consistency",
+   "run": "mx17_det2_det3_overnight_6-22-26",
+   "n": 366,
+   "bundle": "/pool/condor/dir_1723598/Analysis/mx17_det2_det3_overnight_6-22-26/resist_525V_drift_1000V/mx17_2/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "04_maps": "b5a29af",
+    "02_efficiency": "b5a29af"
+   },
+   "z": [
+    712.0,
+    714.0
+   ],
+   "far": 1.3597033374536465,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det2_det3_overnight_6-22-26__short_run__mx17_2",
+   "det": "mx17_2",
+   "cls": "consistency",
+   "run": "mx17_det2_det3_overnight_6-22-26",
+   "n": 1979,
+   "bundle": "/pool/condor/dir_1925487/Analysis/mx17_det2_det3_overnight_6-22-26/short_run/mx17_2/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f",
+    "a72b889"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    712.0,
+    713.0
+   ],
+   "far": 2.99492385786802,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": [
+    "code ['6a0bb1f', 'a72b889']"
+   ]
+  },
+  {
+   "key": "c26__mx17_det2_det3_overnight_6-22-26__long_run__mx17_3",
+   "det": "mx17_3",
+   "cls": "skeptical",
+   "run": "mx17_det2_det3_overnight_6-22-26",
+   "n": 18123,
+   "bundle": "/pool/condor/dir_2271954/Analysis/mx17_det2_det3_overnight_6-22-26/long_run/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    241.0,
+    242.0
+   ],
+   "far": 2.3452261865066135,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det2_det3_overnight_6-22-26__resist_450V_drift_1000V__mx17_3",
+   "det": "mx17_3",
+   "cls": "skeptical",
+   "run": "mx17_det2_det3_overnight_6-22-26",
+   "n": 909,
+   "bundle": "/pool/condor/dir_1461607/Analysis/mx17_det2_det3_overnight_6-22-26/resist_450V_drift_1000V/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    242.0,
+    243.0
+   ],
+   "far": 2.161547212741752,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det2_det3_overnight_6-22-26__resist_455V_drift_1000V__mx17_3",
+   "det": "mx17_3",
+   "cls": "skeptical",
+   "run": "mx17_det2_det3_overnight_6-22-26",
+   "n": 876,
+   "bundle": "/pool/condor/dir_3941335/Analysis/mx17_det2_det3_overnight_6-22-26/resist_455V_drift_1000V/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    241.0,
+    243.0
+   ],
+   "far": 3.2941176470588234,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det2_det3_overnight_6-22-26__resist_460V_drift_1000V__mx17_3",
+   "det": "mx17_3",
+   "cls": "skeptical",
+   "run": "mx17_det2_det3_overnight_6-22-26",
+   "n": 854,
+   "bundle": "/pool/condor/dir_2654415/Analysis/mx17_det2_det3_overnight_6-22-26/resist_460V_drift_1000V/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    242.0,
+    243.0
+   ],
+   "far": 1.3110846245530394,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det2_det3_overnight_6-22-26__resist_465V_drift_1000V__mx17_3",
+   "det": "mx17_3",
+   "cls": "skeptical",
+   "run": "mx17_det2_det3_overnight_6-22-26",
+   "n": 861,
+   "bundle": "/pool/condor/dir_1454068/Analysis/mx17_det2_det3_overnight_6-22-26/resist_465V_drift_1000V/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    242.0,
+    243.0
+   ],
+   "far": 2.3837902264600714,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det2_det3_overnight_6-22-26__resist_470V_drift_1000V__mx17_3",
+   "det": "mx17_3",
+   "cls": "skeptical",
+   "run": "mx17_det2_det3_overnight_6-22-26",
+   "n": 919,
+   "bundle": "/pool/condor/dir_1429984/Analysis/mx17_det2_det3_overnight_6-22-26/resist_470V_drift_1000V/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "04_maps": "b5a29af",
+    "02_efficiency": "b5a29af"
+   },
+   "z": [
+    241.0,
+    242.0
+   ],
+   "far": 2.8506271379703536,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det2_det3_overnight_6-22-26__resist_475V_drift_1000V__mx17_3",
+   "det": "mx17_3",
+   "cls": "skeptical",
+   "run": "mx17_det2_det3_overnight_6-22-26",
+   "n": 852,
+   "bundle": "/pool/condor/dir_2471870/Analysis/mx17_det2_det3_overnight_6-22-26/resist_475V_drift_1000V/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    242.0,
+    243.0
+   ],
+   "far": 3.515151515151515,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det2_det3_overnight_6-22-26__resist_480V_drift_1000V__mx17_3",
+   "det": "mx17_3",
+   "cls": "skeptical",
+   "run": "mx17_det2_det3_overnight_6-22-26",
+   "n": 832,
+   "bundle": "/pool/condor/dir_249938/Analysis/mx17_det2_det3_overnight_6-22-26/resist_480V_drift_1000V/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    241.0,
+    242.0
+   ],
+   "far": 2.1951219512195124,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det2_det3_overnight_6-22-26__resist_485V_drift_1000V__mx17_3",
+   "det": "mx17_3",
+   "cls": "skeptical",
+   "run": "mx17_det2_det3_overnight_6-22-26",
+   "n": 848,
+   "bundle": "/pool/condor/dir_1779547/Analysis/mx17_det2_det3_overnight_6-22-26/resist_485V_drift_1000V/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    242.0,
+    242.0
+   ],
+   "far": 1.8115942028985508,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det2_det3_overnight_6-22-26__resist_490V_drift_1000V__mx17_3",
+   "det": "mx17_3",
+   "cls": "skeptical",
+   "run": "mx17_det2_det3_overnight_6-22-26",
+   "n": 874,
+   "bundle": "/pool/condor/dir_970637/Analysis/mx17_det2_det3_overnight_6-22-26/resist_490V_drift_1000V/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    241.0,
+    242.0
+   ],
+   "far": 2.1939953810623556,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det2_det3_overnight_6-22-26__resist_495V_drift_1000V__mx17_3",
+   "det": "mx17_3",
+   "cls": "skeptical",
+   "run": "mx17_det2_det3_overnight_6-22-26",
+   "n": 869,
+   "bundle": "/pool/condor/dir_2074605/Analysis/mx17_det2_det3_overnight_6-22-26/resist_495V_drift_1000V/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    242.0,
+    242.0
+   ],
+   "far": 1.1947431302270013,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det2_det3_overnight_6-22-26__resist_500V_drift_1000V__mx17_3",
+   "det": "mx17_3",
+   "cls": "skeptical",
+   "run": "mx17_det2_det3_overnight_6-22-26",
+   "n": 788,
+   "bundle": "/pool/condor/dir_2488165/Analysis/mx17_det2_det3_overnight_6-22-26/resist_500V_drift_1000V/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    242.0,
+    242.0
+   ],
+   "far": 2.193548387096774,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det2_det3_overnight_6-22-26__resist_505V_drift_1000V__mx17_3",
+   "det": "mx17_3",
+   "cls": "skeptical",
+   "run": "mx17_det2_det3_overnight_6-22-26",
+   "n": 793,
+   "bundle": "/pool/condor/dir_1167556/Analysis/mx17_det2_det3_overnight_6-22-26/resist_505V_drift_1000V/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    241.0,
+    242.0
+   ],
+   "far": 2.158273381294964,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det2_det3_overnight_6-22-26__resist_510V_drift_1000V__mx17_3",
+   "det": "mx17_3",
+   "cls": "skeptical",
+   "run": "mx17_det2_det3_overnight_6-22-26",
+   "n": 719,
+   "bundle": "/pool/condor/dir_3210963/Analysis/mx17_det2_det3_overnight_6-22-26/resist_510V_drift_1000V/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "04_maps": "b5a29af",
+    "02_efficiency": "b5a29af"
+   },
+   "z": [
+    242.0,
+    242.0
+   ],
+   "far": 1.5681544028950543,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det2_det3_overnight_6-22-26__resist_515V_drift_1000V__mx17_3",
+   "det": "mx17_3",
+   "cls": "skeptical",
+   "run": "mx17_det2_det3_overnight_6-22-26",
+   "n": 531,
+   "bundle": "/pool/condor/dir_2439482/Analysis/mx17_det2_det3_overnight_6-22-26/resist_515V_drift_1000V/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "04_maps": "b5a29af",
+    "02_efficiency": "b5a29af"
+   },
+   "z": [
+    240.0,
+    242.0
+   ],
+   "far": 1.9943019943019944,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det2_det3_overnight_6-22-26__resist_520V_drift_1000V__mx17_3",
+   "det": "mx17_3",
+   "cls": "skeptical",
+   "run": "mx17_det2_det3_overnight_6-22-26",
+   "n": 499,
+   "bundle": "/pool/condor/dir_224560/Analysis/mx17_det2_det3_overnight_6-22-26/resist_520V_drift_1000V/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "04_maps": "b5a29af",
+    "02_efficiency": "b5a29af"
+   },
+   "z": [
+    242.0,
+    242.0
+   ],
+   "far": 2.200825309491059,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det2_det3_overnight_6-22-26__resist_525V_drift_1000V__mx17_3",
+   "det": "mx17_3",
+   "cls": "skeptical",
+   "run": "mx17_det2_det3_overnight_6-22-26",
+   "n": 601,
+   "bundle": "/pool/condor/dir_1551886/Analysis/mx17_det2_det3_overnight_6-22-26/resist_525V_drift_1000V/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    242.0,
+    243.0
+   ],
+   "far": 7.160493827160494,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det2_det3_overnight_6-22-26__short_run__mx17_3",
+   "det": "mx17_3",
+   "cls": "skeptical",
+   "run": "mx17_det2_det3_overnight_6-22-26",
+   "n": 1886,
+   "bundle": "/pool/condor/dir_1351478/Analysis/mx17_det2_det3_overnight_6-22-26/short_run/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    242.0,
+    243.0
+   ],
+   "far": 2.395209580838323,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det3_day_6-25-26__long_run__mx17_3",
+   "det": "mx17_3",
+   "cls": "consistency",
+   "run": "mx17_det3_day_6-25-26",
+   "n": 8877,
+   "bundle": "/pool/condor/dir_2612955/Analysis/mx17_det3_day_6-25-26/long_run/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f",
+    "a72b889"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    242.0,
+    243.0
+   ],
+   "far": 1.5982721382289418,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": [
+    "code ['6a0bb1f', 'a72b889']"
+   ]
+  },
+  {
+   "key": "c26__mx17_det3_det4_overnight_6-23-26__long_run__mx17_3",
+   "det": "mx17_3",
+   "cls": "skeptical",
+   "run": "mx17_det3_det4_overnight_6-23-26",
+   "n": 7282,
+   "bundle": "/pool/condor/dir_1266055/Analysis/mx17_det3_det4_overnight_6-23-26/long_run/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    243.0,
+    243.0
+   ],
+   "far": 4.557207498383969,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det3_det4_overnight_6-23-26__longer_run__mx17_3",
+   "det": "mx17_3",
+   "cls": "skeptical",
+   "run": "mx17_det3_det4_overnight_6-23-26",
+   "n": 722,
+   "bundle": "/pool/condor/dir_320628/Analysis/mx17_det3_det4_overnight_6-23-26/longer_run/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    240.0,
+    239.0
+   ],
+   "far": 1.3351877607788596,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det3_det4_overnight_6-23-26__resist_465V_drift_600V__mx17_3",
+   "det": "mx17_3",
+   "cls": "skeptical",
+   "run": "mx17_det3_det4_overnight_6-23-26",
+   "n": 78,
+   "bundle": "/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1/mx17_det3_det4_overnight_6-23-26/long_run/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "02_efficiency": "b5a29af",
+    "03_angles": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": null,
+   "far": 1.566579634464752,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det3_det4_overnight_6-23-26__resist_470V_drift_600V__mx17_3",
+   "det": "mx17_3",
+   "cls": "skeptical",
+   "run": "mx17_det3_det4_overnight_6-23-26",
+   "n": 124,
+   "bundle": "/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1/mx17_det3_det4_overnight_6-23-26/long_run/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "02_efficiency": "b5a29af",
+    "03_angles": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": null,
+   "far": 2.5974025974025974,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det3_det4_overnight_6-23-26__resist_475V_drift_600V__mx17_3",
+   "det": "mx17_3",
+   "cls": "skeptical",
+   "run": "mx17_det3_det4_overnight_6-23-26",
+   "n": 111,
+   "bundle": "/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1/mx17_det3_det4_overnight_6-23-26/longer_run/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "04_maps": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af"
+   },
+   "z": null,
+   "far": 1.8957345971563981,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det3_det4_overnight_6-23-26__resist_480V_drift_600V__mx17_3",
+   "det": "mx17_3",
+   "cls": "skeptical",
+   "run": "mx17_det3_det4_overnight_6-23-26",
+   "n": 141,
+   "bundle": "/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1/mx17_det3_det4_overnight_6-23-26/longer_run/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "03_angles": "b5a29af",
+    "04_maps": "b5a29af",
+    "02_efficiency": "b5a29af"
+   },
+   "z": null,
+   "far": 1.7156862745098038,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det3_det4_overnight_6-23-26__resist_485V_drift_600V__mx17_3",
+   "det": "mx17_3",
+   "cls": "skeptical",
+   "run": "mx17_det3_det4_overnight_6-23-26",
+   "n": 181,
+   "bundle": "/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1/mx17_det3_det4_overnight_6-23-26/longer_run/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": null,
+   "far": 3.0181086519114686,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det3_det4_overnight_6-23-26__resist_490V_drift_600V__mx17_3",
+   "det": "mx17_3",
+   "cls": "skeptical",
+   "run": "mx17_det3_det4_overnight_6-23-26",
+   "n": 181,
+   "bundle": "/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1/mx17_det3_det4_overnight_6-23-26/longer_run/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "02_efficiency": "b5a29af",
+    "03_angles": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": null,
+   "far": 1.3392857142857142,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det3_det4_overnight_6-23-26__resist_495V_drift_600V__mx17_3",
+   "det": "mx17_3",
+   "cls": "skeptical",
+   "run": "mx17_det3_det4_overnight_6-23-26",
+   "n": 202,
+   "bundle": "/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1/mx17_det3_det4_overnight_6-23-26/longer_run/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "02_efficiency": "b5a29af",
+    "03_angles": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": null,
+   "far": 2.032520325203252,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det3_det4_overnight_6-23-26__resist_500V_drift_600V__mx17_3",
+   "det": "mx17_3",
+   "cls": "skeptical",
+   "run": "mx17_det3_det4_overnight_6-23-26",
+   "n": 216,
+   "bundle": "/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1/mx17_det3_det4_overnight_6-23-26/longer_run/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af",
+    "03_angles": "b5a29af"
+   },
+   "z": null,
+   "far": 3.7694013303769403,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det3_det4_overnight_6-23-26__resist_505V_drift_600V__mx17_3",
+   "det": "mx17_3",
+   "cls": "skeptical",
+   "run": "mx17_det3_det4_overnight_6-23-26",
+   "n": 252,
+   "bundle": "/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1/mx17_det3_det4_overnight_6-23-26/longer_run/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "04_maps": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "03_angles": "b5a29af"
+   },
+   "z": null,
+   "far": 3.010752688172043,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det3_det4_overnight_6-23-26__resist_510V_drift_600V__mx17_3",
+   "det": "mx17_3",
+   "cls": "skeptical",
+   "run": "mx17_det3_det4_overnight_6-23-26",
+   "n": 259,
+   "bundle": "/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1/mx17_det3_det4_overnight_6-23-26/longer_run/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "03_angles": "b5a29af",
+    "04_maps": "b5a29af",
+    "02_efficiency": "b5a29af"
+   },
+   "z": null,
+   "far": 4.044943820224719,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det3_det4_overnight_6-23-26__resist_515V_drift_600V__mx17_3",
+   "det": "mx17_3",
+   "cls": "skeptical",
+   "run": "mx17_det3_det4_overnight_6-23-26",
+   "n": 179,
+   "bundle": "/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1/mx17_det3_det4_overnight_6-23-26/longer_run/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af",
+    "03_angles": "b5a29af"
+   },
+   "z": null,
+   "far": 5.3627760252365935,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det3_det4_overnight_6-23-26__resist_520V_drift_600V__mx17_3",
+   "det": "mx17_3",
+   "cls": "skeptical",
+   "run": "mx17_det3_det4_overnight_6-23-26",
+   "n": 203,
+   "bundle": "/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1/mx17_det3_det4_overnight_6-23-26/longer_run/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "02_efficiency": "b5a29af",
+    "03_angles": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": null,
+   "far": 2.20125786163522,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det3_det4_overnight_6-23-26__resist_525V_drift_600V__mx17_3",
+   "det": "mx17_3",
+   "cls": "skeptical",
+   "run": "mx17_det3_det4_overnight_6-23-26",
+   "n": 239,
+   "bundle": "/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1/mx17_det3_det4_overnight_6-23-26/longer_run/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "03_angles": "b5a29af",
+    "04_maps": "b5a29af",
+    "02_efficiency": "b5a29af"
+   },
+   "z": null,
+   "far": 6.166219839142091,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det3_det4_overnight_6-23-26__short_run__mx17_3",
+   "det": "mx17_3",
+   "cls": "skeptical",
+   "run": "mx17_det3_det4_overnight_6-23-26",
+   "n": 182,
+   "bundle": "/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1/mx17_det3_det4_overnight_6-23-26/long_run/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "02_efficiency": "b5a29af",
+    "03_angles": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": null,
+   "far": 0.3107520198881293,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det3_p2_det1_overnight_6-27-26__long_run_p2_det1_sanity_check__mx17_3",
+   "det": "mx17_3",
+   "cls": "golden_quoted",
+   "run": "mx17_det3_p2_det1_overnight_6-27-26",
+   "n": 22300,
+   "bundle": "/pool/condor/dir_795423/Analysis/mx17_det3_p2_det1_overnight_6-27-26/long_run_p2_det1_sanity_check/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f",
+    "a72b889"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    713.0,
+    714.0
+   ],
+   "far": 2.895849434013729,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": [
+    "code ['6a0bb1f', 'a72b889']"
+   ]
+  },
+  {
+   "key": "c26__mx17_det3_saturday_scan_6-27-26__drift_scan_resist_490V_drift_100V__mx17_3",
+   "det": "mx17_3",
+   "cls": "consistency",
+   "run": "mx17_det3_saturday_scan_6-27-26",
+   "n": 754,
+   "bundle": "/pool/condor/dir_294362/Analysis/mx17_det3_saturday_scan_6-27-26/drift_scan_resist_490V_drift_100V/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    711.0,
+    714.0
+   ],
+   "far": 1.4550264550264551,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det3_saturday_scan_6-27-26__hv_scan2_resist_460V_drift_1000V__mx17_3",
+   "det": "mx17_3",
+   "cls": "consistency",
+   "run": "mx17_det3_saturday_scan_6-27-26",
+   "n": 760,
+   "bundle": "/pool/condor/dir_3185551/Analysis/mx17_det3_saturday_scan_6-27-26/hv_scan2_resist_460V_drift_1000V/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    714.0,
+    714.0
+   ],
+   "far": 3.0789825970548863,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det3_saturday_scan_6-27-26__hv_scan2_resist_470V_drift_1000V__mx17_3",
+   "det": "mx17_3",
+   "cls": "consistency",
+   "run": "mx17_det3_saturday_scan_6-27-26",
+   "n": 766,
+   "bundle": "/pool/condor/dir_795431/Analysis/mx17_det3_saturday_scan_6-27-26/hv_scan2_resist_470V_drift_1000V/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    714.0,
+    715.0
+   ],
+   "far": 3.062583222370173,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det3_saturday_scan_6-27-26__hv_scan2_resist_480V_drift_1000V__mx17_3",
+   "det": "mx17_3",
+   "cls": "consistency",
+   "run": "mx17_det3_saturday_scan_6-27-26",
+   "n": 796,
+   "bundle": "/pool/condor/dir_294379/Analysis/mx17_det3_saturday_scan_6-27-26/hv_scan2_resist_480V_drift_1000V/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    714.0,
+    715.0
+   ],
+   "far": 2.9374201787994894,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det3_saturday_scan_6-27-26__hv_scan2_resist_490V_drift_1000V__mx17_3",
+   "det": "mx17_3",
+   "cls": "consistency",
+   "run": "mx17_det3_saturday_scan_6-27-26",
+   "n": 790,
+   "bundle": "/pool/condor/dir_2913691/Analysis/mx17_det3_saturday_scan_6-27-26/hv_scan2_resist_490V_drift_1000V/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    714.0,
+    715.0
+   ],
+   "far": 2.3017902813299234,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det3_saturday_scan_6-27-26__hv_scan2_resist_500V_drift_1000V__mx17_3",
+   "det": "mx17_3",
+   "cls": "consistency",
+   "run": "mx17_det3_saturday_scan_6-27-26",
+   "n": 729,
+   "bundle": "/pool/condor/dir_1900864/Analysis/mx17_det3_saturday_scan_6-27-26/hv_scan2_resist_500V_drift_1000V/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "04_maps": "b5a29af",
+    "02_efficiency": "b5a29af"
+   },
+   "z": [
+    713.0,
+    714.0
+   ],
+   "far": 1.9337016574585635,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det3_saturday_scan_6-27-26__hv_scan2_resist_510V_drift_1000V__mx17_3",
+   "det": "mx17_3",
+   "cls": "consistency",
+   "run": "mx17_det3_saturday_scan_6-27-26",
+   "n": 782,
+   "bundle": "/pool/condor/dir_2808806/Analysis/mx17_det3_saturday_scan_6-27-26/hv_scan2_resist_510V_drift_1000V/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    713.0,
+    714.0
+   ],
+   "far": 1.3563501849568433,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det3_saturday_scan_6-27-26__hv_scan2_resist_520V_drift_1000V__mx17_3",
+   "det": "mx17_3",
+   "cls": "consistency",
+   "run": "mx17_det3_saturday_scan_6-27-26",
+   "n": 551,
+   "bundle": "/pool/condor/dir_2358114/Analysis/mx17_det3_saturday_scan_6-27-26/hv_scan2_resist_520V_drift_1000V/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "04_maps": "b5a29af",
+    "02_efficiency": "b5a29af"
+   },
+   "z": [
+    712.0,
+    714.0
+   ],
+   "far": 1.0554089709762533,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det3_saturday_scan_6-27-26__hv_scan_resist_425V_drift_1000V__mx17_3",
+   "det": "mx17_3",
+   "cls": "consistency",
+   "run": "mx17_det3_saturday_scan_6-27-26",
+   "n": 770,
+   "bundle": "/pool/condor/dir_2905045/Analysis/mx17_det3_saturday_scan_6-27-26/hv_scan_resist_425V_drift_1000V/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    713.0,
+    714.0
+   ],
+   "far": 3.430079155672823,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det3_saturday_scan_6-27-26__hv_scan_resist_435V_drift_1000V__mx17_3",
+   "det": "mx17_3",
+   "cls": "consistency",
+   "run": "mx17_det3_saturday_scan_6-27-26",
+   "n": 781,
+   "bundle": "/pool/condor/dir_4116616/Analysis/mx17_det3_saturday_scan_6-27-26/hv_scan_resist_435V_drift_1000V/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    714.0,
+    714.0
+   ],
+   "far": 3.145478374836173,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det3_saturday_scan_6-27-26__hv_scan_resist_445V_drift_1000V__mx17_3",
+   "det": "mx17_3",
+   "cls": "consistency",
+   "run": "mx17_det3_saturday_scan_6-27-26",
+   "n": 770,
+   "bundle": "/pool/condor/dir_1841650/Analysis/mx17_det3_saturday_scan_6-27-26/hv_scan_resist_445V_drift_1000V/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    713.0,
+    715.0
+   ],
+   "far": 3.0423280423280423,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det3_saturday_scan_6-27-26__hv_scan_resist_455V_drift_1000V__mx17_3",
+   "det": "mx17_3",
+   "cls": "consistency",
+   "run": "mx17_det3_saturday_scan_6-27-26",
+   "n": 810,
+   "bundle": "/pool/condor/dir_2788135/Analysis/mx17_det3_saturday_scan_6-27-26/hv_scan_resist_455V_drift_1000V/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    714.0,
+    714.0
+   ],
+   "far": 3.889585947302384,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det3_saturday_scan_6-27-26__hv_scan_resist_465V_drift_1000V__mx17_3",
+   "det": "mx17_3",
+   "cls": "consistency",
+   "run": "mx17_det3_saturday_scan_6-27-26",
+   "n": 773,
+   "bundle": "/pool/condor/dir_1584834/Analysis/mx17_det3_saturday_scan_6-27-26/hv_scan_resist_465V_drift_1000V/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    714.0,
+    715.0
+   ],
+   "far": 3.2637075718015667,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det3_saturday_scan_6-27-26__hv_scan_resist_475V_drift_1000V__mx17_3",
+   "det": "mx17_3",
+   "cls": "consistency",
+   "run": "mx17_det3_saturday_scan_6-27-26",
+   "n": 799,
+   "bundle": "/pool/condor/dir_4105777/Analysis/mx17_det3_saturday_scan_6-27-26/hv_scan_resist_475V_drift_1000V/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    713.0,
+    714.0
+   ],
+   "far": 4.4136191677175285,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det3_saturday_scan_6-27-26__hv_scan_resist_485V_drift_1000V__mx17_3",
+   "det": "mx17_3",
+   "cls": "consistency",
+   "run": "mx17_det3_saturday_scan_6-27-26",
+   "n": 762,
+   "bundle": "/pool/condor/dir_3592269/Analysis/mx17_det3_saturday_scan_6-27-26/hv_scan_resist_485V_drift_1000V/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    714.0,
+    714.0
+   ],
+   "far": 4.966442953020135,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det3_saturday_scan_6-27-26__hv_scan_resist_495V_drift_1000V__mx17_3",
+   "det": "mx17_3",
+   "cls": "consistency",
+   "run": "mx17_det3_saturday_scan_6-27-26",
+   "n": 750,
+   "bundle": "/pool/condor/dir_1745417/Analysis/mx17_det3_saturday_scan_6-27-26/hv_scan_resist_495V_drift_1000V/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    714.0,
+    714.0
+   ],
+   "far": 2.6666666666666665,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det3_saturday_scan_6-27-26__hv_scan_resist_505V_drift_1000V__mx17_3",
+   "det": "mx17_3",
+   "cls": "consistency",
+   "run": "mx17_det3_saturday_scan_6-27-26",
+   "n": 770,
+   "bundle": "/pool/condor/dir_3458217/Analysis/mx17_det3_saturday_scan_6-27-26/hv_scan_resist_505V_drift_1000V/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    713.0,
+    714.0
+   ],
+   "far": 2.2929936305732483,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det3_saturday_scan_6-27-26__hv_scan_resist_515V_drift_1000V__mx17_3",
+   "det": "mx17_3",
+   "cls": "consistency",
+   "run": "mx17_det3_saturday_scan_6-27-26",
+   "n": 632,
+   "bundle": "/pool/condor/dir_2205838/Analysis/mx17_det3_saturday_scan_6-27-26/hv_scan_resist_515V_drift_1000V/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    713.0,
+    714.0
+   ],
+   "far": 1.8387553041018387,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det3_saturday_scan_6-27-26__hv_scan_resist_525V_drift_1000V__mx17_3",
+   "det": "mx17_3",
+   "cls": "consistency",
+   "run": "mx17_det3_saturday_scan_6-27-26",
+   "n": 451,
+   "bundle": "/pool/condor/dir_1336105/Analysis/mx17_det3_saturday_scan_6-27-26/hv_scan_resist_525V_drift_1000V/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    713.0,
+    713.0
+   ],
+   "far": 0.6747638326585695,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "sat_det3",
+   "det": "mx17_3",
+   "cls": "golden_calib",
+   "run": "mx17_det3_saturday_scan_6-27-26",
+   "n": 7143,
+   "bundle": "/pool/condor/dir_2326025/Analysis/mx17_det3_saturday_scan_6-27-26/long_run_resist_490V_drift_1000V/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f",
+    "a72b889"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    714.0,
+    714.0
+   ],
+   "far": 2.593905031892275,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": [
+    "code ['6a0bb1f', 'a72b889']"
+   ]
+  },
+  {
+   "key": "c26__mx17_det3_saturday_scan_6-27-26__drift_scan_resist_490V_drift_1100V__mx17_3",
+   "det": "mx17_3",
+   "cls": "consistency",
+   "run": "mx17_det3_saturday_scan_6-27-26",
+   "n": 773,
+   "bundle": "/pool/condor/dir_2540948/Analysis/mx17_det3_saturday_scan_6-27-26/drift_scan_resist_490V_drift_1100V/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    714.0,
+    715.0
+   ],
+   "far": 1.7105263157894737,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det3_saturday_scan_6-27-26__drift_scan_resist_490V_drift_300V__mx17_3",
+   "det": "mx17_3",
+   "cls": "consistency",
+   "run": "mx17_det3_saturday_scan_6-27-26",
+   "n": 694,
+   "bundle": "/pool/condor/dir_313984/Analysis/mx17_det3_saturday_scan_6-27-26/drift_scan_resist_490V_drift_300V/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "04_maps": "b5a29af",
+    "02_efficiency": "b5a29af"
+   },
+   "z": [
+    712.0,
+    714.0
+   ],
+   "far": 2.346041055718475,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det3_saturday_scan_6-27-26__drift_scan_resist_490V_drift_500V__mx17_3",
+   "det": "mx17_3",
+   "cls": "consistency",
+   "run": "mx17_det3_saturday_scan_6-27-26",
+   "n": 743,
+   "bundle": "/pool/condor/dir_3963623/Analysis/mx17_det3_saturday_scan_6-27-26/drift_scan_resist_490V_drift_500V/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    712.0,
+    714.0
+   ],
+   "far": 1.6415868673050615,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det3_saturday_scan_6-27-26__drift_scan_resist_490V_drift_700V__mx17_3",
+   "det": "mx17_3",
+   "cls": "consistency",
+   "run": "mx17_det3_saturday_scan_6-27-26",
+   "n": 783,
+   "bundle": "/pool/condor/dir_4150870/Analysis/mx17_det3_saturday_scan_6-27-26/drift_scan_resist_490V_drift_700V/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    714.0,
+    714.0
+   ],
+   "far": 1.6993464052287581,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det3_saturday_scan_6-27-26__drift_scan_resist_490V_drift_900V__mx17_3",
+   "det": "mx17_3",
+   "cls": "consistency",
+   "run": "mx17_det3_saturday_scan_6-27-26",
+   "n": 759,
+   "bundle": "/pool/condor/dir_1425249/Analysis/mx17_det3_saturday_scan_6-27-26/drift_scan_resist_490V_drift_900V/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    714.0,
+    714.0
+   ],
+   "far": 2.5299600532623168,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det3_test_6-22-26__short_run__mx17_3",
+   "det": "mx17_3",
+   "cls": "skeptical",
+   "run": "mx17_det3_test_6-22-26",
+   "n": 1871,
+   "bundle": "/pool/condor/dir_1431006/Analysis/mx17_det3_test_6-22-26/short_run/mx17_3/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    242.0,
+    243.0
+   ],
+   "far": 1.8867924528301887,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det3_det4_overnight_6-23-26__long_run__mx17_4",
+   "det": "mx17_4",
+   "cls": "consistency",
+   "run": "mx17_det3_det4_overnight_6-23-26",
+   "n": 6602,
+   "bundle": "/pool/condor/dir_1525495/Analysis/mx17_det3_det4_overnight_6-23-26/long_run/mx17_4/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f",
+    "a72b889"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    715.0,
+    715.0
+   ],
+   "far": 4.484304932735426,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": [
+    "code ['6a0bb1f', 'a72b889']"
+   ]
+  },
+  {
+   "key": "c26__mx17_det3_det4_overnight_6-23-26__longer_run__mx17_4",
+   "det": "mx17_4",
+   "cls": "consistency",
+   "run": "mx17_det3_det4_overnight_6-23-26",
+   "n": 660,
+   "bundle": "/pool/condor/dir_1752833/Analysis/mx17_det3_det4_overnight_6-23-26/longer_run/mx17_4/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    715.0,
+    716.0
+   ],
+   "far": 2.005231037489102,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det3_det4_overnight_6-23-26__resist_465V_drift_600V__mx17_4",
+   "det": "mx17_4",
+   "cls": "consistency",
+   "run": "mx17_det3_det4_overnight_6-23-26",
+   "n": 161,
+   "bundle": "/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1/mx17_det3_det4_overnight_6-23-26/resist_485V_drift_600V/mx17_4/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "02_efficiency": "b5a29af",
+    "03_angles": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": null,
+   "far": 2.7210884353741496,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det3_det4_overnight_6-23-26__resist_470V_drift_600V__mx17_4",
+   "det": "mx17_4",
+   "cls": "consistency",
+   "run": "mx17_det3_det4_overnight_6-23-26",
+   "n": 214,
+   "bundle": "/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1/mx17_det3_det4_overnight_6-23-26/resist_485V_drift_600V/mx17_4/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": null,
+   "far": 3.4031413612565444,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det3_det4_overnight_6-23-26__resist_475V_drift_600V__mx17_4",
+   "det": "mx17_4",
+   "cls": "consistency",
+   "run": "mx17_det3_det4_overnight_6-23-26",
+   "n": 178,
+   "bundle": "/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1/mx17_det3_det4_overnight_6-23-26/resist_485V_drift_600V/mx17_4/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af",
+    "03_angles": "b5a29af"
+   },
+   "z": null,
+   "far": 3.9787798408488064,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det3_det4_overnight_6-23-26__resist_480V_drift_600V__mx17_4",
+   "det": "mx17_4",
+   "cls": "consistency",
+   "run": "mx17_det3_det4_overnight_6-23-26",
+   "n": 172,
+   "bundle": "/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1/mx17_det3_det4_overnight_6-23-26/resist_485V_drift_600V/mx17_4/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "02_efficiency": "b5a29af",
+    "03_angles": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": null,
+   "far": 2.1671826625387,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det3_det4_overnight_6-23-26__resist_485V_drift_600V__mx17_4",
+   "det": "mx17_4",
+   "cls": "consistency",
+   "run": "mx17_det3_det4_overnight_6-23-26",
+   "n": 195,
+   "bundle": "/pool/condor/dir_731510/Analysis/mx17_det3_det4_overnight_6-23-26/resist_485V_drift_600V/mx17_4/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    714.0,
+    716.0
+   ],
+   "far": 3.485254691689008,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det3_det4_overnight_6-23-26__resist_490V_drift_600V__mx17_4",
+   "det": "mx17_4",
+   "cls": "consistency",
+   "run": "mx17_det3_det4_overnight_6-23-26",
+   "n": 178,
+   "bundle": "/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1/mx17_det3_det4_overnight_6-23-26/resist_485V_drift_600V/mx17_4/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "02_efficiency": "b5a29af",
+    "03_angles": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": null,
+   "far": 4.610951008645533,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det3_det4_overnight_6-23-26__resist_495V_drift_600V__mx17_4",
+   "det": "mx17_4",
+   "cls": "consistency",
+   "run": "mx17_det3_det4_overnight_6-23-26",
+   "n": 197,
+   "bundle": "/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1/mx17_det3_det4_overnight_6-23-26/resist_500V_drift_600V/mx17_4/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "02_efficiency": "b5a29af",
+    "03_angles": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": null,
+   "far": 2.717391304347826,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det3_det4_overnight_6-23-26__resist_500V_drift_600V__mx17_4",
+   "det": "mx17_4",
+   "cls": "consistency",
+   "run": "mx17_det3_det4_overnight_6-23-26",
+   "n": 193,
+   "bundle": "/pool/condor/dir_2717371/Analysis/mx17_det3_det4_overnight_6-23-26/resist_500V_drift_600V/mx17_4/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    714.0,
+    714.0
+   ],
+   "far": 2.1671826625387,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det3_det4_overnight_6-23-26__resist_505V_drift_600V__mx17_4",
+   "det": "mx17_4",
+   "cls": "consistency",
+   "run": "mx17_det3_det4_overnight_6-23-26",
+   "n": 198,
+   "bundle": "/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1/mx17_det3_det4_overnight_6-23-26/resist_500V_drift_600V/mx17_4/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af",
+    "03_angles": "b5a29af"
+   },
+   "z": null,
+   "far": 3.3678756476683938,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det3_det4_overnight_6-23-26__resist_510V_drift_600V__mx17_4",
+   "det": "mx17_4",
+   "cls": "consistency",
+   "run": "mx17_det3_det4_overnight_6-23-26",
+   "n": 220,
+   "bundle": "/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1/mx17_det3_det4_overnight_6-23-26/resist_500V_drift_600V/mx17_4/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "04_maps": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af"
+   },
+   "z": null,
+   "far": 5.449591280653951,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det3_det4_overnight_6-23-26__resist_515V_drift_600V__mx17_4",
+   "det": "mx17_4",
+   "cls": "consistency",
+   "run": "mx17_det3_det4_overnight_6-23-26",
+   "n": 142,
+   "bundle": "/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1/mx17_det3_det4_overnight_6-23-26/resist_500V_drift_600V/mx17_4/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "04_maps": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "03_angles": "b5a29af"
+   },
+   "z": null,
+   "far": 2.9661016949152543,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det3_det4_overnight_6-23-26__resist_520V_drift_600V__mx17_4",
+   "det": "mx17_4",
+   "cls": "consistency",
+   "run": "mx17_det3_det4_overnight_6-23-26",
+   "n": 105,
+   "bundle": "/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1/mx17_det3_det4_overnight_6-23-26/resist_500V_drift_600V/mx17_4/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "03_angles": "b5a29af",
+    "04_maps": "b5a29af",
+    "02_efficiency": "b5a29af"
+   },
+   "z": null,
+   "far": 2.9411764705882355,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det3_det4_overnight_6-23-26__resist_525V_drift_600V__mx17_4",
+   "det": "mx17_4",
+   "cls": "consistency",
+   "run": "mx17_det3_det4_overnight_6-23-26",
+   "n": 132,
+   "bundle": "/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1/mx17_det3_det4_overnight_6-23-26/longer_run/mx17_4/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "02_efficiency": "b5a29af",
+    "03_angles": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": null,
+   "far": 2.6515151515151514,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det3_det4_overnight_6-23-26__short_run__mx17_4",
+   "det": "mx17_4",
+   "cls": "consistency",
+   "run": "mx17_det3_det4_overnight_6-23-26",
+   "n": 175,
+   "bundle": "/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1/mx17_det3_det4_overnight_6-23-26/longer_run/mx17_4/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "02_efficiency": "b5a29af",
+    "03_angles": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": null,
+   "far": 0.5167958656330749,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "g_det4",
+   "det": "mx17_4",
+   "cls": "golden_calib",
+   "run": "mx17_det4_day_6-24-26",
+   "n": 8087,
+   "bundle": "/pool/condor/dir_1320361/Analysis/mx17_det4_day_6-24-26/long_run/mx17_4/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f",
+    "a72b889"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    713.0,
+    714.0
+   ],
+   "far": 4.597421551933836,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": [
+    "code ['6a0bb1f', 'a72b889']"
+   ]
+  },
+  {
+   "key": "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_400V_det7_400V_drift_700V__mx17_6",
+   "det": "mx17_6",
+   "cls": "consistency",
+   "run": "mx17_det6_det7_hv_scan_6-26-26",
+   "n": 305,
+   "bundle": "/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1/mx17_det6_det7_hv_scan_6-26-26/resist_det6_420V_det7_420V_drift_700V/mx17_6/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "02_efficiency": "b5a29af",
+    "03_angles": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": null,
+   "far": 3.8043478260869565,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_405V_det7_405V_drift_700V__mx17_6",
+   "det": "mx17_6",
+   "cls": "consistency",
+   "run": "mx17_det6_det7_hv_scan_6-26-26",
+   "n": 658,
+   "bundle": "/pool/condor/dir_718891/Analysis/mx17_det6_det7_hv_scan_6-26-26/resist_det6_405V_det7_405V_drift_700V/mx17_6/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    241.0,
+    242.0
+   ],
+   "far": 4.0221914008321775,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_410V_det7_410V_drift_700V__mx17_6",
+   "det": "mx17_6",
+   "cls": "consistency",
+   "run": "mx17_det6_det7_hv_scan_6-26-26",
+   "n": 370,
+   "bundle": "/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1/mx17_det6_det7_hv_scan_6-26-26/resist_det6_420V_det7_420V_drift_700V/mx17_6/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "02_efficiency": "b5a29af",
+    "03_angles": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": null,
+   "far": 2.512562814070352,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_415V_det7_415V_drift_700V__mx17_6",
+   "det": "mx17_6",
+   "cls": "consistency",
+   "run": "mx17_det6_det7_hv_scan_6-26-26",
+   "n": 749,
+   "bundle": "/pool/condor/dir_525803/Analysis/mx17_det6_det7_hv_scan_6-26-26/resist_det6_415V_det7_415V_drift_700V/mx17_6/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    241.0,
+    242.0
+   ],
+   "far": 3.3582089552238807,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_420V_det7_420V_drift_700V__mx17_6",
+   "det": "mx17_6",
+   "cls": "consistency",
+   "run": "mx17_det6_det7_hv_scan_6-26-26",
+   "n": 358,
+   "bundle": "/pool/condor/dir_723099/Analysis/mx17_det6_det7_hv_scan_6-26-26/resist_det6_420V_det7_420V_drift_700V/mx17_6/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    242.0,
+    243.0
+   ],
+   "far": 2.051282051282051,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_425V_det7_425V_drift_700V__mx17_6",
+   "det": "mx17_6",
+   "cls": "consistency",
+   "run": "mx17_det6_det7_hv_scan_6-26-26",
+   "n": 733,
+   "bundle": "/pool/condor/dir_3897062/Analysis/mx17_det6_det7_hv_scan_6-26-26/resist_det6_425V_det7_425V_drift_700V/mx17_6/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    242.0,
+    242.0
+   ],
+   "far": 3.5620052770448547,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_430V_det7_430V_drift_700V__mx17_6",
+   "det": "mx17_6",
+   "cls": "consistency",
+   "run": "mx17_det6_det7_hv_scan_6-26-26",
+   "n": 380,
+   "bundle": "/pool/condor/dir_2821990/Analysis/mx17_det6_det7_hv_scan_6-26-26/resist_det6_430V_det7_430V_drift_700V/mx17_6/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    242.0,
+    243.0
+   ],
+   "far": 3.836317135549872,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_435V_det7_435V_drift_700V__mx17_6",
+   "det": "mx17_6",
+   "cls": "consistency",
+   "run": "mx17_det6_det7_hv_scan_6-26-26",
+   "n": 752,
+   "bundle": "/pool/condor/dir_35057/Analysis/mx17_det6_det7_hv_scan_6-26-26/resist_det6_435V_det7_435V_drift_700V/mx17_6/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    241.0,
+    243.0
+   ],
+   "far": 3.3810143042912872,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_440V_det7_440V_drift_700V__mx17_6",
+   "det": "mx17_6",
+   "cls": "consistency",
+   "run": "mx17_det6_det7_hv_scan_6-26-26",
+   "n": 263,
+   "bundle": "/pool/condor/dir_2679964/Analysis/mx17_det6_det7_hv_scan_6-26-26/resist_det6_440V_det7_440V_drift_700V/mx17_6/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    240.0,
+    242.0
+   ],
+   "far": 3.7037037037037037,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_445V_det7_445V_drift_700V__mx17_6",
+   "det": "mx17_6",
+   "cls": "consistency",
+   "run": "mx17_det6_det7_hv_scan_6-26-26",
+   "n": 817,
+   "bundle": "/pool/condor/dir_3553002/Analysis/mx17_det6_det7_hv_scan_6-26-26/resist_det6_445V_det7_445V_drift_700V/mx17_6/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    243.0,
+    243.0
+   ],
+   "far": 4.1469194312796205,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_465V_det7_465V_drift_700V__mx17_6",
+   "det": "mx17_6",
+   "cls": "consistency",
+   "run": "mx17_det6_det7_hv_scan_6-26-26",
+   "n": 757,
+   "bundle": "/pool/condor/dir_3762887/Analysis/mx17_det6_det7_hv_scan_6-26-26/resist_det6_465V_det7_465V_drift_700V/mx17_6/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    241.0,
+    242.0
+   ],
+   "far": 2.480417754569191,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_480V_det7_480V_drift_700V__mx17_6",
+   "det": "mx17_6",
+   "cls": "consistency",
+   "run": "mx17_det6_det7_hv_scan_6-26-26",
+   "n": 397,
+   "bundle": "/pool/condor/dir_13364/Analysis/mx17_det6_det7_hv_scan_6-26-26/resist_det6_480V_det7_480V_drift_700V/mx17_6/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "04_maps": "b5a29af",
+    "02_efficiency": "b5a29af"
+   },
+   "z": [
+    242.0,
+    243.0
+   ],
+   "far": 3.282828282828283,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_485V_det7_485V_drift_700V__mx17_6",
+   "det": "mx17_6",
+   "cls": "consistency",
+   "run": "mx17_det6_det7_hv_scan_6-26-26",
+   "n": 728,
+   "bundle": "/pool/condor/dir_3625589/Analysis/mx17_det6_det7_hv_scan_6-26-26/resist_det6_485V_det7_485V_drift_700V/mx17_6/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    241.0,
+    243.0
+   ],
+   "far": 3.9295392953929538,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_495V_det7_495V_drift_700V__mx17_6",
+   "det": "mx17_6",
+   "cls": "consistency",
+   "run": "mx17_det6_det7_hv_scan_6-26-26",
+   "n": 633,
+   "bundle": "/pool/condor/dir_2925914/Analysis/mx17_det6_det7_hv_scan_6-26-26/resist_det6_495V_det7_495V_drift_700V/mx17_6/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    241.0,
+    242.0
+   ],
+   "far": 2.1947873799725652,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_500V_det7_500V_drift_700V__mx17_6",
+   "det": "mx17_6",
+   "cls": "consistency",
+   "run": "mx17_det6_det7_hv_scan_6-26-26",
+   "n": 290,
+   "bundle": "/pool/condor/dir_419438/Analysis/mx17_det6_det7_hv_scan_6-26-26/resist_det6_500V_det7_500V_drift_700V/mx17_6/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "04_maps": "b5a29af",
+    "02_efficiency": "b5a29af"
+   },
+   "z": [
+    241.0,
+    242.0
+   ],
+   "far": 2.272727272727273,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "g_det6_long",
+   "det": "mx17_6",
+   "cls": "golden_calib",
+   "run": "mx17_det6_det7_overnight_6-26-26",
+   "n": 8903,
+   "bundle": "/pool/condor/dir_53261/Analysis/mx17_det6_det7_overnight_6-26-26/long_run/mx17_6/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f",
+    "a72b889"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    242.0,
+    242.0
+   ],
+   "far": 2.0991973657131098,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": [
+    "code ['6a0bb1f', 'a72b889']"
+   ]
+  },
+  {
+   "key": "c26__mx17_det6_det7_overnight_6-26-26__longer_run__mx17_6",
+   "det": "mx17_6",
+   "cls": "consistency",
+   "run": "mx17_det6_det7_overnight_6-26-26",
+   "n": 4442,
+   "bundle": "/pool/condor/dir_2974323/Analysis/mx17_det6_det7_overnight_6-26-26/longer_run/mx17_6/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f",
+    "a72b889"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    241.0,
+    242.0
+   ],
+   "far": 3.1468531468531467,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": [
+    "code ['6a0bb1f', 'a72b889']"
+   ]
+  },
+  {
+   "key": "c26__mx17_det6_det7_overnight_6-26-26__resist_det6_505V_det7_480V_drift_700V__mx17_6",
+   "det": "mx17_6",
+   "cls": "consistency",
+   "run": "mx17_det6_det7_overnight_6-26-26",
+   "n": 738,
+   "bundle": "/pool/condor/dir_1454764/Analysis/mx17_det6_det7_overnight_6-26-26/resist_det6_505V_det7_480V_drift_700V/mx17_6/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "04_maps": "b5a29af",
+    "02_efficiency": "b5a29af"
+   },
+   "z": [
+    242.0,
+    242.0
+   ],
+   "far": 2.5316455696202533,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det6_det7_overnight_6-26-26__resist_det6_510V_det7_485V_drift_700V__mx17_6",
+   "det": "mx17_6",
+   "cls": "consistency",
+   "run": "mx17_det6_det7_overnight_6-26-26",
+   "n": 667,
+   "bundle": "/pool/condor/dir_1921645/Analysis/mx17_det6_det7_overnight_6-26-26/resist_det6_510V_det7_485V_drift_700V/mx17_6/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    241.0,
+    242.0
+   ],
+   "far": 2.926208651399491,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det6_det7_overnight_6-26-26__resist_det6_515V_det7_490V_drift_700V__mx17_6",
+   "det": "mx17_6",
+   "cls": "consistency",
+   "run": "mx17_det6_det7_overnight_6-26-26",
+   "n": 604,
+   "bundle": "/pool/condor/dir_592278/Analysis/mx17_det6_det7_overnight_6-26-26/resist_det6_515V_det7_490V_drift_700V/mx17_6/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    242.0,
+    242.0
+   ],
+   "far": 1.7105263157894737,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det6_det7_overnight_6-26-26__resist_det6_520V_det7_495V_drift_700V__mx17_6",
+   "det": "mx17_6",
+   "cls": "consistency",
+   "run": "mx17_det6_det7_overnight_6-26-26",
+   "n": 536,
+   "bundle": "/pool/condor/dir_2434757/Analysis/mx17_det6_det7_overnight_6-26-26/resist_det6_520V_det7_495V_drift_700V/mx17_6/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    241.0,
+    242.0
+   ],
+   "far": 2.029769959404601,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det6_det7_overnight_6-26-26__resist_det6_525V_det7_500V_drift_700V__mx17_6",
+   "det": "mx17_6",
+   "cls": "consistency",
+   "run": "mx17_det6_det7_overnight_6-26-26",
+   "n": 525,
+   "bundle": "/pool/condor/dir_3689894/Analysis/mx17_det6_det7_overnight_6-26-26/resist_det6_525V_det7_500V_drift_700V/mx17_6/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    240.0,
+    242.0
+   ],
+   "far": 1.9083969465648856,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det6_det7_overnight_6-26-26__resist_det6_530V_det7_505V_drift_700V__mx17_6",
+   "det": "mx17_6",
+   "cls": "consistency",
+   "run": "mx17_det6_det7_overnight_6-26-26",
+   "n": 399,
+   "bundle": "/pool/condor/dir_848365/Analysis/mx17_det6_det7_overnight_6-26-26/resist_det6_530V_det7_505V_drift_700V/mx17_6/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    243.0,
+    242.0
+   ],
+   "far": 2.4783147459727384,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det6_det7_overnight_6-26-26__short_run__mx17_6",
+   "det": "mx17_6",
+   "cls": "consistency",
+   "run": "mx17_det6_det7_overnight_6-26-26",
+   "n": 1903,
+   "bundle": "/pool/condor/dir_984136/Analysis/mx17_det6_det7_overnight_6-26-26/short_run/mx17_6/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f",
+    "a72b889"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    241.0,
+    242.0
+   ],
+   "far": 2.5088200705605646,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": [
+    "code ['6a0bb1f', 'a72b889']"
+   ]
+  },
+  {
+   "key": "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_400V_det7_400V_drift_700V__mx17_7",
+   "det": "mx17_7",
+   "cls": "consistency",
+   "run": "mx17_det6_det7_hv_scan_6-26-26",
+   "n": 392,
+   "bundle": "/pool/condor/dir_1643502/Analysis/mx17_det6_det7_hv_scan_6-26-26/resist_det6_400V_det7_400V_drift_700V/mx17_7/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    712.0,
+    713.0
+   ],
+   "far": 5.801104972375691,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_405V_det7_405V_drift_700V__mx17_7",
+   "det": "mx17_7",
+   "cls": "consistency",
+   "run": "mx17_det6_det7_hv_scan_6-26-26",
+   "n": 824,
+   "bundle": "/pool/condor/dir_557190/Analysis/mx17_det6_det7_hv_scan_6-26-26/resist_det6_405V_det7_405V_drift_700V/mx17_7/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    714.0,
+    714.0
+   ],
+   "far": 8.32282471626734,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_410V_det7_410V_drift_700V__mx17_7",
+   "det": "mx17_7",
+   "cls": "consistency",
+   "run": "mx17_det6_det7_hv_scan_6-26-26",
+   "n": 423,
+   "bundle": "/pool/condor/dir_4033660/Analysis/mx17_det6_det7_hv_scan_6-26-26/resist_det6_410V_det7_410V_drift_700V/mx17_7/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    714.0,
+    713.0
+   ],
+   "far": 4.796163069544365,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_415V_det7_415V_drift_700V__mx17_7",
+   "det": "mx17_7",
+   "cls": "consistency",
+   "run": "mx17_det6_det7_hv_scan_6-26-26",
+   "n": 850,
+   "bundle": "/pool/condor/dir_3117922/Analysis/mx17_det6_det7_hv_scan_6-26-26/resist_det6_415V_det7_415V_drift_700V/mx17_7/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    713.0,
+    713.0
+   ],
+   "far": 8.897243107769423,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_420V_det7_420V_drift_700V__mx17_7",
+   "det": "mx17_7",
+   "cls": "consistency",
+   "run": "mx17_det6_det7_hv_scan_6-26-26",
+   "n": 392,
+   "bundle": "/pool/condor/dir_283469/Analysis/mx17_det6_det7_hv_scan_6-26-26/resist_det6_420V_det7_420V_drift_700V/mx17_7/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    713.0,
+    714.0
+   ],
+   "far": 8.115183246073299,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_425V_det7_425V_drift_700V__mx17_7",
+   "det": "mx17_7",
+   "cls": "consistency",
+   "run": "mx17_det6_det7_hv_scan_6-26-26",
+   "n": 826,
+   "bundle": "/pool/condor/dir_2087374/Analysis/mx17_det6_det7_hv_scan_6-26-26/resist_det6_425V_det7_425V_drift_700V/mx17_7/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    714.0,
+    713.0
+   ],
+   "far": 7.515923566878981,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_430V_det7_430V_drift_700V__mx17_7",
+   "det": "mx17_7",
+   "cls": "consistency",
+   "run": "mx17_det6_det7_hv_scan_6-26-26",
+   "n": 420,
+   "bundle": "/pool/condor/dir_316089/Analysis/mx17_det6_det7_hv_scan_6-26-26/resist_det6_430V_det7_430V_drift_700V/mx17_7/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    714.0,
+    714.0
+   ],
+   "far": 5.896805896805897,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_435V_det7_435V_drift_700V__mx17_7",
+   "det": "mx17_7",
+   "cls": "consistency",
+   "run": "mx17_det6_det7_hv_scan_6-26-26",
+   "n": 820,
+   "bundle": "/pool/condor/dir_2804765/Analysis/mx17_det6_det7_hv_scan_6-26-26/resist_det6_435V_det7_435V_drift_700V/mx17_7/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    713.0,
+    714.0
+   ],
+   "far": 5.89711417816813,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_440V_det7_440V_drift_700V__mx17_7",
+   "det": "mx17_7",
+   "cls": "consistency",
+   "run": "mx17_det6_det7_hv_scan_6-26-26",
+   "n": 276,
+   "bundle": "/pool/condor/dir_2057881/Analysis/mx17_det6_det7_hv_scan_6-26-26/resist_det6_440V_det7_440V_drift_700V/mx17_7/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    714.0,
+    713.0
+   ],
+   "far": 8.214285714285714,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_445V_det7_445V_drift_700V__mx17_7",
+   "det": "mx17_7",
+   "cls": "consistency",
+   "run": "mx17_det6_det7_hv_scan_6-26-26",
+   "n": 860,
+   "bundle": "/pool/condor/dir_2949295/Analysis/mx17_det6_det7_hv_scan_6-26-26/resist_det6_445V_det7_445V_drift_700V/mx17_7/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    714.0,
+    714.0
+   ],
+   "far": 6.973995271867612,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_465V_det7_465V_drift_700V__mx17_7",
+   "det": "mx17_7",
+   "cls": "consistency",
+   "run": "mx17_det6_det7_hv_scan_6-26-26",
+   "n": 775,
+   "bundle": "/pool/condor/dir_423437/Analysis/mx17_det6_det7_hv_scan_6-26-26/resist_det6_465V_det7_465V_drift_700V/mx17_7/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "04_maps": "b5a29af",
+    "02_efficiency": "b5a29af"
+   },
+   "z": [
+    713.0,
+    714.0
+   ],
+   "far": 5.921052631578948,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_480V_det7_480V_drift_700V__mx17_7",
+   "det": "mx17_7",
+   "cls": "consistency",
+   "run": "mx17_det6_det7_hv_scan_6-26-26",
+   "n": 377,
+   "bundle": "/pool/condor/dir_3318792/Analysis/mx17_det6_det7_hv_scan_6-26-26/resist_det6_480V_det7_480V_drift_700V/mx17_7/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    714.0,
+    714.0
+   ],
+   "far": 6.459948320413437,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_485V_det7_485V_drift_700V__mx17_7",
+   "det": "mx17_7",
+   "cls": "consistency",
+   "run": "mx17_det6_det7_hv_scan_6-26-26",
+   "n": 725,
+   "bundle": "/pool/condor/dir_2145175/Analysis/mx17_det6_det7_hv_scan_6-26-26/resist_det6_485V_det7_485V_drift_700V/mx17_7/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    712.0,
+    713.0
+   ],
+   "far": 8.310249307479225,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_495V_det7_495V_drift_700V__mx17_7",
+   "det": "mx17_7",
+   "cls": "consistency",
+   "run": "mx17_det6_det7_hv_scan_6-26-26",
+   "n": 668,
+   "bundle": "/pool/condor/dir_138998/Analysis/mx17_det6_det7_hv_scan_6-26-26/resist_det6_495V_det7_495V_drift_700V/mx17_7/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    712.0,
+    713.0
+   ],
+   "far": 6.342780026990553,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_500V_det7_500V_drift_700V__mx17_7",
+   "det": "mx17_7",
+   "cls": "consistency",
+   "run": "mx17_det6_det7_hv_scan_6-26-26",
+   "n": 301,
+   "bundle": "/pool/condor/dir_1245111/Analysis/mx17_det6_det7_hv_scan_6-26-26/resist_det6_500V_det7_500V_drift_700V/mx17_7/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    712.0,
+    711.0
+   ],
+   "far": 4.285714285714286,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "g_det7_long",
+   "det": "mx17_7",
+   "cls": "golden_calib",
+   "run": "mx17_det6_det7_overnight_6-26-26",
+   "n": 8835,
+   "bundle": "/pool/condor/dir_1762206/Analysis/mx17_det6_det7_overnight_6-26-26/long_run/mx17_7/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f",
+    "a72b889"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    712.0,
+    713.0
+   ],
+   "far": 4.755905511811024,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": [
+    "code ['6a0bb1f', 'a72b889']"
+   ]
+  },
+  {
+   "key": "c26__mx17_det6_det7_overnight_6-26-26__longer_run__mx17_7",
+   "det": "mx17_7",
+   "cls": "consistency",
+   "run": "mx17_det6_det7_overnight_6-26-26",
+   "n": 4466,
+   "bundle": "/pool/condor/dir_3624410/Analysis/mx17_det6_det7_overnight_6-26-26/longer_run/mx17_7/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f",
+    "a72b889"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    713.0,
+    713.0
+   ],
+   "far": 5.40990428630878,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": [
+    "code ['6a0bb1f', 'a72b889']"
+   ]
+  },
+  {
+   "key": "c26__mx17_det6_det7_overnight_6-26-26__resist_det6_505V_det7_480V_drift_700V__mx17_7",
+   "det": "mx17_7",
+   "cls": "consistency",
+   "run": "mx17_det6_det7_overnight_6-26-26",
+   "n": 717,
+   "bundle": "/pool/condor/dir_3857020/Analysis/mx17_det6_det7_overnight_6-26-26/resist_det6_505V_det7_480V_drift_700V/mx17_7/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    713.0,
+    714.0
+   ],
+   "far": 5.680317040951123,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det6_det7_overnight_6-26-26__resist_det6_510V_det7_485V_drift_700V__mx17_7",
+   "det": "mx17_7",
+   "cls": "consistency",
+   "run": "mx17_det6_det7_overnight_6-26-26",
+   "n": 695,
+   "bundle": "/pool/condor/dir_651314/Analysis/mx17_det6_det7_overnight_6-26-26/resist_det6_510V_det7_485V_drift_700V/mx17_7/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    713.0,
+    713.0
+   ],
+   "far": 4.639175257731959,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det6_det7_overnight_6-26-26__resist_det6_515V_det7_490V_drift_700V__mx17_7",
+   "det": "mx17_7",
+   "cls": "consistency",
+   "run": "mx17_det6_det7_overnight_6-26-26",
+   "n": 655,
+   "bundle": "/pool/condor/dir_1915550/Analysis/mx17_det6_det7_overnight_6-26-26/resist_det6_515V_det7_490V_drift_700V/mx17_7/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    714.0,
+    714.0
+   ],
+   "far": 3.0997304582210243,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det6_det7_overnight_6-26-26__resist_det6_520V_det7_495V_drift_700V__mx17_7",
+   "det": "mx17_7",
+   "cls": "consistency",
+   "run": "mx17_det6_det7_overnight_6-26-26",
+   "n": 653,
+   "bundle": "/pool/condor/dir_1872183/Analysis/mx17_det6_det7_overnight_6-26-26/resist_det6_520V_det7_495V_drift_700V/mx17_7/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "04_maps": "b5a29af",
+    "02_efficiency": "b5a29af"
+   },
+   "z": [
+    712.0,
+    713.0
+   ],
+   "far": 4.993065187239944,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det6_det7_overnight_6-26-26__resist_det6_525V_det7_500V_drift_700V__mx17_7",
+   "det": "mx17_7",
+   "cls": "consistency",
+   "run": "mx17_det6_det7_overnight_6-26-26",
+   "n": 658,
+   "bundle": "/pool/condor/dir_3561927/Analysis/mx17_det6_det7_overnight_6-26-26/resist_det6_525V_det7_500V_drift_700V/mx17_7/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    713.0,
+    713.0
+   ],
+   "far": 5.710659898477157,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det6_det7_overnight_6-26-26__resist_det6_530V_det7_505V_drift_700V__mx17_7",
+   "det": "mx17_7",
+   "cls": "consistency",
+   "run": "mx17_det6_det7_overnight_6-26-26",
+   "n": 603,
+   "bundle": "/pool/condor/dir_3561928/Analysis/mx17_det6_det7_overnight_6-26-26/resist_det6_530V_det7_505V_drift_700V/mx17_7/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    714.0,
+    714.0
+   ],
+   "far": 4.26098535286285,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": []
+  },
+  {
+   "key": "c26__mx17_det6_det7_overnight_6-26-26__short_run__mx17_7",
+   "det": "mx17_7",
+   "cls": "consistency",
+   "run": "mx17_det6_det7_overnight_6-26-26",
+   "n": 2397,
+   "bundle": "/pool/condor/dir_3561933/Analysis/mx17_det6_det7_overnight_6-26-26/short_run/mx17_7/wft/calib_bundle",
+   "codes": [
+    "6a0bb1f",
+    "a72b889"
+   ],
+   "overrides": [],
+   "post": {
+    "01_alignment": "b5a29af",
+    "03_angles": "b5a29af",
+    "02_efficiency": "b5a29af",
+    "04_maps": "b5a29af"
+   },
+   "z": [
+    714.0,
+    713.0
+   ],
+   "far": 3.8729666924864445,
+   "table": true,
+   "meta": true,
+   "eff": true,
+   "angles": true,
+   "maps": true,
+   "problems": [
+    "code ['6a0bb1f', 'a72b889']"
+   ]
+  }
+ ],
+ "sps": [
+  {
+   "key": "run55_flatdrift__d700",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [
+    173,
+    373
+   ],
+   "problems": []
+  },
+  {
+   "key": "run55_flatdrift__d600",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [
+    172,
+    173,
+    373
+   ],
+   "problems": []
+  },
+  {
+   "key": "run55_flatdrift__d500",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [
+    172,
+    173
+   ],
+   "problems": []
+  },
+  {
+   "key": "run55_flatdrift__d400",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [],
+   "problems": []
+  },
+  {
+   "key": "run56_m70V__590V",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [],
+   "problems": []
+  },
+  {
+   "key": "run56_m70V__625V",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [],
+   "problems": []
+  },
+  {
+   "key": "run57_rot25_co2__d700",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [],
+   "problems": []
+  },
+  {
+   "key": "run57_rot25_co2__d650",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [],
+   "problems": []
+  },
+  {
+   "key": "run57_rot25_co2__d600",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [],
+   "problems": []
+  },
+  {
+   "key": "run57_rot25_co2__d550",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [],
+   "problems": []
+  },
+  {
+   "key": "run59_co2__co2",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [],
+   "problems": []
+  },
+  {
+   "key": "run60_flush__ov00",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [
+    75
+   ],
+   "problems": []
+  },
+  {
+   "key": "run60_flush__ov01",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [
+    373
+   ],
+   "problems": []
+  },
+  {
+   "key": "run60_flush__ov02",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [],
+   "problems": []
+  },
+  {
+   "key": "run60_flush__ov03",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [
+    373
+   ],
+   "problems": []
+  },
+  {
+   "key": "run60_flush__ov04",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [],
+   "problems": []
+  },
+  {
+   "key": "run60_flush__ov05",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [
+    373
+   ],
+   "problems": []
+  },
+  {
+   "key": "run60_flush__ov06",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [],
+   "problems": []
+  },
+  {
+   "key": "run60_flush__ov07",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [
+    70,
+    74,
+    128,
+    311
+   ],
+   "problems": []
+  },
+  {
+   "key": "run60_flush__ov08",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [],
+   "problems": []
+  },
+  {
+   "key": "run60_flush__ov09",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [
+    373
+   ],
+   "problems": []
+  },
+  {
+   "key": "run60_flush__ov10",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [],
+   "problems": []
+  },
+  {
+   "key": "run60_flush__ov11",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [],
+   "problems": []
+  },
+  {
+   "key": "run60_flush__ov12",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [],
+   "problems": []
+  },
+  {
+   "key": "run60_flush__ov13",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [],
+   "problems": []
+  },
+  {
+   "key": "run60_flush__ov14",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [
+    373
+   ],
+   "problems": []
+  },
+  {
+   "key": "run61_op25__op25",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [],
+   "problems": []
+  },
+  {
+   "key": "run61_rot15_ladder__d700",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [],
+   "problems": []
+  },
+  {
+   "key": "run61_rot15_ladder__d630",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [],
+   "problems": []
+  },
+  {
+   "key": "run61_rot15_ladder__d560",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [],
+   "problems": []
+  },
+  {
+   "key": "run61_rot15_ladder__d490",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [],
+   "problems": []
+  },
+  {
+   "key": "run61_rot15_ladder__d420",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [],
+   "problems": []
+  },
+  {
+   "key": "run61_rot15_ladder__d350",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [],
+   "problems": []
+  },
+  {
+   "key": "run61_rot15_ladder__d280",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [
+    373
+   ],
+   "problems": []
+  },
+  {
+   "key": "run61_rot15_ladder__d210",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [],
+   "problems": []
+  },
+  {
+   "key": "run61_rot15_ladder__d140",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [
+    373
+   ],
+   "problems": []
+  },
+  {
+   "key": "run61_rot15_ladder__d070",
+   "n": 2614,
+   "code": "c3e6a04c",
+   "hot": [
+    373
+   ],
+   "problems": []
+  },
+  {
+   "key": "run62_rot25_ladder__d700",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [],
+   "problems": []
+  },
+  {
+   "key": "run62_rot25_ladder__d600",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [],
+   "problems": []
+  },
+  {
+   "key": "run62_rot25_ladder__d500",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [],
+   "problems": []
+  },
+  {
+   "key": "run62_rot25_ladder__d400",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [],
+   "problems": []
+  },
+  {
+   "key": "run62_rot25_ladder__d300",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [],
+   "problems": []
+  },
+  {
+   "key": "run62_rot25_ladder__d200",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [],
+   "problems": []
+  },
+  {
+   "key": "run63_flat__flat700",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [],
+   "problems": []
+  },
+  {
+   "key": "run63_rot25__d675",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [],
+   "problems": []
+  },
+  {
+   "key": "run63_rot25__d575",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [],
+   "problems": []
+  },
+  {
+   "key": "run63_rot25__d475",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [],
+   "problems": []
+  },
+  {
+   "key": "run63_rot25__d625",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [],
+   "problems": []
+  },
+  {
+   "key": "run63_rot25__d525",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [],
+   "problems": []
+  },
+  {
+   "key": "run63_rot25__d425",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [],
+   "problems": []
+  },
+  {
+   "key": "run63_rot25__d325",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [],
+   "problems": []
+  },
+  {
+   "key": "run66_flat_resist__r780",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [],
+   "problems": []
+  },
+  {
+   "key": "run66_flat_resist__r755",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [],
+   "problems": []
+  },
+  {
+   "key": "run66_flat_resist__r730",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [],
+   "problems": []
+  },
+  {
+   "key": "run66_flat_resist__r705",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [],
+   "problems": []
+  },
+  {
+   "key": "run66_flat_resist__r680",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [],
+   "problems": []
+  },
+  {
+   "key": "run66_flat_resist__r655",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [],
+   "problems": []
+  },
+  {
+   "key": "run66_flat_resist__r630",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [],
+   "problems": []
+  },
+  {
+   "key": "run66_flat_resist__r605",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [],
+   "problems": []
+  },
+  {
+   "key": "run66_flat_resist__r580",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [],
+   "problems": []
+  },
+  {
+   "key": "run70_flat_drift__d700",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [],
+   "problems": []
+  },
+  {
+   "key": "run70_flat_drift__d600",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [],
+   "problems": []
+  },
+  {
+   "key": "run70_flat_drift__d500",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [],
+   "problems": []
+  },
+  {
+   "key": "run70_flat_drift__d400",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [],
+   "problems": []
+  },
+  {
+   "key": "run70_flat_drift__d300",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [],
+   "problems": []
+  },
+  {
+   "key": "run70_flat_drift__d200",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [],
+   "problems": []
+  },
+  {
+   "key": "run70_flat_drift__d100",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [],
+   "problems": []
+  },
+  {
+   "key": "run70_flat_drift__d700b",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [],
+   "problems": []
+  },
+  {
+   "key": "run71_raw__raw700",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [],
+   "problems": []
+  },
+  {
+   "key": "run71_raw__raw450",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [],
+   "problems": []
+  },
+  {
+   "key": "run71_raw__raw275",
+   "n": 3000,
+   "code": "c3e6a04c",
+   "hot": [],
+   "problems": []
+  }
+ ]
+}

@@ -1,0 +1,10 @@
+executable = dec53_job.sh
+arguments = $(g)
+output = log/dec53_$(g).out
+error = log/dec53_$(g).err
+log = log/dec53.log
+request_cpus = 1
+request_memory = 4000
++JobFlavour = "longlunch"
+should_transfer_files = NO
+queue g in (000, 001, 002, 003)

@@ -4,8 +4,9 @@ show no overrides, code hash = the archive).  Run on lxplus (reads EOS).
 
 Per non-excluded pass_registry row: the pass table (wft/events.parquet + meta), its 02/03/04 outputs, the bundle it used,
 and every STAGES/*.json of the row: code commit and diagnostic overrides.  Per sps_registry row: events.parquet + meta
-(code, bundle).  Expected code: 6a0bb1f everywhere, d34cf25 for the three run_61 rows whose clock was fixed, a72b889 for
-the three RAW run_71 rows (common-mode subtraction in the cache, REVIEW_2026-10-30.md P2).
+(code, bundle, the seed-rule meta, the head-on estimator columns).  Expected code: 6a0bb1f on the bench; 3ac0e79 on every
+SPS row (the final SPS re-run of 2026-10-30, rerun/sps_audit/README.md; before it: d34cf25 for three run_61 rows, a72b889
+for the RAW run_71 rows).
 
 Since the post phase (2026-10-30, rerun/pass1_review/REVIEW_2026-10-30.md P1): the latest 01 (rows that align themselves),
 02, 03 and 04 stage of a row must be on CODE_POST, and two checks the presence ledger could not make:
@@ -26,8 +27,12 @@ CODE_POST = {'b5a29af'}
 POST_STAGES = ('01_alignment', '02_efficiency', '03_angles', '04_maps')
 ALIGN_TOL_MM = 5.0
 FAR_MAX_PCT = 15.0
-CODE_SPS_FIX = {k: 'd34cf25' for k in ('run61_rot15_ladder__d210', 'run61_rot15_ladder__d140', 'run61_rot15_ladder__d070')}
-CODE_SPS_FIX.update({k: 'a72b889' for k in ('run71_raw__raw700', 'run71_raw__raw450', 'run71_raw__raw275')})
+#: every SPS row since the 2026-10-30 final SPS re-run (rerun/sps_audit/README.md): one code version, with the seed fix
+#: (oscillating ch 372/510 and the per-plateau hot channels kept out of the seed and censored) and the head-on estimators
+CODE_SPS = {'3ac0e79'}
+#: meta keys and table columns the final SPS rows must carry
+SPS_META_KEYS = ('hot_seed_channels',)
+SPS_COLUMNS = ('x_p_mid', 'y_p_mid', 'x_c_pos', 'y_c_pos', 'x_c_n_strips', 'y_c_n_strips', 'ftst')
 
 
 def bench(root):
@@ -104,17 +109,30 @@ def sps(root):
         d = os.path.join(root, 'sps', r['key'])
         mp = os.path.join(d, 'events.meta.json')
         m = json.load(open(mp)) if os.path.exists(mp) else {}
-        want = {CODE_SPS_FIX[r['key']]} if r['key'] in CODE_SPS_FIX else CODE
+        want = CODE_SPS
         problems = []
-        if not os.path.exists(os.path.join(d, 'events.parquet')):
+        tp = os.path.join(d, 'events.parquet')
+        if not os.path.exists(tp):
             problems.append('table')
+        else:
+            import pyarrow.parquet as pq
+            cols = set(pq.read_schema(tp).names)
+            miss = [c for c in SPS_COLUMNS if c not in cols]
+            if miss:
+                problems.append(f"columns {','.join(miss)}")
+        if m:
+            miss = [k for k in SPS_META_KEYS if k not in m]
+            if miss:
+                problems.append(f"meta {','.join(miss)}")
+            elif 'RAW_CM_BAD' not in str(m.get('seeding', '')):
+                problems.append('seeding rule')
         if m and m.get('code') not in want:
             problems.append(f"code {m.get('code')}")
         if m and m.get('diagnostic_overrides'):
             problems.append('overrides')
         if m and 'Analysis_pass1' not in str(m.get('bundle')):
             problems.append('bundle not pass1')
-        row = dict(key=r['key'], n=m.get('n_events'), code=m.get('code'), problems=problems)
+        row = dict(key=r['key'], n=m.get('n_events'), code=m.get('code'), hot=m.get('hot_seed_channels'), problems=problems)
         rows.append(row)
         if problems:
             bad.append(row)
@@ -127,7 +145,7 @@ def main():
     B, Bbad = bench(a.root); S, Sbad = sps(a.root)
     L = [f'# Pass 1 completion ledger', '',
          f'Bench: {len(B)} non-excluded rows, {len(B) - len(Bbad)} complete; SPS: {len(S)} rows, {len(S) - len(Sbad)} complete.',
-         f'Expected code: {sorted(CODE)} (SPS run_61 clock rows: d34cf25, run_71 RAW rows: a72b889); 01-04: {sorted(CODE_POST)}. Alignment within '
+         f'Expected code: bench {sorted(CODE)}, SPS {sorted(CODE_SPS)} (seed fix + head-on estimators: meta {list(SPS_META_KEYS)}, columns {list(SPS_COLUMNS)}); 01-04: {sorted(CODE_POST)}. Alignment within '
          f'{ALIGN_TOL_MM:g} mm of its night, reco_far <= {FAR_MAX_PCT:g} %.', '']
     if Bbad:
         L += ['## Bench rows with problems', '| row | cls | n | problems |', '|---|---|---|---|']

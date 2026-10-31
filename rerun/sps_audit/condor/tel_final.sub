@@ -1,0 +1,10 @@
+executable = tel_job.sh
+arguments = $(tag) $(run) $(sub) $(grp) $(f3) $(ns) $(keys) $(qmin) $(scan)
+output = log/$(tag)_$(grp).out
+error = log/$(tag)_$(grp).err
+log = log/tel.log
+request_cpus = 8
+request_memory = 16000
++JobFlavour = "workday"
+should_transfer_files = NO
+queue tag,run,sub,grp,f3,ns,keys,qmin,scan from jobs_final.txt

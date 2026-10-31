@@ -230,7 +230,7 @@ def main():
             if c != 'event_id':
                 o[f'd4_{c}'] = val
         rows.append(o)
-    df = pd.DataFrame(rows)
+    df = pd.DataFrame(rows) if rows else pd.DataFrame({'eid': pd.Series(dtype='int64'), 'group': pd.Series(dtype=str), 'key': pd.Series(dtype=str)})
     df.to_parquet(a.out, index=False)
     if hits is not None:
         sel = np.isin(hits['ev'], df.eid.values)

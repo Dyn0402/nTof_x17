@@ -1,4 +1,210 @@
-# Audit of the SPS H4 det4 (mx17_E) analysis on pass 1, 2026-10-30
+# det4 (mx17_E) at SPS H4: final pass, 2026-10-30
+
+This is the final SPS pass that Dylan approved. Every SPS row was re-run on one code version, `3ac0e79`, which includes
+the seed fix found in the audit (Part 2 below). Every head-on position estimator is stored per event. The resolution,
+footprint and timing are measured with a minimal, justified selection.
+
+- Report: `report/report_final.html` (`make_report_final.py`). The audit page is `report/report.html`.
+- Products: `Analysis_pass1/sps/<key>/`, replaced after a verified backup.
+- Telescope tables: `/eos/user/d/dneff/x17rerun/sps_audit/tel/F*`. Footprint tables: `.../footprint/`.
+
+## 1. Answer: which run the paper's position resolution should come from
+
+**Quote run 63 flat700 (Ar/CF4/iso 88/10/2, ZS 64 samples, flat). Use run 53 as the Ar/CO2/iso cross-check. Do not
+use run 71 (RAW) for a resolution.**
+
+- **Run 63 gives the most tracks with the telescope calibrated in the same run.**
+  - It has 87 683 telescope tracks with a det4 record, and 59–63 k per view after the fiducial cut.
+  - All three back-plane pitch zones are populated in both coordinates. So the free 3-zone fit measures the telescope
+    (f) and det4 together, in run 63 itself.
+  - It does not borrow the run-53 telescope model. The fitted f is 0.25–0.29 here, against 0.29–0.30 on run 53 with the
+    same estimator.
+- **Run 53 can be put through the fixed chain, and it reproduces the original number when read the original way.**
+  - Its FEU 3 data were re-decoded with the pinned decoder fa80c06. The first 20 000 events are identical, byte for
+    byte, to banco's decode.
+  - Through the fixed chain with no pass cut it gives 91 832 telescope tracks with det4.
+  - On the same events, the run-53 hits estimator gives **det4 Y = 177 ± 10 µm** (3-zone fit, f = 0.293). That is the
+    2026-08-13 176 ± 10 µm again.
+  - Its limits:
+    - only Y has the 0.5 mm zone; X has two zones, so X is pointing-model dependent;
+    - the gas (Ar/CO2/iso 95/3/2) and gain (resist 505–535 V) are not those of the CF4 data;
+    - it is ZS with 32 samples, and the pass's angle scale is wrong there (no v), which spoils the wft fit (see 2).
+- **Run 71 (RAW) cannot give the resolution.**
+  - Only 25 % of its telescope tracks pass the cross-view fiducial, against 62–75 % on ZS. The 3.84 µs RAW window
+    collects beam pile-up, and the self-seeded window often picks another particle.
+  - The 0.5 mm zone is empty.
+  - In the 1.0 mm zone the residual (230–340 µm) is at or below the telescope pointing, so det4 is not separable.
+  - It remains a cross-check: X 1.0-zone residual 269 ± 10 µm (p_mid), Y 232 ± 7 µm.
+- **The telescope model therefore does not hinge on run 53.** f is measured independently in run 63 and run 66 (all
+  zones, every estimator).
+  - Its spread across estimators and runs (0.25–0.34) is the main systematic: about ±40 µm on det4.
+  - This is because f and det4 are anticorrelated in the 3-zone fit.
+
+## 2. Position resolution (µm, det4 intrinsic from the free 3-zone fit; per-zone values in `results/final.json`)
+
+| run (n per view after fiducial) | view | fit p0 | p0 read 7.5 mm into gap (p_mid) | charge centroid | hits (run-53 method) |
+|---|---|---|---|---|---|
+| run 63 flat700, CF4 ZS64 (59–63 k) | X | 314 ± 8 (f 0.280) | **209 ± 11** (f 0.280) | 280 ± 6 (f 0.269) | n/a (no det4 hits in combined_hits) |
+| | Y | **190 ± 10** (f 0.276) | 217 ± 12 (f 0.285) | 199 ± 10 (f 0.252) | n/a |
+| run 66 r580–r730, CF4 ZS32 (27–33 k) | X | 335 ± 11 | 270 ± 14 | 240 ± 7 | n/a |
+| | Y | 197 ± 13 | 165 ± 15 | 173 ± 9 | n/a |
+| run 53, Ar/CO2/iso ZS32 (35–39 k) | X | 2 zones: 1.0 → 395, 1.5 → 375 | 312 / 308 | 170 / 157 | 189 / 133 |
+| | Y | 262 ± 12 | 286 ± 17 | **154 ± 8** (f 0.254) | **177 ± 10** (f 0.293) |
+| run 71 raw700, CF4 RAW64 (1.5–1.9 k) | X | 1.0 zone residual 338 ± 13 | 269 ± 10 | 340 ± 10 | — |
+| | Y | 1.0 zone residual 247 ± 8 | 232 ± 7 | 239 ± 7 | — |
+
+Read the table as follows:
+- **The estimator matters by up to 1.6×, and differently per view.**
+  - CF4: p_mid is the best X estimator (run 63: 209 against 280 and 314 µm). p0 and the centroid are the best Y
+    estimators (190 and 199 against 217 µm).
+  - Ar/CO2 run 53: the centroid and hits beat the wft fit in both views. The fit has no v there, so the bench v
+    (33 µm/ns) sets its angle scale, and its 32-sample window cuts the column.
+  - Dylan picks the estimator; all four are stored per event: `x/y_p0`, `x/y_p_mid`, `x/y_c_pos`, and hits in the
+    telescope tables.
+- **det4 X is consistently worse than Y.** In CF4: X 209–335 µm against Y 165–217 µm.
+  - It is not an edge effect of the dead stripes: keeping tracks ≥ 1 mm inside a live band changes X by ≤ 4 %
+    (`band_edge.py`, `results/band_edge.json`).
+  - It is not a wider footprint either: without zero suppression (run71 RAW) the neighbour/lead ratio is 0.31 (X)
+    against 0.34 (Y). The X/Y difference stays unexplained.
+- **The wft fit's p0 is the position at the mesh.** At normal incidence its angle noise leaks into it (X tan s68 ≈ 0.1
+  on ZS). p_mid = p0 + 7.5 mm × tan reads the track where the p0–angle correlation vanishes. The 7.5 mm was chosen on
+  run 63 and applied unchanged elsewhere. It depends on v, so it is meaningless on rows without v (run 53, run 55).
+
+## 3. Selection: what is cut and why (paper methods)
+
+These are the only cuts on the resolution sample. Each is justified by a number from the data.
+
+1. **Telescope track: exactly one cluster in each of the four uRWELL plane-views** (front and back, x and y; clusters
+   of hit strips in position, gap 3 mm).
+   - 82 % of four-view events on run 53, 71 % on run 55.
+   - In the rejected multi-cluster events, the leading back cluster agrees with the front plane within 3 mm in only
+     40–43 % of cases, against 87–93 % for single-cluster events. The 68 % width of back − front is 19–24 mm against
+     0.8–1.1 mm, so the leading cluster there is often another particle (`tel_cut.py`, `results/tel_cut.json`).
+2. **det4 signal in both views.** The brightest strip of each view, excluding the oscillating/hot channels, is at least
+   50 ADC (5 × the 10 ADC strip noise).
+   - This is the noise floor. Below it a "seed" is a noise sample.
+   - Run 53: 91 832 of 398 397 single-cluster telescope tracks pass (23 %). The rest cross the dead amplification
+     stripes or are outside det4's window.
+3. **Estimator defined.** The fit converged (p0, p_mid), a cluster above 50 ADC exists (centroid), or exactly one hit
+   cluster per view inside the drift-time gate (hits, run-53 method).
+   - For the comparison table, every estimator is required on the same events.
+4. **Cross-view fiducial: the other view's residual within ±1.5 mm.** The residual has a narrow core on a flat floor
+   (`figures/final_fiducial.png`).
+   - The floor is tracks crossing a dead X stripe: det4 then reads another particle in a live band. The failure
+     fraction is 0.15–0.3 inside live bands and ~1.0 inside dead ones, against the telescope position.
+   - Passing: 62–76 % of tracks on ZS, 25 % on RAW.
+   - It is independent of the view being measured.
+5. **Plateau and beam.** Events within 20 s of a drift/resist plateau edge are dropped (the pass rule). run60 ov07 is
+   not used.
+
+The resolution is the σ of a Gaussian fitted to the residual core in a fixed ±1.2 mm window (not an iterative clip).
+The alignment is a robust 2-D affine.
+
+**Cuts tested and NOT applied, because they do not change the core width.** Core σ in µm, wft p0, passing / failing /
+all (`results/final.json` 'tests'):
+
+| candidate cut | passes | effect |
+|---|---|---|
+| the pass's χ²/dof ≤ 5 × median | 81–94 % | X and Y change ≤ 6 %, with no consistent sign (run63 X 441/415/439, Y 331/332/332) |
+| the pass's seed cut (peak ≥ 300 ADC and ≥ 4 strips, both views) | 5–27 % | ±10 % with no consistent sign: better in run63/66/71 X (−7…−14 %), worse in run53 Y (+13 %) and run55 d500; it would discard 73–95 % of the tracks |
+| cluster ≤ 6 strips (pile-up/delta) | 95–99 % | no change (≤ 1 %) |
+| track ≥ 1 mm inside a live X band | 70–80 % | X changes ≤ 4 % |
+
+## 4. Timing: not measurable at the level of interest (limitation)
+
+- The trigger at H4 is asynchronous to the 60 ns DREAM clock. The fine timestamp ftst gives its phase in 6 classes.
+- **The wft fit's t0 is not a time at normal incidence.** With w = 0 every depth lands on the same strips, and the
+  profiled depth distribution absorbs a t0 shift. Across 1.2–34 k events per dataset, t0_X − t0_Y has a robust σ of
+  180–260 ns (ZS) and 260–390 ns (RAW).
+- The cluster's own leading edge (`footprint.py`: 50 % or 20 % of the summed waveform's maximum, or a 100 ADC column
+  start) does no better:
+  - σ(X − Y) = 170–210 ns (CF4 ZS), 132 ns at best (run71 RAW raw700, no zero suppression) and 280–410 ns (Ar/CO2);
+  - against the ftst-corrected trigger: 400–440 ns (CF4) and 940–1000 ns (Ar/CO2);
+  - the ftst correction does not sharpen it (the best sign changes from row to row).
+- The column of a head-on track spans the whole 30 mm gap (~2 µs). Its shape is set by where the primary clusters sit,
+  so the threshold crossing moves by a large fraction of the column.
+- A ns-level time resolution would need the column start of a single primary cluster and a precise trigger reference.
+  Neither is in this data. **det4's time resolution is not measured. The numbers above are an upper bound on what these
+  estimators give, not the chamber's resolution.**
+
+## 5. Footprint at normal incidence (`results/footprint.csv`, `figures/final_footprint.png`)
+
+Sample: every flat row, 3000 events each, no pass cut. Seed ≥ 50 ADC; censored strips are bridged. The cluster is the
+strips above 50 ADC within ±4 samples of the lead's peak.
+
+- **Resist scan (run66, CF4, 243 V/cm, 580 → 780 V).** Mean cluster size grows 2.23 → 2.38 strips (X) and 2.37 → 2.72
+  (Y). The lead-strip fraction falls 0.64 → 0.61 (Y) and stays at 0.61 (X). The median summed peak rises only
+  300 → 370 ADC (X).
+- **Drift field.**
+  - run70 (CF4, 770 V, 35 → 243 V/cm): 2.08 → 2.31 strips (X), 2.15 → 2.62 (Y); lead fraction 0.65 → 0.62.
+  - run55 (Ar/CO2/iso, 550 V, 139 → 243 V/cm): 1.77 → 1.89 (X), 1.84 → 2.42 (Y). Y is mostly single-strip at low field
+    (median lead fraction 1.0).
+- **Threshold-free footprint (run71 RAW, no zero suppression, 243 V/cm).** The cluster has 2.25 (X) and 3.02 (Y)
+  strips above 50 ADC. The lead strip carries 0.65 (X) / 0.58 (Y) of the cluster's peak sum, and each neighbour
+  0.31 (X) / 0.34 (Y) of the lead.
+  - At 156 and 96 V/cm: 2.11/2.85 and 1.87/2.72 strips.
+  - On ZS rows the X neighbour ratio reads 0.50–0.55 against Y 0.38–0.43. That is the ZS threshold (a suppressed
+    neighbour is a zero), not the chamber.
+- **Limitation.** The ZS threshold sets the visible footprint on ZS rows, so the strip counts are above-threshold
+  multiplicities, not the charge-sharing kernel. The kernel itself is the pass's calibration (`sharing_kernel/`, bundle
+  hyper).
+
+## 6. Re-run done (seed fix), ledger, and what changed in the products
+
+- **Products.** The 71 SPS rows were re-run twice, all on one code version each time (`make_pass_dag.py sps`, staged,
+  then `condor/promote_sps.sh`, which md5-verifies a backup before copying).
+  1. **`c3e6a04c`, the seed fix and the head-on columns.** Staged in `.../sps_final_stage/sps/`. The pass-1 products
+     are backed up in `/eos/user/d/dneff/x17rerun/pass1_backup_2026-10-30/sps_before_seedfix/`.
+  2. **`3ac0e79`, final.** The oscillating/hot strips' samples are now also blanked inside the window. They were already
+     censored in the fit, but the fit's start (`wft.model.init_guess`, the brightest strip of the window) could still
+     land on them.
+     - The pile-up at 156–160.5 mm left after the seed fix: run55 d700 7.9 → 3.6 %, run57 d650 3.2 %, run60
+       ov01/03/05/09 2.4–3.2 %, run59 2.8 %.
+     - Staged in `.../sps_final2_stage/sps/`. The `c3e6a04c` products are backed up in `.../sps_before_blanking/`.
+- **Ledger.** `pass1_ledger.py` now requires on every SPS row:
+  - code `3ac0e79`;
+  - the meta key `hot_seed_channels`, and a seeding rule that names `RAW_CM_BAD`;
+  - the head-on columns `x/y_p_mid`, `x/y_c_pos`, `x/y_c_n_strips`, `ftst`.
+
+  Result: pending (the 3ac0e79 DAG; see the next commit).
+- **Census of what changed** (`results/seed_census.csv`):
+  - **run71 raw275/450/700: 81–83 % of events had a pre-fix seed on ch 372 or 510.** The RAW Y windows were mostly on
+    the oscillation.
+  - 15 ZS rows by 2–46 % (ov07 46 %, run55 d700 31 %, run57 d650/d700 16 %, ...);
+  - 42 rows by ≤ 0.4 % (a quiet ch 510);
+  - 11 rows not at all.
+  - Hot channels found by the per-plateau probe (excluded from the seed and censored):
+    - run55 d700: 173, 373; d600: 172, 173, 373; d500: 172, 173;
+    - run60 ov00: 75;
+    - run60 ov01/03/05/09/14: 373;
+    - run60 ov07: 70, 74, 128, 311;
+    - run61 d070/d140/d280: 373;
+    - every row also excludes 372 and 510.
+- **New per-event columns in every SPS table:**
+  - `x/y_p_mid`;
+  - `x/y_c_pos`, `_c_n_strips`, `_c_q_sum`, `_c_q_lead`, `_c_lead_frac`, `_c_nb_lo`, `_c_nb_hi`, `_c_t_peak_ns`;
+  - `ftst`.
+- **The pass rows keep the pass selection** (peak ≥ 300 ADC, ≥ 4 strips, 3000 events per plateau). The resolution
+  sample above is the separate telescope-first sample without that cut.
+
+## 7. Limitations
+
+- **Telescope pointing model.** It is self-calibrated only where all three back-plane zones are populated: run 53 (Y),
+  run 63 and run 66 (both views). The fitted f ranges 0.25–0.34 across estimators and runs, and det4 moves with it
+  (±40 µm).
+- **run 55 and run 71 have no 0.5 mm zone.** Their per-zone det4 values use f = 0.301 and fall to 0 where the residual
+  is below that pointing.
+- **The hits estimator exists only where banco's combined_hits carry det4 (runs 53, 55).** Runs 63 and 66 have uRWELL
+  hits only.
+- **Unfinished telescope groups.** None: all 59 telescope groups (run53 ×4, run55 ×6, run63 ×9, run66 ×4, run71 ×36) are in.
+- **Time resolution:** not measured (section 4).
+- **The SPS gases (Ar/CO2/iso 95/3/2, Ar/CF4/iso 88/10/2) are not n_TOF's.** These numbers characterise the
+  detector technology at normal incidence, not the n_TOF conditions.
+
+---
+
+# Part 2: the audit that found the seed bug (earlier the same day)
+
 
 Question: on 2026-08-13 det4 measured about 176 µm at normal incidence in both views (run 53, hits, against the uRWELL
 telescope). Today's follow-up (`../sps_followup/README.md`, commit a07f9464) reported, on RAW run71 through pass 1,
@@ -200,4 +406,9 @@ Re-run the run71 rows first: they are the only RAW rows, and the only rows where
 | `seed_diff.py`, `collect_seed_diff.py` | first event-level count with the intermediate mask (superseded by the census) |
 | `seed_census.py`, `collect_census.py` | which events the committed fix changes, per row → `results/seed_census.csv` |
 | `make_report.py` | `report/report.html` |
+| `analyze_final.py`, `make_report_final.py` | the final numbers → `results/final.json`, `results/footprint.csv`; `report/report_final.html` |
+| `footprint.py` | head-on footprint and leading-edge times of every flat row, no pass cut (condor) |
+| `tel_cut.py`, `band_edge.py` | the telescope-cut justification; the live-band edge test |
+| `condor/make_jobs_final.py`, `condor/dec53_job.sh`, `condor/promote_sps.sh` | final telescope job lists; run 53 fa80c06 decode; verified backup + promotion |
+| `results/ledger_2026-10-31.md` | the ledger after the final promotion |
 | `condor/` | job scripts, submit files, job lists |

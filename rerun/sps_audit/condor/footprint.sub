@@ -1,0 +1,10 @@
+executable = footprint_job.sh
+arguments = $(key)
+output = log/fp_$(key).out
+error = log/fp_$(key).err
+log = log/fp.log
+request_cpus = 1
+request_memory = 24000
++JobFlavour = "workday"
+should_transfer_files = NO
+queue key from keys_flat.txt
