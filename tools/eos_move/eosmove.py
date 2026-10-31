@@ -152,8 +152,19 @@ def copy_one(src, dst, rel, size):
     return rel, 'fail', r.stderr.strip().replace('\t', ' ').replace('\n', ' ')[-300:]
 
 
+#: 2026-10-31 incident: moving x17rerun/m3_audit (12 symlinks into cosmic_bench/june_tests) deleted the link
+#: TARGETS (the golden rows' M3 v2 rays) and left a loop; they were restored from the n_TOF recycle bin
+#: (restore_v2_rays.sh).  Until the link path is understood and tested, a tree with any symlink is refused.
+def refuse_links(src, links, a):
+    if links and not getattr(a, 'allow_links', False):
+        sys.exit(f'{src}: {len(links)} symlink(s) inside; refusing (see the 2026-10-31 incident in README.md). '
+                 'Move the real files, recreate the links by hand, or pass --allow-links after testing on a copy.\n'
+                 + ''.join(f'  {r} -> {t}\n' for r, t in links[:20]))
+
+
 def cmd_copy(a):
     files, links, dirs = walk(a.src)
+    refuse_links(a.src, links, a)
     m = load(a.src)
     idx = dedupe_index(a.dedupe_root) if a.dedupe_root else {}
     todo = []
@@ -237,6 +248,7 @@ def cmd_finish(a):
         sys.exit('verify not clean: nothing removed')
     m = load(a.src)
     S, links = listing(a.src), links_of(a.src)
+    refuse_links(a.src, links, a)
     if len(set(S) | set(r for r, _ in links)) != len([r for r in m.values() if r[4] in ('verified', 'dup', 'link')]):
         sys.exit('manifest does not cover the tree: nothing removed')
     dups = [r for r in m.values() if r[4] == 'dup']
@@ -271,6 +283,7 @@ if __name__ == '__main__':
     p.add_argument('src')
     p.add_argument('dst')
     p.add_argument('--dedupe-root')
+    p.add_argument('--allow-links', action='store_true')
     p.add_argument('-j', type=int, default=16)
     a = p.parse_args()
     a.src, a.dst = a.src.rstrip('/'), a.dst.rstrip('/')
