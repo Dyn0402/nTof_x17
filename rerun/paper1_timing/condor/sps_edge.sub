@@ -1,0 +1,13 @@
+# Paper I §7 at SPS: the strip sums of every flat row (sps_edge.py), as rerun/sps_audit/condor/footprint.sub
+executable     = /bin/bash
+arguments      = $(code)/rerun/paper1_timing/condor/sps_edge_job.sh $(code) $(key)
+output         = log/sps_$(key).out
+error          = log/sps_$(key).err
+log            = log/sps.log
+request_cpus   = 1
+request_memory = 24000
++JobFlavour    = "workday"
+should_transfer_files = NO
+max_retries    = 3
+requirements   = (Machine != "b9g42p2031.cern.ch")
+queue key from sps_keys.txt
