@@ -49,18 +49,24 @@ SEED_BAD[list(RAW_CM_BAD)] = True
 #: +-4 position neighbours in the same view is excluded from seeding for that plateau (HOT_LAST records it).  A real
 #: beam strip seeds ~1 % (Y) to ~7 % (X, inside a 12 mm live band) with neighbours at the same level, a band-edge strip
 #: at most ~3x its neighbours; the oscillating strips seed 4-45 % against 0-15 / 3000 around them (rerun/sps_audit/README.md).
-#: The probe reads the plateau's OWN events (HOT_SCAN None = the row's per_plateau, the same first events the cache
-#: keeps), in blocks of HOT_BLOCK events, and a channel hot in any block is hot for the plateau.  It was the first 2000
-#: events as one block until 2026-10-31: an oscillation that is on in part of the plateau only was missed or caught by
-#: chance (run61 d210: ch 373 seeds 4.2 % of the row but < 3 % of its first 2000 events, a 1.3 % excess kept; run55 d600:
-#: the reverse) (rerun/sps_junk/README.md).
+#: The probe reads the plateau's events of the sub-run, as many as the row keeps but at least HOT_SCAN_MIN (HOT_SCAN None),
+#: in blocks of HOT_BLOCK events, and a channel hot in any block is hot for the plateau.  It was the first 2000 events as
+#: one block until 2026-10-31: an oscillation that is on in part of the plateau only was missed or caught by chance
+#: (run61 d210: ch 373 seeds 4.2 % of the row but < 3 % of its first 2000 events, a 1.3 % excess kept).  The minimum keeps
+#: what the 2000-event probe saw where a sub-run gives the row only a few hundred events (run60 ov14: 373 oscillates in
+#: overnight_14 after the row's events; excluding a channel that is quiet costs one censored strip, keeping an oscillator
+#: costs junk windows) (rerun/sps_junk/README.md).
 #: The neighbours are the +-4 position neighbours that are NOT under a dead amplification stripe or electronically dead
 #: (rerun/channel_layer/det4_sps_h4.json 'dead_stripes', STRIPE).  Until 2026-10-31 the dead ones counted, with ~0 seeds:
 #: the last live strip at a stripe edge inside a busy beam (X ch 172/173, 214 mm, on run55: the beam spot ends there) read
 #: as > 10x its neighbours and was censored as hot in run55 d500-d700, and with it the beam's edge.
+#: HOT_FRAC was 3 % of the 2000 events until 2026-10-31; it is 1 % of a 1000-event block (>= 10 seeds) since: on run55
+#: d600 ch 373 is ON in 4-7 % of the events and seeds 2.3-2.6 % of each block against 0.1-0.4 % for its live neighbours.
+#: The ratio to the live neighbours is what separates an oscillator from a beam strip; the floor only asks for statistics.
 HOT_SCAN = None
+HOT_SCAN_MIN = 2000
 HOT_BLOCK = 1000
-HOT_FRAC = 0.03
+HOT_FRAC = 0.01
 HOT_RATIO = 10.0
 HOT_LAST = {}
 #: Cross-talk of an oscillator onto its neighbours (rerun/sps_junk/README.md, 2026-10-31).  The oscillation is periodic
@@ -296,7 +302,7 @@ def build_cache(run, subrun, dataset, per_plateau=1000, half_win=16, tan=None, e
     a = argparse.Namespace(run=run, subrun=subrun, dataset=dataset, per_plateau=per_plateau, half_win=half_win,
                            tan=float(np.tan(np.radians(25.64))) if tan is None else tan, edge_s=edge_s, qmin=qmin, seed_bad={},
                            couple={}, keep_peaks=keep_peaks)
-    n_scan = per_plateau if hot_scan is None else hot_scan
+    n_scan = max(per_plateau, HOT_SCAN_MIN) if hot_scan is None else hot_scan
     if n_scan and per_plateau > 0:
         probe = build_cache(run, subrun, dataset, n_scan, half_win, tan, edge_s, qmin, only, False, hot_scan=0,
                             keep_peaks=True)
