@@ -56,8 +56,12 @@ def apply(key, reg, vt_dir, out_root, root, measure=None):
         t1 = np.where(ok, tan_map(cal, p, w, a, S, rr), np.nan)
         # closure: r = 1 must give back the pass table's own tangent
         tt = df[f'{p}_tan_theta'].to_numpy()
-        k = ok & np.isfinite(t0) & np.isfinite(tt)
-        summ[f'{p}_closure_max'] = float(np.max(np.abs(t0[k] - tt[k]))) if k.any() else np.nan
+        # (on the sane fits, |tan| <= 3: wft.compat.apply_fit_sanity's cut, which the raw parquet does not carry)
+        k = ok & np.isfinite(t0) & np.isfinite(tt) & (np.abs(tt) <= 3.0)
+        dd = np.abs(t0[k] - tt[k])
+        summ[f'{p}_closure_max'] = float(dd.max()) if k.any() else np.nan
+        summ[f'{p}_closure_frac_1e-6'] = float(np.mean(dd < 1e-6)) if k.any() else np.nan
+        summ[f'{p}_n_insane'] = int((ok & np.isfinite(tt) & (np.abs(tt) > 3.0)).sum())
         out[f'{p}_tan_vt'] = t1
         out[f'{p}_theta_deg_vt'] = np.degrees(np.arctan(t1))
         out[f'{p}_mid_vt'] = df[f'{p}_p0'].to_numpy() + 15.0 * t1
