@@ -2,7 +2,7 @@
 # promote_rows.sh <stage dir> <code> <backup dir>: the staged SPS rows (a subset) replace theirs in Analysis_pass1/sps,
 # after a verified backup of exactly those rows (rerun/sps_audit/condor/promote_sps.sh, for a subset).
 #   2026-10-31: bash promote_rows.sh /eos/user/d/dneff/x17rerun/sps_junk/stage 1b142fbf \
-#               /eos/user/d/dneff/x17rerun/pass1_backup_2026-10-31/sps_before_coupled
+#               /eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/pass1_backup_2026-10-31/sps_before_coupled
 # 1. every staged row must have events.parquet + events.meta.json on the expected code, else stop;
 # 2. back up each such row's current Analysis_pass1/sps/<key>/ (all files) to <backup dir>/<key>/, verify by md5;
 # 3. copy the staged files in, verify by md5.

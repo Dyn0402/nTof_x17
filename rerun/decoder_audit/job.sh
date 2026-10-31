@@ -1,13 +1,13 @@
 #!/bin/bash
 # job.sh <fdf on EOS> -- W9 re-decode of one June bench .fdf with the pinned decoder (fa80c06) + independent audit.
 #   decoded -> <subrun>/decoded_root_fa80c06/<base>.root (next to the old decoded_root, which is left untouched)
-#   audit   -> /eos/user/d/dneff/x17rerun/decode_audit/<run>/<subrun>/<base>.{json,npz,log}
+#   audit   -> /eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/decode_audit/<run>/<subrun>/<base>.{json,npz,log}
 set -u
 FDF=$1
 SUBDIR=$(dirname $(dirname $FDF)); SUB=$(basename $SUBDIR); RUN=$(basename $(dirname $SUBDIR))
 FB=$(basename $FDF .fdf)
 DOUT=$SUBDIR/decoded_root_fa80c06
-AOUT=/eos/user/d/dneff/x17rerun/decode_audit/$RUN/$SUB
+AOUT=/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/decode_audit/$RUN/$SUB
 for k in 1 2 3; do mkdir -p $DOUT $AOUT 2>/dev/null; [ -d $DOUT ] && [ -d $AOUT ] && break; sleep 5; done
 if [ -s $AOUT/$FB.json ] && [ -s $DOUT/$FB.root ]; then echo "done already"; exit 0; fi
 set +u; source /cvmfs/sft.cern.ch/lcg/views/LCG_110/x86_64-el9-gcc14-opt/setup.sh >/dev/null 2>&1; set -u

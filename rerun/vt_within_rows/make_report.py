@@ -253,7 +253,7 @@ ends (up to ~2° at 30° on det6), which the s68 around the median only partly s
 <li>Rows shorter than ~2 blocks (HV-scan rows, 20 min) get the night curve; their within-row change is ≤ 1–2 %.</li>
 <li>Only det6/det7 6-26. det4's golden (6-24) and its 6-23 rows, and det2 6-23, are the other GC candidates; not done here.</li></ul>
 <p>Products: corrected tables (event_id, acq_tag, t_h, v_rel, x/y_tan_vt, x/y_theta_deg_vt, x/y_mid_vt, z_end_vt) and vt_map.json per row in
-<code>/eos/user/d/dneff/x17rerun/vt_correction/&lt;run&gt;/&lt;subrun&gt;/&lt;det&gt;/</code>. Join on event_id (unique within each of these rows).
+<code>/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/vt_correction/&lt;run&gt;/&lt;subrun&gt;/&lt;det&gt;/</code>. Join on event_id (unique within each of these rows).
 Scripts: <code>rerun/vt_within_rows/</code>.</p>
 </body></html>"""
 open(os.path.join(HERE, 'report.html'), 'w').write(page)

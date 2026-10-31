@@ -12,7 +12,7 @@ A=/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_rr1/$REL/wft
 O=$A/w12/$IT/fit_$MODE; mkdir -p $O
 W=${_CONDOR_SCRATCH_DIR:-/tmp/$USER}/w12_$$; mkdir -p $W; cd $W
 cp $A/w12/$IT/cache.pkl cache.pkl
-cp /eos/user/d/dneff/plane_ratio/inputs/$DET/bundle.tgz . && mkdir -p src && tar xzf bundle.tgz -C src
+cp /eos/experiment/ntof/data/x17/analysis/user_misc/plane_ratio/inputs/$DET/bundle.tgz . && mkdir -p src && tar xzf bundle.tgz -C src
 B=$(ls -d $W/src/*/)
 $PY -c "import json;a=json.load(open('$A/$SEED'));json.dump(dict(arm='seed',hyper=a['hyper']),open('seed.json','w'))"
 V0=$($PY -c "import json;print(json.load(open('$A/$SEED'))['v'])")

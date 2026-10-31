@@ -106,7 +106,7 @@ then against the r06 copy kernel and the held-out bench; writes
 | `make_iso_jobs.py [--ext]`, `iso_fit.py` | Magboltz Ar/iso × water grid (condor 4440949/4440956 → `results/iso/`); joint v + D_T fit → `results/iso_fit.json` |
 | `make_xwidth_report.py` | figures + report.html |
 | `xw_sim.py prep / tune / run / collect` | closure toy of the X-width estimator on real layouts (§33): `prep` + `tune` local → `results/xw_sim/inputs.pkl`; `run` on condor; `collect` → `results/xw_sim.json` |
-| `make_xw_sim_jobs.py`, `run_xw_sim.sh`, `condor_xw_sim.sub` | lxplus `~/cloud_basics_condor/xwsim` (payload = xw_sim, x_width, rc_diffusion, bench_attach, width_vs_time .py + inputs.pkl); raw out on EOS `/eos/user/d/dneff/cloud_basics/xw_sim/` |
+| `make_xw_sim_jobs.py`, `run_xw_sim.sh`, `condor_xw_sim.sub` | lxplus `~/cloud_basics_condor/xwsim` (payload = xw_sim, x_width, rc_diffusion, bench_attach, width_vs_time .py + inputs.pkl); raw out on EOS `/eos/experiment/ntof/data/x17/analysis/user_misc/cloud_basics/xw_sim/` |
 | `xw_tan.py [--split ref_mesh_x\|ref_mesh_y]` | X D_T in signed tan_x bins, data + toy: drift-field tilt δ (§34) → `results/xw_tan.json` |
 | `xw_amp.py` | exclusive amplitude terciles: fits free / T pinned / σ0+T pinned, model-free m2, positions, toy (§34) → `results/xw_amp.json` |
 | `xw_compress.py` | neighbour/peak ratio at the peak sample against peak ADC, data vs toy (§34) → `results/xw_compress.json` |

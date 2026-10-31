@@ -2,7 +2,7 @@
 # run_guard.sh <det> -- guard_bench.py on the det's bench big cache (rerun pre-check W2)
 set -eu
 DET=$1
-EOSD=/eos/user/d/dneff/plane_ratio
+EOSD=/eos/experiment/ntof/data/x17/analysis/user_misc/plane_ratio
 PY=/eos/user/d/dneff/venvs/ntof-lock-cvmfs/bin/python
 fetch() { for i in 1 2 3 4; do
     xrdcp -s -f "root://eosuser.cern.ch/$1" "$2" 2>/dev/null && return 0

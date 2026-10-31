@@ -1,5 +1,5 @@
 import json, numpy as np
-D='/eos/user/d/dneff/vladder/'
+D='/eos/experiment/ntof/data/x17/analysis/user_misc/vladder/'
 for det in ('det2','det3','det4','det6','det7'):
     for kern in ('', 'r06_'):
         if kern: continue

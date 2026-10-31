@@ -2,7 +2,7 @@
 # judge_all.sh <rays-variants spec, e.g. "base=DIR" or "base=DIR,out5=DIR"> <tag for output> -- run judge.py on every golden row.
 SPEC=$1; TAG=$2
 B=/eos/experiment/ntof/data/x17/cosmic_bench/june_tests
-O=/eos/user/d/dneff/x17rerun/m3_audit/judge_$TAG; mkdir -p $O
+O=/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/m3_audit/judge_$TAG; mkdir -p $O
 set +u; source /cvmfs/sft.cern.ch/lcg/views/LCG_110/x86_64-el9-gcc14-opt/setup.sh >/dev/null 2>&1
 PY="env -u PYTHONPATH -u PYTHONHOME /eos/user/d/dneff/venvs/ntof-lock-cvmfs/bin/python"
 cd ~/x17rerun/judge

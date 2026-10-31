@@ -6,7 +6,7 @@ chamber's rr1 cache, rerun/model_audit/heldout_arm.py --t0-fix --rails (per-samp
 set of wft.model switches passed as WFT_DIAG (all opt-in; base = none).
 
     sat_arms.py build OUT CODE [ROUND]   DAG + submit files into OUT (copy OUT to ~/x17rerun/satur/ on lxplus);
-                                         CODE = git archive on EOS (/eos/user/d/dneff/x17rerun/code/code_<hash>)
+                                         CODE = git archive on EOS (/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/code/code_<hash>)
     sat_arms.py compare DIR              DIR holds <det>_<arm>.npz -> results/arms/arms_<det>.json (t5_compare)
     sat_arms.py table                    markdown tables (all planes; saturated planes only)
     sat_arms.py emu DIR                  the emulated-rail diagnostic (emu<R> vs rail)

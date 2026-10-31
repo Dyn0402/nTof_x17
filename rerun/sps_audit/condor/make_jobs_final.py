@@ -4,8 +4,8 @@ keys_flat.txt for footprint.sub (every flat SPS row)."""
 import csv, os
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-S2 = '/eos/user/d/dneff/x17rerun/sps_audit/scan_v2/scan_{g}.npz'
-D53 = '/eos/user/d/dneff/x17rerun/sps_audit/run53_fa80c06'
+S2 = '/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/sps_audit/scan_v2/scan_{g}.npz'
+D53 = '/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/sps_audit/run53_fa80c06'
 K66 = '+'.join(f'run66_flat_resist__r{r}' for r in (580, 605, 630, 655, 680, 705, 730, 755, 780))
 K71 = 'run71_raw__raw700+run71_raw__raw450+run71_raw__raw275'
 L = []

@@ -27,7 +27,7 @@ RUN, SUBRUN = 'run_145', 'stat090_0000'
 EOS_PUBLIC = os.environ.get('EOS_URL', 'root://eospublic.cern.ch/')
 EOS_USER = 'root://eosuser.cern.ch/'
 EOS_BASE = os.environ.get('EOS_BEAM_BASE', '/eos/experiment/ntof/data/x17/july_beam/runs')
-INPUTS = os.environ.get('TT_INPUTS', '/eos/user/d/dneff/x17/two_track_limit/inputs.tar.gz')
+INPUTS = os.environ.get('TT_INPUTS', '/eos/experiment/ntof/data/x17/analysis/two_track_limit/inputs.tar.gz')
 
 
 def sh(cmd):

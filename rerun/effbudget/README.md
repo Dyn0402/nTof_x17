@@ -18,5 +18,5 @@ reconstruction: re-run on the pass tables.
 The budget on every pass-1 bench row, the interior_good fiducial (`common/mx17_fiducial.py`, det7 X ch 256–511), the
 trigger-track rule / multi-track credit / position-only arms, A1 on the golden rows, the noise-band census and the
 fine (8 mm) maps. Result: `PASS1_RESULT_2026-10-31.md`; report `pass1/report/report.html` (with figures on EOS
-`/eos/user/d/dneff/x17rerun/paper1_eff/report/`). Run order: `pass1/make_dag.py <code>` on lxplus (condor), then
+`/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/paper1_eff/report/`). Run order: `pass1/make_dag.py <code>` on lxplus (condor), then
 `collect.py`, `a1_recat.py`, `fine_maps.py` with the lock venv on lxplus, then `make_report.py`.

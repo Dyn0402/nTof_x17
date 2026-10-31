@@ -5,7 +5,7 @@
 # Payload = wft/ (with lor_frac_<plane>) + plane_ratio/, built from mx17-paper-status.
 set -eu
 DET=$1; TRAIN=$2
-EOSD=/eos/user/d/dneff/plane_ratio
+EOSD=/eos/experiment/ntof/data/x17/analysis/user_misc/plane_ratio
 fetch() {
   for i in 1 2 3 4; do
     xrdcp -s -f "root://eosuser.cern.ch/$1" "$2" 2>/dev/null && return 0

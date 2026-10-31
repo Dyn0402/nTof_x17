@@ -56,8 +56,8 @@ from vt_common import ladder, bow_aS  # noqa: E402
 import vt_bench as vb  # noqa: E402
 
 P1 = '/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1'
-EFF = '/eos/user/d/dneff/x17rerun/paper1_eff'
-VTC = '/eos/user/d/dneff/x17rerun/vt_correction'
+EFF = '/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/paper1_eff'
+VTC = '/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/vt_correction'
 SHORT = {'mx17_2': 'det2', 'mx17_3': 'det3', 'mx17_4': 'det4', 'mx17_6': 'det6', 'mx17_7': 'det7'}
 ANG_BINS = (0.0, 5.0, 10.0, 15.0, 20.0)                # |theta_ref| [deg]; the M3 acceptance ends near 20 deg
 RES_MAX_MM = 15.0

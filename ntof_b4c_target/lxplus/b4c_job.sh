@@ -7,7 +7,7 @@ set -u
 MODE=$1; R=$2; N=$3; SEED=$4; OUT=$5
 EXE=/afs/cern.ch/work/d/dneff/git/MX17_Full_Geant_b4c/build/mx17_full_sim
 D=/afs/cern.ch/work/d/dneff/git/MX17_Full_Geant_v2/data
-LIB=/eos/user/d/dneff/scratch/b4c_sim/lib/b4c_slab_vertices.csv
+LIB=/eos/experiment/ntof/data/x17/analysis/user_misc/scratch/b4c_sim/lib/b4c_slab_vertices.csv
 CASC="7.007+4.444:54.2,4.711+6.740:17.4,4.711+2.297+4.444:8.3,2.533+8.917:13.0,2.533+4.475+4.444:0.8,11.448:4.64"
 cd "${_CONDOR_SCRATCH_DIR:-/tmp}"
 if [[ $MODE == neutron ]]; then

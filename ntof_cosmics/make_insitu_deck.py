@@ -194,7 +194,7 @@ def s_setup(D, o):
                        'plausibility cut is written in <i>raw</i> tan, and the in-situ bundles change what raw tan means.',
                        GOLD, 25)
     D.slide('setup', body, f'''
-<p><b>The package.</b> lxplus <code>~/sept26_stage2_is2_v1</code> (copy <code>/media/dylan/data/x17/sept26_prelim/pkg_is2_v1</code>): 6466 jobs, 293 sub-runs, arms A and C, built from afa9fcb with a clean tree, ≈ 4300 CPU-h, ~14 GB to <code>/eos/user/d/dneff/x17/sept26_fullpass_is2_v1</code>. Stage 3 writes <code>stage3_is2_v1</code>, never the production tables.</p>
+<p><b>The package.</b> lxplus <code>~/sept26_stage2_is2_v1</code> (copy <code>/media/dylan/data/x17/sept26_prelim/pkg_is2_v1</code>): 6466 jobs, 293 sub-runs, arms A and C, built from afa9fcb with a clean tree, ≈ 4300 CPU-h, ~14 GB to <code>/eos/experiment/ntof/data/x17/analysis/sept26_fullpass_is2_v1</code>. Stage 3 writes <code>stage3_is2_v1</code>, never the production tables.</p>
 <p><b>What does not ride it.</b> T1's two-track chain (x/y pairing, rescue floor, joint fit; branch <code>two-track-joint-fit</code>) and T3's depth-grid fix for late tracks. OCTOBER_2026 §4 plans one combined re-pass (O4) after those. is2_v1 is therefore an interim, angle-only pass for A and C.</p>
 <p>run_126 has no k in production either (k_arm never certified its one sub-run), so its angles stay null in both.</p>''',
             short='What changes')

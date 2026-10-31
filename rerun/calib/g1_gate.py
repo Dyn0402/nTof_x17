@@ -23,7 +23,7 @@ sys.path.insert(0, os.path.join(REPO, 'rerun', 'model_audit'))
 from gate_compare import ROWS, read  # noqa: E402
 
 PASS = '/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1'
-AUDIT = '/eos/user/d/dneff/x17rerun/followups/fe/Analysis_fe'
+AUDIT = '/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/followups/fe/Analysis_fe'
 TOL = dict(det5=-0.5, far5=0.3, s68=0.03)
 
 

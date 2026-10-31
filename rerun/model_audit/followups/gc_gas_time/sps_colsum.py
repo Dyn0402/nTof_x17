@@ -16,7 +16,7 @@ import sys
 
 import numpy as np
 
-CODE = os.environ.get('WFT_REPO') or '/eos/user/d/dneff/x17rerun/followups/fa/code_2ce1dcc'
+CODE = os.environ.get('WFT_REPO') or '/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/followups/fa/code_2ce1dcc'
 sys.path[:0] = [os.path.join(CODE, 'rerun', 'model_audit'), os.path.join(CODE, 'rerun', 'model_audit', 'followups',
                                                                           'fa_gas_v_tilt')]
 import sps_build_cache as sbc          # noqa: E402

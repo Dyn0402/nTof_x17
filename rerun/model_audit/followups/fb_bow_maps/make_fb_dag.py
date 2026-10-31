@@ -6,12 +6,12 @@ of the same night, another night, the other bench slot, other mesh-HV rows) are 
 promoted golden calib_bundle (as `make_pass_dag.py vrefit --keep-v`: the bow observables -- positions p0 against M3
 and the transverse speed w in um/ns -- do not depend on the bundle's v), then aligned with their OWN waveform
 alignment (01) and given the M3 reference angles (03).  Nodes per row: RECO -> ALIGN -> ANG.
-Output: /eos/user/d/dneff/x17rerun/followups/fb/Analysis/<run>/<subrun>/<det>/wft/fb/{events.parquet,alignment,angles}.
+Output: /eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/followups/fb/Analysis/<run>/<subrun>/<det>/wft/fb/{events.parquet,alignment,angles}.
 """
 import argparse
 
 A = '/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_rr1'
-OUT = '/eos/user/d/dneff/x17rerun/followups/fb/Analysis'
+OUT = '/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/followups/fb/Analysis'
 GOLD = {'det2': 'mx17_det2_det3_overnight_6-22-26/longer_run/mx17_2',
         'det3': 'mx17_det3_saturday_scan_6-27-26/long_run_resist_490V_drift_1000V/mx17_3',
         'det4': 'mx17_det4_day_6-24-26/long_run/mx17_4',

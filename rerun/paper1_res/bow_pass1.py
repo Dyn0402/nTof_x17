@@ -26,7 +26,7 @@ import pandas as pd
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.environ.get('RES_CODE') or os.path.abspath(os.path.join(HERE, '..', '..'))
 P1 = '/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1'
-EFF = '/eos/user/d/dneff/x17rerun/paper1_eff'
+EFF = '/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/paper1_eff'
 GOLD = {'det2': 'o22_long_det2', 'det3': 'sat_det3', 'det4': 'g_det4', 'det6': 'g_det6_long', 'det7': 'g_det7_long'}
 COLS = ('p0', 'w', 't0', 'q_u50', 'q_u90', 'q_uend', 'q_sum', 'n_seed', 'n_strips', 'chi2', 'dof', 'ftst', 'ok',
         'n_flagged_strips')

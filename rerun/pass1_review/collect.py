@@ -2,7 +2,7 @@ import csv, json, os, sys, glob
 import numpy as np, pyarrow.parquet as pq
 ROOTS = {'p1': '/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1',
          'rr1': '/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_rr1',
-         'fe': '/eos/user/d/dneff/x17rerun/followups/fe/Analysis_fe'}
+         'fe': '/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/followups/fe/Analysis_fe'}
 reg = list(csv.DictReader(open(sys.argv[1])))
 def lj(p):
     try: return json.load(open(p))

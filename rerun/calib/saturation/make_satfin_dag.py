@@ -13,7 +13,7 @@ Datasets:
   alignment from FB / the dry run, plain CM) -> held-out chunks, all events of the cache, with the chamber's golden
   t15 base bundle (as the pass does: one bundle per chamber) and the row's depth-bin count K.
 Writes satfin.dag + ho.sub (heldout via ~/x17rerun/satur/run_sat.sh) and stage.sub (stage_job.sh).
-Outputs: /eos/user/d/dneff/x17rerun/satfin/{Analysis/<row>/..., ho/<name>_<arm>_c<i>.npz}.
+Outputs: /eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/satfin/{Analysis/<row>/..., ho/<name>_<arm>_c<i>.npz}.
 """
 import argparse
 

@@ -22,7 +22,7 @@ from concurrent.futures import ProcessPoolExecutor
 
 import numpy as np
 
-CODE = os.environ.get('WFT_REPO') or '/eos/user/d/dneff/x17rerun/followups/fa/code_2ce1dcc'
+CODE = os.environ.get('WFT_REPO') or '/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/followups/fa/code_2ce1dcc'
 sys.path[:0] = [CODE, os.path.join(CODE, 'rerun', 'model_audit', 'followups', 'fa_gas_v_tilt')]
 os.environ.setdefault('WFT_BEAM_BASE', '/eos/experiment/ntof/data/x17/july_beam/runs/')
 import colsum                          # noqa: E402

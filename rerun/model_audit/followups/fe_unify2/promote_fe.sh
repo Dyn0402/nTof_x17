@@ -6,7 +6,7 @@
 # After promotion: python rerun/promote_phys.py --fill-conditions --apply (det7's empty run/sub_run), then the pass's
 # vrefit --keep-v / finalize (set_w0kw.py --table) for every non-golden row reading these bundles.
 set -e
-FE=/eos/user/d/dneff/x17rerun/followups/fe/Analysis_fe
+FE=/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/followups/fe/Analysis_fe
 A=/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_rr1
 RUN=echo; [ "$1" = "--apply" ] && RUN=
 for r in mx17_det2_det3_overnight_6-22-26/longer_run/mx17_2 mx17_det3_saturday_scan_6-27-26/long_run_resist_490V_drift_1000V/mx17_3 \

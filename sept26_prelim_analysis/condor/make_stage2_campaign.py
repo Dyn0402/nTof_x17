@@ -151,7 +151,7 @@ def main():
         for kv in a.insitu.split(','):
             arm, d = kv.split('=', 1)
             insitu[arm] = os.path.expanduser(d)
-    eos_out = '/eos/user/d/dneff/x17/sept26_fullpass'
+    eos_out = '/eos/experiment/ntof/data/x17/analysis/sept26_fullpass'
     if a.version:
         if not a.full_pass:
             sys.exit('FATAL: --version is for a full re-pass (--full-pass)')
@@ -355,7 +355,7 @@ def main():
         # the job environment carries the EOS target, the seeder minimum and TAN_MAX
         sp = os.path.join(a.dest, ship[0])
         txt = open(sp).read()
-        old = 'EOS_STAGE2_OUT=/eos/user/d/dneff/x17/sept26_fullpass"'
+        old = 'EOS_STAGE2_OUT=/eos/experiment/ntof/data/x17/analysis/sept26_fullpass"'
         if old not in txt:
             sys.exit(f'FATAL: {ship[0]} environment line not found; cannot redirect EOS output')
         new = (f'EOS_STAGE2_OUT={eos_out}' + (f' WFT_BEAM_MIN_STRIPS={a.min_strips}' if a.min_strips else '')

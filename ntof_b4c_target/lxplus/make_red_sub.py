@@ -1,12 +1,12 @@
 import os,glob
 base="/eos/experiment/ntof/data/x17/full_sim/b4c_july"
-parts="/eos/user/d/dneff/scratch/b4c_sim/parts"; os.makedirs(parts,exist_ok=True)
+parts="/eos/experiment/ntof/data/x17/analysis/user_misc/scratch/b4c_sim/parts"; os.makedirs(parts,exist_ok=True)
 jd=os.path.expanduser("~/condor/mx17_b4c")
 open(f"{jd}/red_job.sh","w").write("""#!/usr/bin/env bash
 set -e
 source /cvmfs/sft.cern.ch/lcg/views/LCG_105/x86_64-el9-gcc13-opt/setup.sh >/dev/null 2>&1
 out=$1; shift
-python3 /eos/user/d/dneff/scratch/b4c_sim/b4c_reduce.py "$out" "$@"
+python3 /eos/experiment/ntof/data/x17/analysis/user_misc/scratch/b4c_sim/b4c_reduce.py "$out" "$@"
 """)
 os.chmod(f"{jd}/red_job.sh",0o755)
 L=[f"executable = {jd}/red_job.sh","log = "+jd+"/logs/red_$(ClusterId).log",

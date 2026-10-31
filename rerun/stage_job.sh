@@ -4,7 +4,7 @@
 CODE=$1; shift
 set +u; source /cvmfs/sft.cern.ch/lcg/views/LCG_110/x86_64-el9-gcc14-opt/setup.sh >/dev/null 2>&1
 export RERUN_CODE_COMMIT=$(basename $CODE | sed 's/^code_//')
-export WFT_RND_DIR=/eos/user/d/dneff/x17rerun/regression/wft_model_sat_det3
+export WFT_RND_DIR=/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/regression/wft_model_sat_det3
 export MPLBACKEND=Agg
 # the reconstruction takes no settings: the column guard and the pivot start are part of wft since 2026-10-27
 # (a study passes WFT_DIAG and stage_job.py --diag; wft/diag.py)

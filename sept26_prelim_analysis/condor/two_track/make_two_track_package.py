@@ -19,7 +19,7 @@ Builds <dest>/:
 stage it at lxplus:~/two_track_ladder/, results share the EOS results dir.)
 
 Then:
-    xrdcp <dest>/inputs.tar.gz root://eosuser.cern.ch//eos/user/d/dneff/x17/two_track_limit/
+    xrdcp <dest>/inputs.tar.gz root://eosexperiment.cern.ch//eos/experiment/ntof/data/x17/analysis/two_track_limit/
     rsync -av --exclude inputs.tar.gz <dest>/ lxplus:~/two_track_limit/
     ssh lxplus 'cd ~/two_track_limit && condor_submit two_track.sub'
 and, when done, merge_two_track.py.

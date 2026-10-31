@@ -42,7 +42,7 @@ from sept26_prelim_analysis import paths  # noqa: E402
 from sept26_prelim_analysis.acceptance import topology  # noqa: E402
 
 OUT = HERE / 'results' / 'tracking'
-EOS_OUT = '/eos/user/d/dneff/x17/cosmics_fullpass'
+EOS_OUT = '/eos/experiment/ntof/data/x17/analysis/cosmics_fullpass'
 ARMS = ('A', 'B', 'C', 'D')
 #: the beam-on per-track pointing preselection (`source_imaging._track_table`)
 DCA_MAX = 30.0

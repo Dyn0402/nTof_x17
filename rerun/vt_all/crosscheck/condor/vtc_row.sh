@@ -4,12 +4,12 @@
 #   colsum   FA's model-free column duration, every trigger (code_b5a29af, the row's own pass bundle)
 #   s4       the head-on cache + S4 stack (s4_stacks.py, code_75287c0, the row's own pass alignment and bundle)
 # <row> = <run>/<subrun>/<det> under Analysis_pass1, read only.
-# -> /eos/user/d/dneff/x17rerun/vt_check/Analysis/<row>/{fa/colsum.npz, s4/{headon,incl}.pkl, s4/s4_stacks.json}
+# -> /eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/vt_check/Analysis/<row>/{fa/colsum.npz, s4/{headon,incl}.pkl, s4/s4_stacks.json}
 KEY=$1; ROW=$2
-EOSA=/eos/user/d/dneff/x17rerun/vt_check/Analysis
+EOSA=/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/vt_check/Analysis
 P1=/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1/$ROW/wft
 C1=$HOME/x17rerun/code_b5a29af
-C2=/eos/user/d/dneff/x17rerun/s4_inputs/code_75287c0
+C2=/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/s4_inputs/code_75287c0
 set +u; source /cvmfs/sft.cern.ch/lcg/views/LCG_110/x86_64-el9-gcc14-opt/setup.sh >/dev/null 2>&1
 export MPLBACKEND=Agg
 W=${_CONDOR_SCRATCH_DIR:-/tmp/$USER/vtc_$$}; mkdir -p $W

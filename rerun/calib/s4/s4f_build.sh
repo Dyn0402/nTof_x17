@@ -2,9 +2,9 @@
 # s4f_build.sh <code_dir> <key> <row> <gen> -- S4 follow-up: s4f_build.py (the ref-only head-on cache through the pass
 # alignment, on the <gen> decode, plus the hits-chain selections of the prod and rr1 chains) for one golden row.
 # Reads Analysis_pass1 (alignment, rr1 hits cache) and the uploaded prod hits cache; writes only under
-# /eos/user/d/dneff/x17rerun/s4_followup/Analysis_<gen>/<row>/s4f/
+# /eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/s4_followup/Analysis_<gen>/<row>/s4f/
 CODE=$1; KEY=$2; ROW=$3; GEN=$4
-F=/eos/user/d/dneff/x17rerun/s4_followup
+F=/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/s4_followup
 EOSA=$F/Analysis_$GEN
 P1=/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1/$ROW
 PROD=$F/prod_inputs/$ROW

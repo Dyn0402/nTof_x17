@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """make_fe_sps_dag.py <code_dir> -- FE's SPS gate: det4 at H4, run_63 25.64 deg caches REBUILT without the 256-ADC
-offset (ws_sps fix 7505338, /eos/user/d/dneff/x17rerun/ws_sps/data/fixed/), the ONE reconstruction (heldout_arm.py:
+offset (ws_sps fix 7505338, /eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/ws_sps/data/fixed/), the ONE reconstruction (heldout_arm.py:
 wft.reco.fit_plane per view, pivot start, band censoring, ZS samples as measured zeros, no per-event sigma0 choice),
 bench det4 bundle with the FE content (fleet sigma0; t0 NOT pinned -- the beam trigger is not on the DREAM clock),
 v = the span-route CF4 v(E) of the plateau.  Arms = the channel layer at H4 (sps_mask.py):
@@ -11,10 +11,10 @@ Output <out>/run63_rot25_operating_00_<plateau>_<arm>.npz (sps_summary.py reads 
 """
 import argparse, os
 
-CACHES = '/eos/user/d/dneff/x17rerun/ws_sps/data/fixed'
-BUNDLE = ('/eos/user/d/dneff/x17rerun/followups/fe/Analysis_fe/mx17_det4_day_6-24-26/long_run/mx17_4/wft/'
+CACHES = '/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/ws_sps/data/fixed'
+BUNDLE = ('/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/followups/fe/Analysis_fe/mx17_det4_day_6-24-26/long_run/mx17_4/wft/'
           'calib_bundle_fe1')
-OUT = '/eos/user/d/dneff/x17rerun/followups/fe/sps'
+OUT = '/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/followups/fe/sps'
 PLATEAUS = {'d675': 14.0, 'd575': 12.4, 'd475': 11.6}
 SUB = '''executable     = $ENV(HOME)/x17rerun/audit/run_heldout.sh
 arguments      = $(code) $(env) $(args)

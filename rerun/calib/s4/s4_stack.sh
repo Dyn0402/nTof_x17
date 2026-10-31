@@ -1,9 +1,9 @@
 #!/bin/bash
 # s4_stack.sh <code_dir> <key> <row> -- S4: the cloud_basics head-on stack (v, Dp) and gap_extent (gap) of one golden
 # row on the pass-1 alignment, decode and template (s4_stacks.py).  <row> = <run>/<subrun>/<det> under Analysis_pass1,
-# read only.  -> /eos/user/d/dneff/x17rerun/s4_inputs/Analysis/<row>/s4/{headon,incl}.pkl, s4_stacks.json
+# read only.  -> /eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/s4_inputs/Analysis/<row>/s4/{headon,incl}.pkl, s4_stacks.json
 CODE=$1; KEY=$2; ROW=$3
-EOSA=/eos/user/d/dneff/x17rerun/s4_inputs/Analysis
+EOSA=/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/s4_inputs/Analysis
 P1=/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1/$ROW/wft
 set +u; source /cvmfs/sft.cern.ch/lcg/views/LCG_110/x86_64-el9-gcc14-opt/setup.sh >/dev/null 2>&1
 export RERUN_CODE_COMMIT=$(basename $CODE | sed 's/^code_//') MPLBACKEND=Agg

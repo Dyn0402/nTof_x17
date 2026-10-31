@@ -15,7 +15,7 @@ import argparse, csv, os
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 A = '/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1'
-OUTROOT = '/eos/user/d/dneff/x17rerun/paper1_eff'
+OUTROOT = '/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/paper1_eff'
 EMPTY = f'{OUTROOT}/empty_analysis'
 SHORT = {'mx17_2': 'det2', 'mx17_3': 'det3', 'mx17_4': 'det4', 'mx17_6': 'det6', 'mx17_7': 'det7'}
 

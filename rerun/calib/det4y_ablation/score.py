@@ -10,9 +10,9 @@ import json
 import os
 
 ROW = 'mx17_det4_day_6-24-26/long_run/mx17_4/wft'
-R = '/eos/user/d/dneff/x17rerun/det4y_ablation/Analysis'
+R = '/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/det4y_ablation/Analysis'
 PASS = '/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1'
-AUDIT = '/eos/user/d/dneff/x17rerun/followups/fe/Analysis_fe'
+AUDIT = '/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/followups/fe/Analysis_fe'
 ARMS = {'a': 'audit fe bundle as is', 'b': 'fe + pass template', 'c': 'fe + pass bow (w0/kw re-measured)',
         'e': 'fe + pass template + pass bow (w0/kw re-measured)', 'd': 'pass bundle (c2, the G1 r3 bundle)'}
 

@@ -1,6 +1,6 @@
 # condor_submit ws_sps4.sub -- real ZS flat rows, X footprint grid with zeros as measured (zs_scan_job.py)
 executable     = $ENV(HOME)/x17rerun/ws_sps/run_ws_sps3.sh
-arguments      = /eos/user/d/dneff/x17rerun/ws_sps code6 zs_scan_job.py $(key) --out /eos/user/d/dneff/x17rerun/ws_sps/out --views x --jobs 4
+arguments      = /eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/ws_sps code6 zs_scan_job.py $(key) --out /eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/ws_sps/out --views x --jobs 4
 output         = log/$(ClusterId).$(ProcId).out
 error          = log/$(ClusterId).$(ProcId).err
 log            = log/ws_sps.log

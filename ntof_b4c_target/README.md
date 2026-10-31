@@ -28,14 +28,14 @@ publish with `dylan-cern-site/scripts/add-note.py <OUT>/b4c-target-pairs.html --
 
 Candidate counting only (hits, no geometry): events with x and y activity (2–40 strips
 above 500 ADC in the signal samples) in ≥ 2 chambers. run_39 + run_40: ~2300 of 93 k triggers
-(2.5 %); run_79: ~2570 per hour (2.4 %). Log: `/eos/user/d/dneff/scratch/b4c_lookup/`.
+(2.5 %); run_79: ~2570 per hour (2.4 %). Log: `/eos/experiment/ntof/data/x17/analysis/user_misc/scratch/b4c_lookup/`.
 
 ## The simulation
 
 `MX17_Full_Geant` branch `b4c-slab` (`--slab B4C:2.5 --slab-radius R`, `--bias-slab`, cascade
 entries in `--gamma-lines`). Built in `/afs/cern.ch/work/d/dneff/git/MX17_Full_Geant_b4c`.
 Outputs `/eos/experiment/ntof/data/x17/full_sim/b4c_july/` (185 GB, mostly the IPC step trees),
-reduced parts `/eos/user/d/dneff/scratch/b4c_sim/parts*` → `/media/dylan/data/x17/b4c_target/sim_parts`.
+reduced parts `/eos/experiment/ntof/data/x17/analysis/user_misc/scratch/b4c_sim/parts*` → `/media/dylan/data/x17/b4c_target/sim_parts`.
 
 | set | what | events |
 |---|---|---|

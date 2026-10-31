@@ -10,6 +10,6 @@ export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1
 D=rerun/model_audit/followups/fd_floor_realism
 mkdir -p out
 python3 $D/$KIND.py job "$@" --out $PWD/out
-EOS=root://eosuser.cern.ch//eos/user/d/dneff/x17rerun/followups/fd/$KIND
+EOS=root://eosexperiment.cern.ch//eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/followups/fd/$KIND
 for f in out/*; do xrdcp -f "$f" "$EOS/$(basename "$f")"; done
 rm -rf out rerun wft bundles fd_code.tgz

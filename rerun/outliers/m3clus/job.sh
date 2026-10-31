@@ -1,10 +1,10 @@
 #!/bin/bash
 # job.sh <subrun dir> <cosbase> <pedbase> <NNN> -- the production M3 v2 chain (rerun/m3_audit/run_m3.sh) on one file,
 # keeping the DataReader cluster tree (all clusters on all 8 M3 planes) next to the rays.
-# Output /eos/user/d/dneff/x17rerun/m3clus/<run>__<subrun>__<NNN>_{analyse,rays}.root
+# Output /eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/m3clus/<run>__<subrun>__<NNN>_{analyse,rays}.root
 SUB=$1; COSBASE=$2; PEDBASE=$3; NUM=$4
 D=/afs/cern.ch/work/d/dneff/m3_var; CFG=$D/config_ref_june2026.json
-RUN=$(basename $(dirname $SUB)); S=$(basename $SUB); O=/eos/user/d/dneff/x17rerun/m3clus; mkdir -p $O
+RUN=$(basename $(dirname $SUB)); S=$(basename $SUB); O=/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/m3clus; mkdir -p $O
 TAG=${RUN}__${S}__${NUM}
 source /cvmfs/sft.cern.ch/lcg/views/LCG_107/x86_64-el9-gcc13-opt/setup.sh >/dev/null 2>&1
 W=${_CONDOR_SCRATCH_DIR:-/tmp/$USER}/m3c_$TAG; rm -rf $W; mkdir -p $W/root_files; cd $W

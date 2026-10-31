@@ -5,7 +5,7 @@ Submit from ~/x17rerun/audit (heldout.sub + run_heldout.sh live there): condor_s
 """
 import argparse
 
-B = '/eos/user/d/dneff/x17rerun/ws_sps'
+B = '/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/ws_sps'
 BUN = '/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_rr1/mx17_det4_day_6-24-26/long_run/mx17_4/wft/calib_bundle'
 CACHES = (('res_flat_flat700', 14.0), ('res_rot25_d425', 11.6), ('res_rot25_d325', 11.5))
 ARMS = (('cens', 'WFT_ZS_CENSOR=1'), ('zsb4', 'WFT_ZS_BOUND=4'))

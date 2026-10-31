@@ -19,7 +19,7 @@ import shutil
 import sys
 
 LOCAL = os.path.expanduser('~/x17/cosmic_bench/model_audit')
-EOSB = '/eos/user/d/dneff/x17rerun/followups/fa/bundles'
+EOSB = '/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/followups/fa/bundles'
 S0C = 0.29
 GOLD = {'det2': 'o22_long_det2', 'det3': 'sat_det3', 'det4': 'g_det4', 'det6': 'g_det6_long', 'det7': 'g_det7_long'}
 C = 'c26__'

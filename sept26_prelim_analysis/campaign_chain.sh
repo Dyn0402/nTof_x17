@@ -38,7 +38,7 @@ if [ "${SKIP_FETCH:-0}" != "1" ]; then
   # different event selection never overwrites the main reco under the same
   # run/subrun/arm/tag name.
   step "fetch calib" env \
-      REMOTE=lxplus:/eos/user/d/dneff/x17/sept26_calib \
+      REMOTE=lxplus:/eos/experiment/ntof/data/x17/analysis/sept26_calib \
       LOCALPKG="$X17/sept26_calib" \
       OUT="$OUT/fullpass_calib" \
       bash sept26_prelim_analysis/condor/fetch_stage2.sh

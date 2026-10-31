@@ -21,7 +21,7 @@ import numpy as np
 import pandas as pd
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-OUTROOT = '/eos/user/d/dneff/x17rerun/paper1_eff'
+OUTROOT = '/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/paper1_eff'
 A = '/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1'
 SHORT = {'mx17_2': 'det2', 'mx17_3': 'det3', 'mx17_4': 'det4', 'mx17_6': 'det6', 'mx17_7': 'det7'}
 EXT_MAX, R_MM = 24, 5.0

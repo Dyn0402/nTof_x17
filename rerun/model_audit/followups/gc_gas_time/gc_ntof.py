@@ -23,7 +23,7 @@ import numpy as np
 from gc_common import RES, stem_time, tmean
 
 KCAL = '/media/dylan/data/x17/sept26_prelim/kcal'
-NTOF_EOS = '/eos/user/d/dneff/x17rerun/followups/gc/ntof'     # the products stay on EOS (~35 MB each, 79 sub-runs)
+NTOF_EOS = '/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/followups/gc/ntof'     # the products stay on EOS (~35 MB each, 79 sub-runs)
 NTOF_TMP = '/tmp/gc_ntof_stream'                               # one at a time: copied, reduced, deleted
 SAMPLE_NS = 60.0
 

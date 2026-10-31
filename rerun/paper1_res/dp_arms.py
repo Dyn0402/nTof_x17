@@ -24,7 +24,7 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.environ.get('RES_CODE') or os.path.abspath(os.path.join(HERE, '..', '..'))
 P1 = '/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1'
-ROOT = '/eos/user/d/dneff/x17rerun/paper1_res/dp_arms/Analysis'
+ROOT = '/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/paper1_res/dp_arms/Analysis'
 DT_STEP = 0.1 / math.sqrt(10.0)          # 100 um/sqrt(cm) in mm/sqrt(mm)
 #: arm -> (registry key, chamber short name, D_T shift in units of 100 um/sqrt(cm))
 ARMS = {'det3_p': ('sat_det3', 'det3', +1), 'det2_p': ('o22_long_det2', 'det2', +1),

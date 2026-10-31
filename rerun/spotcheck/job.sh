@@ -2,7 +2,7 @@
 # job.sh <eos_run_dir> <subrun> <feus dot-sep> <tag>   -- decode the first acquisition of each FEU, compare with EOS
 set -u
 RUN=$1; SUB=$2; FEUS=$3; TAG=$4
-OUT=/eos/user/d/dneff/x17rerun/spotcheck/decoded
+OUT=/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/spotcheck/decoded
 mkdir -p $OUT
 set +u; source /cvmfs/sft.cern.ch/lcg/views/LCG_110/x86_64-el9-gcc14-opt/setup.sh >/dev/null 2>&1; set -u
 DEC=$HOME/x17rerun/mm_strip_reconstruction/build/decoder/decode

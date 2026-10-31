@@ -362,7 +362,7 @@ rendered figures, and a README on regenerating either.
 `reduce` per ROOT file on condor (cluster 4278922, 225 jobs:
 `neutrons_thermal_trig_2cm_nose` 10⁹ neutrons, `pairs_thermal_trig_2cm_nose`,
 `neutrons_thermal_bias1e5_2cm_nose`; parts in
-`/eos/user/d/dneff/x17/thermal_accounting/parts/`), then `merge` locally. No
+`/eos/experiment/ntof/data/x17/analysis/thermal_accounting/parts/`), then `merge` locally. No
 Geant4 rerun was needed: the stored per-hit birth truth (creator process,
 volume, vertex, parent) plus the event's capture volume is enough. Counts are
 per 30 days at slide 39's flux (5.21×10⁶ neutrons/pulse on the cell, 1 meV-2 eV

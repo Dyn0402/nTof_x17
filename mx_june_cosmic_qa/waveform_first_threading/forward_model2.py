@@ -18,7 +18,7 @@ from scipy.ndimage import gaussian_filter1d
 from scipy.special import erf
 
 # WFT_RND_DIR overrides the reference directory (copy on EOS for lxplus:
-# /eos/user/d/dneff/x17rerun/regression/wft_model_sat_det3, rerun W10).
+# /eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/regression/wft_model_sat_det3, rerun W10).
 BASE = os.environ.get('WFT_RND_DIR',
                       '/home/dylan/x17/cosmic_bench/Analysis/mx17_det3_saturday_scan_6-27-26/'
                       'long_run_resist_490V_drift_1000V/mx17_3/waveform_first')

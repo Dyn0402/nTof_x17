@@ -37,10 +37,10 @@ import vt_bench as vb  # noqa: E402
 from vt_common import ladder, kw_window, bow_aS, tan_map  # noqa: E402
 
 P1 = vb.ROOT
-VTA = '/eos/user/d/dneff/x17rerun/vt_all/bench'
-VTC = '/eos/user/d/dneff/x17rerun/vt_correction'
-S4I = '/eos/user/d/dneff/x17rerun/s4_inputs/Analysis'
-S4F = '/eos/user/d/dneff/x17rerun/s4_followup/Analysis_prod'
+VTA = '/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/vt_all/bench'
+VTC = '/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/vt_correction'
+S4I = '/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/s4_inputs/Analysis'
+S4F = '/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/s4_followup/Analysis_prod'
 GOLD = {'g_det4': 'mx17_det4_day_6-24-26/long_run/mx17_4', 'g_det6_long': 'mx17_det6_det7_overnight_6-26-26/long_run/mx17_6',
         'g_det7_long': 'mx17_det6_det7_overnight_6-26-26/long_run/mx17_7'}
 

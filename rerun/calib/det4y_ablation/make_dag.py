@@ -13,7 +13,7 @@ Arms c and e: W0KW (set_w0kw --bow-json --table on arm a's, resp. b's, reconstru
 import argparse
 import os
 
-R = '/eos/user/d/dneff/x17rerun/det4y_ablation/Analysis'
+R = '/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/det4y_ablation/Analysis'
 KEY = 'g_det4'
 
 

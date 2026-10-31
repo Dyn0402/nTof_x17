@@ -17,7 +17,7 @@ WFT_COL_GUARD 0.01, on lxplus condor (one node per chamber x arm).  Compare: t5_
 
 Usage:
   python -I t15_one_param.py build OUT CODE   local: bundles + caches + DAG into OUT (then copy OUT to EOS);
-                                             CODE = the git archive on EOS (/eos/user/d/dneff/x17rerun/code/code_<hash>)
+                                             CODE = the git archive on EOS (/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/code/code_<hash>)
   python -I t15_one_param.py compare DIR      DIR holds <det>_<arm>.npz -> results/t15/t15_<det>.json
   python -I t15_one_param.py table            markdown tables from results/t15/
 """
@@ -27,7 +27,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 SRC = os.path.expanduser('~/x17/cosmic_bench/model_audit/fe_unify2/bundles/{}/calib_bundle_fe_nobow')
 CACHE = os.path.expanduser('~/x17/cosmic_bench/model_audit/ws_t0/caches/{}.pkl')
 DETS = ['det2', 'det3', 'det4', 'det6', 'det7']
-EOS = '/eos/user/d/dneff/x17rerun/t15'
+EOS = '/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/t15'
 ARMS = {'base': {},
         'st084': dict(stretch=0.84), 'st088': dict(stretch=0.88), 'st092': dict(stretch=0.92), 'st096': dict(stretch=0.96), 'st104': dict(stretch=1.04),
         'dp085': dict(scale={'Dp': 0.85}), 'dp115': dict(scale={'Dp': 1.15}),

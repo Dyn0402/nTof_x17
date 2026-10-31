@@ -2,12 +2,12 @@
 # job.sh <fdf on EOS> -- W9: decode one SPS det4 (FEU 03) .fdf with the pinned decoder (fa80c06) into
 # <subrun>/decoded_root_fa80c06/; RAW files are also audited against the independent decoder
 # (rerun/decoder_audit/audit_decode.py); zero-suppressed files are decoded only (the ZS path of the decoder is
-# unchanged since the 8-03 byte-identical regression).  Audit -> /eos/user/d/dneff/x17rerun/decode_audit_sps/...
+# unchanged since the 8-03 byte-identical regression).  Audit -> /eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/decode_audit_sps/...
 FDF=$1
 SUBDIR=$(dirname $(dirname $FDF)); SUB=$(basename $SUBDIR); RUN=$(basename $(dirname $SUBDIR))
 FB=$(basename $FDF .fdf)
 DOUT=$SUBDIR/decoded_root_fa80c06
-AOUT=/eos/user/d/dneff/x17rerun/decode_audit_sps/$RUN/$SUB
+AOUT=/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/decode_audit_sps/$RUN/$SUB
 for k in 1 2 3; do mkdir -p $DOUT $AOUT 2>/dev/null; [ -d $DOUT ] && [ -d $AOUT ] && break; sleep 5; done
 if [ -s $AOUT/$FB.done ] && [ -s $DOUT/$FB.root ]; then echo "done already"; exit 0; fi
 source /cvmfs/sft.cern.ch/lcg/views/LCG_110/x86_64-el9-gcc14-opt/setup.sh >/dev/null 2>&1

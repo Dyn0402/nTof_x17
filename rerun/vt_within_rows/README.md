@@ -1,7 +1,7 @@
 # v(t) within a row: det6 / det7, 6-26 night (HANDOFF 2026-10-30 step 3, GC)
 
 Generated report: `report.html` (figures in `figures/`; numbers in `results/summary.json`). Copy with the corrected
-tables: `/eos/user/d/dneff/x17rerun/vt_correction/`.
+tables: `/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/vt_correction/`.
 
 ## Verdict
 **The drift velocity moves within these rows, and it is the gas, not the chamber.** The correction is a table-level
@@ -56,7 +56,7 @@ to 0.9 / 1.4 % (x / y).
 3. Correction (`vt_apply.py`): tan = (w − w0)/(kw·v·r(t)·S) − a. This is `wft.reco.v_rel_t`'s `v_map['t']`, written
    per row as `vt_map.json`. The mid-gap position p0 + 15 mm·tan and the depth z = v·r·u follow from it. w does not
    depend on v (GC), so nothing is refitted.
-4. Outputs per row in `/eos/user/d/dneff/x17rerun/vt_correction/<run>/<subrun>/<det>/`:
+4. Outputs per row in `/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/vt_correction/<run>/<subrun>/<det>/`:
    - `events_vt.parquet`: event_id, acq_tag, t_h, v_rel, x/y_tan_vt, x/y_theta_deg_vt, x/y_mid_vt, z_end_vt. Join on
      event_id, which is unique within these rows.
    - `vt_map.json`.

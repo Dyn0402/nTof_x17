@@ -4,7 +4,7 @@
 set -e
 M=${M:-$HOME/x17/cosmic_bench/model_audit}
 L=${L:-$M/fe_unify2}
-ROOT=${ROOT:-/eos/user/d/dneff/x17rerun/followups/fe/Analysis_fe}
+ROOT=${ROOT:-/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/followups/fe/Analysis_fe}
 ROWS="mx17_det2_det3_overnight_6-22-26/longer_run/mx17_2 mx17_det3_saturday_scan_6-27-26/long_run_resist_490V_drift_1000V/mx17_3 mx17_det4_day_6-24-26/long_run/mx17_4 mx17_det6_det7_overnight_6-26-26/long_run/mx17_6 mx17_det6_det7_overnight_6-26-26/long_run/mx17_7"
 for r in $ROWS; do
   mkdir -p "$L/gate_tree/$r/wft"

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Write jobs.txt for tel.sub: one line per (dataset tag, FEU file group)."""
-SCAN = '/eos/user/d/dneff/x17rerun/sps_followup/scan/scan_{g}.npz'
+SCAN = '/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/sps_followup/scan/scan_{g}.npz'
 K66 = '+'.join(f'run66_flat_resist__r{r}' for r in (580, 605, 630, 655, 680, 705, 730, 755, 780))
 K71 = 'run71_raw__raw700+run71_raw__raw450+run71_raw__raw275'
 lines = []

@@ -24,7 +24,7 @@ from wft.calib import CalibrationBundle              # noqa: E402
 from wft import model as wm                          # noqa: E402
 
 # The R&D modules load their reference data at import.  It lives on the desktop/laptop bench tree, or wherever
-# WFT_RND_DIR points (EOS copy for lxplus: /eos/user/d/dneff/x17rerun/regression/wft_model_sat_det3).
+# WFT_RND_DIR points (EOS copy for lxplus: /eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/regression/wft_model_sat_det3).
 _DEFAULT = ('/home/dylan/x17/cosmic_bench/Analysis/mx17_det3_saturday_scan_6-27-26/'
             'long_run_resist_490V_drift_1000V/mx17_3/waveform_first')
 WF_DIR = os.environ.get('WFT_RND_DIR', _DEFAULT)

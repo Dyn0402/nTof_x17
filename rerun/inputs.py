@@ -34,7 +34,7 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
 MANIFEST = os.path.join(REPO, 'mx_june_wft', 'condor', 'campaign_manifest.csv')
-AUDIT_DIR = '/eos/user/d/dneff/x17rerun/decode_audit'
+AUDIT_DIR = '/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/decode_audit'
 #: The re-run's own Analysis tree (outputs of every stage, synced in and out by stage_job.py).
 EOS_ANALYSIS_ROOT = '/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1'   # the from-scratch pass (10-29); rr1 products stay in Analysis_rr1
 

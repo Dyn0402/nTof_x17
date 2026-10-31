@@ -35,7 +35,7 @@ cd ..
 # transfer_output_remaps to EOS does NOT work: the transfer is performed by the
 # access point (the schedd), which has no EOS mount, so the job runs to
 # completion and is then held. Measured -- see EOS_WRITE_TEST.md.
-EOSOUT=/eos/user/d/dneff/x17/sept26_slim
+EOSOUT=/eos/experiment/ntof/data/x17/analysis/sept26_slim
 XH=root://eosuser.cern.ch/
 P="out/slim/ntof_hits_${RUN}_${SUB}.parquet"
 M="out/slim/ntof_hits_${RUN}_${SUB}.meta.json"

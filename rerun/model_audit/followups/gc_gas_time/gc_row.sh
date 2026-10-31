@@ -3,7 +3,7 @@
 # bench row, staged via rerun/stage_job.py (rr1 inputs: decoded_root_fa80c06).  Output -> <EOSA>/<row>/gc/colsum.npz.
 # Same as fa_row.sh mode colsum, but writes the GC tree.  Leaves nothing large in the scratch dir.
 CODE=$1; KEY=$2; BUNDLE=$3
-EOSA=/eos/user/d/dneff/x17rerun/followups/gc/Analysis
+EOSA=/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/followups/gc/Analysis
 set +u; source /cvmfs/sft.cern.ch/lcg/views/LCG_110/x86_64-el9-gcc14-opt/setup.sh >/dev/null 2>&1
 export RERUN_CODE_COMMIT=$(basename $CODE | sed 's/^code_//') MPLBACKEND=Agg
 W=${_CONDOR_SCRATCH_DIR:-/tmp/$USER/gc_$$}; mkdir -p $W

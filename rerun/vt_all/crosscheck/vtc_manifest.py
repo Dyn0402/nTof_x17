@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """vtc_manifest.py [--root R] [--out CSV] -- the one list of bench rows that carry a v(t) correction (VT_PLAN §4).
 
-Scans <R>/<run>/<subrun>/<det>/vt_map.json (R = /eos/user/d/dneff/x17rerun/vt_correction, the single location of the
+Scans <R>/<run>/<subrun>/<det>/vt_map.json (R = /eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/vt_correction, the single location of the
 corrected tables) and writes one line per row: registry key, model, estimator, clock, source, the v_rel range, whether
 the table also carries the timing v, and the survey's verdict (rerun/vt_all/results/bench_vt.csv).  The repo copy,
 rerun/vt_all/results/vt_corrected_rows.csv, is the source of truth for "is this row corrected"; MANIFEST.csv sits
@@ -15,7 +15,7 @@ import os
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.abspath(os.path.join(HERE, '..', '..', '..'))
-ROOT = '/eos/user/d/dneff/x17rerun/vt_correction'
+ROOT = '/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/vt_correction'
 
 
 def main():

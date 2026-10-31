@@ -18,7 +18,7 @@ cd "$(dirname "$0")/.."
 # disagree about where it is; $X17_ROOT / $X17_SEPT26_OUT still move both.
 OUT=$(.venv/bin/python -m sept26_prelim_analysis.paths --path out) || exit 1
 PKG=$(.venv/bin/python -m sept26_prelim_analysis.paths --path x17)/sept26_fullpass
-EOSDIR=/eos/user/d/dneff/x17/sept26_fullpass
+EOSDIR=/eos/experiment/ntof/data/x17/analysis/sept26_fullpass
 SMOKE=4156277
 PY=.venv/bin/python
 SSH="ssh -o BatchMode=yes -o ConnectTimeout=25 -o ServerAliveInterval=60"

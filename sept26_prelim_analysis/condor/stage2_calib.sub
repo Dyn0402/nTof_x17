@@ -33,7 +33,7 @@ log                     = log/calib.log
 request_cpus            = 2
 request_memory          = 2000MB
 request_disk            = 3000MB
-environment             = "RECO_JOBS=2 EOS_STAGE2_OUT=/eos/user/d/dneff/x17/sept26_calib"
+environment             = "RECO_JOBS=2 EOS_STAGE2_OUT=/eos/experiment/ntof/data/x17/analysis/sept26_calib"
 +JobFlavour             = "longlunch"
 MY.SendCredential       = true
 on_exit_hold            = (ExitBySignal == True) || (ExitCode != 0)

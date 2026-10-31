@@ -4,7 +4,7 @@
 CODE=$1; VAR=$2; shift 2
 set +u; source /cvmfs/sft.cern.ch/lcg/views/LCG_110/x86_64-el9-gcc14-opt/setup.sh >/dev/null 2>&1
 export WFT_BEAM_BASE=/eos/experiment/ntof/data/x17/july_beam/runs/ X17_RUNS=/eos/experiment/ntof/data/x17/july_beam/runs
-export X17_ROOT=/eos/user/d/dneff/x17rerun/followups/fe X17_SEPT26_OUT=/eos/user/d/dneff/x17rerun/followups/fe/pairs
+export X17_ROOT=/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/followups/fe X17_SEPT26_OUT=/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/followups/fe/pairs
 export MPLBACKEND=Agg
 cd $CODE
 PY="env -u PYTHONPATH -u PYTHONHOME /eos/user/d/dneff/venvs/ntof-lock-cvmfs/bin/python"

@@ -3,13 +3,13 @@
 
 Each non-empty line of the spec file is one node:  <name> <script.py> <args...>   where the tokens {CACHE:<det>} and
 {BUNDLE:<det>} expand to the golden row's W12 it1 cache and promoted calib_bundle on EOS (as in make_heldout_dag.py),
-and {OUT} to /eos/user/d/dneff/x17rerun/model_audit/ws_widthtilt.  Writes <tag>.dag, ws.sub and run_ws.sh into the
+and {OUT} to /eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/model_audit/ws_widthtilt.  Writes <tag>.dag, ws.sub and run_ws.sh into the
 current directory (run it in ~/x17rerun/ws_widthtilt on lxplus, then condor_submit_dag <tag>.dag).
 """
 import argparse, os, re
 
 A = '/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_rr1'
-OUT = '/eos/user/d/dneff/x17rerun/model_audit/ws_widthtilt'
+OUT = '/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/model_audit/ws_widthtilt'
 ROWS = {'det2': 'mx17_det2_det3_overnight_6-22-26/longer_run/mx17_2',
         'det3': 'mx17_det3_saturday_scan_6-27-26/long_run_resist_490V_drift_1000V/mx17_3',
         'det4': 'mx17_det4_day_6-24-26/long_run/mx17_4',

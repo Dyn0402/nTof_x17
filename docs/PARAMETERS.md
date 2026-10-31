@@ -16,6 +16,10 @@ pass (`Analysis_pass1`, code `6a0bb1f`; the 01–04 stages `b5a29af`; SPS run71 
 Frame: detector-local x/y from the strip maps (pitch 0.78 mm, plate 0–400 mm), z = drift depth from the mesh. +y is up
 (`COORDINATES.md`).
 
+Storage: the analysis outputs that were under `/eos/user/d/dneff/x17rerun/` and `/eos/user/d/dneff/x17/` moved to the n_TOF EOS area
+(`/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/`, `.../analysis/`) on 2026-10-31. The old paths are FUSE symlinks but are
+not readable through `root://eosuser`; use the new paths with `root://eosexperiment.cern.ch` (`rerun/EOS_MOVE_2026-10-31.md`).
+
 ---
 
 ## 1 · What the fit measures per event and view
@@ -126,7 +130,7 @@ provenance keeps both (`kw_folded_into_v`: v_was, kw_mean), and `w0kw.json` list
 **What remains:**
 - v drifting *within* a row: one v per row in the tables. On the 6-26 night v **rises** with clock time in both det6 (17.3 → 31.5 µm/ns, +20 % inside the
   golden long_run) and det7 (+24 %, +4 % inside long_run), the same time-shape (the gas). Post-correction `r(t) = v_rel` per event, applied as v → v·r(t)
-  in the angle mapping: `rerun/vt_within_rows/` (det6/det7 6-26 only; corrected tables in `/eos/user/d/dneff/x17rerun/vt_correction/`).
+  in the angle mapping: `rerun/vt_within_rows/` (det6/det7 6-26 only; corrected tables in `/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/vt_correction/`).
 - The low-field rows, whose column overruns the 32-sample window whatever v is (100 V, stated limitation).
 - `refit = none` rows, which inherit their `calib_key`'s folded v.
 
@@ -135,7 +139,7 @@ provenance keeps both (`kw_folded_into_v`: v_was, kw_mean), and `w0kw.json` list
 | `tan_floor` | per-view model floor of the per-event angle error (det3 0.0185 X / 0.0163 Y in tan, ≈ 1°); enters `tan_err` |
 | `angle_map`, `v_map` | position- and time-dependent mappings: present in the bundle class, **empty in pass 1** (FA's v(x,y) not adopted). v(t) is applied to the tables afterwards, not in the bundle: per row `vt_map.json` = the `v_map['t']` block (`t_h` = hours since 2026-06-26 00:00 from acq_tag stem + DREAM timestamp × 10 ns, `v_rel`), `rerun/vt_within_rows/`. Every row: `rerun/vt_all/` (`VT_PLAN_2026-10-30.md`), clock hours since **2026-06-01** 00:00 (stated in each file) |
 | VT gate (`rerun/vt_all/vt_bench.py`) | `N_PER` 300 kw-window tracks per block and view, `N_MIN` 150 (a row with < 300 gets no time measurement); a row is `correct` when the joint line moves \|Δv\| ≥ `GATE_DV` 2 % over the row at ≥ `GATE_Z` 3σ, on ≥ 3 blocks, with x and y agreeing; `unstable` when the line's χ²/dof > `GATE_CHI2` 3 (dof ≥ 5). SPS: both views ≥ max(2 %, 3√2 σ_win), σ_win = 1.4 % per 1000-event window (run63 flat700 control). n_TOF: k per sub-run where one k per run fails (χ² p < 10⁻³ or 2 % at 3σ) |
-| corrected tables (`vt_correction`) | one location for every corrected bench row: `/eos/user/d/dneff/x17rerun/vt_correction/<run>/<subrun>/<det>/{events_vt.parquet, vt_map.json}`; which rows: `rerun/vt_all/results/vt_corrected_rows.csv` (source of truth, `crosscheck/vtc_manifest.py`; 51 rows on 10-31: the 48 det6/det7 6-26 rows of the night model + det2 6-22 long_run, det4 6-23 long_run, `g_det4` on the line model). `v_rel` is the **M3 ladder's** (an angle scale: right for `*_tan_vt`/`*_theta_deg_vt`/`*_mid_vt`). The timing v (column duration) is `v_rel_col` / `z_end_vt_col` where present (the three line rows); det4 and det2 agree with the ladder, det6 does not (ladder ≈ 2× column on g_det6_long, opposite sign on longer_run: `rerun/vt_all/CROSSCHECK_2026-10-31.md`), so det6's `z_end_vt` is not a depth correction. Clocks differ: night-model rows hours since 2026-06-26, line rows since 2026-06-01 (each `vt_map.json` states it) |
+| corrected tables (`vt_correction`) | one location for every corrected bench row: `/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/vt_correction/<run>/<subrun>/<det>/{events_vt.parquet, vt_map.json}`; which rows: `rerun/vt_all/results/vt_corrected_rows.csv` (source of truth, `crosscheck/vtc_manifest.py`; 51 rows on 10-31: the 48 det6/det7 6-26 rows of the night model + det2 6-22 long_run, det4 6-23 long_run, `g_det4` on the line model). `v_rel` is the **M3 ladder's** (an angle scale: right for `*_tan_vt`/`*_theta_deg_vt`/`*_mid_vt`). The timing v (column duration) is `v_rel_col` / `z_end_vt_col` where present (the three line rows); det4 and det2 agree with the ladder, det6 does not (ladder ≈ 2× column on g_det6_long, opposite sign on longer_run: `rerun/vt_all/CROSSCHECK_2026-10-31.md`), so det6's `z_end_vt` is not a depth correction. Clocks differ: night-model rows hours since 2026-06-26, line rows since 2026-06-01 (each `vt_map.json` states it) |
 
 ### 3.2 Where w0/kw come from
 `rerun/w12/set_w0kw.py` fits w = w0 + kw · v · tan_ref over the row's M3-matched events (03_angles `per_event.npz`). With a bow block it fits

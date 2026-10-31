@@ -4,7 +4,7 @@
 G=$1
 source /cvmfs/sft.cern.ch/lcg/views/LCG_110/x86_64-el9-gcc14-opt/setup.sh >/dev/null 2>&1
 R=/eos/experiment/ntof/data/x17/p2_sps_july/runs/run_53/cfg_gain4.5_peaktime200_deflt/raw_daq_data
-O=/eos/user/d/dneff/x17rerun/sps_audit/run53_fa80c06; mkdir -p $O
+O=/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/sps_audit/run53_fa80c06; mkdir -p $O
 FB=EicP2Bt_cfg_gain4.5_peaktime200_deflt_datrun_260801_12H59_${G}_03
 W=${_CONDOR_SCRATCH_DIR:-/tmp/dneff_dec53_$G}; mkdir -p $W; cd $W
 cp $R/$FB.fdf in.fdf || exit 1

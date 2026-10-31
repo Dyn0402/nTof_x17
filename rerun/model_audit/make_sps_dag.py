@@ -3,12 +3,12 @@
 
 One node per (plateau cache, arm): heldout_arm.py on the inclined run_63 operating_00 caches (sps_build_cache.py) with
 the promoted bench det4 bundle, v = the span-route CF4 v(E) of the plateau, K covering the column at 64 samples, ZS
-censoring, the H4 channel layer (sps_mask.py; bench lists are other channel numbers).  Output /eos/user/d/dneff/x17rerun/model_audit/sps/<cache>_<arm>.npz.
+censoring, the H4 channel layer (sps_mask.py; bench lists are other channel numbers).  Output /eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/model_audit/sps/<cache>_<arm>.npz.
 """
 import argparse
 
 A = '/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_rr1/mx17_det4_day_6-24-26/long_run/mx17_4/wft/calib_bundle'
-S = '/eos/user/d/dneff/x17rerun/model_audit/sps'
+S = '/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/model_audit/sps'
 # plateau -> (drift V, field V/cm over 28.8 mm, span-route v um/ns: EXTRACTION_2026-08-05 section 4)
 PLATEAUS = {'d675': (675.5, 235, 14.0), 'd625': (625.3, 217, 13.2), 'd575': (575.3, 200, 12.4), 'd525': (525.2, 182, 11.8),
             'd475': (475.3, 165, 11.6), 'd425': (425.2, 148, 11.6), 'd325': (325.1, 113, 11.5)}

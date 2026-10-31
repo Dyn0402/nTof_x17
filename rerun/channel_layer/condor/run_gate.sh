@@ -4,7 +4,7 @@ set -eu
 CODE=$1; DET=$2; ARM=$3
 set +u; source /cvmfs/sft.cern.ch/lcg/views/LCG_110/x86_64-el9-gcc14-opt/setup.sh >/dev/null 2>&1; set -u
 PY="env -u PYTHONPATH -u PYTHONHOME /eos/user/d/dneff/venvs/ntof-lock-cvmfs/bin/python"
-G=/eos/user/d/dneff/x17rerun/maskgate
+G=/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/maskgate
 W=${_CONDOR_SCRATCH_DIR:-/tmp/$USER}/mg_$$; mkdir -p $W; cd $W
 cp $G/in/$DET/cache.pkl . && cp -r $G/in/$DET/$ARM bundle
 N=$($PY -c "import pickle;print(min(1320,len(pickle.load(open('cache.pkl','rb')))-180))")

@@ -10,14 +10,14 @@ Item 6 (the width-tilt trade with everything else on), one node per (chamber, ar
   in three event chunks.  The position (bow) map is applied offline in trade_analysis.py, cross-validated by halves.
 Item 5, fc_headon_grid.py: SPS det4 run_71 RAW head-on at 243 / 156 / 96 V/cm (6 chunks each), the X view again with
 the one-sided copy (rc_asym_x 0.13, 243 V/cm), and bench head-on (|tan_ref| < 0.03, up to 2000 per view) on all five chambers (4 chunks each).
-Outputs: /eos/user/d/dneff/x17rerun/followups/fc/{trade,headon}/.  Writes fc.dag, fc.sub, run_fc.sh into cwd.
+Outputs: /eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/followups/fc/{trade,headon}/.  Writes fc.dag, fc.sub, run_fc.sh into cwd.
 """
 import argparse, os
 
 A = '/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_rr1'
-LAT = '/eos/user/d/dneff/x17rerun/model_audit/ws_t0/bundles'
-SPS = '/eos/user/d/dneff/x17rerun/ws_sps/data'
-OUT = '/eos/user/d/dneff/x17rerun/followups/fc'
+LAT = '/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/model_audit/ws_t0/bundles'
+SPS = '/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/ws_sps/data'
+OUT = '/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/followups/fc'
 ROWS = {'det2': 'mx17_det2_det3_overnight_6-22-26/longer_run/mx17_2',
         'det3': 'mx17_det3_saturday_scan_6-27-26/long_run_resist_490V_drift_1000V/mx17_3',
         'det4': 'mx17_det4_day_6-24-26/long_run/mx17_4',

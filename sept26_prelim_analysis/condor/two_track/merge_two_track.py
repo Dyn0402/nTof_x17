@@ -4,7 +4,7 @@ merge_two_track.py -- bring the two-track condor results home and merge them.
 
     .venv/bin/python sept26_prelim_analysis/condor/two_track/merge_two_track.py [--no-fetch]
 
-1. rsync lxplus:/eos/user/d/dneff/x17/two_track_limit/results/ -> <pkg>/results/
+1. rsync lxplus:/eos/experiment/ntof/data/x17/analysis/two_track_limit/results/ -> <pkg>/results/
 2. check every job of <pkg>/jobs.txt has its tarball (lists the missing ones)
 3. per variant, concatenate the shards into ~/x17/sept26_prelim/intra_bench/:
      bench    <variant>/                 overlays, candidates, splits, donors,
@@ -32,7 +32,7 @@ REPO = os.path.dirname(os.path.dirname(os.path.dirname(HERE)))
 sys.path.insert(0, REPO)
 from sept26_prelim_analysis import intra_bench as ib, paths  # noqa: E402
 
-EOS_RESULTS = '/eos/user/d/dneff/x17/two_track_limit/results/'
+EOS_RESULTS = '/eos/experiment/ntof/data/x17/analysis/two_track_limit/results/'
 
 
 def main():

@@ -11,7 +11,7 @@ A=/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_rr1/$REL/wft/w11
 O=$A/${TAG}_$CM; mkdir -p $O
 W=${_CONDOR_SCRATCH_DIR:-/tmp/$USER}/w11_$$; mkdir -p $W; cd $W
 cp $A/cache_$CM.pkl cache.pkl
-cp /eos/user/d/dneff/plane_ratio/inputs/$DET/bundle.tgz . && mkdir -p src && tar xzf bundle.tgz -C src
+cp /eos/experiment/ntof/data/x17/analysis/user_misc/plane_ratio/inputs/$DET/bundle.tgz . && mkdir -p src && tar xzf bundle.tgz -C src
 B=$(ls -d $W/src/*/)
 X=""; [ "$MODE" = profiled ] && X="--p0-profile"; [ -n "$K" ] && X="$X --depth-bins $K"
 NJ=${OMP_NUM_THREADS:-8}

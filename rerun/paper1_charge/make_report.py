@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """make_report.py --in D [--out O] -- Paper I charge on the pass-1 bench tables: numbers, figures, report.html.
 
-Input: the output of charge_rows.py (D/rows/*.json, D/events/*.npz; on EOS /eos/user/d/dneff/x17rerun/paper1_charge/v1).
+Input: the output of charge_rows.py (D/rows/*.json, D/events/*.npz; on EOS /eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/paper1_charge/v1).
 Output (default: this directory): results/summary.json, results/rows.csv, figures/*.png|pdf, report.html, and the
 Paper I figure papers/paper1 charge_balance source (figures/charge_balance.pdf).
 

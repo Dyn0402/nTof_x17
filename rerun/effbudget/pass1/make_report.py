@@ -157,7 +157,7 @@ def main():
     H.append('<h2>Every pass-1 bench row</h2>' + table(rows, cols))
     H.append('<h2>What this does not rule out</h2><ul>' + ''.join(f'<li>{x}</li>' for x in V['limits']) + '</ul>')
     H.append('<p>Code: <code>rerun/effbudget/pass1/</code> (make_dag.py &rarr; condor; collect.py, a1_recat.py, fine_maps.py, '
-             'make_report.py on lxplus). Outputs: <code>/eos/user/d/dneff/x17rerun/paper1_eff/</code>.</p></body></html>')
+             'make_report.py on lxplus). Outputs: <code>/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/paper1_eff/</code>.</p></body></html>')
     open(os.path.join(REP, 'report.html'), 'w').write('\n'.join(H))
     print('wrote', os.path.join(REP, 'report.html'))
 

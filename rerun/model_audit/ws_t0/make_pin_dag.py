@@ -7,8 +7,8 @@ Uses the audit's wrapper ~/x17rerun/audit/run_heldout.sh.  Writes pin.dag + pin.
 import sys
 
 A = '/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_rr1'
-B = '/eos/user/d/dneff/x17rerun/model_audit/ws_t0/bundles'
-OUT = '/eos/user/d/dneff/x17rerun/model_audit/ws_t0/heldout'
+B = '/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/model_audit/ws_t0/bundles'
+OUT = '/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/model_audit/ws_t0/heldout'
 ROWS = {'det2': 'mx17_det2_det3_overnight_6-22-26/longer_run/mx17_2',
         'det3': 'mx17_det3_saturday_scan_6-27-26/long_run_resist_490V_drift_1000V/mx17_3',
         'det4': 'mx17_det4_day_6-24-26/long_run/mx17_4',

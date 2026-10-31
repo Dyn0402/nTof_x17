@@ -21,7 +21,7 @@ from collections import defaultdict
 import numpy as np
 import uproot
 
-AUD = '/eos/user/d/dneff/x17rerun/decode_audit'
+AUD = '/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/decode_audit'
 def retry(fn, *a, n=5):
     """EOS fuse throws transient EIO under load: retry, then give up with None."""
     import time

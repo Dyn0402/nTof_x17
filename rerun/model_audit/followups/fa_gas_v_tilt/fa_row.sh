@@ -7,10 +7,10 @@
 #   mode arm:<name> : wft reco of every matched event with <bundle> into wft/arm_<name>/events.parquet (study arm)
 # Outputs go to the FA Analysis tree on EOS (never Analysis_rr1).  Leaves nothing large in the scratch dir.
 CODE=$1; MODE=$2; KEY=$3; BUNDLE=$4; LIMIT=${5:-0}
-EOSA=/eos/user/d/dneff/x17rerun/followups/fa/Analysis
+EOSA=/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/followups/fa/Analysis
 set +u; source /cvmfs/sft.cern.ch/lcg/views/LCG_110/x86_64-el9-gcc14-opt/setup.sh >/dev/null 2>&1
 export RERUN_CODE_COMMIT=$(basename $CODE | sed 's/^code_//') MPLBACKEND=Agg
-export WFT_RND_DIR=/eos/user/d/dneff/x17rerun/regression/wft_model_sat_det3
+export WFT_RND_DIR=/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/regression/wft_model_sat_det3
 W=${_CONDOR_SCRATCH_DIR:-/tmp/$USER/fa_$$}; mkdir -p $W
 PY="env -u PYTHONPATH -u PYTHONHOME /eos/user/d/dneff/venvs/ntof-lock-cvmfs/bin/python $CODE/rerun/stage_job.py --work $W --eos-analysis $EOSA"
 FA=rerun/model_audit/followups/fa_gas_v_tilt

@@ -40,7 +40,7 @@ log                     = log/stage2_fullpass.log
 request_cpus            = 2
 request_memory          = 2000MB
 request_disk            = 4000MB
-environment             = "RECO_JOBS=2 EOS_STAGE2_OUT=/eos/user/d/dneff/x17/sept26_fullpass"
+environment             = "RECO_JOBS=2 EOS_STAGE2_OUT=/eos/experiment/ntof/data/x17/analysis/sept26_fullpass"
 # "workday" (8 h), not the allowlist pass's "longlunch" (2 h): these jobs are
 # ~20x longer, a median near 40 min with a tail that would run past 2 h. A job
 # killed on the flavour limit is held and retried into the same limit.

@@ -222,7 +222,7 @@ run_149, not conclusions.</p></div>
 --full-pass` with a new <code>--tags-json</code> (cosmic runs have no n_TOF
 slim, so no stage 1 to take tags from), the campaign bundles (A/B/D r06, C lp),
 v_drift pinned at 42.6 µm/ns, no hot-channel mask. Condor cluster 4354841, 12
-jobs, none held; output in <code>/eos/user/d/dneff/x17/cosmics_fullpass</code>,
+jobs, none held; output in <code>/eos/experiment/ntof/data/x17/analysis/cosmics_fullpass</code>,
 apart from the campaign's. Code changed since the campaign pass only by the
 opt-in two-track switches, which are off.</li>
 <li><b>Tracks:</b> <code>build_tracks.build</code>, no stage 1 or allowlist, k

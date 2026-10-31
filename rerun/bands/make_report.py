@@ -5,7 +5,7 @@
                                 # writes $BANDS_OUT/summary.json, figures/*.png, report.html
 
 Inputs are produced by patches.py, fdfcheck.py, hvscan.py (local) and ntof_scan.py (lxplus; the npz files are copied
-from /eos/user/d/dneff/bands/ to $BANDS_OUT).  Re-run after any of them changes.
+from /eos/experiment/ntof/data/x17/analysis/user_misc/bands/ to $BANDS_OUT).  Re-run after any of them changes.
 """
 import glob, html, json, os, sys
 import numpy as np

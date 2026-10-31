@@ -13,7 +13,7 @@ export PYTHONPATH=$PWD/code:$PYTHONPATH
 
 python3 run_two_track_job.py "$@"
 
-EOSOUT=${EOS_TT_OUT:-/eos/user/d/dneff/x17/two_track_limit/results}
+EOSOUT=${EOS_TT_OUT:-/eos/experiment/ntof/data/x17/analysis/two_track_limit/results}
 XH=root://eosuser.cern.ch/
 xrdcp -f "${OUTNAME}.tar.gz" "$XH$EOSOUT/${OUTNAME}.tar.gz" \
   || { echo "[wrapper] FATAL: xrdcp of ${OUTNAME}.tar.gz failed"; exit 5; }

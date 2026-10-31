@@ -41,7 +41,7 @@ strip costs a little information (the fit treats its charge as unknown). A weak 
 carry no hot channel.
 
 Inputs and results: `results/ga_check.json`, `results/ga_mirror.json`, `results/figures/ga_*.png` (EOS copy
-`/eos/user/d/dneff/x17rerun/precheck_ga/`).
+`/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/precheck_ga/`).
 
 ---
 

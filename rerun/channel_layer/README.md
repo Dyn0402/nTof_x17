@@ -47,7 +47,7 @@ noise 1e9 so the saturation penalty cannot pull either). The review, scripts in 
   `WFT_DEAD_SEED=1` (opt-in, default off = bit-identical; `wft/tests/test_dead_seed.py`): the seed gap does not count
   dead strips and the window pad counts live strips.
 - **The production-path A/B is null; the flag stays off.** lxplus DAG `~/x17rerun/deadseed_ab/` (code
-  `/eos/user/d/dneff/x17rerun/code_3f6db25`, outputs `/eos/user/d/dneff/x17rerun/Analysis_deadseed/<row>/wft/ds{0,1}/`):
+  `/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/code_3f6db25`, outputs `/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/Analysis_deadseed/<row>/wft/ds{0,1}/`):
   `wft.cli reco --matched-only --limit 8000` on the golden rows with the masked bundle (det7 promoted physmask; det4
   promoted phys + census mask), flag 0 vs 1, effbudget on the production alignment, compared ray by ray
   (`deadseed_ab/pair.py`). The flag acts (det7 X windows changed 2 105/8 000, fits moved > 1 mm 245; det4 X 2 078 and
