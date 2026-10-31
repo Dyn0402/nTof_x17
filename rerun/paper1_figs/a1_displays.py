@@ -64,13 +64,14 @@ def read_waveforms(row, gen, want):
                     if '_datrun_' in os.path.basename(f))
         for f in fs:
             tag = wio.file_tag(f)
-            ids = {e for (t, e) in want if t == tag}
+            ids = {e for (t, e) in want if t == tag or t is None}
             if not ids:
                 continue
             r = wio.FeuReader(f)
             have = ids & set(r.event_ids.tolist())
             for e, _ft, W in r.iter_events(have):
-                out.setdefault((tag, int(e)), {})[v] = W.astype(np.float32)
+                k = (tag, int(e)) if (tag, int(e)) in want else (None, int(e))
+                out.setdefault(k, {})[v] = W.astype(np.float32)
             print(f'  {v} {os.path.basename(f)}: {len(have)} events', flush=True)
     return out
 
@@ -130,14 +131,16 @@ def main():
     picks = {}
     for cls, g in C[C.recat != 'detected'].groupby('recat'):
         ids = np.sort(g.event_id.values)
-        ids = [int(i) for i in ids if i in E.index]          # the acquisition comes from the pass table
+        # the acquisition comes from the pass table; spark-vetoed events are often not in it: then every data file is
+        # searched (event ids are unique within a golden row: the pass table has no duplicate after the dedup)
+        ids = [int(i) for i in ids if i in E.index or i in R.index]
         picks[cls] = sorted(rng.choice(ids, size=min(a.n, len(ids)), replace=False).tolist()) if ids else []
     paper = dict(p.split('=') for p in a.paper.split(',') if p)
     for cls, e in paper.items():
         if int(e) not in picks.get(cls, []):
             picks.setdefault(cls, []).append(int(e))
     ACQ = {int(e): str(E.loc[e, 'acq_tag']) for es in picks.values() for e in es if e in E.index}
-    want = {(ACQ[e], e) for es in picks.values() for e in es if e in ACQ}
+    want = {(ACQ.get(e), e) for es in picks.values() for e in es}
     print(f'{a.key}: {sum(len(v) for v in picks.values())} events in {len(picks)} classes', flush=True)
     WF = read_waveforms(row, a.gen, want)
     PM, _ = posmap(row)
