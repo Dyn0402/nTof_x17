@@ -1,0 +1,12 @@
+# residual bootstrap job (boot_job.sh), run from the frozen code archive
+executable     = /bin/bash
+arguments      = $(code)/rerun/paper1_floor/condor/boot_job.sh $(code) $(view) $(name) $(args)
+output         = log/$(name).out
+error          = log/$(name).err
+log            = log/boot.log
+request_cpus   = 1
+request_memory = 3000
++JobFlavour    = "workday"
+should_transfer_files = NO
+requirements   = (Machine != "b9g42p2031.cern.ch")
+queue

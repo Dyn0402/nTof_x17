@@ -1,0 +1,14 @@
+# data side of the residual bootstrap: the pass replay of one calibration row's clean events (rerun/stage_job.py
+# --no-sync: nothing is pushed to Analysis_pass1)
+executable     = /bin/bash
+arguments      = $(code)/rerun/stage_job.sh $(code) $(key) --no-sync --script rerun/paper1_floor/boot_extract.py -- --ids $(ids) --out $(out)
+output         = log/extract_$(key).out
+error          = log/extract_$(key).err
+log            = log/boot.log
+request_cpus   = 1
+request_memory = 8000
++JobFlavour    = "workday"
+environment    = "PYTHONDONTWRITEBYTECODE=1"
+should_transfer_files = NO
+requirements   = (Machine != "b9g42p2031.cern.ch")
+queue
