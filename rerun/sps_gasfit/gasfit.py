@@ -47,6 +47,11 @@ GROUPS = {
     'co2_run57': dict(gas='co2', keys=['run57_rot25_co2__d700', 'run57_rot25_co2__d650', 'run57_rot25_co2__d600', 'run57_rot25_co2__d550']),
     'co2_run59': dict(gas='co2', keys=['run59_co2__co2']),
 }
+#: the CO2 -> CF4 flush (run60, 0.6-8.1 h after the switch): the base gas itself changes, so a (water, air) fit in
+#: either pure base is INDICATIVE only (the grid has no mixed base); each sub-run is fitted in both and both are reported.
+for _i in range(15):
+    for _g, _tag in (('beam', 'cf4'), ('co2', 'co2')):
+        GROUPS[f'trans_ov{_i:02d}_{_tag}'] = dict(gas=_g, keys=[f'run60_flush__ov{_i:02d}'], transition=True)
 RAW_KEYS = ('run71_raw__raw700', 'run71_raw__raw450', 'run71_raw__raw275')
 
 
@@ -197,6 +202,35 @@ def fit_shaper(Mo, data, comp, par0):
     return sol.x
 
 
+ARGS = ZTAB = RAWD = None
+
+
+def shaper_for_gap(gp):
+    a = ARGS
+    Mb = Model('beam', a.source, gp, a.k, not a.raw_eta)
+    par = np.array([8.886, 40.73, 0.062, 2438.0]); comp = (1.55, 0.07)
+    Wb = np.linspace(Mb.G.W.min(), Mb.G.W.max(), a.nw); Ab = np.linspace(0, Mb.G.A.max(), a.na)
+    for it in range(3):
+        par = fit_shaper(Mb, RAWD, comp, par)
+        chi = grid_scan(Mb, RAWD, par, Wb, Ab)
+        i, j = np.unravel_index(np.nanargmin(chi), chi.shape); comp = (Wb[i], Ab[j])
+        print(f'gap {gp}: shaper it {it}: {np.round(par, 3)}  water {comp[0]:.3f} air {comp[1]:.3f}  chi2 {np.nanmin(chi):.0f}',
+              flush=True)
+    return par
+
+
+def scan_task(g, gp, par):
+    a = ARGS; spec = GROUPS[g]
+    data = group_data(a.stacks, spec['keys'], a, ZTAB)
+    Mo = Model(spec['gas'], a.source, gp, a.k, not a.raw_eta)
+    W = np.linspace(Mo.G.W.min(), Mo.G.W.max(), a.nw); A = np.linspace(0, Mo.G.A.max(), a.na)
+    if not data:
+        return None, W, A
+    chi = grid_scan(Mo, data, par, W, A)
+    print(f'  scanned {g} gap {gp}: chi2 min {np.nanmin(chi):.0f}', flush=True)
+    return chi, W, A
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--stacks', required=True); ap.add_argument('--out', default=os.path.join(HERE, 'results', 'gasfit.json'))
@@ -204,42 +238,35 @@ def main():
     ap.add_argument('--zs-scale', type=float, default=1.0); ap.add_argument('--sat', action='store_true')
     ap.add_argument('--hx', type=int, default=2); ap.add_argument('--hy', type=int, default=8)
     ap.add_argument('--raw-eta', action='store_true'); ap.add_argument('--source', default='air_hs')
-    ap.add_argument('--groups', nargs='*', default=None); ap.add_argument('--nw', type=int, default=13)
-    ap.add_argument('--na', type=int, default=14)
+    ap.add_argument('--groups', nargs='*', default=None); ap.add_argument('--nw', type=int, default=33)
+    ap.add_argument('--na', type=int, default=14); ap.add_argument('--jobs', type=int, default=6)
     ap.add_argument('--gaps', type=float, nargs='*', default=[27.0, 27.9, 28.8, 30.0],
                     help='drift gaps profiled [mm] (ws_spsv: slope x duration 26.2-27.0, registry 28.8, nominal 30)')
     a = ap.parse_args()
-    ztab = zs_table(a.stacks, a)
+    global ARGS, ZTAB, RAWD
+    ARGS = a; ZTAB = zs_table(a.stacks, a); RAWD = group_data(a.stacks, list(RAW_KEYS), a, ZTAB)
     res = dict(args=vars(a), groups={}, shaper={})
     gaps = a.gaps or [a.gap]
-    raw = group_data(a.stacks, list(RAW_KEYS), a, ztab)
-    pars, models = {}, {}
-    # 1. per gap: the shaper on run71 RAW, iterated with its composition
-    for gp in gaps:
-        Mb = Model('beam', a.source, gp, a.k, not a.raw_eta)
-        par = np.array([8.886, 40.73, 0.062, 2438.0]); comp = (1.55, 0.07)
-        Wb = np.linspace(Mb.G.W.min(), Mb.G.W.max(), a.nw); Ab = np.linspace(0, Mb.G.A.max(), a.na)
-        for it in range(3):
-            par = fit_shaper(Mb, raw, comp, par)
-            chi = grid_scan(Mb, raw, par, Wb, Ab)
-            i, j = np.unravel_index(np.nanargmin(chi), chi.shape); comp = (Wb[i], Ab[j])
-            print(f'gap {gp}: shaper it {it}: {np.round(par, 3)}  water {comp[0]:.3f} air {comp[1]:.3f}  chi2 {np.nanmin(chi):.0f}',
-                  flush=True)
-        pars[gp] = par; models[('beam', gp)] = Mb; res['shaper'][str(gp)] = [float(x) for x in par]
-    # 2. every group with the fixed shaper of each gap; the gap is profiled
+    import multiprocessing as mp
+    with mp.get_context('fork').Pool(a.jobs) as pool:
+        # 1. per gap: the shaper on run71 RAW, iterated with its composition
+        pars = dict(zip(gaps, pool.map(shaper_for_gap, gaps)))
+        for gp, par in pars.items():
+            res['shaper'][str(gp)] = [float(x) for x in par]
+        # 2. every group x gap with that gap's fixed shaper; the gap is then profiled
+        todo = [(g, gp, pars[gp]) for g in GROUPS if not a.groups or g in a.groups for gp in gaps]
+        scans = dict(zip([(g, gp) for g, gp, _ in todo], pool.starmap(scan_task, todo)))
     for g, spec in GROUPS.items():
         if a.groups and g not in a.groups:
             continue
-        data = group_data(a.stacks, spec['keys'], a, ztab)
+        data = group_data(a.stacks, spec['keys'], a, ZTAB)
         if not data:
             continue
         ndf = sum(int(((d['t'] >= WIN[0]) & (d['t'] <= WIN[1])).sum()) - 2 for d in data) - 3
         per_gap = {}
         for gp in gaps:
-            Mo = models.setdefault((spec['gas'], gp), Model(spec['gas'], a.source, gp, a.k, not a.raw_eta))
-            W = np.linspace(Mo.G.W.min(), Mo.G.W.max(), a.nw); A = np.linspace(0, Mo.G.A.max(), a.na)
-            chi = grid_scan(Mo, data, pars[gp], W, A)
-            per_gap[gp] = (chi, W, A, Mo)
+            chi, W, A = scans[(g, gp)]
+            per_gap[gp] = (chi, W, A, Model(spec['gas'], a.source, gp, a.k, not a.raw_eta))
         cmin = min(np.nanmin(v[0]) for v in per_gap.values()); gbest = min(per_gap, key=lambda k: np.nanmin(per_gap[k][0]))
         chi, W, A, Mo = per_gap[gbest]
         S = summarise(chi, W, A, ndf)
@@ -256,7 +283,7 @@ def main():
                  chi2_by_gap={str(k): float(np.nanmin(v[0])) for k, v in per_gap.items()},
                  best_by_gap={str(k): summarise(v[0], v[1], v[2], ndf) for k, v in per_gap.items()})
         S['o2_68_gap'] = [x * 2095 for x in S['air_68_gap']] if S['air_68_gap'] else None
-        best = (S['water'], S['air']); par = pars[gbest]
+        best = (S['water'], S['air']); par = pars[gbest]; Mo = per_gap[gbest][3]
         per = []
         for d in data:
             c, n, mc, q = fit_stack(d['t'], d['y'], d['e'], Mo.current(best, Mo.E(d)), par, d['zsd'])
@@ -268,7 +295,8 @@ def main():
         for k in ('best_by_gap',):
             for kk in S[k].values():
                 kk.pop('edge', None)
-        S.update(gas=spec['gas'], per_stack=per, grid_w=W.tolist(), grid_a=A.tolist(), chi=chi.tolist())
+        S.update(gas=spec['gas'], transition=bool(spec.get('transition')), keys=spec['keys'], per_stack=per, grid_w=W.tolist(),
+                 grid_a=A.tolist(), chi=chi.tolist())
         res['groups'][g] = S
         print(f'{g:18s} gap {gbest} water {S["water"]:.3f} {S["water_68_gap"]}  air {S["air"]:.3f} ({S["o2_ppm"]:.0f} ppm O2, '
               f'{S["o2_68_gap"]})  chi2 {S["chi2"]:.0f}/{S["ndf"]}  by gap {S["chi2_by_gap"]}  edge {S["edge"]}', flush=True)
