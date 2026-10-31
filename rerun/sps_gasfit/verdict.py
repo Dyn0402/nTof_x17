@@ -17,7 +17,7 @@ import numpy as np
 HERE = os.path.dirname(os.path.abspath(__file__))
 MAIN = ['co2_run55', 'co2_run56', 'co2_run57', 'co2_run59', 'cf4_run62_ladder', 'cf4_run63_ladder', 'cf4_run63_flat', 'cf4_run71_raw']
 PAIRS = [('zs05', 'zs15'), ('kp', 'km'), ('h1', 'h4')]
-SINGLE = ['sat', 'raweta', 'zswin']
+SINGLE = ['sat', 'raweta', 'zswin', 'tmpl']
 
 
 def at_gap(G, gp):

@@ -14,7 +14,7 @@ MAIN = ['co2_run55', 'co2_run56', 'co2_run57', 'co2_run59', 'cf4_run62_ladder', 
 WHEN = {'co2_run55': 'Sat 08-01 14:25', 'co2_run56': 'Sat 15:47', 'co2_run57': 'Sat 18:14', 'co2_run59': 'Sat 20:02',
         'cf4_run62_ladder': 'Sun 22:07', 'cf4_run63_ladder': 'Sun 23:53', 'cf4_run63_flat': 'Mon 01:00', 'cf4_run71_raw': 'Mon 05:22'}
 ARMS = {'zs05': 'ZS distortion x0.5', 'zs15': 'ZS distortion x1.5', 'kp': 'field profile k = +0.1', 'km': 'k = -0.1',
-        'zswin': 'ZS rows fitted only to 2.9 µs', 'sat': 'saturated events kept', 'h1': 'strip sums X+-1 / Y+-4', 'h4': 'strip sums X+-4 / Y+-12', 'raweta': 'unsmoothed Magboltz eta'}
+        'zswin': 'ZS rows fitted only to 2.9 µs', 'sat': 'saturated events kept', 'h1': 'strip sums X+-1 / Y+-4', 'h4': 'strip sums X+-4 / Y+-12', 'raweta': 'unsmoothed Magboltz eta', 'tmpl': 'bench template, no free shaper'}
 
 
 def f2(x, n=2):

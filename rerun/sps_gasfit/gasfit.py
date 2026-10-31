@@ -220,6 +220,8 @@ ARGS = ZTAB = RAWD = None
 
 def shaper_for_gap(gp):
     a = ARGS
+    if a.bench_template:
+        return None          # arm: the measured bench X template (cloud_basics template_det3_x.json), no free shaper
     Mb = Model('beam', a.source, gp, a.k, not a.raw_eta)
     par = np.array([8.886, 40.73, 0.062, 2438.0]); comp = (1.55, 0.07)
     Wb = np.linspace(Mb.G.W.min(), Mb.G.W.max(), a.nw); Ab = np.linspace(0, Mb.G.A.max(), a.na)
@@ -254,7 +256,8 @@ def main():
     ap.add_argument('--groups', nargs='*', default=None); ap.add_argument('--nw', type=int, default=33)
     ap.add_argument('--na', type=int, default=14); ap.add_argument('--jobs', type=int, default=6)
     ap.add_argument('--zs-win-hi', type=float, default=None, help='arm: fit ZS stacks only up to this time [ns]')
-    ap.add_argument('--gaps', type=float, nargs='*', default=[27.0, 27.9, 28.8, 30.0],
+    ap.add_argument('--bench-template', action='store_true', help='arm: the measured bench template instead of the fitted shaper')
+    ap.add_argument('--gaps', type=float, nargs='*', default=[26.2, 27.0, 27.9, 28.8, 30.0],
                     help='drift gaps profiled [mm] (ws_spsv: slope x duration 26.2-27.0, registry 28.8, nominal 30)')
     a = ap.parse_args()
     global ARGS, ZTAB, RAWD
@@ -266,7 +269,7 @@ def main():
         # 1. per gap: the shaper on run71 RAW, iterated with its composition
         pars = dict(zip(gaps, pool.map(shaper_for_gap, gaps)))
         for gp, par in pars.items():
-            res['shaper'][str(gp)] = [float(x) for x in par]
+            res['shaper'][str(gp)] = None if par is None else [float(x) for x in par]
         # 2. every group x gap with that gap's fixed shaper; the gap is then profiled
         todo = [(g, gp, pars[gp]) for g in GROUPS if not a.groups or g in a.groups for gp in gaps]
         scans = dict(zip([(g, gp) for g, gp, _ in todo], pool.starmap(scan_task, todo)))
