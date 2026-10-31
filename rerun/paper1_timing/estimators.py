@@ -89,6 +89,32 @@ class Edge:
         return float(T0_FINE[i] + _parab(chi, i, 1.0))
 
 
+class EdgeAbs(Edge):
+    """rising edge with the sample cut set by the NOISE, not by the maximum: k = first sample above nsig x the rms of the
+    first NPRE samples (pre-signal), + nadd samples.  A late delta-ray spike cannot move it."""
+
+    def __init__(self, kern, ns, nsig=5.0, nadd=2, npre=3):
+        super().__init__(kern, ns)
+        self.nsig, self.nadd, self.npre = nsig, nadd, npre
+
+    def fit(self, y):
+        pre = y[:self.npre]
+        thr = max(self.nsig * float(np.sqrt(np.mean(pre ** 2))), 1e-6)
+        above = np.flatnonzero(y > thr)
+        if not len(above):
+            return np.nan
+        k = max(int(above[0]) + 1 + self.nadd, 3)
+        G = self.G[:, :k]; yy = y[:k]
+        gg = (G * G).sum(1)
+        a = np.where(gg > 0, (G @ yy) / np.maximum(gg, 1e-30), 0.0)
+        chi = ((yy[None, :] - a[:, None] * G) ** 2).sum(1)
+        chi = np.where(a > 0, chi, np.inf)
+        i = int(np.argmin(chi))
+        if not np.isfinite(chi[i]):
+            return np.nan
+        return float(T0_FINE[i] + _parab(chi, i, 1.0))
+
+
 def cf(y, frac=CF_FRAC):
     m = y.max()
     if not m > 0:

@@ -4,6 +4,7 @@ calib_bundle, output stem and the registry meta.  Sources, in order of preferenc
   pass  colsum run with the PASS bundle (S4 golden rows, the v(t) cross-check rows)
   gc    colsum run with the audit bundle (the GC follow-up, 150 rows).  S(t) is a raw strip sum: the bundle only set the
         dead mask of the cluster finder; this script fits it with the row's own pass template.
+  fa    the FA follow-up's colsum rows (audit bundle) not in the GC set: the det3 6-27 drift scan at 500-1100 V.
 """
 import csv
 import os
@@ -36,6 +37,11 @@ for c in PASS_COLSUM:
 for line in open(sys.argv[1]):
     run, sub, det = line.strip().split('/')[:3]
     rows.append((f'{X}/x17rerun/followups/gc/Analysis/{run}/{sub}/{det}/gc/colsum.npz', run, sub, det, 'gc'))
+# the FA follow-up's colsum rows (audit bundle) that the GC set does not hold: the det3 6-27 drift scan
+for sub in ('drift_scan_resist_490V_drift_500V', 'drift_scan_resist_490V_drift_700V', 'drift_scan_resist_490V_drift_900V',
+            'drift_scan_resist_490V_drift_1100V'):
+    run, det = 'mx17_det3_saturday_scan_6-27-26', 'mx17_3'
+    rows.append((f'{X}/x17rerun/followups/fa/Analysis/{run}/{sub}/{det}/fa/colsum.npz', run, sub, det, 'fa'))
 for c, run, sub, det, src in rows:
     if (run, sub, det) in seen:
         continue
