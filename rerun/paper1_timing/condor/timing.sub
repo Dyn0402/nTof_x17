@@ -1,0 +1,16 @@
+# Paper I §7 timing: timing_row.py over a chunk of rerun/paper1_timing/jobs.txt, from the frozen code archive $(code)
+# (git archive, rerun/paper1_timing/condor/deploy.sh).  Reads colsum.npz and the pass bundles, writes the row results,
+# all through the EOS FUSE mount (as stage1.sub); nothing large is left in the scratch dir.
+executable     = /bin/bash
+arguments      = $(code)/rerun/paper1_timing/condor/timing_job.sh $(code) $(first) $(count)
+output         = log/timing_$(first).out
+error          = log/timing_$(first).err
+log            = log/timing.log
+request_cpus   = 1
+request_memory = 3000
+environment    = "PYTHONDONTWRITEBYTECODE=1"
++JobFlavour    = "workday"
+should_transfer_files = NO
+max_retries    = 3
+requirements   = (Machine != "b9g42p2031.cern.ch")
+queue first, count from chunks.txt
