@@ -94,6 +94,17 @@ next to the constant.** For y, the facts on record are:
 - **Possibly changed:** any cut on a y window (capsule y ranges, `in_bore` along y), and any acceptance or efficiency
   correction that is asymmetric in y.
 
+## 4b · The cosmic bench and SPS (Paper I)
+
+- **Bench: tan = +d(strip coordinate)/dz_up in both views** (`wft.reco.tan_of`, `docs/PARAMETERS.md` §3.1).
+  - External facts: M3 z points up (ray files `Z_Up` = 1302 mm, `Z_Down` = 24 mm; L0 is the top plane, cosmic muons go
+    down), and the alignment maps positions and the M3 tangents with the same rotation and handedness.
+  - Measured on pass 1 (2026-10-31, `rerun/paper1_charge/`): w rises with the M3 tangent on 245/247 (row, view) pairs
+    (both slots); the two exceptions are det2 6-17 (half-dead X, excluded). Later charge comes from higher up: the
+    readout board is down and electrons drift down onto the mesh. The bow's h > 0 therefore means the mesh is higher.
+- **SPS: the tangent sign is not pinned.** Positions at normal incidence carry no depth information, and the yaw of a
+  rotated mount enters the position alignment only through cos φ. Only |tan| is quoted from SPS.
+
 ## 5 · Other conventions worth knowing
 
 - Global x is common to A and C: `U_HAT` A = +x, C = −x. A shift of the source in global x moves A's and C's images

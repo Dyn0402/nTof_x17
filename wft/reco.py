@@ -475,7 +475,11 @@ def tan_of(cal: CalibrationBundle, plane: str, w: float, p0: float) -> float:
 
     Constant mapping tan = (w*1e3 - w0) / (kw*v), or, when the bundle carries an ``angle_map`` for the plane,
     the position-dependent one tan = (w*1e3 - w0(p)) / (s(p)*kw*v) at the track's mid-gap position p (from the
-    constant-mapping tangent; the map varies over ~100 mm, so the first-order p is exact enough)."""
+    constant-mapping tangent; the map varies over ~100 mm, so the first-order p is exact enough).
+
+    Sign on the bench: tan = +d(strip coordinate)/dz_up. External fact: M3 z points up (Z_Up 1302 mm = top plane,
+    cosmic muons go down) and kw > 0 against M3 on 245/247 pass-1 (row, view) pairs, so electrons drift down
+    (COORDINATES.md §4b). Not pinned at SPS; n_TOF has its own sign constants (COORDINATES.md §2)."""
     kv = cal.kw.get(plane, 1.0) * cal.v_drift
     tan = (w * 1e3 - cal.w0.get(plane, 0.0)) / kv
     if getattr(cal, 'bow', None) or (getattr(cal, 'v_map', None) or {}).get('xy'):

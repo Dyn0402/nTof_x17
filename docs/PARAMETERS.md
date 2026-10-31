@@ -88,6 +88,15 @@ The old copy-amplitude parameters (`c1`, `c2`, `kY`, `tau_s`, `sigma_s`) are ret
 
   tan θ = (w · 1000 − w0) / (kw · v)        (w in mm/ns, w0 in µm/ns, v in µm/ns)
 
+**Sign (bench), pinned to external facts:** tan θ = +d(strip coordinate)/dz_up in both views. The facts: M3's z points up
+(ray files `Z_Up` = 1302 mm on the top plane L0, `Z_Down` = 24 mm; cosmic muons go down) and the alignment maps positions
+and M3 tangents with the same rotation and handedness. On pass 1, w rises with the M3 tangent (corr > 0, kw > 0) on
+245 of 247 (row, view) pairs with ≥ 200 planes, both slots; the two exceptions are det2 6-17 (half-dead X, broken angles,
+excluded). So charge that arrives later comes from higher up: the readout board is down and electrons drift down onto the
+mesh (`rerun/paper1_charge/report.html`, first stated in `rerun/model_audit/followups/fb_bow_maps/REPORT.md` "Sign").
+**SPS:** not pinned. Normal-incidence positions are blind to it and a yaw enters the position alignment only through
+cos φ (`DET4_URW_MAPPING_2026-08-01.md`), so no existing measurement fixes the sign of an SPS tangent; only |tan| is used.
+
 | parameter | per | meaning |
 |---|---|---|
 | `v_drift` (v) | golden row: the chamber's input; own-v rows: their own | drift velocity. Golden rows carry the **input**, the timing v = gap / column duration (`physics_inputs.json`: det2 39.3, det3 35.8, det4 33.0, det6 24.17, det7 36.8 µm/ns). Own-v rows (registry `refit = v`) carry v_golden × the mean of their two measured kw (`set_w0kw --fold-kw`, e.g. det6 6-26 longer_run 24.17 × 0.824 = 19.9). Rows with `refit = none` take their `calib_key`'s |
