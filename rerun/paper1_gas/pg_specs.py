@@ -73,7 +73,7 @@ def main():
                 arms[f'{key}|in30|t{i}'] = dict(base, edge=[box, EDGE, 'in'], sel=[os.path.join(D, 'sel.json'), name])
             rows[key]['eid_cuts'] = [int(c) for c in cuts]
         if 'saturday_scan' in row:
-            rows[key]['T0'] = 28.08 / (V0_SCAN[int(row.split('drift_')[1].split('V')[0])] * 1e-3)
+            rows[key]['T0'] = 28.08 / (V0_SCAN[int(row.rsplit('drift_', 1)[1].split('V')[0])] * 1e-3)
     json.dump(sel, open(os.path.join(D, 'sel.json'), 'w'))
     json.dump(rows, open(os.path.join(D, 'rows.json'), 'w'), indent=1)
     # one T0 per spec: split by chamber (and the drift scan by field) so each fit starts near its own T

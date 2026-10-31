@@ -52,7 +52,7 @@ def clock():
 def drift_V(row):
     run, sub = row.split('/')[:2]
     if 'drift_' in sub:
-        return float(sub.split('drift_')[1].split('V')[0])
+        return float(sub.rsplit('drift_', 1)[1].split('V')[0])
     return {'6-26': 700.0, '6-23': 600.0, '6-24': 600.0, '6-22': 1000.0}[next(d for d in ('6-26', '6-23', '6-24', '6-22')
                                                                          if d in run)]
 
