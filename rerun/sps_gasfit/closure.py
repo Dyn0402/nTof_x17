@@ -30,7 +30,7 @@ def main():
     a = ap.parse_args(); rng = np.random.default_rng(1)
     out = []
     for gap_true, gap_fit in ((28.8, 28.8), (30.0, 28.8)):
-        Mt = F.Model('beam', 'air_hs', gap_true, 0.0); Mf = F.Model('beam', 'air_hs', gap_fit, 0.0)
+        Mt = F.Model('beam', 'air_merged', gap_true, 0.0); Mf = F.Model('beam', 'air_merged', gap_fit, 0.0)
         W = np.linspace(Mf.G.W.min(), Mf.G.W.max(), 13); A = np.linspace(0, Mf.G.A.max(), 14)
         for comp in ((1.55, 0.07), (1.47, 0.11)):
             for name, Es in (('ladder', [243.2, 208.5, 173.8, 139.0, 104.3]), ('single243', [243.2]), ('raw3', [243.2, 156.3, 95.5])):

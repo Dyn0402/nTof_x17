@@ -252,7 +252,7 @@ def main():
     ap.add_argument('--gap', type=float, default=28.8); ap.add_argument('--k', type=float, default=0.0)
     ap.add_argument('--zs-scale', type=float, default=1.0); ap.add_argument('--sat', action='store_true')
     ap.add_argument('--hx', type=int, default=2); ap.add_argument('--hy', type=int, default=8)
-    ap.add_argument('--raw-eta', action='store_true'); ap.add_argument('--source', default='air_hs')
+    ap.add_argument('--raw-eta', action='store_true'); ap.add_argument('--source', default='air_merged')
     ap.add_argument('--groups', nargs='*', default=None); ap.add_argument('--nw', type=int, default=33)
     ap.add_argument('--na', type=int, default=14); ap.add_argument('--jobs', type=int, default=6)
     ap.add_argument('--zs-win-hi', type=float, default=None, help='arm: fit ZS stacks only up to this time [ns]')
