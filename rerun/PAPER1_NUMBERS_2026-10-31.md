@@ -25,6 +25,7 @@ Sources (main, 2026-10-31):
 | ABL | `rerun/calib/DET4Y_ABLATION_2026-10-30.md` | 4ee73a3e |
 | FD | `rerun/model_audit/followups/fd_floor_realism/REPORT.md` § Pass-1 update (toy re-run on the pass-1 bundles) | c144af21, toy re-run in the commit after it |
 | FLOOR | `rerun/paper1_floor/README.md` (§8: the unexplained term ranked, xasym systematic, bench position vs SPS, H0 vs W) | d6a6184d |
+| OPS | `rerun/paper1_ops/README.md` (§4: HV-scan optima, discharges and bursts, dead time, det4 SPS gain, M3-free gain proxy) | this commit |
 
 ## Paper I
 
@@ -36,7 +37,7 @@ Sources (main, 2026-10-31):
 | intrinsic resolution 176 µm in the SPS beam | run 63 Y 190 ± 10 (p0) / X 209 ± 11 (p_mid); run 53 Y 176 ± 10 (hits) | **CHOICE** (A, B) | SPS §2 |
 | "(0.30 × pitch)" | 176 µm / 0.78 mm = **0.23 × pitch**; 0.30 × pitch is the back **uRWELL's** resolution (0.301 × its pitch) | **WRONG** (independent of pass 1) | SPS, sps-spatial-resolution memory |
 | cosmic angular resolution 1.15–2.51° | 0.90–2.41° (s68, interior_good, golden rows, both views; v(t) arm 0.90–2.41) | **WRONG** + **CHOICE** (C, D) | RES §Verdict 1 |
-| no dead time after a spark | not re-measured on pass 1 (spark_deadtime figure stale) | NOT RE-DERIVED | FIGURE_PROVENANCE |
+| no dead time after a spark | confirmed on pass 1, all five chambers: dead time per discharge 0.2 ± 0.6 ms (det3; 95 % UL 1.2 ms), UL 2.1 / 2.6 / 2.1 ms (det2 / det6 / det7), det4 UL 15 ms; no gain sag after a discharge (det2/det3 0.96–1.03) | OK (now measured) | OPS |
 
 ### §2 Design
 
@@ -49,9 +50,9 @@ Sources (main, 2026-10-31):
 
 | text | pass 1 | status | source |
 |---|---|---|---|
-| chosen points 480/480/440 V | the golden (quoted) rows run at 490 V (det3) and 495 V (det2, det4, det6, det7) | **WRONG** (or the text means something else: check) | `rerun/pass_registry.csv` |
-| spark rate Poisson, muon-induced 4–6×, edges | not re-derived; pass 1 adds: det6/det7 lose 17 % / 24 % of interior tracks to whole-plane discharges at 495 V, rising steeply with HV | NOT RE-DERIVED (+ new number) | EFF |
-| gain curves (no number in text) | ×2 every 16.6 (det2), 16.7 (det3), 19.1 (det6), 17.9 V (det7); curved; det4 has no bench gain curve | new | CHG |
+| chosen points 480/480/440 V | the HV scans' optima on pass 1 (interior_good efficiency): det2 480 V (92.2 %), det3 470 V (93.8 %; plateau 460–490), det6 480 V (85.8 %), det7 430 V (89.8 %; plateau 430–435). So 480/480/440 = det3 (or det2) / det6 / det7 is what the data support. The golden rows ran at 490 (det3) and 495 V (det2, det4, det6, det7): det6/det7 there read 74.4 / 68.0 % with 16.8 / 24.7 % of interior tracks lost to discharges | **OK as optima** + **CHOICE**: say the golden rows are above them, quote both efficiencies for det6/det7 | OPS |
+| spark rate Poisson, muon-induced 4–6×, edges | Poisson / muon-induced / edges: not re-derived (needs discharge positions and random triggers). Pass 1: discharges (a chip ≥ 8 strips over 3000 ADC) per trigger rise ×10 every 26 / 27 / 21 / 42 V (det2/3/6/7), i.e. ∝ gain^2–2.7 (det7 gain^1.4); at the golden HV 0.13–0.17 /s (det2/det3), 0.69 (det6), 1.14 (det7). The pass's > 50-strip veto also removes bursts with no discharge: 6.3 % of g_det4's interior tracks, 7–10 % of det6's at 400–445 V | NOT RE-DERIVED (3 claims) + new numbers | OPS |
+| gain curves (no number in text) | ×2 every 16.6 (det2), 16.7 (det3), 19.1 (det6), 17.9 V (det7); curved. An M3-free hits proxy reproduces them (0.43 / 0.40–0.45 / 0.36 / 0.36–0.39 per 10 V) and shows the 6-23 night flat for det3 too (0.10–0.12): the 6-23 exclusion is the night, not M3. det4: no bench curve; at SPS its charge rises only ×1.65 over 580–780 V (run66, CF₄, telescope denominator) and is flat over 550–625 V (Ar/CO₂/iso) | new | CHG, OPS |
 
 ### §5 Charge balance and efficiency
 
@@ -191,6 +192,11 @@ paper figures show.
 - **E. A1:** a column per chamber (EFF has them) or det3 only.
 - **F. Bow numbers:** per view or per-chamber mean; the pass-1 X/Y depths differ by up to 1.1 mm (det6), so a single
   per-chamber number hides it.
+- **G. §4 operating points (OPS):** quote det6/det7 at the golden HV only (74 / 68 %, discharge-limited) or also at their
+  scan optima (480 V: 86 %, 430 V: 90 %). And which chambers "480/480/440 V" names.
+- **H. The spark veto's bursts (OPS):** the pass's > 50-strip veto removes interior tracks with no discharge (g_det4
+  6.3 %, det6 7–10 % at 400–445 V). Re-label them in the loss budget ("burst", not "spark"), or keep one class and state
+  it. Removing them would need a reco change (not done).
 
 ## Stated limitations to carry into the text
 
