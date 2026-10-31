@@ -37,8 +37,9 @@ Read-only on Analysis_pass1; no calibration was re-run.
    format: `/eos/user/d/dneff/x17rerun/vt_correction/<run>/<subrun>/<det>/{events_vt.parquet, vt_map.json}`. One list:
    `rerun/vt_all/results/vt_corrected_rows.csv` (51 rows; copy `vt_correction/MANIFEST.csv`). The three new tables also
    carry the timing v (`v_rel_col`, `z_end_vt_col`).
-4. **SPS cache builder: byte-identical** on ZS run60 ov03 (3000 events, same 3000 keys, every record equal, same hot
-   channel 373; peak RSS 10.1 → 0.58 GB). RAW run71 raw275: see §4.
+4. **SPS cache builder: byte-identical** before and after vt_all's edits, on ZS run60 ov03 and RAW run71 raw275 (3000
+   events each: same keys, every record equal, same hot channels), and also at vt_sps's CHUNK 1000. Peak memory falls
+   10.1 → 0.58 GB (ZS) and 22.3 → 11.0 / 5.7 GB (RAW).
 
 ## 1 · Independent cross-check
 
@@ -124,7 +125,11 @@ each row built exactly as `sps_reco.py` does (subruns in order, per_plateau 3000
 | row | events | keys equal | records equal | hot channels | pickled events | peak RSS old → new |
 |---|---|---|---|---|---|---|
 | run60 ov03 (ZS) | 3000 / 3000 | yes | 3000 / 3000 | [373] both | byte-identical | 10.1 → 0.58 GB |
-| run71 raw275 (RAW) | RAW_PENDING | | | | | |
+| run71 raw275 (RAW) | 3000 / 3000 | yes | 3000 / 3000 | [] both (ch 372/510 are in the static list) | byte-identical | 22.3 → 11.0 GB |
+| run71 raw275, CHUNK 1000 (vt_sps's setting) | 3000 / 3000 | yes | 3000 / 3000 | [] | byte-identical | 22.3 → 5.7 GB |
+
+Wall time on the RAW row: 3 h 15 min (old) against ~1 h 40 min (new). The equality vt_all argued by reasoning holds:
+neither the chunk size nor the skipped chunks change a cache, ZS or RAW. (Only vt_all's edits are tested; later builder changes, e.g. the SPS final pass's, are not.)
 
 ## What this does not rule out / open risks
 
