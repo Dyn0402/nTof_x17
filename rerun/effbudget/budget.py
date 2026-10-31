@@ -145,8 +145,7 @@ HW_SOURCE = {'mx17_7': f'X card 1: footprint x < {DET7_X_CARD1_MM} mm (ch 0-255)
 
 
 def cand_arms(R, path, radii):
-    """Per ray, from the fit's candidates sidecar (rank >= 0 and plausible: the particle candidates production
-    ranked), three ways to pick one candidate per view:
+    """Per ray, from the fit's candidates sidecar (rank >= 0: every candidate production ranked), three ways to pick one candidate per view:
       prod   rank 0 (what the table holds)
       rule   the trigger-track rule (Dylan 10-28: a downstream selection): the most vertical candidate, smallest
              |tan_theta|, ties to production's rank. Parameter-free, uses only det's own fit; the cosmic trigger's
@@ -156,14 +155,17 @@ def cand_arms(R, path, radii):
     det_rule_R: both views' rule picks within R (raw-frame hypot) with n_dropped <= MAX_DROPPED on the picked
     candidate; det_any_R: the same with the near picks.  n_cand_v: particle candidates in view v."""
     C = pd.read_parquet(path)
-    C = C[(C['rank'] >= 0) & (C['plausible'] if 'plausible' in C else True)]
+    # every ranked candidate (rank >= 0): the 'plausible' flag is the beam-tuned gate and is False on ~16 % of the
+    # bench's production winners (multitrack.py: it misses ~35 % of clean bench singles), so it is not used here
+    C = C[C['rank'] >= 0]
     C = C[C.event_id.isin(set(R.event_id))].drop_duplicates(['event_id', 'plane', 'rank'])
     M = R.set_index('event_id')[['mesh_x', 'mesh_y']]
     C = C.join(M, on='event_id')
     C['res'] = np.where(C.plane == 'x', C.p0 - C.mesh_x, C.p0 - C.mesh_y)
     C['ares'] = C.res.abs(); C['atan'] = C.tan_theta.abs()
     picks = {'rule': C.sort_values(['event_id', 'plane', 'atan', 'rank']).groupby(['event_id', 'plane']).head(1),
-             'near': C.sort_values(['event_id', 'plane', 'ares', 'rank']).groupby(['event_id', 'plane']).head(1)}
+             'near': C.sort_values(['event_id', 'plane', 'ares', 'rank']).groupby(['event_id', 'plane']).head(1),
+             'prod': C[C['rank'] == 0]}
     n = C.groupby(['event_id', 'plane']).size().unstack().reindex(columns=['x', 'y'])
     for v in 'xy':
         R[f'n_cand_{v}'] = R.event_id.map(n[v]).fillna(0).astype(int)
@@ -179,7 +181,7 @@ def cand_arms(R, path, radii):
         for Rmm in radii:
             key = 'any' if arm == 'near' else arm
             R[f'det_{key}_{Rmm:g}'] = np.nan_to_num(r, nan=1e9) <= Rmm
-            if arm == 'rule':
+            if arm in ('rule', 'prod'):
                 R[f'det_{key}_{Rmm:g}'] &= nd
     return True
 
@@ -196,8 +198,10 @@ def cand_summary(U, radii):
             e[f'prod_right_{v}'] = int((m & (U[f'near_rank_{v}'] == 0)).sum())
             e[f'rule_right_{v}'] = int((m & (U[f'rule_rank_{v}'] == U[f'near_rank_{v}'])).sum())
         e['frac_events_multi'] = float(((U.n_cand_x >= 2) | (U.n_cand_y >= 2)).mean()) if len(U) else np.nan
-        for arm in ('rule', 'any'):
+        for arm in ('rule', 'any', 'prod'):
             e[f'detected_{arm}'] = float(100 * U[f'det_{arm}_{Rmm:g}'].mean()) if len(U) else np.nan
+        # closure: rank 0 of the sidecar through the same rule must reproduce the budget's 'detected'
+        e['prod_closure_mismatch'] = int((U[f'det_prod_{Rmm:g}'] != (U[f'cat_xy_{Rmm:g}'] == 'detected')).sum())
         out[f'{Rmm:g}'] = e
     return out
 

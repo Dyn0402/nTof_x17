@@ -65,7 +65,7 @@ def main():
     R = pd.read_parquet(a.rays)
     Ri = R[(R.region == 'interior') & ~R.not_measured]
     spark_ids = Ri.event_id[Ri.cat_xy_5 == 'spark'].astype(int).tolist()
-    C = pd.read_parquet(a.cand); C = C[(C['rank'] >= 0) & C.plausible & C.event_id.isin(set(Ri.event_id))]
+    C = pd.read_parquet(a.cand); C = C[(C['rank'] >= 0) & C.event_id.isin(set(Ri.event_id))]
     nc = C.groupby(['event_id', 'plane']).size()
     multi_ids = sorted(set(nc[nc >= 2].index.get_level_values(0).astype(int)))
     want = sorted(set(out_ids) | set(ctl) | set(spark_ids) | set(multi_ids))
