@@ -42,12 +42,29 @@
   "correct": []
  },
  "ntof": {
-  "n_runs": 3,
+  "n_runs": 35,
   "arms": [
    "A",
    "C"
   ],
-  "median_err_sub_pct": 0.7005636054653682,
-  "median_half_err_pct": 1.4030100354218058
+  "k_per_subrun": {
+   "A": [],
+   "C": [
+    "run_79",
+    "run_104",
+    "run_116",
+    "run_118",
+    "run_124",
+    "run_147",
+    "run_152",
+    "run_156"
+   ]
+  },
+  "n_measured": {
+   "A": 26,
+   "C": 26
+  },
+  "median_err_sub_pct": 0.72390357486646,
+  "median_half_err_pct": 1.4400643015577137
  }
 }

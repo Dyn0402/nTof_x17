@@ -13,6 +13,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
+from scipy.stats import chi2 as chi2_dist  # noqa: E402
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 RES, FIG = os.path.join(HERE, 'results'), os.path.join(HERE, 'figures')
@@ -105,6 +106,15 @@ for r in N:
                           err_sub_pct=100 * f.get('median_err_sub', np.nan), chi2_const=f.get('chi2_const', np.nan),
                           dof_const=f.get('dof_const', np.nan), half_rms_pct=100 * a['half_diff']['rms'],
                           half_err_pct=100 * a['half_diff']['med_err']))
+for d in nrows:      # the n_TOF gate (VT_PLAN §3): one k per run is not enough when the sub-run scatter exceeds its
+    # errors (chi2 of a constant, p < 1e-3) or the line moves >= 2 % over the run at >= 3 sigma -> k per sub-run
+    p_const = float(chi2_dist.sf(d['chi2_const'], d['dof_const'])) if np.isfinite(d['chi2_const']) else np.nan
+    z = abs(d['dv_pct']) / (d['slope_err_pct_h'] * d['hours']) if np.isfinite(d['dv_pct']) else np.nan
+    d['p_const'] = p_const
+    d['needs_correction'] = bool((np.isfinite(p_const) and p_const < 1e-3)
+                                 or (np.isfinite(z) and z >= GATE_Z and abs(d['dv_pct']) >= 100 * GATE_DV))
+    d['verdict'] = ('k per sub-run' if d['needs_correction'] else 'one k per run' if np.isfinite(p_const)
+                    else 'too few sub-runs')
 NT = pd.DataFrame(nrows).sort_values(['run', 'arm'], key=lambda s: s.str.replace('run_', '').str.zfill(4)
                                      if s.name == 'run' else s) if nrows else pd.DataFrame()
 if len(NT):
@@ -207,6 +217,9 @@ if len(ST):
                        correct=ST[ST.needs_correction].key.tolist())
 if len(NT):
     summ['ntof'] = dict(n_runs=int(NT.run.nunique()), arms=sorted(NT.arm.unique().tolist()),
+                        k_per_subrun={a: NT[(NT.arm == a) & NT.needs_correction].run.tolist() for a in sorted(NT.arm.unique())},
+                        n_measured={a: int(((NT.arm == a) & (NT.verdict != 'too few sub-runs')).sum())
+                                    for a in sorted(NT.arm.unique())},
                         median_err_sub_pct=float(NT.err_sub_pct.median()),
                         median_half_err_pct=float(NT.half_err_pct.median()))
 json.dump(summ, open(os.path.join(RES, 'summary.json'), 'w'), indent=1, default=float)
@@ -241,7 +254,9 @@ H = [f'<!doctype html><meta charset="utf-8"><title>v(t) in every data set</title
       f'{100 * SIG_WIN:.1f} % (the {SPS_CONTROL} control), so a within-row change below {100 * SPS_THR:.1f} % cannot be '
       f'seen. ' if s else ''),
      (f'n_TOF: feasible per sub-run on arms {", ".join(n.get("arms", []))}, at {n.get("median_err_sub_pct", 0):.2f} % '
-      f'per sub-run (within a sub-run, halves at {n.get("median_half_err_pct", 0):.2f} %).' if n else ''), '</div>']
+      f'per sub-run (within a sub-run, halves at {n.get("median_half_err_pct", 0):.2f} %); one k per run fails on '
+      + ', '.join(f'{len(v)} of {n["n_measured"][a]} {a} runs' for a, v in n.get('k_per_subrun', {}).items())
+      + ' (those need k per sub-run).' if n else ''), '</div>']
 if len(BT):
     H += ['<h2>Bench rows that need a correction</h2>',
           table(BT[BT.needs_correction], ['det', 'run', 'subrun', 'duration_h', 'n_blocks', 'dv_pct', 'dv_err_pct',
@@ -266,10 +281,10 @@ if len(ST):
 if len(NT):
     H += ['<h2>n_TOF runs (in-situ k per sub-run)</h2>',
           table(NT, ['run', 'arm', 'n_subruns', 'hours', 'k_run', 'slope_pct_h', 'slope_err_pct_h', 'dv_pct', 'rms_sub_pct',
-                     'err_sub_pct', 'chi2_const', 'dof_const', 'half_rms_pct', 'half_err_pct'],
+                     'err_sub_pct', 'chi2_const', 'dof_const', 'p_const', 'half_rms_pct', 'half_err_pct', 'verdict'],
                 {'hours': '{:.1f}', 'k_run': '{:.3f}', 'slope_pct_h': '{:+.3f}', 'slope_err_pct_h': '{:.3f}',
                  'dv_pct': '{:+.1f}', 'rms_sub_pct': '{:.2f}', 'err_sub_pct': '{:.2f}', 'chi2_const': '{:.0f}',
-                 'dof_const': '{:.0f}', 'half_rms_pct': '{:.2f}', 'half_err_pct': '{:.2f}'})]
+                 'dof_const': '{:.0f}', 'p_const': '{:.1e}', 'half_rms_pct': '{:.2f}', 'half_err_pct': '{:.2f}'})]
 for f, c in figs:
     H.append(f'<figure><img src="figures/{f}"><figcaption>{html.escape(c)}</figcaption></figure>')
 H += ['<h2>What this does not rule out</h2><ul>',

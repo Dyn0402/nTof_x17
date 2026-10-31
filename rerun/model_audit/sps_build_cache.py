@@ -65,8 +65,10 @@ def hot_channels(seed_counts, n):
             nb = np.r_[o[max(0, i - 4):i], o[i + 1:i + 5]]
             out[c] = cnt[c] > HOT_FRAC * n and cnt[c] > HOT_RATIO * max(np.median(cnt[nb]), 1.0)
     return out
-#: entries read per uproot call.  A RAW entry carries every channel x sample (~32 k values), so 20000 of them take
-#: ~17 GB (vt_all run71, held 2026-10-30); callers reading RAW lower it (rerun/vt_all/vt_sps.py).
+
+
+#: entries read per uproot call.  A RAW entry carries every channel x sample (~32 k values, ~150 kB as read), so a
+#: RAW caller lowers it (rerun/vt_all/vt_sps.py: 1000).
 CHUNK = 20000
 
 
@@ -194,8 +196,10 @@ def build_cache(run, subrun, dataset, per_plateau=1000, half_win=16, tan=None, e
     # last event of its last file -> its own start/finish in dream_daq.log
     for (t_lo, t_hi), afiles in acquisitions(files, subrun_spans(a.run, a.subrun)):
         print(f'{len(afiles)} files; sub-run {a.subrun} {t_lo}..{t_hi} s', flush=True)
-        ts0 = uproot.open(afiles[0])['nt'].arrays(['timestamp'], entry_stop=1, library='np')['timestamp'][0]
-        tl = uproot.open(afiles[-1])['nt']; ts1 = tl.arrays(['timestamp'], entry_start=tl.num_entries - 1, library='np')['timestamp'][0]
+        with uproot.open(afiles[0]) as F:
+            ts0 = F['nt'].arrays(['timestamp'], entry_stop=1, library='np')['timestamp'][0]
+        with uproot.open(afiles[-1]) as F:
+            tl = F['nt']; ts1 = tl.arrays(['timestamp'], entry_start=tl.num_entries - 1, library='np')['timestamp'][0]
         scale = (t_hi - t_lo) / float(ts1 - ts0)
         print(f'timestamp unit {scale * 1e9:.1f} ns  (span {ts1 - ts0} counts over {t_hi - t_lo} s)', flush=True)
         _fill(out, afiles, a, D, plateaus, t_lo, ts0, scale, nsmp, verbose, files.index(afiles[0]))
@@ -247,9 +251,15 @@ def _fill(out, files, a, D, plateaus, t_lo, ts0, scale, nsmp, verbose, base):
     for f in files:
         t = uproot.open(f)['nt']
         for lo in range(0, t.num_entries, CHUNK):
+            hi = min(lo + CHUNK, t.num_entries)
+            # the timestamps first (8 bytes an entry): skip a chunk that falls in no plateau still being filled, without
+            # reading its waveforms (a RAW entry is ~100 kB; vt_all 10-31)
+            tw = t_lo + (t.arrays(['timestamp'], entry_start=lo, entry_stop=hi, library='np')['timestamp'].astype(float)
+                         - ts0) * scale
+            if not any(((tw >= l0) & (tw < l1)).any() for n, l0, l1 in plateaus if len(out.get(n, {})) < a.per_plateau):
+                continue
             arr = t.arrays(['eventId', 'timestamp', 'ftst', 'sample', 'channel', 'amplitude'], entry_start=lo,
-                           entry_stop=min(lo + CHUNK, t.num_entries), library='np')
-            tw = t_lo + (arr['timestamp'].astype(float) - ts0) * scale
+                           entry_stop=hi, library='np')
             for j in range(len(tw)):
                 L = next((n for n, l0, l1 in plateaus if l0 <= tw[j] < l1), None)
                 if L is None or len(out.get(L, {})) >= a.per_plateau:
@@ -262,6 +272,9 @@ def _fill(out, files, a, D, plateaus, t_lo, ts0, scale, nsmp, verbose, base):
                                timestamp=int(arr['timestamp'][j]), ftst_x=int(arr['ftst'][j]), ftst_y=int(arr['ftst'][j]))
                 if ok:
                     out.setdefault(L, {})[rec['eid'] + 10_000_000 * (base + files.index(f))] = rec
+        # close (unmap) the file: an open uproot file stays mapped, and 37 RAW files of ~600 MB took a condor job past
+        # 17 GB (vt_all run71, 2026-10-30)
+        t.file.close()
         if verbose:
             print(f'  {os.path.basename(f)}: ' + ', '.join(f'{k} {len(v)}' for k, v in sorted(out.items())), flush=True)
         if all(len(out.get(n, {})) >= a.per_plateau for n, _, _ in plateaus):
