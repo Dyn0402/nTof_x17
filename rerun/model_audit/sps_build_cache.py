@@ -62,10 +62,13 @@ HOT_LAST = {}
 #: 0.2 % of the others.  Those copies stay below the hot-seed rule (the oscillator itself is excluded, and the copies split
 #: over 2-3 strips) but win the seed whenever the event's real Y signal is weaker, and put 2-13 % of a row's Y windows at
 #: 155-160 mm.  So, per plateau, from the probe: an oscillator o (SEED_BAD or hot) is ON in an event when its peak exceeds
-#: COUPLE_ON_ADC.  A channel within COUPLE_NB position neighbours of o (same view) is COUPLED to o when it is lit (peak >
-#: COUPLE_LIT_ADC) in at least COUPLE_MIN of the ON events and its lit rate in ON events is more than COUPLE_RATIO x its
-#: rate in the OFF events, divided by the same ratio of the view's strips away from every oscillator (the beam's own
-#: modulation between ON and OFF events, e.g. an oscillator that is on only while the beam is).  A real strip is lit by
+#: COUPLE_ON_ADC.  A channel within COUPLE_NB position neighbours of o (same view) is COUPLED to o when, at either lit
+#: level of COUPLE_LIT_ADC (peak > 100 or > 300 ADC), it is lit in at least COUPLE_MIN of the ON events and its lit rate in
+#: ON events is more than COUPLE_RATIO x its rate in the OFF events, divided by the same ratio of the strips away from
+#: every oscillator (the beam's own
+#: modulation between ON and OFF events, e.g. an oscillator that is on only while the beam is).  Two levels because the
+#: copies differ: on run55 d700 the 375 copy is ON/OFF 99x at 100 ADC and 385x at 300; on run60 ov03 the 371 copy is 12x
+#: at 100 ADC (that strip is lit at 100 ADC in 8 % of the OFF events too) but 32x at 300.  A real strip is lit by
 #: the beam whether or not the oscillator is on, so it is not coupled.  In an event where o is ON its coupled channels
 #: are treated like o: kept out of the seed and the own-centroid ref, blanked in the window and censored in the fit
 #: (record 'censor_x' / 'censor_y'); in the other events they are ordinary strips.  The rule only applies where o
@@ -73,7 +76,7 @@ HOT_LAST = {}
 #: position neighbours.  A SEED_BAD channel that is quiet in the plateau (ch 510 sits in the beam, 250 mm) is ON only
 #: when a track crosses it, like its neighbours, and those tracks share charge with the neighbours: that is not coupling.
 COUPLE_ON_ADC = 300.0
-COUPLE_LIT_ADC = 100.0
+COUPLE_LIT_ADC = (100.0, 300.0)
 COUPLE_NB = 4
 COUPLE_MIN = 10
 COUPLE_RATIO = 10.0
@@ -99,7 +102,7 @@ def coupled_channels(peaks, osc):
     COUPLE_MIN ON or OFF events gives no coupling (nothing to compare)."""
     pk = np.asarray(peaks, float)
     oscs = np.flatnonzero(osc) if np.asarray(osc).dtype == bool else np.asarray(sorted(osc), int)
-    out = {}; lit = pk > COUPLE_LIT_ADC
+    out = {}; lits = [pk > t for t in COUPLE_LIT_ADC]
     order_of, rank_of = {}, {}
     for view in ('x', 'y'):
         chs = np.flatnonzero(VIEW == view); order_of[view] = chs[np.argsort(POSITION_MM[chs])]
@@ -123,14 +126,15 @@ def coupled_channels(peaks, osc):
             nb_rate = np.median((pk[:, nbs] > COUPLE_ON_ADC).mean(0)) if nbs else 0.0
             if on.mean() <= COUPLE_OSC_RATIO * max(nb_rate, 1.0 / len(pk)):
                 continue                                   # not oscillating here: ON = a track crossing it
-            f1, f0 = lit[on][:, far].mean(), lit[~on][:, far].mean()
-            base = (f1 / f0) if f0 > 0 else (np.inf if f1 > 0 else 1.0)
             got = []
-            for c in nbs:
-                k1, k0 = int(lit[on, c].sum()), int(lit[~on, c].sum())
-                r = (k1 / n1) / (max(k0, 1) / n0)
-                if k1 >= COUPLE_MIN and r > COUPLE_RATIO * max(base, 1.0):
-                    got.append(c)
+            for lit in lits:
+                f1, f0 = lit[on][:, far].mean(), lit[~on][:, far].mean()
+                base = (f1 / f0) if f0 > 0 else (np.inf if f1 > 0 else 1.0)
+                for c in nbs:
+                    k1, k0 = int(lit[on, c].sum()), int(lit[~on, c].sum())
+                    r = (k1 / n1) / (max(k0, 1) / n0)
+                    if c not in got and k1 >= COUPLE_MIN and r > COUPLE_RATIO * max(base, 1.0):
+                        got.append(c)
             if got:
                 out[o] = got
     return out

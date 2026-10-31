@@ -1,0 +1,14 @@
+# rerun/sps_junk/census.py over every SPS registry row (no fit); condor_submit code=<code dir> census.sub
+executable     = census_job.sh
+arguments      = $(code) $(key)
+output         = log/cs_$(key).out
+error          = log/cs_$(key).err
+log            = log/cs.log
+request_cpus   = 1
+request_memory = 8000
++JobFlavour    = "workday"
+should_transfer_files = NO
+environment    = "PYTHONDONTWRITEBYTECODE=1"
+requirements   = (Machine != "b9g42p2031.cern.ch")
+max_retries    = 2
+queue key from keys.txt
