@@ -111,21 +111,30 @@ def wall_clock(run, subrun, files):
 
 
 def hot_probe(f3, raw, nsamp, n=None):
-    """The pass's hot-seed rule (sps_build_cache.hot_channels) on the first HOT_SCAN events of this file that pass the
-    PASS selection (peak >= 300 ADC, >= 4 strips), seeded with SEED_BAD: the same probe sps_build_cache runs per plateau."""
+    """The pass's oscillator rules on the first n (default sbc.HOT_SCAN_MIN, 2000) events of this file that pass the PASS
+    selection (peak >= 300 ADC, >= 4 strips), seeded with SEED_BAD -- the same probe sps_build_cache runs per plateau
+    (since 2026-10-31, rerun/sps_junk: seed-hot in 1000-event blocks on live neighbours, near oscillators, coupled
+    channels).  Returns (hot bool[512], n probed, {oscillator: coupled channels})."""
     import uproot
-    n = n or 2000                       # its own per-file probe (sbc.HOT_SCAN is None = the row's events since 10-31)
-    t = uproot.open(f3)['nt']; cnt = np.zeros(512); k = 0
+    n = n or sbc.HOT_SCAN_MIN
+    t = uproot.open(f3)['nt']; seeds, peaks = [], []
     for lo in range(0, t.num_entries, CHUNK):
         arr = t.arrays(['sample', 'channel', 'amplitude'], entry_start=lo, entry_stop=min(lo + CHUNK, t.num_entries), library='np')
         for j in range(len(arr['channel'])):
             r = sbc.event_record(arr['channel'][j].astype(int), arr['sample'][j].astype(int), arr['amplitude'][j].astype(np.float32),
-                                 raw, nsamp)
+                                 raw, nsamp, keep_peaks=True)
             if r is not None:
-                cnt[r['seed_ch_x']] += 1; cnt[r['seed_ch_y']] += 1; k += 1
-            if k >= n:
-                return sbc.hot_channels(cnt, k), k
-    return sbc.hot_channels(cnt, max(k, 1)), k
+                seeds.append((r['seed_ch_x'], r['seed_ch_y'])); peaks.append(r['peak'])
+            if len(seeds) >= n:
+                break
+        if len(seeds) >= n:
+            break
+    t.file.close()
+    hot = sbc.hot_in_blocks(seeds) if seeds else np.zeros(512, bool)
+    if peaks:
+        hot |= sbc.near_oscillators(np.array(peaks), sbc.SEED_BAD | hot)
+    couple = sbc.coupled_channels(np.array(peaks), sbc.SEED_BAD | hot) if peaks else {}
+    return hot, len(seeds), {o: np.array(cs, int) for o, cs in couple.items()}
 
 
 def main():
@@ -167,9 +176,9 @@ def main():
             if float(r_['t_lo_s']) + 20 <= tw < float(r_['t_hi_s']) - 20:
                 return k_
         return None
-    hot, nprobe = hot_probe(f3, bool(a.raw), a.nsamp)
+    hot, nprobe, couple = hot_probe(f3, bool(a.raw), a.nsamp)
     bad = sbc.SEED_BAD | hot
-    print(f'  hot seed channels {list(np.flatnonzero(hot))} (probe of {nprobe} events)', flush=True)
+    print(f"  hot seed channels {list(np.flatnonzero(hot))}, coupled { {int(o): list(map(int, c)) for o, c in couple.items()} } (probe of {nprobe} events)", flush=True)
     reco_sel = np.ones(len(tel['eid']), bool)
     if a.strict and 'fx_size' in tel:
         reco_sel = np.all([tel[f'{d}{v}_n'] == 1 for d in 'fb' for v in 'xy'], axis=0)
@@ -194,7 +203,8 @@ def main():
             if kk is None:
                 continue
             ch = arr['channel'][j].astype(int); sm = arr['sample'][j].astype(int); am = arr['amplitude'][j].astype(np.float32)
-            r = sbc.event_record(ch, sm, am, bool(a.raw), a.nsamp, qmin=a.qmin, seed_bad=bad, min_strips=a.min_strips)
+            r = sbc.event_record(ch, sm, am, bool(a.raw), a.nsamp, qmin=a.qmin, seed_bad=bad, min_strips=a.min_strips,
+                                 couple=couple)
             if r is not None:
                 r.update(eid=eid, t_wall=tw, file=os.path.basename(f3), timestamp=int(arr['timestamp'][j]),
                          ftst_x=int(arr['ftst'][j]), ftst_y=int(arr['ftst'][j]))

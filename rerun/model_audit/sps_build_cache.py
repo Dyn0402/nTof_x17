@@ -80,6 +80,9 @@ OSC_NEAR = 2
 OSC_MIN = 0.01
 OSC_RATIO = 5.0
 OSC_COPY = 0.5
+#: and at least OSC_MIN_EVENTS ON events (2026-10-31: on a 315-event telescope file, run53 group 003, 1 % was 4 events and
+#: flagged ch 371; no pass row changes with the floor, rerun/sps_junk census)
+OSC_MIN_EVENTS = 20
 HOT_LAST = {}
 #: Cross-talk of an oscillator onto its neighbours (rerun/sps_junk/README.md, 2026-10-31).  The oscillation is periodic
 #: (a lobe every ~15 samples) and, in the events where it is on, appears on adjacent channels at ~0.3-0.7 of its height
@@ -174,7 +177,7 @@ def near_oscillators(peaks, known):
     for c in cand:
         nb = [x for x in live_neighbours(c) if x not in acc]
         ratio = rate[c] / max(np.median(rate[nb]) if nb else 0.0, 1.0 / n)
-        if rate[c] >= OSC_MIN and ratio >= OSC_RATIO:
+        if rate[c] >= OSC_MIN and int(on[:, c].sum()) >= OSC_MIN_EVENTS and ratio >= OSC_RATIO:
             scored.append((ratio, c))
     for ratio, c in sorted(scored, reverse=True):
         mine = on[:, c]

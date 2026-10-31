@@ -109,3 +109,9 @@ def test_weak_oscillator_next_to_a_known_one_is_found_but_not_its_copy():
 def test_beam_strip_next_to_a_known_oscillator_is_not_an_oscillator():
     pk = _peaks(on_frac=0.0, copy_frac=0.0, beam_mm=(150.0, 200.0))
     assert not sbc.near_oscillators(pk, sbc.SEED_BAD.copy()).any()
+
+
+def test_near_oscillator_needs_enough_events():
+    # a 315-event probe (run53 group 003): a handful of ON events is not an oscillator
+    pk = _peaks(n=315, on_frac=0.015, copy_frac=0.0)
+    assert not sbc.near_oscillators(pk, sbc.SEED_BAD.copy()).any()
