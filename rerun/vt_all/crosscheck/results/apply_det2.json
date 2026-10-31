@@ -1,0 +1,17 @@
+[
+ {
+  "key": "c26__mx17_det2_det3_overnight_6-22-26__long_run__mx17_2",
+  "v_rel_min": 0.9778496779243837,
+  "v_rel_max": 1.0203313252249433,
+  "x_closure_max": 0.005892395688625936,
+  "x_closure_frac_1e-6": 0.9998433420365536,
+  "x_n_insane": 3,
+  "x_dtheta_p95_deg": 0.2372953524590133,
+  "y_closure_max": 0.15240584484563557,
+  "y_closure_frac_1e-6": 0.9999476713762429,
+  "y_n_insane": 8,
+  "y_dtheta_p95_deg": 0.19527680873522793,
+  "v_rel_col_min": 0.9802020678057922,
+  "v_rel_col_max": 1.0260936033963879
+ }
+]

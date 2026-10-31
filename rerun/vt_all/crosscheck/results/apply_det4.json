@@ -1,0 +1,32 @@
+[
+ {
+  "key": "g_det4",
+  "v_rel_min": 0.9598042906660069,
+  "v_rel_max": 1.0559703467344483,
+  "x_closure_max": 0.015837264168830897,
+  "x_closure_frac_1e-6": 0.9997359735973598,
+  "x_n_insane": 8,
+  "x_dtheta_p95_deg": 0.6546208900746805,
+  "y_closure_max": 0.3203171626160368,
+  "y_closure_frac_1e-6": 0.9997336529497935,
+  "y_n_insane": 2,
+  "y_dtheta_p95_deg": 0.5735694464550474,
+  "v_rel_col_min": 0.9571265101653689,
+  "v_rel_col_max": 1.0560021594055085
+ },
+ {
+  "key": "c26__mx17_det3_det4_overnight_6-23-26__long_run__mx17_4",
+  "v_rel_min": 0.9566430946539716,
+  "v_rel_max": 1.0329914081716862,
+  "x_closure_max": 0.0,
+  "x_closure_frac_1e-6": 1.0,
+  "x_n_insane": 1,
+  "x_dtheta_p95_deg": 0.4951210860631213,
+  "y_closure_max": 0.3748746877220972,
+  "y_closure_frac_1e-6": 0.9996938619317313,
+  "y_n_insane": 18,
+  "y_dtheta_p95_deg": 0.4478602101277626,
+  "v_rel_col_min": 0.9580531810038067,
+  "v_rel_col_max": 1.0360304426101987
+ }
+]
