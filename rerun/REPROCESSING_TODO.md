@@ -94,13 +94,15 @@ Status key: [x] done · [ ] open · [~] partly / in progress
       `reco.COV_ERRORS` (full covariance, ×1.8–2.3 the curvature errors; the fit is bit-identical). (c) The two-track
       fit still runs Nelder–Mead; LM there is optional (speed only, gate separately). (d) Paper 2 §4: one sentence
       naming the fit as variable projection (Golub & Pereyra 1973; Kaufman 1975; check Sima & Van Huffel 2007).
-- [ ] v(t) within a row (**det6/det7 6-26 done 10-30: `vt_within_rows/`**; **all 156 bench rows, SPS and 3 n_TOF runs measured 10-31: `VT_PLAN_2026-10-30.md`, `vt_all/`**: 7 bench rows to correct incl. det2 6-22 long, det4 6-23 long, g_det4 −9.6 %; corrections for those three not applied yet): per-time-block kw from the M3 ladder (bench; not the column duration, which is gain-confounded),
+- [x] v(t) within a row (**det6/det7 6-26 done 10-30: `vt_within_rows/`**; **all 156 bench rows, SPS and 3 n_TOF runs measured 10-31: `VT_PLAN_2026-10-30.md`, `vt_all/`**: 7 bench rows to correct incl. det2 6-22 long, det4 6-23 long, g_det4 −9.6 %; **corrected tables for every flagged row 10-31** (`vt_all/results/vt_corrected_rows.csv`, cross-checked by the column duration, `vt_all/CROSSCHECK_2026-10-31.md`; applied at table level with the w0/kw re-fold in `paper1_res/`). Open: det6 v over 6-26 known to a factor ~2 (limitation); n_TOF chamber C per-sub-run k not applied): per-time-block kw from the M3 ladder (bench; not the column duration, which is gain-confounded),
       column end on n_TOF arms A/C; join on (run, subrun, acq_tag, event_id). Largest: det6 golden ~11 %, det4 ~7 %,
       det4 6-23 short_run (inherits longer_run, ~9 % apart). n_TOF B/D: no within-run route (limitation). GC.
 - [ ] SPS gas fit (H₂O + O₂) with Magboltz (FOLLOWUPS item 9).
-- [ ] Noise-band hotspot census, all chambers (item 13).
-- [ ] FD budget update with GA (gain row withdrawn) and GB (M3 0.05°); re-quote resolutions (also the INFN–IN2P3
-      abstract numbers).
+- [x] Noise-band hotspot census, all chambers (item 13). **Done 10-31 on pass 1, all 156 rows** (`effbudget/PASS1_RESULT_2026-10-31.md`).
+- [x] FD budget update with GA (gain row withdrawn) and GB (M3 0.05°); re-quote resolutions (also the INFN–IN2P3
+      abstract numbers). **Done 10-31:** `model_audit/followups/fd_floor_realism/REPORT.md` § Pass-1 update (both v(t)
+      arms; the toy rungs are not re-run on the pass bundles); every text number set against pass 1 in
+      `PAPER1_NUMBERS_2026-10-31.md` (the .tex files are not edited).
 - [ ] n_TOF: the χ²/dof flag's purity at n_TOF is unmeasured (~10 % flagged); check with x–y charge balance or
       inter-chamber pointing before an analysis cuts on it. Busy-plane multi-particle-like planes not refitted (GD).
 
