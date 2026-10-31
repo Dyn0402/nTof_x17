@@ -1,13 +1,12 @@
 key,field_Vcm,gas,raw,n_blocks,minutes,T_x,defined_x,dv_x_pct,T_y,defined_y,dv_y_pct,dv_pct,dv_sys_pct,needs_correction,verdict
-run60_flush__ov01,243.2,Ar/CO2->CF4 TRANSITION (see GAS_FLUSH_TIMELINE),0,3,29.33,2900 2780 2820,False,2.837,2880 2490 2520,True,14.29,14.29,,False,one view defined
+run60_flush__ov01,243.2,Ar/CO2->CF4 TRANSITION (see GAS_FLUSH_TIMELINE),0,3,29.33,2890 2780 2820,False,2.482,2880 2490 2520,True,14.29,14.29,,False,one view defined
 run60_flush__ov08,243.2,Ar/CO2->CF4 TRANSITION (see GAS_FLUSH_TIMELINE),0,3,29.33,2440 2470 2440,False,0,2250 2240 2250,True,0,0,,False,one view defined
-run60_flush__ov09,243.2,Ar/CO2->CF4 TRANSITION (see GAS_FLUSH_TIMELINE),0,3,29.33,2430 2400 2350,True,3.404,2310 2240 2170,True,6.452,4.928,1.524,False,flat
-run60_flush__ov10,243.2,Ar/CO2->CF4 TRANSITION (see GAS_FLUSH_TIMELINE),0,3,29.33,2360 2360 2310,False,2.165,2160 2220 2140,False,0.9346,,,False,column not defined
+run60_flush__ov09,243.2,Ar/CO2->CF4 TRANSITION (see GAS_FLUSH_TIMELINE),0,3,29.33,2430 2400 2350,True,3.404,2310 2240 2160,True,6.944,5.174,1.77,False,flat
+run60_flush__ov10,243.2,Ar/CO2->CF4 TRANSITION (see GAS_FLUSH_TIMELINE),0,3,29.33,2360 2360 2310,False,2.165,2160 2220 2130,False,1.408,,,False,column not defined
 run60_flush__ov11,243.2,Ar/CO2->CF4 TRANSITION (see GAS_FLUSH_TIMELINE),0,3,29.33,2250 2240 2240,True,0.4464,2080 2110 2060,True,0.9709,0.7087,0.2622,False,flat
 run60_flush__ov12,243.2,Ar/CO2->CF4 TRANSITION (see GAS_FLUSH_TIMELINE),0,3,29.33,2260 2250 2200,True,2.727,2130 2060 2080,True,2.404,2.566,0.1617,False,flat
 run60_flush__ov13,243.2,Ar/CO2->CF4 TRANSITION (see GAS_FLUSH_TIMELINE),0,3,29.33,2210 2230 2190,True,0.9132,2120 2090 2070,True,2.415,1.664,0.7511,False,flat
-run60_flush__ov14,243.2,Ar/CO2->CF4 TRANSITION (see GAS_FLUSH_TIMELINE),0,3,29.33,2200 2150 2160,True,1.852,2050 2000 1960,True,4.592,3.222,1.37,False,flat
-run61_op25__op25,243.1,Ar/CF4/iso 88/10/2,0,4,76.18,- - - -,False,,- - - -,False,,,,False,column not defined
+run60_flush__ov14,243.2,Ar/CO2->CF4 TRANSITION (see GAS_FLUSH_TIMELINE),0,3,29.33,2200 2150 2160,True,1.852,2050 2030 1960,False,4.592,1.852,,False,one view defined
 run62_rot25_ladder__d700,243.2,Ar/CF4/iso 88/10/2,0,2,5.2,2140 2190,True,-2.283,2040 2050,True,-0.4878,-1.385,0.8977,False,flat
-run63_flat__flat700,243.2,Ar/CF4/iso 88/10/2,0,4,52.68,1980 2060 2060 2030,True,-2.463,2070 2100 2100 2070,True,0,-1.232,1.232,False,flat
-run71_raw__raw700,243.2,Ar/CF4/iso 88/10/2,1,3,18.75,2010 2010 2030,True,-0.9852,3040 3040 2940,False,3.401,-0.9852,,False,one view defined
+run63_flat__flat700,243.2,Ar/CF4/iso 88/10/2,0,4,52.68,1970 2060 2060 2030,True,-2.956,2070 2100 2100 2070,True,0,-1.478,1.478,False,flat
+run71_raw__raw700,243.2,Ar/CF4/iso 88/10/2,1,3,18.75,2010 2030 2020,True,-0.495,2000 2030 2010,True,-0.4975,-0.4963,0.001231,False,flat

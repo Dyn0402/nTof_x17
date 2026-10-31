@@ -4,8 +4,8 @@
   "bench_z": 3.0,
   "bench_chi2": 3.0,
   "sps_dv": 0.02,
-  "sps_window_noise": 0.012459298327400909,
-  "sps_threshold": 0.05286032601678836
+  "sps_window_noise": 0.013772354475454582,
+  "sps_threshold": 0.058431151454993
  },
  "bench": {
   "n_rows": 156,
@@ -37,7 +37,7 @@
   ]
  },
  "sps": {
-  "n_rows": 12,
+  "n_rows": 11,
   "n_correct": 0,
   "correct": []
  },
