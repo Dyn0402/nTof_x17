@@ -40,7 +40,10 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('keys', nargs='+'); ap.add_argument('--out-dir', required=True)
     ap.add_argument('--n', type=int, default=4000); ap.add_argument('--blocks', type=int, default=20)
+    ap.add_argument('--t-min', nargs='*', default=['run60_flush__ov07=91170'],
+                    help="KEY=S: drop the row's events before wall clock S (run60 ov07: beam off until ~91170 s, rerun/sps_followup)")
     a = ap.parse_args()
+    tmin = {k: float(v) for k, v in (x.split('=') for x in a.t_min)}
     import sps_build_cache as sbc
     from det4_sps_map import POSITION_MM, PITCH_MM
     os.makedirs(a.out_dir, exist_ok=True)
@@ -51,10 +54,11 @@ def main():
             need = a.n - len(evs)
             if need <= 0:
                 break
-            got = sbc.build_cache(row['run'], sub, row['dataset'], per_plateau=need, only=[row['plateau']], verbose=False)
+            got = sbc.build_cache(row['run'], sub, row['dataset'], per_plateau=need if key not in tmin else 4 * need,
+                                  only=[row['plateau']], verbose=False)
             hot[sub] = sbc.HOT_LAST.get((row['run'], sub, row['plateau']), [])
             for eid, ev in got.get(row['plateau'], {}).items():
-                if len(evs) < a.n:
+                if len(evs) < a.n and ev['t_wall'] >= tmin.get(key, -1e18):
                     evs[(sub, eid)] = ev
         E = sorted(evs.values(), key=lambda e: e['t_wall'])
         n = len(E); nb = max(1, min(a.blocks, n // 50)); blk = np.minimum(np.arange(n) * nb // max(n, 1), nb - 1)

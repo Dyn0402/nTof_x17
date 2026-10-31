@@ -1,0 +1,13 @@
+# gas-fit stacks, one node per SPS row (rerun/sps_gasfit); outputs written to EOS from inside the job
+executable     = /bin/bash
+arguments      = $(code)/rerun/sps_gasfit/condor/gs_job.sh $(code) $(out) $(key)
+output         = log/$(key).out
+error          = log/$(key).err
+log            = log/gs.log
+request_cpus   = 1
+request_memory = 6000
++JobFlavour    = "workday"
+should_transfer_files = NO
+requirements   = (Machine != "b9g42p2031.cern.ch")
+max_retries    = 2
+queue code, out, key from jobs.txt
