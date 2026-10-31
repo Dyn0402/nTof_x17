@@ -193,7 +193,7 @@ def load_data(path, view, v):
     return out, D['meta']
 
 
-ARM_RES = dict(D=None, Dcm='cm', Dmean='mean', Dtshape='tshape', Danti='anti', Dtshuf='tshuf', Dsshuf='sshuf',
+ARM_RES = dict(Tcm='cm', Tanti='anti', Ttshuf='tshuf', Tsshuf='sshuf', Ttshape='tshape', D=None, Dcm='cm', Dmean='mean', Dtshape='tshape', Danti='anti', Dtshuf='tshuf', Dsshuf='sshuf',
                dD=None, dDtshuf='tshuf', dDcm='cm', dDanti='anti', dDtshape='tshape', dDmean='mean')
 
 
@@ -206,9 +206,11 @@ def run_arms(truths, arms, dpool, tpool, P_bin, view, cal, sigma_prior, rng, sel
                 R = rng.normal(0.0, 1.0, tr['M'].shape) * tr['noise'][:, None]
             elif arm == 'S':                       # identity: the truth's own residual, not moved -> d = 0
                 R = transplant(tr, tr, tr['R'], rng)
-            elif arm == 'T':
+            elif arm.startswith('T'):              # toy residuals (T), or with one structure removed (T<x>)
                 j = pick(tr, tpool, rng, self_id=i)
-                R = transplant(tr, tpool[j], tpool[j]['R'], rng)
+                how = ARM_RES.get(arm)
+                Rd = tpool[j]['R'] if how is None else ablate(tpool[j], how, rng=rng)
+                R = transplant(tr, tpool[j], Rd, rng)
             else:
                 j = pick(tr, dpool, rng, self_id=i if self_pool else None)
                 how = ARM_RES[arm]
