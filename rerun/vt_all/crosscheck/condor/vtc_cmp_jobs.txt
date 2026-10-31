@@ -1,0 +1,5 @@
+/afs/cern.ch/user/d/dneff/x17rerun/code_vtc_eddab75c /afs/cern.ch/user/d/dneff/x17rerun/vt_check/sps_build_cache_15900b39.py run60_flush__ov03 /eos/user/d/dneff/x17rerun/vt_check/cachecmp/run60_ov03_15900b39.pkl
+/afs/cern.ch/user/d/dneff/x17rerun/code_vtc_eddab75c /afs/cern.ch/user/d/dneff/x17rerun/code_vtc_eddab75c/rerun/model_audit/sps_build_cache.py run60_flush__ov03 /eos/user/d/dneff/x17rerun/vt_check/cachecmp/run60_ov03_514f7aac.pkl
+/afs/cern.ch/user/d/dneff/x17rerun/code_vtc_eddab75c /afs/cern.ch/user/d/dneff/x17rerun/vt_check/sps_build_cache_15900b39.py run71_raw__raw275 /eos/user/d/dneff/x17rerun/vt_check/cachecmp/run71_raw275_15900b39.pkl
+/afs/cern.ch/user/d/dneff/x17rerun/code_vtc_eddab75c /afs/cern.ch/user/d/dneff/x17rerun/code_vtc_eddab75c/rerun/model_audit/sps_build_cache.py run71_raw__raw275 /eos/user/d/dneff/x17rerun/vt_check/cachecmp/run71_raw275_514f7aac.pkl
+/afs/cern.ch/user/d/dneff/x17rerun/code_vtc_eddab75c /afs/cern.ch/user/d/dneff/x17rerun/code_vtc_eddab75c/rerun/model_audit/sps_build_cache.py run71_raw__raw275 /eos/user/d/dneff/x17rerun/vt_check/cachecmp/run71_raw275_514f7aac_chunk1000.pkl --chunk 1000

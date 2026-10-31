@@ -11,7 +11,9 @@ timing estimators that do not use the M3 angle scale, in the same time blocks.
              20 % trimmed mean.  Variants: per view, the saturated class, the interior (both centroids >= 30 mm inside
              the active area), and 'std' = standardised against the row's composition (each trigger's T over the
              row-wide median of its cell, 4 x 4 cells of 100 mm x amplitude tercile): a drift of WHERE the triggers sit
-             (det4's stripes) or of their brightness cannot move it.
+             (det4's stripes) or of their brightness cannot move it.  'head' = the X column of the stack's own events
+             (the head-on cache, |tan_x| < 0.03; X view alone, one cluster, unsaturated / 'head_sat' saturated): the
+             same events as the stack through the other estimator.
     stack    the S4 head-on stack (x_width.measure, |tan_x| < 0.03 from M3 -- the selection only, not the scale) with the
              re-check recipe: X mask = the row bundle's dead list + strip_gain_audit's flags, unsaturated (< 3500 ADC),
              pass template; whole area (relative v needs no interior cut) and the >= 30 mm interior.
@@ -86,8 +88,11 @@ def colsum_table(path, det):
     unsat = both & ~z['x_sat'] & ~z['y_sat']
     sat = both & z['x_sat'] & z['y_sat']
     inn = interior(det, z['x_cen'], z['y_cen'])
+    # X alone (the head-on events have too few pulse strips for 'both'): a fitted X column, one cluster
+    xok = z['x_has'] & (z['x_ncl'] == 1) & np.isfinite(z['x_T'])
     return dict(eid=z['eid'].astype(int), acq=z['acq'].astype(int), t_h=t_h, T=T, Tx=z['x_T'], Ty=z['y_T'], q=q,
-                unsat=unsat, sat=sat, inn=inn & both, xc=z['x_cen'], yc=z['y_cen'])
+                unsat=unsat, sat=sat, inn=inn & both, xc=z['x_cen'], yc=z['y_cen'],
+                x_ok_unsat=xok & ~z['x_sat'], x_ok_sat=xok & z['x_sat'])
 
 
 def std_ratio(C, sel):
@@ -151,8 +156,14 @@ def main():
     out['colsum'] = dict(n_trig=int(len(C['T'])), n_in_row=int(inrow.sum()), n_unsat=int((C['unsat'] & inrow).sum()),
                          eid_unique=bool(len(np.unique(C['eid'])) == len(C['eid'])))
     C['std'] = std_ratio(C, C['unsat'] & inrow)
+    # the column on the head-on cache's own events (M3 |tan| < 0.06 in a view): same events as the stack, other estimator
+    H0 = pickle.load(open(a.headon, 'rb'))
+    hx = {k for k, e in H0.items() if abs(e['tan_x']) < xw.TAN}
+    ish = np.isin(C['eid'], np.fromiter(hx, int)) if out['colsum']['eid_unique'] else np.zeros(len(C['eid']), bool)
     cols = {'col': ('T', C['unsat']), 'col_x': ('Tx', C['unsat']), 'col_y': ('Ty', C['unsat']),
-            'col_sat': ('T', C['sat']), 'col_in30': ('T', C['unsat'] & C['inn']), 'col_std': ('std', C['unsat'])}
+            'col_sat': ('T', C['sat']), 'col_in30': ('T', C['unsat'] & C['inn']), 'col_std': ('std', C['unsat']),
+            'col_head': ('Tx', ish & C['x_ok_unsat']), 'col_head_sat': ('Tx', ish & C['x_ok_sat'])}
+    del H0
     rowT = {n: tmean(C[f][s & inrow]) for n, (f, s) in cols.items()}
     q_row = float(np.nanmedian(C['q'][C['unsat'] & inrow]))
     n_in_row = int((C['unsat'] & inrow).sum())

@@ -1,0 +1,5 @@
+/afs/cern.ch/user/d/dneff/x17rerun/code_vtc_eddab75c g_det4 mx17_det4_day_6-24-26/long_run/mx17_4 /eos/user/d/dneff/x17rerun/s4_inputs/Analysis
+/afs/cern.ch/user/d/dneff/x17rerun/code_vtc_eddab75c g_det6_long mx17_det6_det7_overnight_6-26-26/long_run/mx17_6 /eos/user/d/dneff/x17rerun/s4_inputs/Analysis
+/afs/cern.ch/user/d/dneff/x17rerun/code_vtc_eddab75c g_det7_long mx17_det6_det7_overnight_6-26-26/long_run/mx17_7 /eos/user/d/dneff/x17rerun/s4_inputs/Analysis
+/afs/cern.ch/user/d/dneff/x17rerun/code_vtc_eddab75c c26__mx17_det6_det7_overnight_6-26-26__longer_run__mx17_6 mx17_det6_det7_overnight_6-26-26/longer_run/mx17_6 /eos/user/d/dneff/x17rerun/vt_check/Analysis
+/afs/cern.ch/user/d/dneff/x17rerun/code_vtc_eddab75c c26__mx17_det6_det7_overnight_6-26-26__longer_run__mx17_7 mx17_det6_det7_overnight_6-26-26/longer_run/mx17_7 /eos/user/d/dneff/x17rerun/vt_check/Analysis

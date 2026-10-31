@@ -1,0 +1,12 @@
+# condor_submit vtc_meas.sub   (run from ~/x17rerun/vt_check; jobs in vtc_meas_jobs.txt: <code> <key> <row> <inputs root>)
+executable     = $ENV(HOME)/x17rerun/vt_check/vtc_meas.sh
+arguments      = $(args)
+output         = log/meas.$(Cluster).$(ProcId).out
+error          = log/meas.$(Cluster).$(ProcId).err
+log            = log/vtc_meas.log
+request_cpus   = 8
+request_memory = 8000
++JobFlavour    = "longlunch"
+requirements   = (Machine != "b9g42p2031.cern.ch")
+should_transfer_files = NO
+queue args from vtc_meas_jobs.txt
