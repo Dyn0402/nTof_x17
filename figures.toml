@@ -64,10 +64,11 @@ producer = "cd mx_june_cosmic_qa && ../.venv/bin/python 39_spark_deadtime.py"
 # --- 5 Charge balance and efficiency -----------------------------------------
 
 [fig.charge_balance]
-title = "X/Y charge balance"
+title = "X/Y charge balance: ln(Q_x/Q_y) on the five golden rows, waveform-fit charge, unsaturated events"
 state = "current"
-source = "mx_june_cosmic_qa/engineer_package/figures/61-xy-charge-balance-distribution.pdf"
-producer = "cd mx_june_cosmic_qa && ../.venv/bin/python 38b_charge_balance_report_figs.py"
+source = "rerun/paper1_charge/figures/charge_balance.pdf"
+producer = "python3 rerun/paper1_charge/charge_rows.py (lxplus, Analysis_pass1) && .venv/bin/python rerun/paper1_charge/make_report.py --in <charge_rows out-dir>"
+note = "Rebuilt 2026-10-31 on pass 1 (was the 07-12 hits figure 61). Interior >= 30 mm, det7 X ch 256-511, single track, M3-matched; numbers in rerun/paper1_charge/report.html."
 
 [fig.efficiency_map]
 title = "Efficiency map (det3)"
