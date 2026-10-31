@@ -91,7 +91,9 @@ note = "R7. Reference-free angle truth."
 # --- 9 Fleet ------------------------------------------------------------------
 
 [fig.fleet]
-title = "Fleet: sigma_theta, bias and efficiency for five chambers, hits vs waveforms"
-state = "placeholder"
+title = "Fleet: sigma_theta, position and efficiency for five chambers, H0 hits vs W waveforms, same events"
+state = "current"
 section_state = "partial"
-note = "FLEET_DIGEST (r06) has H0 vs W on four metrics."
+source = "rerun/paper1_floor/figures/fleet.pdf"
+producer = "cd rerun/paper1_floor && FLOOR_HITS=<rr1 event_results pkls> FLOOR_RAYS=<effbudget rays> FLOOR_FRAMES=<frames> ../../.venv/bin/python hits_arm.py"
+note = "Pass 1 (2026-10-31): H0 = the rr1 hits chain (event_results_veto50), its angle scale calibrated on M3 per row; W = pass-1 v(t) arm; interior_good, calibration rows; FD convention (slope + 2D 40 mm tilt removed). rerun/paper1_floor/README.md."
