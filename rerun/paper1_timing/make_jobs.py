@@ -27,6 +27,7 @@ PASS_COLSUM = [
         'mx17_det6_det7_overnight_6-26-26/longer_run/mx17_7')]
 
 reg = {(r['run'], r['subrun'], r['det']): r for r in csv.DictReader(open(os.path.join(HERE, '..', 'pass_registry.csv')))}
+by_key = {r['key']: r for r in reg.values()}
 seen = set()
 rows = []
 for c in PASS_COLSUM:
@@ -44,5 +45,7 @@ for c, run, sub, det, src in rows:
     if r['cls'] == 'excluded':
         print(f'# excluded: {r["key"]}', file=sys.stderr); continue
     seen.add((run, sub, det))
-    meta = f'key={r["key"]} det={det} run={run} subrun={sub} resist_V={r["resist_V"]} drift_V={r["drift_V"]} cls={r["cls"]} source={src}'
-    print(f'{c} {A}/{run}/{sub}/{det}/wft/calib_bundle {OUT}/{r["key"]} {meta}')
+    cr = by_key[r['calib_key']]          # rows without their own calibration read their calibration row's bundle
+    meta = (f'key={r["key"]} det={det} run={run} subrun={sub} resist_V={r["resist_V"]} drift_V={r["drift_V"]} '
+            f'cls={r["cls"]} source={src} calib_key={r["calib_key"]}')
+    print(f'{c} {A}/{cr["run"]}/{cr["subrun"]}/{cr["det"]}/wft/calib_bundle {OUT}/{r["key"]} {meta}')
