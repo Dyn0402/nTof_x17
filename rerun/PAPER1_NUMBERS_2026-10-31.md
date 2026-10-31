@@ -24,6 +24,7 @@ Sources (main, 2026-10-31):
 | BOW | `rerun/calib/bow/results_pass1/GATE_RESULT_2026-10-30.md`, `bow_finalize.json` | 404672c7 |
 | ABL | `rerun/calib/DET4Y_ABLATION_2026-10-30.md` | 4ee73a3e |
 | FD | `rerun/model_audit/followups/fd_floor_realism/REPORT.md` § Pass-1 update (toy re-run on the pass-1 bundles) | c144af21, toy re-run in the commit after it |
+| FLOOR | `rerun/paper1_floor/README.md` (§8: the unexplained term ranked, xasym systematic, bench position vs SPS, H0 vs W) | d6a6184d |
 
 ## Paper I
 
@@ -88,10 +89,10 @@ Sources (main, 2026-10-31):
 |---|---|---|---|
 | σθ = 1.15–2.51° | 0.90–2.41°: det2 1.045/1.125, det3 0.991/0.901, det4 2.412/2.076, det6 1.256/1.506, det7 1.232/1.461 (pass); v(t) arm det4 Y 2.013, det6 1.211/1.454, det7 1.225/1.449 | **WRONG** + **CHOICE** (C, D) | RES |
 | (G1, if quoted) det4 Y 2.35° | 2.348 (pass) / 2.290 (v(t) arm), all events; the −0.25° vs the audit is the template, not the bow | **CHOICE** (C) | ABL, VT |
-| X asymmetry a_Q det3 +0.165 ± 0.019, copy 0.13×, 110 ns; det2/det4/det7/det6 +0.08/+0.08/+0.19/−0.02; K = −0.77 ± 0.13; ≤ 44 / ≤ 116 µm | not re-derived on pass 1 (`wft.xasym` ± systematic has no script yet, PASS_PLAN §4) | NOT RE-DERIVED (7 numbers) | — |
+| X asymmetry a_Q det3 +0.165 ± 0.019, copy 0.13×, 110 ns; det2/det4/det7/det6 +0.08/+0.08/+0.19/−0.02; K = −0.77 ± 0.13; ≤ 44 / ≤ 116 µm | the ± systematic on pass 1 (`rerun/paper1_floor/xasym_sys.py`): the K map moves X by 48 µm rms (det2) / 28 µm rms (det3, session scale 0.44); re-aligned X core σ 460 → 455 µm (det2), 466 → 466 µm (det3), K ± 1σ ≤ 2 µm — "unchanged within 5 µm" holds; angle cost of the copy = toy L3 0.06–0.19°; a_Q/copy/τ themselves not re-derived on pass 1; det4/6/7 no usable map | OK (systematic) / NOT RE-DERIVED (a_Q, copy, τ) | FLOOR |
 | intrinsic 176 ± 10 µm | see the abstract row | **CHOICE** (A, B) | SPS |
 | = 0.30 × pitch | 0.23 × pitch for 176 µm (0.24 for 190, 0.27 for 209); 0.30 is the telescope | **WRONG** | SPS |
-| bench 0.6–0.7 mm = M3 pointing ⊕ ~1.1 mrad MS | σ vs M3 with the pointing subtracted 348–663 µm per view (det2 456/444, det3 447/443, det4 663/526, det6 348/382, det7 434/488), MS still in → upper bounds; the 1.1 mrad arithmetic is not redone | **WRONG** (range) | RES §Verdict 2 |
+| bench 0.6–0.7 mm = M3 pointing ⊕ ~1.1 mrad MS | measured, not arithmetic (`rerun/paper1_floor/position_ms.py`): the bench residual (430–620 µm core σ) grows with the M3 χ² of the matching coordinate (det3 Y 298 → 733 µm across quintiles) = M3's own scattering between its doublets, 240–370 µm; χ² → 0 minus the pointing P 0.21–0.28 mm: chamber 230–310 µm all angles (det2/3/7), near-normal det2 163/176 ± 25, det3 126/116 ± 35 µm (headline rows) — consistent with SPS det4 190–210 µm; ±10 % on P moves the near-normal value ~±50 µm | **WRONG** (mechanism and numbers) + **CHOICE** (quote the chamber or the named decomposition) | FLOOR |
 
 ### §8b Bow
 
@@ -193,7 +194,7 @@ paper figures show.
 
 ## Stated limitations to carry into the text
 
-- Bench positions are upper bounds: multiple scattering between the last M3 plane and the chamber is in the widths.
+- Bench positions as quoted in `rerun/paper1_res` are upper bounds; the M3-scattering term is now measured (`rerun/paper1_floor/position_ms.py`, 240–370 µm) and the chamber term rests on the pointing P.
 - det4, det6, det7 headline angles are in-sample (their only golden row is the calibration row).
 - det6's drift velocity over 6-26 is known only to a factor ~2 (ladder vs column duration); its depths carry it.
 - det4 has no bench gain curve (6-23 night flat; degraded M3 matching or a gain drift); its gain comes from SPS.
@@ -206,5 +207,6 @@ paper figures show.
   54–88 % of the X variance is still unexplained. Interior_good, calibration rows, v(t) arm, FD convention: det2 0.72 of
   0.98°, det3 0.68 of 0.93°, det4 1.52 of 1.62°, det6 0.93 of 1.13°, det7 0.98 of 1.12°. All toy terms together are
   0.38–0.46°; the toy floor is 0.31–0.34°.
+  **Ranked on pass 1 (`rerun/paper1_floor/README.md`):** not the reference (no M3-χ² dependence), not a per-event common cause (X–Y |r| ≤ 0.09), not structure finer than the tilt map (≤ 0.16°), not angle non-linearity (≤ 0.13°), not the X copy (Y has the same remainder). Event conditions the toy does not generate (saturated planes, bright tail, topology) are 12–37 % of U² (65–92 % on det7). The remainder on clean events is 0.56–0.65° (det2/3/7 X; det4 1.42°), present head-on, roughly angle-independent and **fit-visible**: a best-χ² selection removes the same share of it as of the toy's own error, the data χ²/dof is 4–15× the toy's and grows as Q^1.4–2 → an event-varying waveform-shape error the model does not describe. This reverses the 10-27 "not a waveform misfit" (raw χ² quintiles, audit tables). Y toy built (`FD_VIEW=y`, approximate).
 - The efficiency loss classes were tuned on det3 and not checked by eye on the other chambers; the det4 stripe map is
   pre-pass.
