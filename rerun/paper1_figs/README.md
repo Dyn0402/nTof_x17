@@ -38,8 +38,25 @@ All inputs are pass-1 products, and `Analysis_pass1` was only read. Outputs are 
    - On pass 1, 52 % of the bench x range (interior) is below half the X plateau, and the two-view detection over the
      interior area is 41 %. The paper's "62 % never amplifies" came from a different definition (hits, gain) and
      should be re-worded or re-derived.
-3. **Figures rebuilt on pass 1:** `efficiency_map` (all five chambers, 8 mm), `edge_turnon` (det3, three panels),
-   `det4_stripes` (bench vs SPS profiles). The A1 displays are in the section below.
+3. **A1 loss classes: the det3-tuned rules hold on the other four chambers, and no rule changed.** Six random events
+   per class per chamber were displayed (both views, M3 and the pass fit) and checked by eye; contact sheets are
+   `paper1_figs/a1/<det>/<class>.png` on EOS.
+   - **Discharges, det6 17 % and det7 24 %** (the biggest losses in the fleet): real discharges, not random coherent
+     noise. A median of 300–360 of 512 strips are above SNR 6 and 230–260 ring below −10σ, in both views, and the
+     chip-wide blocks start at the muon's crossing.
+   - **The muon track is still visible in both views in most det6 discharge displays.** A fit with the ringing chip
+     blocks censored might recover part of that loss. That's a reconstruction change, so it's not done here.
+   - **The band, multi, delta, FIT_SAT, POS_TAIL and EDGE classes look as defined on every chamber.**
+   - **`far:*` mixes two things.** About 22 % of the far losses on every chamber (32 % on det7), 0.3–0.7 % of tracks,
+     are fits 5–8 mm from M3: the resolution or reference tail meeting the 5 mm detection radius, not a second deposit.
+     On det7, `far:MULTI` therefore includes clean single tracks fitted 5–8 mm off. This is a property of the radius,
+     not of the class rules; quote it next to the R = 3 / 5 mm efficiencies.
+   - **On pass 1 the old deck's band and head-on events are detected**: the pass recovers them. The head-on class is
+     0.02 %.
+4. **Figures rebuilt on pass 1:** `efficiency_map` (all five chambers, 8 mm), `edge_turnon` (det3, three panels),
+   `det4_stripes` (bench vs SPS profiles), and all 14 `loss_*` displays (det3, the pass fit, rr1 waveforms). 8 of the
+   11 deck events keep their class and are reused; the rest were re-picked by eye from the sheets. `loss_headon` now
+   shows the one `fit_failed` event. Only `hv_scan` and `spark_deadtime` (§4, outside this scope) are still stale.
 
 ## Numbers
 
@@ -75,6 +92,20 @@ det4 stripes (`results/det4_stripes.json`):
 | tracks | 14 786 M3 rays | 87 683 telescope tracks | 91 832 |
 | live/dead agreement with the bench (identity / mirror / best shift) | — | 0.82 / 0.52 / 0.85 (+0.5 mm) | 0.65 / 0.56 / 0.65 |
 
+A1 fractions, golden rows (interior_good; det4 interior_live), from `rerun/effbudget/pass1/results/a1.json`, in % of
+interior M3 tracks:
+
+| class | det2 | det3 | det4 | det6 | det7 |
+|---|---|---|---|---|---|
+| detected | 90.31 | 92.64 | 71.30 | 74.43 | 68.04 |
+| second particle (m3_picked / other_picked / merged) | 1.65 / 1.68 / 0.53 | 1.02 / 1.43 / 0.57 | 2.86 / 0.29 / 1.50 | 1.52 / 0.79 / 0.50 | 1.22 / 0.71 / 0.28 |
+| spark: discharge / muon+other / shower | 1.41 / 0.38 / 0.71 | 0.50 / 0.40 / 0.67 | 5.04 / 0.92 / 0.58 | 17.15 / 0.26 / 0.72 | 24.29 / 0.23 / 0.43 |
+| δ-ray / saturated δ blob / fit off | 1.00 / 0.88 / 0.12 | 0.90 / 0.84 / 0.23 | 0.70 / 0.48 / 0.75 | 0.34 / 0.32 / 0.20 | 0.56 / 0.38 / 0.03 |
+| noise band | 0.32 | 0.22 | 1.04 | 0.35 | 2.12 |
+| second deposit / edge / position tail | 0.47 / 0.12 / 0.18 | 0.19 / 0.15 / 0.20 | 0.46 / 0.31 / 0.15 | 1.05 / 0.16 / 0.01 | 0.99 / 0.08 / 0.10 |
+| fit failed / cut other | 0.15 / 0.09 | 0.02 / 0.02 | 0.70 / 0.99 | 1.04 / 0.55 | 0.10 / 0.28 |
+| tracks | 3 395 | 6 454 | 4 129 | 8 358 | 3 920 |
+
 ## Method
 
 - **Edge, column duration** (`edge_study.py`). FA's `colsum.npz` of each golden row (s4_inputs / vt_check, made with the
@@ -91,7 +122,17 @@ det4 stripes (`results/det4_stripes.json`):
     A robust affine map telescope → det4 centroid, then X detected = centroid within 3 mm of the prediction.
   - Live = above half the 90th-percentile plateau.
 
+- **A1 displays** (`a1_displays.py`, condor `condor/a1d.sub`, code archives `paper1_figs/code_02e9ab72` on EOS).
+  - Per golden row and class: 6 random events (seed 17), from a1_recat.py's classes, the budget's rays (M3) and the
+    pass's events.parquet (fit, acquisition).
+  - Waveforms: rr1 `decoded_root_fa80c06`, data files only (pedestal files reuse event ids), each event from its own
+    acquisition. Spark-vetoed events that the pass table doesn't hold were searched in every data file; event ids are
+    unique within these rows.
+  - Read with wft.io.FeuReader, with the strip map from the row's EOS run_config.
+
 ## Limitations
+
+- **The A1 audit is by eye on 6 events per class per chamber** (≈ 400 displays), not a measured purity.
 
 - **One row per chamber.** The edge study uses the golden rows only. The fringe depth may depend on the drift field;
   the 6-27 drift scan could test that, but it wasn't run.
@@ -110,3 +151,8 @@ det4 stripes (`results/det4_stripes.json`):
    41 % two-view detection), and say the stripes are a gain continuum (run53 vs run63)?
 3. Should §5 show the edge figure for det3 (the paper's chamber) or det2 (10× the triggers, cleaner curves)?
    Both are in `figures/`.
+4. A1: do det2/det4/det6/det7 get columns (table above)? `loss_headon` now shows a `fit_failed` event (the head-on
+   class is recovered on pass 1): keep the figure with that caption, or drop it and say so in the text?
+5. Is it worth trying a discharge-tolerant fit (censor the ringing chip blocks) on det6/det7, where the muon is
+   usually still visible? How much it recovers is not measured (the discharge class is 17 / 24 % of tracks, an upper
+   bound); it changes the reconstruction.

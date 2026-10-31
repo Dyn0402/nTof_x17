@@ -72,18 +72,19 @@ producer = "python3 rerun/paper1_charge/charge_rows.py (lxplus, Analysis_pass1) 
 note = "Rebuilt 2026-10-31 on pass 1 (was the 07-12 hits figure 61). Interior >= 30 mm, det7 X ch 256-511, single track, M3-matched; numbers in rerun/paper1_charge/report.html."
 
 [fig.efficiency_map]
-title = "Efficiency map (det3)"
+title = "Detection efficiency maps, all five chambers (pass 1, plateau pools, 8 mm disk)"
 state = "current"
-source = "mx_june_cosmic_qa/engineer_package/figures/20-det3A-efficiency-map.pdf"
-producer = "cd mx_june_cosmic_qa && ../.venv/bin/python 08_efficiency_maps.py"
-note = "July recipe; re-make from the r06 products (D1) before submission."
+source = "papers/paper1/figures/efficiency_map.pdf"
+producer = ".venv/bin/python rerun/paper1_figs/make_effmap_figure.py --root <paper1_eff outputs: budget/<rel>/rays_<det>.parquet>"
+note = "Rebuilt 2026-10-31 on pass 1: the loss budget's denominator (every measured M3 ray in the active area) and its 'detected'; pools in rerun/effbudget/pass1/results/map_pools.json; det4 is its golden row alone. Was the 07-14 hits figure 20."
 
 [fig.edge_turnon]
-title = "Edge turn-on and fringe field"
-state = "superseded"
-source = "mx_june_cosmic_qa/engineer_package/figures/80-det3A-edge-fringe-dashboard.pdf"
+title = "The edge zone (det3): efficiency turn-on, angle bias of the perpendicular view, column duration"
+state = "current"
+source = "papers/paper1/figures/edge_turnon.pdf"
 section_state = "partial"
-note = "The -3 deg edge tilt is a hits angle. Re-measure with wft angles (D4). The efficiency turn-on panel itself stands."
+producer = ".venv/bin/python rerun/paper1_figs/edge_study.py ... && .venv/bin/python rerun/paper1_figs/edge_angles.py ... && .venv/bin/python rerun/paper1_figs/make_edge_figure.py"
+note = "Rebuilt 2026-10-31 on pass 1 (D4: wft angles, M3 rays, FA column duration). Replaces the 07-12 hits dashboard. The x sides (no passivation) carry a drift-field fringe over ~20-30 mm; the passivated y sides are sharp beyond 5 mm (rerun/paper1_figs/README.md)."
 
 # --- 6 Gas --------------------------------------------------------------------
 
@@ -147,109 +148,110 @@ producer = "rerun/paper1_res/bow_pass1.py build (lxplus) then fig --in-dir <fetc
 # --- 9 det4 stripes -----------------------------------------------------------
 
 [fig.det4_stripes]
-title = "det4: the non-amplifying stripes (62 % of the area)"
-state = "placeholder"
+title = "det4: the non-amplifying stripes, bench (M3) and SPS (uRWELL telescope), X-view efficiency against x"
+state = "current"
+source = "papers/paper1/figures/det4_stripes.pdf"
 section_state = "ready"
-producer = "cd sps_beam_test_26/det4_sps_assessment && ../../.venv/bin/python 14_board_map.py"
-note = "Board map from det4_sps_assessment. Stephan: production cause?"
+producer = ".venv/bin/python rerun/paper1_figs/det4_stripes.py --rays <paper1_eff budget g_det4 rays_det4.parquet> --tel <sps_audit/tel>"
+note = "Rebuilt 2026-10-31 on pass 1 (was a placeholder on the retired hits alignment). Bench and SPS stripe positions agree on 82-85 % of 1 mm bins (run63), mirror 52 %. Stephan: production cause?"
 
 # --- Appendix A1 Loss categories (det3 interior, one real event per class) ----------------
-# Source outside the repo (satstudy outputs live in ~/x17); figures/<id>.pdf is committed, so other machines keep it.
+# Rebuilt on pass 1 (2026-10-31, rerun/paper1_figs/README.md); figures/<id>.pdf is committed.
 
 [fig.loss_band]
-title = "det3 loss class band: noise band (baseline offset on a strip patch) (event 29808)"
+title = "det3 loss class band: noise band (baseline offset on a strip patch) (event 14789)"
 state = "current"
-source = "/home/dylan/x17/cosmic_bench/satstudy/appendix/loss_band.pdf"
-producer = "cd rerun/satstudy && ../../.venv/bin/python summarize.py && ../../.venv/bin/python appendix_figs.py"
-note = "Waveform display (strip position x drift time), production wft fit + M3: allowed (geometry from waveforms)."
+source = "papers/paper1/figures/loss_band.pdf"
+producer = "rerun/paper1_figs/a1_displays.py sat_det3 --out <EOS paper1_figs/a1[_paper]> --paper ... (condor, rerun/paper1_figs/condor/a1d.sub)"
+note = "Rebuilt 2026-10-31 on pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
 
 [fig.loss_multi_m3picked]
 title = "det3 loss class multi:m3_picked: second particle: M3 one fitted, view cut (event 30375)"
 state = "current"
-source = "/home/dylan/x17/cosmic_bench/satstudy/appendix/loss_multi_m3picked.pdf"
-producer = "cd rerun/satstudy && ../../.venv/bin/python summarize.py && ../../.venv/bin/python appendix_figs.py"
-note = "Waveform display (strip position x drift time), production wft fit + M3: allowed (geometry from waveforms)."
+source = "papers/paper1/figures/loss_multi_m3picked.pdf"
+producer = "rerun/paper1_figs/a1_displays.py sat_det3 --out <EOS paper1_figs/a1[_paper]> --paper ... (condor, rerun/paper1_figs/condor/a1d.sub)"
+note = "Rebuilt 2026-10-31 on pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
 
 [fig.loss_multi_otherpicked]
 title = "det3 loss class multi:other_picked: second particle: the other one fitted (event 28078)"
 state = "current"
-source = "/home/dylan/x17/cosmic_bench/satstudy/appendix/loss_multi_otherpicked.pdf"
-producer = "cd rerun/satstudy && ../../.venv/bin/python summarize.py && ../../.venv/bin/python appendix_figs.py"
-note = "Waveform display (strip position x drift time), production wft fit + M3: allowed (geometry from waveforms)."
+source = "papers/paper1/figures/loss_multi_otherpicked.pdf"
+producer = "rerun/paper1_figs/a1_displays.py sat_det3 --out <EOS paper1_figs/a1[_paper]> --paper ... (condor, rerun/paper1_figs/condor/a1d.sub)"
+note = "Rebuilt 2026-10-31 on pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
 
 [fig.loss_multi_merged]
-title = "det3 loss class multi:m3_not_found: second particle: merged in projection (event 46350)"
+title = "det3 loss class multi:m3_not_found: second particle: merged in projection (event 30049)"
 state = "current"
-source = "/home/dylan/x17/cosmic_bench/satstudy/appendix/loss_multi_merged.pdf"
-producer = "cd rerun/satstudy && ../../.venv/bin/python summarize.py && ../../.venv/bin/python appendix_figs.py"
-note = "Waveform display (strip position x drift time), production wft fit + M3: allowed (geometry from waveforms)."
+source = "papers/paper1/figures/loss_multi_merged.pdf"
+producer = "rerun/paper1_figs/a1_displays.py sat_det3 --out <EOS paper1_figs/a1[_paper]> --paper ... (condor, rerun/paper1_figs/condor/a1d.sub)"
+note = "Rebuilt 2026-10-31 on pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
 
 [fig.loss_spark_discharge]
 title = "det3 loss class spark:discharge: spark: discharge (event 18645)"
 state = "current"
-source = "/home/dylan/x17/cosmic_bench/satstudy/appendix/loss_spark_discharge.pdf"
-producer = "cd rerun/satstudy && ../../.venv/bin/python summarize.py && ../../.venv/bin/python appendix_figs.py"
-note = "Waveform display (strip position x drift time), production wft fit + M3: allowed (geometry from waveforms)."
+source = "papers/paper1/figures/loss_spark_discharge.pdf"
+producer = "rerun/paper1_figs/a1_displays.py sat_det3 --out <EOS paper1_figs/a1[_paper]> --paper ... (condor, rerun/paper1_figs/condor/a1d.sub)"
+note = "Rebuilt 2026-10-31 on pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
 
 [fig.loss_spark_muonother]
 title = "det3 loss class spark:muon+other: spark: muon + unrelated deposit (event 36694)"
 state = "current"
-source = "/home/dylan/x17/cosmic_bench/satstudy/appendix/loss_spark_muonother.pdf"
-producer = "cd rerun/satstudy && ../../.venv/bin/python summarize.py && ../../.venv/bin/python appendix_figs.py"
-note = "Waveform display (strip position x drift time), production wft fit + M3: allowed (geometry from waveforms)."
+source = "papers/paper1/figures/loss_spark_muonother.pdf"
+producer = "rerun/paper1_figs/a1_displays.py sat_det3 --out <EOS paper1_figs/a1[_paper]> --paper ... (condor, rerun/paper1_figs/condor/a1d.sub)"
+note = "Rebuilt 2026-10-31 on pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
 
 [fig.loss_spark_shower]
 title = "det3 loss class spark:shower: spark: shower at the crossing (event 41538)"
 state = "current"
-source = "/home/dylan/x17/cosmic_bench/satstudy/appendix/loss_spark_shower.pdf"
-producer = "cd rerun/satstudy && ../../.venv/bin/python summarize.py && ../../.venv/bin/python appendix_figs.py"
-note = "Waveform display (strip position x drift time), production wft fit + M3: allowed (geometry from waveforms)."
+source = "papers/paper1/figures/loss_spark_shower.pdf"
+producer = "rerun/paper1_figs/a1_displays.py sat_det3 --out <EOS paper1_figs/a1[_paper]> --paper ... (condor, rerun/paper1_figs/condor/a1d.sub)"
+note = "Rebuilt 2026-10-31 on pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
 
 [fig.loss_delta]
 title = "det3 loss class far:DELTA: delta-ray on the track (event 28537)"
 state = "current"
-source = "/home/dylan/x17/cosmic_bench/satstudy/appendix/loss_delta.pdf"
-producer = "cd rerun/satstudy && ../../.venv/bin/python summarize.py && ../../.venv/bin/python appendix_figs.py"
-note = "Waveform display (strip position x drift time), production wft fit + M3: allowed (geometry from waveforms)."
+source = "papers/paper1/figures/loss_delta.pdf"
+producer = "rerun/paper1_figs/a1_displays.py sat_det3 --out <EOS paper1_figs/a1[_paper]> --paper ... (condor, rerun/paper1_figs/condor/a1d.sub)"
+note = "Rebuilt 2026-10-31 on pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
 
 [fig.loss_satblob]
 title = "det3 loss class far:FIT_SAT: saturated delta blob, fit pulled off (event 41373)"
 state = "current"
-source = "/home/dylan/x17/cosmic_bench/satstudy/appendix/loss_satblob.pdf"
-producer = "cd rerun/satstudy && ../../.venv/bin/python summarize.py && ../../.venv/bin/python appendix_figs.py"
-note = "Waveform display (strip position x drift time), production wft fit + M3: allowed (geometry from waveforms)."
+source = "papers/paper1/figures/loss_satblob.pdf"
+producer = "rerun/paper1_figs/a1_displays.py sat_det3 --out <EOS paper1_figs/a1[_paper]> --paper ... (condor, rerun/paper1_figs/condor/a1d.sub)"
+note = "Rebuilt 2026-10-31 on pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
 
 [fig.loss_fit]
 title = "det3 loss class far:FIT: clean track, fit off (event 4490)"
 state = "current"
-source = "/home/dylan/x17/cosmic_bench/satstudy/appendix/loss_fit.pdf"
-producer = "cd rerun/satstudy && ../../.venv/bin/python summarize.py && ../../.venv/bin/python appendix_figs.py"
-note = "Waveform display (strip position x drift time), production wft fit + M3: allowed (geometry from waveforms)."
+source = "papers/paper1/figures/loss_fit.pdf"
+producer = "rerun/paper1_figs/a1_displays.py sat_det3 --out <EOS paper1_figs/a1[_paper]> --paper ... (condor, rerun/paper1_figs/condor/a1d.sub)"
+note = "Rebuilt 2026-10-31 on pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
 
 [fig.loss_headon]
-title = "det3 loss class head_on: head-on: 2-strip cluster, never seeded (event 43536)"
+title = "det3 loss class head_on: head-on: 2-strip cluster, never seeded (event 12351)"
 state = "current"
-source = "/home/dylan/x17/cosmic_bench/satstudy/appendix/loss_headon.pdf"
-producer = "cd rerun/satstudy && ../../.venv/bin/python summarize.py && ../../.venv/bin/python appendix_figs.py"
-note = "Waveform display (strip position x drift time), production wft fit + M3: allowed (geometry from waveforms)."
+source = "papers/paper1/figures/loss_headon.pdf"
+producer = "rerun/paper1_figs/a1_displays.py sat_det3 --out <EOS paper1_figs/a1[_paper]> --paper ... (condor, rerun/paper1_figs/condor/a1d.sub)"
+note = "Rebuilt 2026-10-31 on pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py. Class now fit_failed (the head-on class is recovered on pass 1: 0.02 % left)."
 
 [fig.loss_edge]
-title = "det3 loss class far:EDGE: edge of the other coordinate (event 38701)"
+title = "det3 loss class far:EDGE: edge of the other coordinate (event 8662)"
 state = "current"
-source = "/home/dylan/x17/cosmic_bench/satstudy/appendix/loss_edge.pdf"
-producer = "cd rerun/satstudy && ../../.venv/bin/python summarize.py && ../../.venv/bin/python appendix_figs.py"
-note = "Waveform display (strip position x drift time), production wft fit + M3: allowed (geometry from waveforms)."
+source = "papers/paper1/figures/loss_edge.pdf"
+producer = "rerun/paper1_figs/a1_displays.py sat_det3 --out <EOS paper1_figs/a1[_paper]> --paper ... (condor, rerun/paper1_figs/condor/a1d.sub)"
+note = "Rebuilt 2026-10-31 on pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
 
 [fig.loss_postail]
-title = "det3 loss class far:POS_TAIL: position tail (mostly bent M3 tracks) (event 35773)"
+title = "det3 loss class far:POS_TAIL: position tail (mostly bent M3 tracks) (event 9855)"
 state = "current"
-source = "/home/dylan/x17/cosmic_bench/satstudy/appendix/loss_postail.pdf"
-producer = "cd rerun/satstudy && ../../.venv/bin/python summarize.py && ../../.venv/bin/python appendix_figs.py"
-note = "Waveform display (strip position x drift time), production wft fit + M3: allowed (geometry from waveforms)."
+source = "papers/paper1/figures/loss_postail.pdf"
+producer = "rerun/paper1_figs/a1_displays.py sat_det3 --out <EOS paper1_figs/a1[_paper]> --paper ... (condor, rerun/paper1_figs/condor/a1d.sub)"
+note = "Rebuilt 2026-10-31 on pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
 
 [fig.loss_multi_deposit]
-title = "det3 loss class far:MULTI: second deposit (not particle-like) (event 14080)"
+title = "det3 loss class far:MULTI: second deposit (not particle-like) (event 963)"
 state = "current"
-source = "/home/dylan/x17/cosmic_bench/satstudy/appendix/loss_multi_deposit.pdf"
-producer = "cd rerun/satstudy && ../../.venv/bin/python summarize.py && ../../.venv/bin/python appendix_figs.py"
-note = "Waveform display (strip position x drift time), production wft fit + M3: allowed (geometry from waveforms)."
+source = "papers/paper1/figures/loss_multi_deposit.pdf"
+producer = "rerun/paper1_figs/a1_displays.py sat_det3 --out <EOS paper1_figs/a1[_paper]> --paper ... (condor, rerun/paper1_figs/condor/a1d.sub)"
+note = "Rebuilt 2026-10-31 on pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."

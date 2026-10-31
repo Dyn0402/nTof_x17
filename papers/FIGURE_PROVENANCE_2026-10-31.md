@@ -31,8 +31,8 @@ from and when.
 | hv_scan | `rerun/paper1_ops/figures/hv_scan.pdf` (current) | pass 1, 10-31 | **rebuilt** | was the 06-29 hits figure 30 (det3 only). Now det2/det3/det6/det7: interior_good efficiency (effbudget), tracks lost to discharges vs bursts, discharges per trigger; golden rows starred (`rerun/paper1_ops/README.md`) |
 | spark_deadtime | `rerun/paper1_ops/figures/spark_deadtime.pdf` (current) | pass 1, 10-31 | **rebuilt** | all five chambers on the rr1 hits + the budget's rays: efficiency and charge vs time since the previous discharge; dead time per discharge ≤ 1.2–2.6 ms (95 %, det2/3/6/7), det4 ≤ 15 ms |
 | charge_balance | `rerun/paper1_charge/figures/charge_balance.pdf` (current) | pass 1, 10-31 | **rebuilt** | was the 07-12 hits figure 61. §5's text numbers (det3 0.487, det2 0.531, σ68 0.07) are the hits proxy; pass 1 gives 0.485 / 0.513, s68 0.014 / 0.016 (`rerun/paper1_charge/README.md`) |
-| efficiency_map | engineer_package 20 (current) | July recipe on hits, 07-14 | **stale** | re-make from the pass-1 `maps/` (manifest note D1) |
-| edge_turnon | engineer_package 80 (superseded) | hits angle, 07-12 | superseded | stays faded; the turn-on panel needs a pass-1 remake |
+| efficiency_map | `papers/paper1/figures/efficiency_map.pdf` (current) | pass 1, 10-31 | **rebuilt** | all five chambers, plateau pools, 8 mm disk, the loss budget's denominator (`rerun/paper1_figs/make_effmap_figure.py`). The caption still says "(det3)" |
+| edge_turnon | `papers/paper1/figures/edge_turnon.pdf` (current) | pass 1, 10-31 | **rebuilt** | det3: turn-on, the perpendicular view's tan bias against M3, the column duration (`rerun/paper1_figs/README.md`: the x sides carry a drift-field fringe over 20–30 mm). Was the hits-angle dashboard |
 | gas_vE | `rerun/paper1_res/figures/gas_vE.pdf` (current) | pass 1, 10-31 | **rebuilt** | det3 6-27 drift scan, angle-scale v (v_drift × mean kw: carries kw, not a timing v) vs Magboltz bench gas 0.95 % H2O; v(t) not relevant (short rows) (`rerun/paper1_res/`) |
 | attachment | none (placeholder) | cloud_basics §16–27 (bench + run71), outside the repo | **pending-sps** | run71 is being re-run with the seed fix |
 | timing | engineer_package 51 (superseded) | hit times | superseded | waveform timing (D3) not done |
@@ -40,8 +40,8 @@ from and when.
 | sps_resolution | spatial_resolution decomposition.png (placeholder, source missing) | run 53 hits centroid, 08-13 | **pending-sps** | the final SPS pass decides the run and the estimator |
 | bow_profiles | `rerun/paper1_res/figures/bow_profiles.pdf` (current) | pass 1 golden rows, 10-31 | **rebuilt** | fb_bow_maps' estimator unchanged on pass-1 tables (`bow_pass1.py`), v(t) arm; pass arm `bow_profiles_pass.pdf`. The audit render stays in `fb_bow_maps/figures/` |
 | bow_closure | `rerun/paper1_res/figures/bow_closure.pdf` (current) | pass 1 golden rows, 10-31 | **rebuilt** | as above |
-| det4_stripes | none (placeholder) | `14_board_map.py`: hits efficiency on `alignment_tpc_veto50` + Gerbers | placeholder (stale basis) | that alignment is retired (calib-reference lesson). Re-make from pass-1 det4 maps |
-| loss_band … loss_multi_deposit (14) | `~/x17/cosmic_bench/satstudy/appendix/*.pdf` (current; source missing on this machine) | Analysis_rr1 `final_phys` det3 table + phys bundle, 10-26 | **stale** | event displays with the pre-pass-1 fit overlaid. Re-pick and re-draw on the pass-1 det3 table with the A1 fractions (effbudget session) |
+| det4_stripes | `papers/paper1/figures/det4_stripes.pdf` (current) | pass 1 bench g_det4 + SPS final telescope tables, 10-31 | **rebuilt** | X-view efficiency against x, bench (M3) and SPS run63/run53 (telescope): stripe positions agree on 82–85 % of 1 mm bins (`rerun/paper1_figs/det4_stripes.py`) |
+| loss_band … loss_multi_deposit (14) | `papers/paper1/figures/loss_*.pdf` (current) | pass 1 sat_det3 table + rr1 waveforms, 10-31 | **rebuilt** | `rerun/paper1_figs/a1_displays.py`. Each class keeps the 10-26 deck event where its pass-1 class is unchanged (8 of 11); band, merged and the four classes without a deck event were re-picked by eye. The deck's band and head-on events are now *detected* on pass 1; loss_headon now shows the one fit_failed event (the head-on class is 0.02 %) |
 
 ## Paper II
 
@@ -65,12 +65,12 @@ from and when.
 | status | count | figures |
 |---|---|---|
 | current | 5 | microtpc_principle, bench_setup, sharing_cartoon, event_waveforms, known_angle_geometry |
-| rebuilt on pass 1 | 8 | charge_balance; gas_vE, tracking_perf, bow_profiles, bow_closure (10-31, `rerun/paper1_res/`); fleet (10-31, `rerun/paper1_floor/`); hv_scan, spark_deadtime (10-31, `rerun/paper1_ops/`) |
-| stale | 15 | efficiency_map, the 14 loss_* displays |
-| pending-vt | 0 | (v(t) settled 10-31: the four data figures rebuilt; tiers_benchmark and fleet moved to placeholder, they need a hits arm) |
+| rebuilt on pass 1 | 25 | charge_balance; gas_vE, tracking_perf, bow_profiles, bow_closure (10-31, `rerun/paper1_res/`); fleet (10-31, `rerun/paper1_floor/`); hv_scan, spark_deadtime (10-31, `rerun/paper1_ops/`); efficiency_map, edge_turnon, det4_stripes, the 14 loss_* displays (10-31, `rerun/paper1_figs/`) |
+| stale | 0 | |
+| pending-vt | 0 | (v(t) settled 10-31) |
 | pending-sps | 5 | attachment, sps_resolution, kernel_forms, angled_kernel, known_angle |
-| superseded | 2 | edge_turnon, timing |
-| placeholder | 9 | chamber_stack, readout_layout, sps_setup, det4_stripes (stale basis), ladder_compression, forward_model, toy_floor, threshold_neighbours, tiers_benchmark |
+| superseded | 1 | timing |
+| placeholder | 8 | chamber_stack, readout_layout, sps_setup, ladder_compression, forward_model, toy_floor, threshold_neighbours, tiers_benchmark |
 
 New pass-1 figures available but not in either manifest (no `.tex` references them yet):
 `rerun/paper1_charge/figures/{gain_curves, drift_field, unsat_bias, golden_spectra}.pdf`.

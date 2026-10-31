@@ -11,4 +11,6 @@ environment    = "PYTHONDONTWRITEBYTECODE=1"
 +JobFlavour    = "workday"
 should_transfer_files = NO
 requirements   = (Machine != "b9g42p2031.cern.ch")
+# transient EOS FUSE I/O errors reading the shared venv (10-31: twice on det4/det6): retry on a non-zero exit
+max_retries    = 3
 queue node, code, args from jobs.txt
