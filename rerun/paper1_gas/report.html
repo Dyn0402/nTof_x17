@@ -1,0 +1,42 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>Bench gas: water and attachment (pass 1)</title>
+<style>body{font-family:sans-serif;max-width:980px;margin:2em auto;line-height:1.45}table{border-collapse:collapse}
+td,th{border:1px solid #ccc;padding:3px 8px;text-align:right}img{max-width:100%}.v{background:#eef6ee;padding:.6em 1em}</style>
+</head><body><h1>Bench gas against time and field (Paper I §6, pass 1)</h1>
+<div class="v"><b>Verdict.</b> The bench drift velocity is the water.
+<ul><li><b>Field:</b> one water describes det3's whole 6-27 drift scan, 0.97 %
+[0.94, 0.99], χ² 2.5/3.</li>
+<li><b>Time:</b> the v(t) drifts read as water drying out overnight. On 6-26 det6 goes 1.47 →
+0.77 % and det7 0.68 → 0.38 %.
+The two follow one time shape (r = 0.98), and det6 carries 2.2× det7's excess.</li>
+<li><b>Chambers differ:</b> each chamber has its own water (0.4–1.0 % on the golden rows), so it is per-chamber ingress, not one gas.</li>
+<li><b>det6's ladder-vs-column disagreement is attachment.</b> For its first ~4 h on 6-26 the drift column is truncated (visible
+fraction 0.44 → 0.81) by an electronegative contaminant of order 379–601
+ppm O₂-equivalent (×2 model uncertainty). The M3 ladder does not see it; the timing stack and the column duration do.</li></ul></div>
+<h2>Water per chamber (golden rows, timing v = gap / T, interior ≥ 30 mm, masked, pass template)</h2>
+<table><tr><th>chamber</th><th>E (V/cm)</th><th>v (µm/ns)</th><th>water % [68 %]</th><th>gap (mm)</th><th>gap ± err band</th></tr><tr><td>det2</td><td>321</td><td>38.3 ± 0.8</td><td><b>0.69</b> [0.63, 0.75]</td><td>31.12</td><td>0.64 – 0.74</td></tr><tr><td>det3</td><td>nan</td><td>nan</td><td><b>0.97</b> [0.94, 0.99]</td><td>28.19</td><td>—</td></tr><tr><td>det4</td><td>197</td><td>32.7 ± 0.7</td><td><b>0.42</b> [0.40, 0.44]</td><td>30.48</td><td>0.39 – 0.45</td></tr><tr><td>det6</td><td>250</td><td>24.8 ± 0.9</td><td><b>1.00</b> [0.96, 1.04]</td><td>28.00</td><td>0.91 – 1.09</td></tr><tr><td>det7</td><td>238</td><td>35.9 ± 0.6</td><td><b>0.48</b> [0.45, 0.51]</td><td>29.44</td><td>0.38 – 0.58</td></tr></table>
+<p>det3 is the drift-scan fit (gap 28.19 mm, the S4 re-check interior gap). The gap profile gives 29.0 mm
+[28, 30]: the drift scan alone does not fix the gap on pass 1.</p>
+<h2>v(E): timing and angle-scale v against Magboltz</h2><img src="figures/gas_vE_timing.png">
+<p>The angle-scale v (v_drift × kw, M3-calibrated) reaches the low fields, where the column does not fit in the window. The timing v
+(gap / T) is a direct transit time. On det3 both sit on one Magboltz curve.</p>
+<h2>6-26: two estimators, one gas</h2><img src="figures/v626.png">
+<p>The timing stack is divided by the ladder on the rows after 06:00 and in the afternoon HV scan, where nothing truncates the column:
+k = 0.970 ± 0.013 (det6, χ² 6.2/7),
+0.984 ± 0.011 (det7).</p>
+<img src="figures/water626.png"><img src="figures/attach626.png">
+<table><tr><th>det6, h on 6-26</th><th>T / T_true</th><th>τ (ns)</th><th>O₂-eq (ppm)</th></tr><tr><td>1.2</td><td>0.44</td><td>1073</td><td>601</td></tr><tr><td>1.5</td><td>0.53</td><td>1240</td><td>520</td></tr><tr><td>1.5</td><td>0.45</td><td>1097</td><td>588</td></tr><tr><td>1.8</td><td>0.61</td><td>1399</td><td>461</td></tr><tr><td>2.3</td><td>0.72</td><td>1578</td><td>409</td></tr><tr><td>3.0</td><td>0.84</td><td>1747</td><td>369</td></tr><tr><td>3.0</td><td>0.81</td><td>1701</td><td>379</td></tr></table>
+<h2>Other nights</h2><img src="figures/nights.png">
+<p>The same pattern on every night: water falls overnight and steps back up between runs or reconfigurations.
+det4 goes 0.7 → 0.2 % over 6-23, then is back at 0.42 % on 6-24.</p>
+<h2>What this does not rule out</h2><ul>
+<li><b>No gas record.</b> No flow, fill or line record exists for the bench (no new data), so the cause of the water (outgassing after
+opening, a permeable line) is not identified. Neither is the order of the chambers on the line.</li>
+<li><b>The attachment number is model-dependent.</b> τ ≈ T / ln 2 assumes the box fit ends at the half-height point of an
+exponentially decaying column. The stack model has no attachment term. The species is not identified: "O₂-equivalent" means the
+rate, not the gas.</li>
+<li><b>The gap is the leading systematic on each water</b> (the band column). The bench drift scan constrains it only to 28–30 mm.</li>
+<li><b>g_det4's −9 % in-row v drift</b> (ladder and column, rerun/vt_all/CROSSCHECK) is not resolved by the stack thirds
+(33.1 / 32.2 / 33.2 ± 1.2–2.9 µm/ns).</li>
+<li><b>det2 sits near the velocity maximum at 321 V/cm,</b> where v hardly depends on water. Its water is the weakest of the five, and
+one of its thirds has two Magboltz branches.</li></ul>
+<p>Grid: Magboltz bench Ar/iso 95/5 + water + air, air_merged; T systematic 1.5 %.</p></body></html>
