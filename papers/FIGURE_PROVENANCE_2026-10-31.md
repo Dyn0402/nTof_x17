@@ -35,7 +35,7 @@ from and when.
 | edge_turnon | `papers/paper1/figures/edge_turnon.pdf` (current) | pass 1, 10-31 | **rebuilt** | det3: turn-on, the perpendicular view's tan bias against M3, the column duration (`rerun/paper1_figs/README.md`: the x sides carry a drift-field fringe over 20–30 mm). Was the hits-angle dashboard |
 | gas_vE | `rerun/paper1_res/figures/gas_vE.pdf` (current) | pass 1, 10-31 | **rebuilt** | det3 6-27 drift scan, angle-scale v (v_drift × mean kw: carries kw, not a timing v) vs Magboltz bench gas 0.95 % H2O; v(t) not relevant (short rows) (`rerun/paper1_res/`) |
 | attachment | none (placeholder) | cloud_basics §16–27 (bench + run71), outside the repo | **pending-sps** | run71 is being re-run with the seed fix |
-| timing | engineer_package 51 (superseded) | hit times | superseded | waveform timing (D3) not done |
+| timing | `rerun/paper1_timing/figures/timing.pdf` (current) | pass 1, 10-31 | **rebuilt** | waveform column-start timing (D3): HV scans, the uncorrelated part vs amplitude with det4 at SPS, the golden-row split (`rerun/paper1_timing/`) |
 | tracking_perf | `rerun/paper1_res/figures/tracking_perf.pdf` (current) | pass 1, 10-31 | **rebuilt** | σθ vs angle on interior_good, headline rows, v(t) arm where a map exists; efficiency from the pass-1 effbudget (`rerun/paper1_res/PASS1_RESOLUTION_2026-10-31.md`) |
 | sps_resolution | spatial_resolution decomposition.png (placeholder, source missing) | run 53 hits centroid, 08-13 | **pending-sps** | the final SPS pass decides the run and the estimator |
 | bow_profiles | `rerun/paper1_res/figures/bow_profiles.pdf` (current) | pass 1 golden rows, 10-31 | **rebuilt** | fb_bow_maps' estimator unchanged on pass-1 tables (`bow_pass1.py`), v(t) arm; pass arm `bow_profiles_pass.pdf`. The audit render stays in `fb_bow_maps/figures/` |
@@ -65,11 +65,11 @@ from and when.
 | status | count | figures |
 |---|---|---|
 | current | 5 | microtpc_principle, bench_setup, sharing_cartoon, event_waveforms, known_angle_geometry |
-| rebuilt on pass 1 | 25 | charge_balance; gas_vE, tracking_perf, bow_profiles, bow_closure (10-31, `rerun/paper1_res/`); fleet (10-31, `rerun/paper1_floor/`); hv_scan, spark_deadtime (10-31, `rerun/paper1_ops/`); efficiency_map, edge_turnon, det4_stripes, the 14 loss_* displays (10-31, `rerun/paper1_figs/`) |
+| rebuilt on pass 1 | 26 | timing (10-31, `rerun/paper1_timing/`); charge_balance; gas_vE, tracking_perf, bow_profiles, bow_closure (10-31, `rerun/paper1_res/`); fleet (10-31, `rerun/paper1_floor/`); hv_scan, spark_deadtime (10-31, `rerun/paper1_ops/`); efficiency_map, edge_turnon, det4_stripes, the 14 loss_* displays (10-31, `rerun/paper1_figs/`) |
 | stale | 0 | |
 | pending-vt | 0 | (v(t) settled 10-31) |
 | pending-sps | 5 | attachment, sps_resolution, kernel_forms, angled_kernel, known_angle |
-| superseded | 1 | timing |
+| superseded | 0 | |
 | placeholder | 8 | chamber_stack, readout_layout, sps_setup, ladder_compression, forward_model, toy_floor, threshold_neighbours, tiers_benchmark |
 
 New pass-1 figures available but not in either manifest (no `.tex` references them yet):

@@ -86,6 +86,9 @@ Sources (main, 2026-10-31):
 | text | pass 1 | status | source |
 |---|---|---|---|
 | hits value 33 ns, not quoted | still not quoted; at SPS the time resolution is not measurable (t0_X − t0_Y 180–390 ns; leading edge 130–210 ns X−Y, ~400 ns vs trigger): a stated limitation | OK (as a non-quote) | SPS §4 |
+| "waveform result to come" (tbw) | **event time vs the trigger σ ≈ 40–46 ns (s68), 1.5–1.7 mm** from the column start (det2 41.7, det3 40.3, det7 45.6 ns on the golden rows, M3-matched); per view X−Y/√2 22–28 ns (det3 22.2, det2 27.6), common to X and Y 35–40 ns; trigger term ≈ 0 except on 6-23/6-24 (40–60 ns, det4 era); det6 78 ns; same at every angle; HV: det3 102 → 41 ns (425 → 500 V); drift: det3 114 → 38.5 ns (104 → 382 V/cm) | **NEW** (CHOICE: event time recommended, split in the text) | `rerun/paper1_timing/README.md` |
+| the hits 33 ns ↔ waveform | 33 ns = hits plane-to-plane (X−Y/√2 of single-strip leading edges); the waveform X−Y/√2 on the same row (sat_det3) is 22 ns; hits "absolute" 37.7 ns ↔ waveform event time 42 ns | reconciled | `rerun/paper1_timing/README.md` |
+| SPS timing | edge estimator on det4 at H4: X−Y/√2 160–205 ns (ZS), 115–145 ns with cf20; the low-amplitude end of the bench curve, not an intrinsic number | limitation (reason now measured) | `rerun/paper1_timing/` |
 
 ### §8 Tracking
 
@@ -178,7 +181,7 @@ paper figures show.
 | 130–131 | other chambers 92 % down to 42 % | 90.3 % (det2) down to 40.9 % (det4); det6 74.4, det7 68.0 | **WRONG** |
 | 134 | σ68 = 1.19 (x) / 1.23° (y), bias < 0.1° | det3 0.991 / 0.901°; det2 bias 0.11° X | **WRONG** |
 | 135 | ≈ 1° above ~5° | det3 flat within 0.15° to 20° at ~0.9–1.0° | OK |
-| 137–138 | plane-to-plane timing 33 ns, 1.1 mm | hits-based; Paper I does not quote it | **WRONG** for consistency with Paper I (remove or label hits) |
+| 137–138 | plane-to-plane timing 33 ns, 1.1 mm | hits-based; the waveform equivalent is 22 ns per view (0.8 mm), the event time vs the trigger 40–46 ns (1.5–1.7 mm) (`rerun/paper1_timing/`) | **WRONG** for consistency with Paper I (replace by the waveform event time, or label hits) |
 | 140 | 176 ± 35 µm at normal incidence | see the choice; the ±35 has no source in the final SPS pass (±10 stat, ±40 µm telescope systematic) | **CHOICE** |
 | 88–89 | first neighbour ~5 % / ~15 % | not a pass-1 product (the kernel is the pass calibration's; footprint at SPS: neighbour/lead 0.31 X / 0.34 Y, RAW) | not checked |
 | 91–92 | ladder compressed 20–30 %, ~4° too steep | RECONSTRUCTION_BASIS | OK |
