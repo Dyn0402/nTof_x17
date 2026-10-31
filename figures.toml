@@ -96,6 +96,14 @@ section_state = "partial"
 note = "Pass 1 (2026-10-31): v_drift x mean kw per row, the M3-calibrated angle-scale v (it carries kw: not a timing v); the 333 V/cm cluster is the 6-27 HV-scan rows at 1000 V drift. Magboltz bench gas 0.95 % H2O (0.6 / 1.4 % bracket), cloud_basics FINDINGS 22. The composition fit is cloud_basics/driftscan_fit.py."
 producer = "cd rerun/paper1_res && ../../.venv/bin/python make_report.py"
 
+[fig.gas_vE_timing]
+title = "Drift velocity v(E) on the bench: timing v (gap / T) and angle-scale v (v_drift x kw) against Magboltz, one water"
+state = "current"
+source = "rerun/paper1_gas/figures/gas_vE_timing.pdf"
+section_state = "partial"
+note = "Pass 1 (2026-10-31, rerun/paper1_gas): det3 6-27 drift scan, timing v from the head-on stack (S4 re-check recipe, 500-1100 V; 300 V does not fit in the window) and angle-scale v at all seven fields; one water 0.97 % [0.95, 0.99], chi2 2.5/3, Magboltz bench gas on the fine grid air_merged. Other chambers' golden timing v at their own field (0.42-1.00 % water). RECOMMENDED for section 6 over gas_vE (which shows only the angle-scale v, carrying kw)."
+producer = "cd rerun/paper1_gas && python pg_gas.py <fit dir> && python pg_figs.py"
+
 [fig.attachment]
 title = "Attachment: charge loss vs drift time, bench (no O2) vs beam run_71 (163 ppm O2)"
 state = "placeholder"
