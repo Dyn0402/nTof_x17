@@ -42,18 +42,21 @@ def fig_stacks(G, g, path):
     fig.tight_layout(); fig.savefig(path, dpi=110); plt.close(fig)
 
 
-def fig_summary(R, path):
-    gs = [g for g in MAIN if g in R['groups']]
-    fig, (a1, a2) = plt.subplots(1, 2, figsize=(11, 3.8))
-    for i, g in enumerate(gs):
-        G = R['groups'][g]; c = 'C1' if g.startswith('co2') else 'C0'
-        wr = G['water_68_gap'] or [G['water']] * 2; o = G['o2_68_gap'] or [G['o2_ppm']] * 2
-        a1.errorbar(i, G['water'], yerr=[[G['water'] - wr[0]], [wr[1] - G['water']]], fmt='o', color=c)
-        a2.errorbar(i, G['o2_ppm'], yerr=[[G['o2_ppm'] - o[0]], [o[1] - G['o2_ppm']]], fmt='o', color=c)
+def fig_summary(V, path):
+    """the quoted values (one gap for every group) with the total errors (stat + gap + arms)"""
+    tb = V['table']; fig, (a1, a2) = plt.subplots(1, 2, figsize=(11, 3.8))
+    for i, r in enumerate(tb):
+        c = 'C1' if r['gas'] == 'co2' else 'C0'
+        a1.errorbar(i, r['water'], yerr=r['err_w'], fmt='o', color=c, capsize=3)
+        a1.errorbar(i, r['water'], yerr=r['stat_w'], fmt='none', color='k', lw=2.5)
+        a2.errorbar(i, r['o2_ppm'], yerr=r['err_o2'], fmt='o', color=c, capsize=3)
+        a2.errorbar(i, r['o2_ppm'], yerr=r['stat_a'] * 2095, fmt='none', color='k', lw=2.5)
     for ax, lab in ((a1, 'water [%]'), (a2, 'O₂ [ppm] (air × 2095)')):
-        ax.set_xticks(range(len(gs))); ax.set_xticklabels([f'{g}\n{WHEN[g]}' for g in gs], rotation=60, fontsize=7, ha='right')
+        ax.set_xticks(range(len(tb))); ax.set_xticklabels([f"{r['group']}\n{WHEN[r['group']]}" for r in tb], rotation=60,
+                                                          fontsize=7, ha='right')
         ax.set_ylabel(lab); ax.grid(alpha=0.3)
-    a1.set_title('water (68 %, gap profiled 27.0–30.0 mm)', fontsize=9); a2.set_title('O₂ (68 %, gap profiled)', fontsize=9)
+    a1.set_title(f"water at gap {V['gap_quoted']} mm (black: stat; bars: total)", fontsize=9)
+    a2.set_title(f"O₂ at gap {V['gap_quoted']} mm (black: stat; bars: total)", fontsize=9)
     fig.tight_layout(); fig.savefig(path, dpi=110); plt.close(fig)
 
 
@@ -84,7 +87,8 @@ def main():
     arms = {k: json.load(open(p)) for k in ARMS for p in [os.path.join(a.res, f'gasfit_{k}.json')] if os.path.exists(p)}
     C = json.load(open(os.path.join(a.res, 'closure.json'))) if os.path.exists(os.path.join(a.res, 'closure.json')) else []
     V = json.load(open(os.path.join(a.res, 'verdict.json'))) if os.path.exists(os.path.join(a.res, 'verdict.json')) else {}
-    fig_summary(R, os.path.join(fd, 'summary.png'))
+    if V.get('table'):
+        fig_summary(V, os.path.join(fd, 'summary.png'))
     if any(k.startswith('trans_') for k in R['groups']):
         fig_transition(R, os.path.join(fd, 'transition.png'))
     for g in MAIN:
@@ -133,7 +137,7 @@ def main():
                 f'<td>{A["groups"][g]["water"]:.2f} / {A["groups"][g]["o2_ppm"]:.0f}</td>' if g in A['groups'] else '<td>—</td>'
                 for A in arms.values()) + '</tr>')
         H.append('</table>')
-    H.append('<h2>Figures</h2><p><img src="figures/summary.png"><br>Water and O₂ per group, in time order. Orange: CO₂ epoch '
+    H.append('<h2>Figures</h2><p><img src="figures/summary.png"><br>Water and O₂ per group at the one quoted gap, in time order, with stat (black) and total errors. Orange: CO₂ epoch '
              '(Ar/CO₂/iso 95/3/2); blue: CF₄ epoch (Ar/CF₄/iso 88/10/2).</p>')
     for g in MAIN:
         if os.path.exists(os.path.join(fd, f'stacks_{g}.png')):

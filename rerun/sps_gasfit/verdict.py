@@ -6,8 +6,8 @@ correction, three fields), a parabola through its chi2 at the profiled gaps.  Ev
 (the nearest profiled one), with
   stat  = the 68 % half-width of its own (water, air) region at that gap (chi2 scaled by chi2/ndf), at least half a
           grid step (water 0.0125 %, air 0.005 % beam / 0.0096 % CO2);
-  gap   = half the spread of its best values over the gaps within the RAW 68 % range, or over 27.0-28.8 mm if that
-          range is narrower than one gap step (the shaper trades with the gap, so the step is the honest floor);
+  gap   = half the spread of its best values over the gaps within the RAW 68 % range, or over the quoted gap and its
+          two profiled neighbours if that range is narrower (the shaper trades with the gap: one step is the floor);
   arms  = per pair (ZS x0.5/x1.5, k +-0.1, strip sums) the larger |shift|; single arms (sat, eta, ZS window) their shift;
           added in quadrature.
 """
@@ -39,11 +39,12 @@ def main():
     else:
         g0, sg = float(gs[i]), None
     gq = float(gs[np.argmin(np.abs(gs - g0))])
-    step = float(np.min(np.diff(gs)))
     lo, hi = (g0 - sg, g0 + sg) if sg else (gq, gq)
     band = [g for g in gs if lo - 1e-6 <= g <= hi + 1e-6]
     if len(band) < 2:
-        band = [g for g in gs if abs(g - gq) <= step + 1e-6 and g <= 28.8 + 1e-6]
+        # narrower than the profile's sampling: the quoted gap and its two neighbours (the shaper trades with the gap,
+        # so one sampling step either side is the honest floor)
+        j = int(np.flatnonzero(np.isclose(gs, gq))[0]); band = list(gs[max(0, j - 1):j + 2])
     table = []
     for g in MAIN:
         G = R['groups'].get(g)
@@ -76,14 +77,31 @@ def main():
 
     def s(r):
         return f"{r['group']} {r['water']:.2f} ± {r['err_w']:.2f} % water, {r['o2_ppm']:.0f} ± {r['err_o2']:.0f} ppm O2"
+    # how much the O2 is needed: chi2 with the same water and no air over chi2, per stack, at the group's best gap
+    ratios = [p['chi2_noair'] / max(p['chi2'], 1.0) for g in MAIN if g in R['groups'] for p in R['groups'][g]['per_stack']]
+    # does the CO2-epoch O2 ordering (first run vs last run) survive every arm?
+    order = None
+    if len(co2) >= 2:
+        first, last = co2[0], co2[-1]
+        keep = [first['o2_ppm'] > last['o2_ppm']] + [first['arms'][k][1] > last['arms'][k][1] for k in first['arms']
+                                                    if k in last['arms']]
+        order = dict(first=first['group'], last=last['group'], survives=bool(all(keep)), n_arms=len(keep) - 1)
+    cw = [r['water'] for r in cf4]; co = [r['o2_ppm'] for r in cf4]; zo = [r['o2_ppm'] for r in co2]
+    big = max(((k, abs(v[1] - r['air']) * 2095) for r in table for k, v in r['arms'].items()), key=lambda x: x[1])
+    out['checks'] = dict(noair_chi2_ratio_min=float(min(ratios)), noair_chi2_ratio_median=float(np.median(ratios)),
+                         co2_order=order, largest_o2_arm=dict(arm=big[0], shift_ppm=float(big[1])))
     out['verdict'] = (
-        f"The SPS gas carried both water and O2 in every epoch. At the drift gap the clean RAW run71 stacks select "
-        f"({g0:.1f}" + (f" ± {sg:.1f}" if sg else '') + f" mm; quoted at {gq} mm): "
-        + '; '.join(s(r) for r in cf4) + '. CO2 epoch: ' + '; '.join(s(r) for r in co2) + '. '
-        "The O2 is the robust result: no stack fits without it (chi2 without air is several times larger at the same water), "
-        "it falls through the CO2 Saturday and is 150-250 ppm in the CF4 epoch. The water is degenerate with the drift gap "
-        "and the shaper and differs between the ZS ladders and the RAW run; it is quoted with that spread, not as a measurement "
-        "to better than ~0.2-0.3 %.")
+        f"Every SPS epoch carried both water and O2. With the drift gap from the RAW run71 stacks ({g0:.1f}"
+        + (f" ± {sg:.1f}" if sg else '') + f" mm, quoted at {gq} mm): CF4 epoch water {min(cw):.2f}-{max(cw):.2f} %, "
+        f"O2 {min(co):.0f}-{max(co):.0f} ppm; CO2 epoch O2 {min(zo):.0f}-{max(zo):.0f} ppm (per group: "
+        + '; '.join(s(r) for r in table) + '). '
+        f"The O2 is required: removing it at the same water multiplies a stack's chi2 by {min(ratios):.1f}-"
+        f"{max(ratios):.0f} (median {np.median(ratios):.0f}). It is higher in the CO2 epoch than in the CF4 epoch"
+        + (f", and falls from {order['first']} to {order['last']} in the baseline and in all {order['n_arms']} arms"
+           if order and order['survives'] else '') +
+        f"; individual values carry ~±90-130 ppm, dominated by the systematic arms (largest: {big[0]}, {big[1]:.0f} ppm). "
+        "The water is degenerate with the drift gap and the shaper and is quoted to ±0.15-0.5 %; the CO2-epoch water rests on a "
+        "shaper fitted in the CF4 gas and is the least certain number.")
     out['method'] = [
         'Stacks: the final SPS pass\'s own cache builder (sps_build_cache: seed fix, per-plateau hot probe, RAW common mode), 4000 '
         'events per row, trigger-placed (sample index), strip offsets from the seed strip, RAW drops missing, ZS zeros measured, '
@@ -95,15 +113,17 @@ def main():
         'a parametric shaper fitted on RAW run71 (three fields, X and Y) jointly with its composition, per stack t0 and amplitude.',
         'ZS stacks: + the additive ZS distortion (RAW-emulated minus RAW) of run71 at the nearest field, same view and strip sum, '
         'at the row\'s ZS threshold.',
-        'Field = drift HV / gap; the gap is profiled (27.0, 27.9, 28.8, 30.0 mm) and taken from the RAW group; every group is '
-        'quoted at that gap.',
+        'Field = drift HV / gap; the gap is profiled (26.2, 27.0, 27.9, 28.8, 30.0 mm) and taken from the RAW group; every '
+        'group is quoted at that gap.',
         'Closure (closure.py): toy stacks from the same model are recovered exactly on the grid; a 30 mm truth fitted at 28.8 mm '
         'moves water by +0.13-0.15 % and leaves air unchanged.']
     out['degeneracies'] = [
         'Water vs drift gap: both enter through v = gap / T. 1.2 mm of gap is worth ~0.13-0.15 % water (closure); air does not '
         'move.',
-        'Gap vs shaper: the shaper fitted at each gap differs (CR-RC order 1.5-13); the RAW chi2 picks the gap only to about one '
-        'grid step, so the gap spread is carried as a systematic.',
+        'Gap vs shaper: the shaper fitted at each gap differs (at 26.2-27.9 mm it rails at the CR-RC order bound, 60: a '
+        'near-Gaussian; at 28.8-30 mm order 1.4-1.8 with a large fast undershoot); the RAW chi2 picks the gap to ~0.1 mm '
+        'statistically, but the shaper freedom makes one profile step (0.9 mm) the honest systematic. The bench-template arm '
+        '(no free shaper) moves the compositions by <= 0.06 % water and <= 40 ppm O2.',
         'Air vs electronics droop: attachment loses charge at the same rate per time at every field, as a slow droop would. It is '
         'broken by the post-drift-end shape (undershoot) and by the RAW multi-field fit that fixes the shaper; on ZS stacks the '
         'post-end region rests on the RAW ZS emulation (arm: ZS rows fitted only to 2.9 us).',

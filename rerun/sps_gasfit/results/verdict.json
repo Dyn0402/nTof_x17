@@ -1,65 +1,70 @@
 {
- "gap_raw": 27.0,
- "gap_raw_sigma": null,
- "gap_quoted": 27.0,
+ "gap_raw": 27.691020684782337,
+ "gap_raw_sigma": 0.1203442304291546,
+ "gap_quoted": 27.9,
  "gap_band": [
   27.0,
-  27.9
+  27.9,
+  28.8
  ],
  "table": [
   {
    "group": "co2_run55",
    "gas": "co2",
-   "gap": 27.0,
-   "water": 2.0500000000000003,
+   "gap": 27.9,
+   "water": 1.9375,
    "air": 0.21153846153846156,
    "o2_ppm": 443.17307692307696,
-   "stat_w": 0.05625000000000013,
-   "gap_w": 0.05625000000000013,
-   "arms_w": 0.37687033579203355,
-   "err_w": 0.3851744734532653,
+   "stat_w": 0.03125,
+   "gap_w": 0.15625,
+   "arms_w": 0.4841229182759271,
+   "err_w": 0.5096720759468778,
    "stat_a": 0.009615384615384609,
    "gap_a": 0.009615384615384623,
-   "arms_a": 0.033308669376324575,
-   "err_a": 0.03597747487282637,
-   "err_o2": 75.37280985857124,
-   "chi2": 4082.4179228673347,
+   "arms_a": 0.05439282932204216,
+   "err_a": 0.056066845142743314,
+   "err_o2": 117.46004057404724,
+   "chi2": 4187.9388491217305,
    "ndf": 421,
    "edge": false,
    "arms": {
     "zs05": [
-     2.2,
+     2.0625,
      0.21153846153846156
     ],
     "zs15": [
-     1.7875,
-     0.21153846153846156
+     1.625,
+     0.19230769230769232
     ],
     "kp": [
-     2.0125,
+     1.9375,
      0.19230769230769232
     ],
     "km": [
-     2.0875000000000004,
-     0.23076923076923078
+     1.9375,
+     0.21153846153846156
     ],
     "h1": [
-     2.0875000000000004,
+     1.9375,
      0.21153846153846156
     ],
     "h4": [
-     1.8625000000000003,
-     0.21153846153846156
+     1.75,
+     0.19230769230769232
     ],
     "sat": [
-     2.2,
-     0.23076923076923078
+     2.0,
+     0.21153846153846156
     ],
     "raweta": [
-     2.0875000000000004,
+     1.9375,
      0.21153846153846156
     ],
     "zswin": [
+     1.625,
+     0.17307692307692307
+    ],
+    "tmpl": [
      1.9375,
      0.19230769230769232
     ]
@@ -68,57 +73,61 @@
   {
    "group": "co2_run56",
    "gas": "co2",
-   "gap": 27.0,
-   "water": 2.1625,
+   "gap": 27.9,
+   "water": 2.0,
    "air": 0.17307692307692307,
    "o2_ppm": 362.5961538461538,
-   "stat_w": 0.018749999999999822,
-   "gap_w": 0.07499999999999996,
-   "arms_w": 0.09921567416492204,
-   "err_w": 0.12577882373436303,
+   "stat_w": 0.03125,
+   "gap_w": 0.15625,
+   "arms_w": 0.385275875185561,
+   "err_w": 0.4169270020039479,
    "stat_a": 0.009615384615384609,
    "gap_a": 0.009615384615384609,
-   "arms_a": 0.03846153846153845,
-   "err_a": 0.040794621991531575,
-   "err_o2": 85.46473307225865,
-   "chi2": 1183.7078453269232,
+   "arms_a": 0.06081303192631495,
+   "err_a": 0.06231481440776785,
+   "err_o2": 130.54953618427365,
+   "chi2": 1285.6165915370673,
    "ndf": 209,
    "edge": false,
    "arms": {
     "zs05": [
-     2.2,
+     2.0625,
      0.17307692307692307
     ],
     "zs15": [
-     2.0875000000000004,
-     0.17307692307692307
-    ],
-    "kp": [
-     2.1625,
+     1.9375,
      0.15384615384615385
     ],
+    "kp": [
+     2.0,
+     0.13461538461538464
+    ],
     "km": [
-     2.1625,
+     2.0,
      0.17307692307692307
     ],
     "h1": [
-     2.1625,
+     2.0,
      0.17307692307692307
     ],
     "h4": [
-     2.125,
+     2.0,
      0.15384615384615385
     ],
     "sat": [
-     2.2,
+     2.0625,
      0.19230769230769232
     ],
     "raweta": [
-     2.1625,
-     0.17307692307692307
+     2.0,
+     0.15384615384615385
     ],
     "zswin": [
-     2.2,
+     2.375,
+     0.15384615384615385
+    ],
+    "tmpl": [
+     2.0,
      0.15384615384615385
     ]
    }
@@ -126,115 +135,123 @@
   {
    "group": "co2_run57",
    "gas": "co2",
-   "gap": 27.0,
-   "water": 2.2,
-   "air": 0.17307692307692307,
-   "o2_ppm": 362.5961538461538,
-   "stat_w": 0.018750000000000044,
-   "gap_w": 0.09375,
-   "arms_w": 0.2281035948861832,
-   "err_w": 0.2473294867176172,
+   "gap": 27.9,
+   "water": 2.0,
+   "air": 0.15384615384615385,
+   "o2_ppm": 322.3076923076923,
+   "stat_w": 0.03125,
+   "gap_w": 0.15625,
+   "arms_w": 0.16535945694153692,
+   "err_w": 0.22963966338592295,
    "stat_a": 0.009615384615384609,
    "gap_a": 0.009615384615384609,
-   "arms_a": 0.04710557197659955,
-   "err_a": 0.049029033784545976,
-   "err_o2": 102.71582577862382,
-   "chi2": 1323.8792053567538,
+   "arms_a": 0.043001307259611314,
+   "err_a": 0.045100151536763715,
+   "err_o2": 94.48481746951998,
+   "chi2": 1417.8858409122467,
    "ndf": 209,
-   "edge": true,
+   "edge": false,
    "arms": {
     "zs05": [
-     2.2,
+     2.0625,
      0.15384615384615385
     ],
     "zs15": [
-     2.0875000000000004,
+     1.9375,
      0.17307692307692307
     ],
     "kp": [
-     2.1625,
+     2.0,
      0.15384615384615385
     ],
     "km": [
-     2.1625,
+     2.0,
      0.17307692307692307
     ],
     "h1": [
-     2.2,
+     2.0625,
      0.17307692307692307
     ],
     "h4": [
-     2.1625,
-     0.17307692307692307
+     2.0,
+     0.15384615384615385
     ],
     "sat": [
-     2.2,
+     2.125,
      0.17307692307692307
     ],
     "raweta": [
-     2.1625,
-     0.17307692307692307
+     2.0,
+     0.15384615384615385
     ],
     "zswin": [
-     2.0125,
+     2.0625,
      0.13461538461538464
+    ],
+    "tmpl": [
+     2.0,
+     0.15384615384615385
     ]
    }
   },
   {
    "group": "co2_run59",
    "gas": "co2",
-   "gap": 27.0,
-   "water": 2.2,
+   "gap": 27.9,
+   "water": 2.125,
    "air": 0.15384615384615385,
    "o2_ppm": 322.3076923076923,
-   "stat_w": 0.018749999999999822,
-   "gap_w": 0.05624999999999991,
-   "arms_w": 0.22810359488618334,
-   "err_w": 0.23568384543706009,
+   "stat_w": 0.03125,
+   "gap_w": 0.15625,
+   "arms_w": 0.46770717334674267,
+   "err_w": 0.49410588440130926,
    "stat_a": 0.009615384615384609,
    "gap_a": 0.009615384615384609,
-   "arms_a": 0.027196414661021042,
-   "err_a": 0.030406515963157476,
-   "err_o2": 63.701650942814915,
-   "chi2": 202.3041577934894,
+   "arms_a": 0.043001307259611314,
+   "err_a": 0.045100151536763715,
+   "err_o2": 94.48481746951998,
+   "chi2": 206.21942250803727,
    "ndf": 50,
-   "edge": true,
+   "edge": false,
    "arms": {
     "zs05": [
-     2.2,
-     0.15384615384615385
+     2.125,
+     0.13461538461538464
     ],
     "zs15": [
-     2.1625,
+     2.0,
      0.15384615384615385
     ],
     "kp": [
-     2.2,
+     2.0625,
      0.13461538461538464
     ],
     "km": [
-     2.2,
+     2.0625,
      0.15384615384615385
     ],
     "h1": [
-     2.2,
+     2.125,
      0.15384615384615385
     ],
     "h4": [
-     2.2,
-     0.15384615384615385
+     2.0625,
+     0.13461538461538464
     ],
     "sat": [
-     2.2,
+     2.125,
      0.15384615384615385
     ],
     "raweta": [
-     2.2,
+     2.125,
      0.15384615384615385
     ],
     "zswin": [
-     1.975,
+     1.6875,
+     0.13461538461538464
+    ],
+    "tmpl": [
+     2.0625,
      0.13461538461538464
     ]
    }
@@ -242,248 +259,278 @@
   {
    "group": "cf4_run62_ladder",
    "gas": "beam",
-   "gap": 27.0,
-   "water": 1.975,
-   "air": 0.13,
-   "o2_ppm": 272.35,
-   "stat_w": 0.012499999999999956,
-   "gap_w": 0.0625,
-   "arms_w": 0.07071067811865482,
-   "err_w": 0.0951971638232989,
-   "stat_a": 0.0049999999999999975,
-   "gap_a": 0.0050000000000000044,
-   "arms_a": 0.04242640687119287,
-   "err_a": 0.04301162633521315,
-   "err_o2": 90.10935717227156,
-   "chi2": 1572.5339685378776,
+   "gap": 27.9,
+   "water": 1.85,
+   "air": 0.12307692307692308,
+   "o2_ppm": 257.84615384615387,
+   "stat_w": 0.012500000000000067,
+   "gap_w": 0.13750000000000007,
+   "arms_w": 0.18874586088176865,
+   "err_w": 0.2338535866733713,
+   "stat_a": 0.007692307692307693,
+   "gap_a": 0.015384615384615385,
+   "arms_a": 0.0435142634576337,
+   "err_a": 0.04679048100229401,
+   "err_o2": 98.02605769980595,
+   "chi2": 1620.5847731253666,
    "ndf": 315,
-   "edge": true,
+   "edge": false,
    "arms": {
     "zs05": [
-     2.0,
-     0.13
+     1.875,
+     0.12307692307692308
     ],
     "zs15": [
-     1.925,
-     0.13
+     1.8,
+     0.12307692307692308
     ],
     "kp": [
-     1.975,
-     0.12
+     1.85,
+     0.1076923076923077
     ],
     "km": [
-     1.95,
-     0.13
+     1.825,
+     0.12307692307692308
     ],
     "h1": [
-     1.95,
-     0.13
+     1.85,
+     0.13846153846153847
     ],
     "h4": [
-     1.975,
-     0.13
+     1.85,
+     0.1076923076923077
     ],
     "sat": [
-     2.0,
-     0.09
+     1.95,
+     0.09230769230769231
     ],
     "raweta": [
-     1.975,
-     0.13
+     1.85,
+     0.12307692307692308
     ],
     "zswin": [
      2.0,
-     0.12
+     0.1076923076923077
+    ],
+    "tmpl": [
+     1.85,
+     0.1076923076923077
     ]
    }
   },
   {
    "group": "cf4_run63_ladder",
    "gas": "beam",
-   "gap": 27.0,
-   "water": 1.95,
-   "air": 0.13,
-   "o2_ppm": 272.35,
+   "gap": 27.9,
+   "water": 1.8,
+   "air": 0.12307692307692308,
+   "o2_ppm": 257.84615384615387,
    "stat_w": 0.012499999999999956,
-   "gap_w": 0.07499999999999996,
-   "arms_w": 0.07071067811865482,
-   "err_w": 0.10383279828647594,
-   "stat_a": 0.0049999999999999975,
-   "gap_a": 0.010000000000000002,
-   "arms_a": 0.04582575694955841,
-   "err_a": 0.047169905660283035,
-   "err_o2": 98.82095235829296,
-   "chi2": 1033.7649005078079,
+   "gap_w": 0.125,
+   "arms_w": 0.15206906325745548,
+   "err_w": 0.19724667297574375,
+   "stat_a": 0.007692307692307693,
+   "gap_a": 0.007692307692307693,
+   "arms_a": 0.0435142634576337,
+   "err_a": 0.04485347611419462,
+   "err_o2": 93.96803245923773,
+   "chi2": 1086.4420460321926,
    "ndf": 368,
-   "edge": true,
+   "edge": false,
    "arms": {
     "zs05": [
-     1.975,
-     0.13
+     1.825,
+     0.12307692307692308
     ],
     "zs15": [
-     1.925,
-     0.13
+     1.775,
+     0.12307692307692308
     ],
     "kp": [
-     1.95,
-     0.11
+     1.825,
+     0.1076923076923077
     ],
     "km": [
-     1.925,
-     0.13
+     1.8,
+     0.12307692307692308
     ],
     "h1": [
-     1.925,
-     0.13
+     1.8,
+     0.12307692307692308
     ],
     "h4": [
-     1.925,
-     0.12
+     1.825,
+     0.1076923076923077
     ],
     "sat": [
-     2.0,
-     0.09
+     1.925,
+     0.09230769230769231
     ],
     "raweta": [
-     1.95,
-     0.13
+     1.8,
+     0.1076923076923077
     ],
     "zswin": [
-     1.975,
-     0.13
+     1.725,
+     0.12307692307692308
+    ],
+    "tmpl": [
+     1.8,
+     0.1076923076923077
     ]
    }
   },
   {
    "group": "cf4_run63_flat",
    "gas": "beam",
-   "gap": 27.0,
-   "water": 1.95,
-   "air": 0.07,
-   "o2_ppm": 146.65,
-   "stat_w": 0.012500000000000067,
-   "gap_w": 0.0625,
-   "arms_w": 0.07071067811865482,
-   "err_w": 0.09519716382329892,
-   "stat_a": 0.0049999999999999975,
-   "gap_a": 0.0050000000000000044,
-   "arms_a": 0.03162277660168379,
-   "err_a": 0.0324037034920393,
-   "err_o2": 67.88575881582233,
-   "chi2": 1092.2645578624417,
+   "gap": 27.9,
+   "water": 1.825,
+   "air": 0.06153846153846154,
+   "o2_ppm": 128.92307692307693,
+   "stat_w": 0.012499999999999956,
+   "gap_w": 0.125,
+   "arms_w": 0.10307764064044153,
+   "err_w": 0.1625,
+   "stat_a": 0.007692307692307693,
+   "gap_a": 0.015384615384615385,
+   "arms_a": 0.04070386632407062,
+   "err_a": 0.04418894343490791,
+   "err_o2": 92.57583649613207,
+   "chi2": 1227.0094579399993,
    "ndf": 103,
    "edge": false,
    "arms": {
     "zs05": [
-     2.0,
-     0.08
+     1.875,
+     0.07692307692307693
     ],
     "zs15": [
-     1.925,
-     0.07
+     1.8,
+     0.06153846153846154
     ],
     "kp": [
-     1.95,
-     0.05
+     1.825,
+     0.046153846153846156
     ],
     "km": [
-     1.95,
-     0.08
+     1.825,
+     0.07692307692307693
     ],
     "h1": [
-     1.95,
-     0.08
+     1.825,
+     0.07692307692307693
     ],
     "h4": [
-     1.95,
-     0.06
+     1.825,
+     0.046153846153846156
     ],
     "sat": [
-     2.0,
-     0.09
+     1.9,
+     0.09230769230769231
     ],
     "raweta": [
-     1.95,
-     0.07
+     1.825,
+     0.06153846153846154
     ],
     "zswin": [
-     1.95,
-     0.07
+     1.775,
+     0.06153846153846154
+    ],
+    "tmpl": [
+     1.825,
+     0.06153846153846154
     ]
    }
   },
   {
    "group": "cf4_run71_raw",
    "gas": "beam",
-   "gap": 27.0,
-   "water": 1.8,
-   "air": 0.12,
-   "o2_ppm": 251.39999999999998,
+   "gap": 27.9,
+   "water": 1.675,
+   "air": 0.1076923076923077,
+   "o2_ppm": 225.61538461538464,
    "stat_w": 0.012499999999999956,
-   "gap_w": 0.050000000000000044,
-   "arms_w": 0.125,
-   "err_w": 0.1352081728298996,
-   "stat_a": 0.0049999999999999975,
-   "gap_a": 0.009999999999999995,
-   "arms_a": 0.0547722557505166,
-   "err_a": 0.05590169943749473,
-   "err_o2": 117.11406032155145,
-   "chi2": 431.68328121729286,
+   "gap_w": 0.11250000000000004,
+   "arms_w": 0.13228756555322949,
+   "err_w": 0.17410485346480148,
+   "stat_a": 0.007692307692307693,
+   "gap_a": 0.015384615384615385,
+   "arms_a": 0.03768445758127967,
+   "err_a": 0.04142434467026542,
+   "err_o2": 86.78400208420605,
+   "chi2": 405.6475001393596,
    "ndf": 315,
    "edge": false,
    "arms": {
     "zs05": [
-     1.8,
-     0.12
+     1.675,
+     0.1076923076923077
     ],
     "zs15": [
-     1.8,
-     0.12
+     1.675,
+     0.1076923076923077
     ],
     "kp": [
-     1.8,
-     0.1
+     1.675,
+     0.09230769230769231
     ],
     "km": [
-     1.8,
-     0.12
+     1.675,
+     0.1076923076923077
     ],
     "h1": [
-     1.8,
-     0.12
+     1.7,
+     0.12307692307692308
     ],
     "h4": [
-     1.8,
-     0.11
+     1.7,
+     0.09230769230769231
     ],
     "sat": [
-     1.925,
-     0.07
+     1.8,
+     0.07692307692307693
     ],
     "raweta": [
-     1.8,
-     0.12
+     1.7,
+     0.1076923076923077
     ],
     "zswin": [
-     1.8,
-     0.12
+     1.675,
+     0.1076923076923077
+    ],
+    "tmpl": [
+     1.7,
+     0.1076923076923077
     ]
    }
   }
  ],
- "verdict": "The SPS gas carried both water and O2 in every epoch. At the drift gap the clean RAW run71 stacks select (27.0 mm; quoted at 27.0 mm): cf4_run62_ladder 1.98 \u00b1 0.10 % water, 272 \u00b1 90 ppm O2; cf4_run63_ladder 1.95 \u00b1 0.10 % water, 272 \u00b1 99 ppm O2; cf4_run63_flat 1.95 \u00b1 0.10 % water, 147 \u00b1 68 ppm O2; cf4_run71_raw 1.80 \u00b1 0.14 % water, 251 \u00b1 117 ppm O2. CO2 epoch: co2_run55 2.05 \u00b1 0.39 % water, 443 \u00b1 75 ppm O2; co2_run56 2.16 \u00b1 0.13 % water, 363 \u00b1 85 ppm O2; co2_run57 2.20 \u00b1 0.25 % water, 363 \u00b1 103 ppm O2; co2_run59 2.20 \u00b1 0.24 % water, 322 \u00b1 64 ppm O2. The O2 is the robust result: no stack fits without it (chi2 without air is several times larger at the same water), it falls through the CO2 Saturday and is 150-250 ppm in the CF4 epoch. The water is degenerate with the drift gap and the shaper and differs between the ZS ladders and the RAW run; it is quoted with that spread, not as a measurement to better than ~0.2-0.3 %.",
+ "checks": {
+  "noair_chi2_ratio_min": 1.5287123951304304,
+  "noair_chi2_ratio_median": 33.263080075009576,
+  "co2_order": {
+   "first": "co2_run55",
+   "last": "co2_run59",
+   "survives": true,
+   "n_arms": 10
+  },
+  "largest_o2_arm": {
+   "arm": "zswin",
+   "shift_ppm": 80.57692307692314
+  }
+ },
+ "verdict": "Every SPS epoch carried both water and O2. With the drift gap from the RAW run71 stacks (27.7 \u00b1 0.1 mm, quoted at 27.9 mm): CF4 epoch water 1.68-1.85 %, O2 129-258 ppm; CO2 epoch O2 322-443 ppm (per group: co2_run55 1.94 \u00b1 0.51 % water, 443 \u00b1 117 ppm O2; co2_run56 2.00 \u00b1 0.42 % water, 363 \u00b1 131 ppm O2; co2_run57 2.00 \u00b1 0.23 % water, 322 \u00b1 94 ppm O2; co2_run59 2.12 \u00b1 0.49 % water, 322 \u00b1 94 ppm O2; cf4_run62_ladder 1.85 \u00b1 0.23 % water, 258 \u00b1 98 ppm O2; cf4_run63_ladder 1.80 \u00b1 0.20 % water, 258 \u00b1 94 ppm O2; cf4_run63_flat 1.82 \u00b1 0.16 % water, 129 \u00b1 93 ppm O2; cf4_run71_raw 1.68 \u00b1 0.17 % water, 226 \u00b1 87 ppm O2). The O2 is required: removing it at the same water multiplies a stack's chi2 by 1.5-117 (median 33). It is higher in the CO2 epoch than in the CF4 epoch, and falls from co2_run55 to co2_run59 in the baseline and in all 10 arms; individual values carry ~\u00b190-130 ppm, dominated by the systematic arms (largest: zswin, 81 ppm). The water is degenerate with the drift gap and the shaper and is quoted to \u00b10.15-0.5 %; the CO2-epoch water rests on a shaper fitted in the CF4 gas and is the least certain number.",
  "method": [
   "Stacks: the final SPS pass's own cache builder (sps_build_cache: seed fix, per-plateau hot probe, RAW common mode), 4000 events per row, trigger-placed (sample index), strip offsets from the seed strip, RAW drops missing, ZS zeros measured, saturated events (any sample >= 3550) kept apart (arm: kept).",
   "Strip sums: head-on views only (X +-2, Y +-8 strips; on the 25.64 deg mount the narrower view); the inclined view is left out (its strip sum truncates with depth inside the +-16-strip window).",
   "Model (cloud_basics FINDINGS \u00a725): uniform ionisation, Magboltz v, eta, D_L on the (water, air) grid at 3e8 collisions (eta smoothed in log E; grid extended for this fit to beam water 1.2-2.0 %, CO2 water 1.0-2.2 %, CO2 fields 100-275 V/cm), a parametric shaper fitted on RAW run71 (three fields, X and Y) jointly with its composition, per stack t0 and amplitude.",
   "ZS stacks: + the additive ZS distortion (RAW-emulated minus RAW) of run71 at the nearest field, same view and strip sum, at the row's ZS threshold.",
-  "Field = drift HV / gap; the gap is profiled (27.0, 27.9, 28.8, 30.0 mm) and taken from the RAW group; every group is quoted at that gap.",
+  "Field = drift HV / gap; the gap is profiled (26.2, 27.0, 27.9, 28.8, 30.0 mm) and taken from the RAW group; every group is quoted at that gap.",
   "Closure (closure.py): toy stacks from the same model are recovered exactly on the grid; a 30 mm truth fitted at 28.8 mm moves water by +0.13-0.15 % and leaves air unchanged."
  ],
  "degeneracies": [
   "Water vs drift gap: both enter through v = gap / T. 1.2 mm of gap is worth ~0.13-0.15 % water (closure); air does not move.",
-  "Gap vs shaper: the shaper fitted at each gap differs (CR-RC order 1.5-13); the RAW chi2 picks the gap only to about one grid step, so the gap spread is carried as a systematic.",
+  "Gap vs shaper: the shaper fitted at each gap differs (at 26.2-27.9 mm it rails at the CR-RC order bound, 60: a near-Gaussian; at 28.8-30 mm order 1.4-1.8 with a large fast undershoot); the RAW chi2 picks the gap to ~0.1 mm statistically, but the shaper freedom makes one profile step (0.9 mm) the honest systematic. The bench-template arm (no free shaper) moves the compositions by <= 0.06 % water and <= 40 ppm O2.",
   "Air vs electronics droop: attachment loses charge at the same rate per time at every field, as a slow droop would. It is broken by the post-drift-end shape (undershoot) and by the RAW multi-field fit that fixes the shaper; on ZS stacks the post-end region rests on the RAW ZS emulation (arm: ZS rows fitted only to 2.9 us).",
   "Water vs ZS distortion: ZS removes small and negative samples (the plateau slope and the tail); the ZS groups prefer a different gap and more water than RAW run71 in the same CF4 gas. The ZS correction scale (x0.5 / x1.5) is an arm.",
   "Magboltz three-body O2 attachment (O2 + e + M, M = H2O / isobutane) sets the absolute ppm scale to a factor of a few; the epoch-to-epoch ordering does not depend on it."
