@@ -83,6 +83,10 @@ REALISM = {
                  dead_extra='rand18', v_rms=0.04 / 12 ** .5),
 }
 COMMON = dict(sigma0_true=0.25, cm_rms=135.0, cm_slope_sigma=0.033, pulse_c=None)
+# FD_BASIS=pass: the same toy on the pass-1 bundles and the pass-1 measured inputs (pass1_basis.py); off = 10-27
+sys.path.insert(0, HERE)
+import pass1_basis as pb  # noqa: E402
+pb.apply(sys.modules[__name__], ft)
 # pulse-shape mismatch (cloud_basics 37, det3): residual data - model in units of the model peak, bright unsaturated
 # peak strips: +0.061 at the peak, +0.055 one sample later, +0.022 two, -0.029 five.  Generated as the template with
 # its falling edge compressed in time by (1 + c) about the peak; c calibrated in pulse_calib() to give +0.06 at the
@@ -170,7 +174,10 @@ def gen_event(det, tan, flags, adc, tmpl_gen, rng, chamber_state):
     R = REALISM[det]
     v_true = P['v']
     if 'vdrift' in flags:
-        v_true = P['v'] * (1 + rng.normal(0, R['v_rms']))
+        if det in pb.V_REL:          # pass basis: the row's own per-event r(t)
+            v_true = P['v'] * float(rng.choice(pb.V_REL[det]))
+        else:
+            v_true = P['v'] * (1 + rng.normal(0, R['v_rms']))
     Pg = dict(P)
     Pg['v'] = v_true
     if 'diffx' in flags and R['Dp_excess'] > 0:
@@ -186,7 +193,7 @@ def gen_event(det, tan, flags, adc, tmpl_gen, rng, chamber_state):
     # place the track in a random 64-strip block of the plane, fully inside it with 6 strips to spare
     xmax = Pg['G'] * tan
     span = int(np.ceil(abs(xmax) / PITCH)) + 12
-    blk = int(rng.integers(0, 8))
+    blk = int(rng.integers(0, 8)) if pb.BLOCKS.get(det) is None else int(rng.choice(pb.BLOCKS[det]))
     s_lo = int(rng.integers(0, max(NBLK - span, 1)))
     x_off = (s_lo + 6 + (0 if xmax >= 0 else span - 12)) * PITCH + rng.uniform(-PITCH / 2, PITCH / 2)
     xl = xl + x_off
@@ -409,12 +416,22 @@ def collect(a):
                     continue
                 rows = np.concatenate([np.load(f) for f in fs])
                 res['rungs'][rung] = summarise(rows)
+                if pb.ON:        # the data's angle mix (pass1_basis.ang_weights) next to the equal-weight 'all'
+                    wm = dict(zip((3.0, 9.0, 16.0), pb.ang_weights(det)))
+                    rs = np.random.default_rng(2)
+                    bo = [pb.s68_w(rows[ix, 1], rows[ix, 0], wm)
+                          for ix in (rs.integers(0, len(rows), len(rows)) for _ in range(200))]
+                    res['rungs'][rung]['all_w'] = dict(n=len(rows), s68=pb.s68_w(rows[:, 1], rows[:, 0], wm),
+                                                       s68_err=float(np.nanstd(bo)), weights=wm)
+            if pb.ON:
+                res['basis'] = dict(tag=pb.TAG, place=pb.PLACE, inputs={k: v for k, v in pb.INPUTS[det].items()
+                                                                        if k not in ('v_rel', 'dead_x')})
             if res['rungs']:
-                path = os.path.join(OUT, f"ladder_{det}{'_alone' if alone else ''}.json")
+                path = os.path.join(OUT, f"ladder_{pb.TAG + '_' if pb.ON else ''}{det}{'_alone' if alone else ''}.json")
                 json.dump(res, open(path, 'w'), indent=1)
                 for rung, s in res['rungs'].items():
                     print(f"{det} {'alone' if alone else 'cum  '} {rung:3s} {RUNG_NAME[rung]:28s} " + ' '.join(
-                        f"{k}: {v['s68']:.2f}/{v['chi2dof']:.0f}" for k, v in s.items() if isinstance(v, dict)))
+                        f"{k}: {v['s68']:.2f}/{v.get('chi2dof', np.nan):.0f}" for k, v in s.items() if isinstance(v, dict)))
 
 
 def main():

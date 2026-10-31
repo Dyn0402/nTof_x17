@@ -28,6 +28,8 @@ import floor_toy as ft  # noqa: E402
 
 if os.environ.get('FD_AUDIT'):
     ft.AUDIT = os.environ['FD_AUDIT']
+import pass1_basis as pb  # noqa: E402  (FD_BASIS=pass: pass-1 bundles and inputs; off = 10-27)
+pb.apply(None, ft)
 ANGLES = (0, 5, 10, 15, 20, 25, 30, 35, 40, 45)
 
 
@@ -79,7 +81,7 @@ def collect(a):
                                 chi2dof=d['by_angle'][str(ang)]['chi2dof'])
         out[tag] = dict(det=d['det'], config=d['config'], dt_bin=d['dt_bin'], pitch=d['pitch'], s0=d['s0'],
                         v=d['v'], by_angle=ba)
-    json.dump(out, open(os.path.join(HERE, 'results', 'scan_a.json'), 'w'), indent=1)
+    json.dump(out, open(os.path.join(HERE, 'results', f"scan_a{'_' + pb.TAG if pb.ON else ''}.json"), 'w'), indent=1)
     print(len(out), 'runs collected')
 
 
