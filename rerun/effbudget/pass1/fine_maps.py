@@ -74,11 +74,11 @@ def main():
             for j, r in enumerate((8.0, 25.0)):
                 e, m, n = emap(R, r); save[f'{i}_{r:g}'] = m
                 ax = axs[i, j]
-                im = ax.imshow(100 * m.T, origin='lower', extent=[e[0], e[-1], e[0], e[-1]], vmin=50, vmax=100, cmap='viridis')
+                im = ax.imshow(100 * m.T, origin='lower', extent=[e[0], e[-1], e[0], e[-1]], vmin=0 if d == 'det4' else 50, vmax=100, cmap='viridis')
                 ax.set_title(f'{d} {nm}: r = {r:g} mm disk (n = {len(R):,} rays)', fontsize=9)
                 ax.set_xlabel('x raw strip frame, mid-gap [mm]'); ax.set_ylabel('y [mm]')
                 if d == 'det7':
-                    ax.axvline(199.3, color='w', ls='--', lw=1); ax.text(100, 390, 'X card 1 (ch 0-255)', color='w', ha='center', fontsize=8)
+                    ax.axvline(199.3, color='w', ls='--', lw=1); ax.text(100, 5, 'X card 1 (ch 0-255)', color='w', ha='center', fontsize=8)
                 plt.colorbar(im, ax=ax, label='efficiency [%]')
             # profile along x: interior in y (8 mm from the passivated edge), 2 mm bins, no kernel
             ax = axs[i, 2]

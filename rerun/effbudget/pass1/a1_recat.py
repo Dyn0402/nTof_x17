@@ -28,7 +28,10 @@ EXT_MAX, R_MM = 24, 5.0
 
 
 def band_events(root, rel):
-    p = os.path.join(root, 'bands', rel, 'bands.npz')
+    # the golden rows' census read every trigger (bands_full, --max-per-file 0); the row census reads <= 4000 per file
+    p = os.path.join(root, 'bands_full', rel, 'bands.npz')
+    if not os.path.exists(p):
+        p = os.path.join(root, 'bands', rel, 'bands.npz')
     if not os.path.exists(p):
         return None, None
     Z = np.load(p)

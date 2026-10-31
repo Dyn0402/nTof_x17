@@ -239,6 +239,12 @@ def main():
 
     df = compat.load_table(a.table, max_dropped=None)
     dup = df.event_id.duplicated(keep=False)
+    # an event id that occurs in two acquisitions of the row (det3 6-22 test short_run: 96 rows) cannot be matched to
+    # its M3 ray (the ray list carries no acquisition): such rays leave the denominator (n_ambiguous_id), they are
+    # not 'not_seeded' (before 2026-10-31 they were counted as losses)
+    amb = set(df.event_id[dup])
+    n_amb = int(R.event_id.isin(amb).sum())
+    R = R[~R.event_id.isin(amb)]
     df = df[~dup]
     # finalize tables are the first --limit matched events (make_pass_dag: 8000): rays past the table's last event
     # were never offered to the fit, so they leave the denominator (n_beyond_table)
@@ -310,7 +316,7 @@ def main():
               'interior_good': (M.region == 'interior') & M.good_x}
     S = dict(run_key=a.run_key, det=a.det, table=a.table, alignment=a.alignment, classified=C, cand=a.cand,
              hw_map=HW_SOURCE.get(a.det), n_rays_recipe=n_all,
-             n_events_multi_ray=n_multi, n_in_event_range=n_range, n_beyond_table=n_beyond, n_not_measured=int(R.not_measured.sum()),
+             n_events_multi_ray=n_multi, n_in_event_range=n_range, n_beyond_table=n_beyond, n_ambiguous_id=n_amb, n_not_measured=int(R.not_measured.sum()),
              incomplete_list=have_nm, n_outside=int((M.region == 'outside').sum()), radii=a.r, budget={})
     for g, m in groups.items():
         U = M[m]
