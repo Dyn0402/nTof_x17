@@ -25,6 +25,9 @@ A = '/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1'
 CODE = {'6a0bb1f'}
 CODE_POST = {'b5a29af'}
 POST_STAGES = ('01_alignment', '02_efficiency', '03_angles', '04_maps')
+#: the bow transfer gate (rerun/calib/bow/results_pass1/) ran bow_node on the run71 archive; it writes only
+#: bow_gate_* beside the products, so it is checked against its own code, not the pass's
+CODE_BOW = {'a72b889'}
 ALIGN_TOL_MM = 5.0
 FAR_MAX_PCT = 15.0
 #: every SPS row since the 2026-10-30 final SPS re-run (rerun/sps_audit/README.md): one code version, with the seed fix
@@ -61,6 +64,9 @@ def bench(root):
             stage = os.path.basename(s).split('_', 2)[-1][:-5]
             if stage in POST_STAGES:
                 latest[stage] = c
+            elif stage == 'bow_node':
+                if c not in CODE_BOW:
+                    codes.add(c)
             else:
                 codes.add(c)
             if j.get('diagnostic_overrides'):
