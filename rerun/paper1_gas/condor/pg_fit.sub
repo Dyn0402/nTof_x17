@@ -1,0 +1,12 @@
+# condor_submit pg_fit.sub code=<code dir> out=<out dir>  (run from ~/x17rerun/paper1_gas)
+executable     = $ENV(HOME)/x17rerun/paper1_gas/pg_fit.sh
+arguments      = $(code) $(out)
+output         = log/fit.$(Cluster).out
+error          = log/fit.$(Cluster).err
+log            = log/pg.log
+request_cpus   = 8
+request_memory = 16000
++JobFlavour    = "workday"
+requirements   = (Machine != "b9g42p2031.cern.ch")
+should_transfer_files = NO
+queue

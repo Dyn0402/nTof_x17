@@ -1,0 +1,13 @@
+# sed "s|^|<code dir> |" stack_jobs.in > stack_jobs.txt; condor_submit pg_stack.sub jobfile=stack_jobs.txt  (run from ~/x17rerun/paper1_gas)
+executable     = $ENV(HOME)/x17rerun/paper1_gas/pg_stack.sh
+arguments      = $(args)
+output         = log/$(Cluster).$(ProcId).out
+error          = log/$(Cluster).$(ProcId).err
+log            = log/pg.log
+request_cpus   = 4
+request_memory = 12000
++JobFlavour    = "workday"
+max_retries    = 3
+requirements   = (Machine != "b9g42p2031.cern.ch")
+should_transfer_files = NO
+queue args from $(jobfile)
