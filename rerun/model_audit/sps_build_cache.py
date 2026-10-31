@@ -237,9 +237,10 @@ def event_record(ch, sm, am, raw, nsmp, half_win=16, qmin=300.0, tan=0.0, seed_b
         W = np.zeros((len(chs), nsmp), np.float32); ci = np.searchsorted(chs, cc); m = (ss >= 0) & (ss < nsmp)
         W[ci[m], ss[m]] = aa[m]
         # an oscillating / hot strip carries no charge information and the fit censors it (H4 dead list + sps_reco
-        # extra_dead): its samples are blanked so that nothing downstream reads the oscillation as charge.  Without this
-        # the fit's start (wft.model.init_guess: the brightest strip of the window) still landed on ch 372/373 whenever
-        # they sat inside a window: 2-8 % of the Y fits of run55/57/59/60 ZS rows at 156-160.5 mm (sps_audit, 10-31).
+        # extra_dead): its samples are blanked so that nothing downstream (wft.model.init_guess, the brightest strip of the
+        # window; sps_cluster) reads the oscillation as charge.  Measured effect (sps_audit, 10-31): it moves 568 of 3000
+        # run71 raw700 Y fits and 18 of run55 d700, and leaves the ZS rows' residual 156-160.5 mm excess (2-8 %) as it was:
+        # that excess is the oscillation's NEIGHBOURS (ch 374-376, ~155.4 mm, low charge, random time), not this strip.
         W[bad[chs]] = 0.0
         o = np.argsort(POSITION_MM[chs])
         q = np.where(bad[chs], 0.0, np.clip(W, 0, None).sum(1))

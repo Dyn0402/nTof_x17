@@ -156,17 +156,30 @@ strips above 50 ADC within ±4 samples of the lead's peak.
   1. **`c3e6a04c`, the seed fix and the head-on columns.** Staged in `.../sps_final_stage/sps/`. The pass-1 products
      are backed up in `/eos/user/d/dneff/x17rerun/pass1_backup_2026-10-30/sps_before_seedfix/`.
   2. **`3ac0e79`, final.** The oscillating/hot strips' samples are now also blanked inside the window. They were already
-     censored in the fit, but the fit's start (`wft.model.init_guess`, the brightest strip of the window) could still
-     land on them.
-     - The pile-up at 156–160.5 mm left after the seed fix: run55 d700 7.9 → 3.6 %, run57 d650 3.2 %, run60
-       ov01/03/05/09 2.4–3.2 %, run59 2.8 %.
+     censored in the fit, but the fit's start (`wft.model.init_guess`, the brightest strip of the window) and the
+     centroid could still read them.
+     - It changes 568 of 3000 run71 raw700 Y fits (RAW windows always contain the strips), 18 of run55 d700, and none of
+       run63 flat700.
+     - It does **not** remove the ZS rows' residual excess at 156–160.5 mm (run55 d700 7.9 %, run57 d650 3.2 %, run60
+       ov01/03/05/09 2.4–3.2 %, run59 2.8 %, run57 d550/d600 2.1–2.2 %; `results/pile_rows_after.csv`). A 1000-event
+       smoke test had suggested 7.9 → 3.6 %; that was a different event subset, and the full rows are unchanged.
+     - That excess is the oscillation's neighbours (see Limitations): low charge (lead median 310–350 ADC against
+       560–790) at a random time in the window.
      - Staged in `.../sps_final2_stage/sps/`. The `c3e6a04c` products are backed up in `.../sps_before_blanking/`.
+- **Code hashes.** `c3e6a04c` and `3ac0e79` are the commits the products were made from, archived on EOS as
+  `offload/x17rerun_code/code_<hash>` and recorded in each row's meta. On `main` they are `e3247b14` and `0372f685`:
+  the same SPS chain, rebased onto another session's commits.
+  - That session changed only the reading side of `sps_build_cache.py` (b3cc38a6, 4eb667c1: close each file, read in
+    chunks, skip chunks outside the plateaus) and a docstring in `wft/reco.py`. These do not change which events are
+    selected or how they are fitted.
 - **Ledger.** `pass1_ledger.py` now requires on every SPS row:
   - code `3ac0e79`;
   - the meta key `hot_seed_channels`, and a seeding rule that names `RAW_CM_BAD`;
   - the head-on columns `x/y_p_mid`, `x/y_c_pos`, `x/y_c_n_strips`, `ftst`.
 
-  Result: pending (the 3ac0e79 DAG; see the next commit).
+  Result: **71/71 SPS rows complete** on `3ac0e79`, with the meta and columns present (`results/ledger_2026-10-31.md`).
+  The 14 bench rows the ledger now lists carry STAGES from another session's `a72b889` runs. That is not from this work;
+  `PASS1_LEDGER.md` is left as it was.
 - **Census of what changed** (`results/seed_census.csv`):
   - **run71 raw275/450/700: 81–83 % of events had a pre-fix seed on ch 372 or 510.** The RAW Y windows were mostly on
     the oscillation.
@@ -197,6 +210,14 @@ strips above 50 ADC within ±4 samples of the lead's peak.
 - **The hits estimator exists only where banco's combined_hits carry det4 (runs 53, 55).** Runs 63 and 66 have uRWELL
   hits only.
 - **Unfinished telescope groups.** None: all 59 telescope groups (run53 ×4, run55 ×6, run63 ×9, run66 ×4, run71 ×36) are in.
+- **Residual junk Y windows on four ZS rows of the CO2 epoch.** run55 d700 (~8 %), run57 d650 (3 %), run60
+  ov01/03/05/09 and run59 (2–3 %) keep an excess of Y fits at 155–160 mm.
+  - Their cluster sits on ch 374–376 (155.4 mm), next to the oscillating 372/373: low charge (lead 310–350 ADC against
+    560–790) at a random time, so cross-talk of the oscillation onto neighbours below the hot-seed threshold.
+  - The resolution sample is not affected (the cross-view fiducial removes them; run 55 is not quoted).
+  - In the pass tables they can be cut with `y_c_q_lead < 400` and |y_c_pos − 155.5| < 2 mm.
+  - Excluding the neighbours of a hot strip from the seed would remove them. It was not done, because it needs a fourth
+    SPS re-run (~4.5 h, set by raw275) for rows that carry no angle scale anyway (positions-only rows, pass-1 review P3).
 - **Time resolution:** not measured (section 4).
 - **The SPS gases (Ar/CO2/iso 95/3/2, Ar/CF4/iso 88/10/2) are not n_TOF's.** These numbers characterise the
   detector technology at normal incidence, not the n_TOF conditions.
