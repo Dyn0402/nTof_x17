@@ -16,14 +16,14 @@ import tarfile
 DETS = ('det2', 'det3', 'det4', 'det6', 'det7')
 
 
-def ladder_lines(dets):
+def ladder_lines(dets, n=150):
     out = []
     for det in dets:
         for rung in ('L0', 'L1', 'L2', 'L3', 'L4', 'L5', 'L6', 'L7', 'L8'):
             for ang in (3, 9, 16):
-                out.append(f'ladder --det {det} --rungs {rung} --angles {ang} --n 150')
+                out.append(f'ladder --det {det} --rungs {rung} --angles {ang} --n {n}')
                 if rung not in ('L0', 'L1'):
-                    out.append(f'ladder --det {det} --rungs {rung} --angles {ang} --n 150 --alone')
+                    out.append(f'ladder --det {det} --rungs {rung} --angles {ang} --n {n} --alone')
     return out
 
 
@@ -32,21 +32,25 @@ def main():
     ap.add_argument('staging')
     ap.add_argument('--code', required=True)
     ap.add_argument('--inputs', required=True)
+    ap.add_argument('--n', type=int, default=150, help='events per ladder angle point (the 10-27 campaign: 150)')
+    ap.add_argument('--ladder-only', action='store_true', help='no scan_a jobs (the statistics re-run)')
     a = ap.parse_args()
     st = a.staging
     os.makedirs(os.path.join(st, 'logs'), exist_ok=True)
+    suf = '' if a.n == 150 else f':n{a.n}'
     jobs = []
-    for det in DETS:
+    for det in (() if a.ladder_only else DETS):
         for b in (20, 30, 60, 90):
             for cfg in ('full', 'no_landau'):
                 jobs.append(('ig', f'scan_a --det {det} --dtbin {b} --config {cfg} --n 100'))
-    for p in (0.5, 1.2):
-        for b in (30, 60):
-            jobs.append(('ig', f'scan_a --det det3 --dtbin {b} --config full --pitch {p} --n 100'))
-    for s0 in (0.10, 0.45):
-        jobs.append(('ig', f'scan_a --det det3 --dtbin 60 --config full --s0 {s0} --n 100'))
-    jobs += [('ig', l) for l in ladder_lines(DETS)]
-    jobs += [('full', l) for l in ladder_lines(('det7',))]
+    if not a.ladder_only:
+        for p in (0.5, 1.2):
+            for b in (30, 60):
+                jobs.append(('ig', f'scan_a --det det3 --dtbin {b} --config full --pitch {p} --n 100'))
+        for s0 in (0.10, 0.45):
+            jobs.append(('ig', f'scan_a --det det3 --dtbin 60 --config full --s0 {s0} --n 100'))
+    jobs += [('ig' + suf, l) for l in ladder_lines(DETS, a.n)]
+    jobs += [('full' + suf, l) for l in ladder_lines(('det7',), a.n)]
     with open(os.path.join(st, 'fd_pass1.dag'), 'w') as f:
         for i, (place, args) in enumerate(jobs):
             f.write(f'JOB j{i} fd_pass1.sub\nVARS j{i} place="{place}" args="{args}"\nRETRY j{i} 3\n')

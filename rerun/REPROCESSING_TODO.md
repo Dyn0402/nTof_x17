@@ -101,7 +101,8 @@ Status key: [x] done · [ ] open · [~] partly / in progress
 - [x] Noise-band hotspot census, all chambers (item 13). **Done 10-31 on pass 1, all 156 rows** (`effbudget/PASS1_RESULT_2026-10-31.md`).
 - [x] FD budget update with GA (gain row withdrawn) and GB (M3 0.05°); re-quote resolutions (also the INFN–IN2P3
       abstract numbers). **Done 10-31:** `model_audit/followups/fd_floor_realism/REPORT.md` § Pass-1 update (both v(t)
-      arms; the toy rungs are not re-run on the pass bundles); every text number set against pass 1 in
+      arms; the toy rungs re-run on the pass-1 bundles 10-31 at 1500 events per angle: unexplained 0.68–1.52°, v-drift
+      gap explained); every text number set against pass 1 in
       `PAPER1_NUMBERS_2026-10-31.md` (the .tex files are not edited).
 - [ ] n_TOF: the χ²/dof flag's purity at n_TOF is unmeasured (~10 % flagged); check with x–y charge balance or
       inter-chamber pointing before an analysis cuts on it. Busy-plane multi-particle-like planes not refitted (GD).

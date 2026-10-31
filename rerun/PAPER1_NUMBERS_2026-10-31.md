@@ -23,7 +23,7 @@ Sources (main, 2026-10-31):
 | S4 | `rerun/calib/S4_PHYSICS_INPUTS_2026-10-30.md` (incl. the follow-up and re-check sections) | 14fd76b2, fd307195, 14ef0a88 |
 | BOW | `rerun/calib/bow/results_pass1/GATE_RESULT_2026-10-30.md`, `bow_finalize.json` | 404672c7 |
 | ABL | `rerun/calib/DET4Y_ABLATION_2026-10-30.md` | 4ee73a3e |
-| FD | `rerun/model_audit/followups/fd_floor_realism/REPORT.md` § Pass-1 update | this commit |
+| FD | `rerun/model_audit/followups/fd_floor_realism/REPORT.md` § Pass-1 update (toy re-run on the pass-1 bundles) | c144af21, toy re-run in the commit after it |
 
 ## Paper I
 
@@ -202,6 +202,9 @@ paper figures show.
 - SPS: tan sign not determinable (only |tan| quoted); the time resolution is not measured; the telescope term
   (f 0.25–0.34) is a ±40 µm systematic on det4; four CO2-epoch ZS rows carry 2–8 % junk Y fits (positions-only rows;
   being cleaned).
-- FD budget: toy rungs not re-run on the pass bundles; 54–90 % of the X variance is unexplained.
+- **FD budget:** the toy was re-run on the pass-1 bundles (1500 events per angle, the data's angle mix, each row's own r(t)).
+  54–88 % of the X variance is still unexplained. Interior_good, calibration rows, v(t) arm, FD convention: det2 0.72 of
+  0.98°, det3 0.68 of 0.93°, det4 1.52 of 1.62°, det6 0.93 of 1.13°, det7 0.98 of 1.12°. All toy terms together are
+  0.38–0.46°; the toy floor is 0.31–0.34°.
 - The efficiency loss classes were tuned on det3 and not checked by eye on the other chambers; the det4 stripe map is
   pre-pass.

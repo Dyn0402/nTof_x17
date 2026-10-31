@@ -24,7 +24,7 @@ import numpy as np
 
 ON = os.environ.get('FD_BASIS') == 'pass'
 PLACE = os.environ.get('FD_PLACE', 'ig')
-TAG = f'pass1_{PLACE}' if ON else ''
+TAG = f"pass1_{PLACE}{os.environ.get('FD_TAGSUF', '')}" if ON else ''    # FD_TAGSUF=_n1500: the statistics re-run
 _HERE = os.path.dirname(os.path.abspath(__file__))
 INPUTS = None
 if ON:
