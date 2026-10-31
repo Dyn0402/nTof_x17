@@ -105,11 +105,12 @@ note = "From cloud_basics sections 16-27; report at ~/x17/cosmic_bench/cloud_bas
 # --- 7 Timing -----------------------------------------------------------------
 
 [fig.timing]
-title = "Time resolution"
-state = "superseded"
-source = "mx_june_cosmic_qa/engineer_package/figures/51-time-resolution-plane-to-plane.pdf"
-section_state = "open"
-note = "33 ns is from hit times. Port PLAN_42 to waveforms (D3)."
+title = "Time resolution from the waveforms: HV scans, the uncorrelated part vs signal size (bench and det4 at SPS), golden-row split"
+state = "current"
+source = "rerun/paper1_timing/figures/timing.pdf"
+section_state = "partial"
+producer = "cd rerun/paper1_timing && ../../.venv/bin/python make_report.py"
+note = "Pass 1 (2026-10-31): column start of the strip sum (edge25), M3-matched tracks; event time 40-46 ns (det2/3/7), per view 22-28 ns, common 35-40 ns; replaces the hits 33 ns. rerun/paper1_timing/README.md."
 
 # --- 8 Tracking and resolution ------------------------------------------------
 
