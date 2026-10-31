@@ -1,0 +1,4 @@
+c26__mx17_det2_det3_overnight_6-22-26__long_run__mx17_2 mx17_det2_det3_overnight_6-22-26/long_run/mx17_2
+c26__mx17_det3_det4_overnight_6-23-26__long_run__mx17_4 mx17_det3_det4_overnight_6-23-26/long_run/mx17_4
+c26__mx17_det6_det7_overnight_6-26-26__longer_run__mx17_6 mx17_det6_det7_overnight_6-26-26/longer_run/mx17_6
+c26__mx17_det6_det7_overnight_6-26-26__longer_run__mx17_7 mx17_det6_det7_overnight_6-26-26/longer_run/mx17_7

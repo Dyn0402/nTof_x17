@@ -1,0 +1,12 @@
+# condor_submit vtc_row.sub   (run from ~/x17rerun/vt_check; jobs in vtc_jobs.txt: <key> <row>)
+executable     = $ENV(HOME)/x17rerun/vt_check/vtc_row.sh
+arguments      = $(args)
+output         = log/$(Cluster).$(ProcId).out
+error          = log/$(Cluster).$(ProcId).err
+log            = log/vtc.log
+request_cpus   = 8
+request_memory = 16000
++JobFlavour    = "workday"
+requirements   = (Machine != "b9g42p2031.cern.ch")
+should_transfer_files = NO
+queue args from vtc_jobs.txt
