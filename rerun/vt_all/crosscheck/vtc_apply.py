@@ -10,7 +10,11 @@ vt_apply.py, so every corrected row reads the same way (VT_PLAN §4, CROSSCHECK_
 
 tan = (w - w0) / (kw v r(t) S(U, W)) - a(U, W) with the row's own w0, kw, v and the chamber's bow block (exactly the
 pass's mapping with v -> v r); mid = p0 + 15 tan; z_end = v kw_mean r u_end (vt_apply's column depth).  r(t) is the
-line, clamped to the row (np.interp on its two end points).  Read-only on Analysis_pass1; refuses an out-root inside it.
+line, clamped to the row (np.interp on its two end points).  r is the LADDER's (the angle scale against M3): right for
+the angle whatever moves it.  The depth needs the TIMING v, which the ladder over-reads where the gain moves too (det6:
++18 % ladder against +9 % column over g_det6_long, CROSSCHECK §1); so with --measure (vtc_measure's JSONs) the table
+also carries v_rel_col (the column duration's blocks, piecewise linear, clamped) and z_end_vt_col = z_end x v_rel_col,
+and vt_map.json carries both series.  Read-only on Analysis_pass1; refuses an out-root inside it.
 """
 import argparse
 import csv
@@ -29,7 +33,7 @@ from vt_common import bow_aS, tan_map  # noqa: E402
 import wft.reco as wr  # noqa: E402
 
 
-def apply(key, reg, vt_dir, out_root, root):
+def apply(key, reg, vt_dir, out_root, root, measure=None):
     r = reg[key]
     wdir = os.path.join(root, r['run'], r['subrun'], r['det'], 'wft')
     m, cal, df, V = vb.load_row(wdir, root)
@@ -63,11 +67,22 @@ def apply(key, reg, vt_dir, out_root, root):
     km = 0.5 * (cal.kw['x'] + cal.kw['y'])
     uend = df[['x_q_uend', 'y_q_uend']].where(df[['x_ok', 'y_ok']].to_numpy()).mean(axis=1).to_numpy()
     out['z_end_vt'] = cal.v_drift * km * uend * 1e-3 * rr
+    col = None
+    mp = os.path.join(measure, f'{key}.json') if measure else None
+    if mp and os.path.exists(mp):
+        B = [b for b in json.load(open(mp))['survey']['blocks'] if np.isfinite(b['col']['r'])]
+        col = dict(t_h=[b['t'] for b in B], v_rel=[b['col']['r'] for b in B], estimator='column duration (colsum), '
+                   'clean unsaturated triggers, 20 % trimmed mean per survey block; vtc_measure.py')
+        rc = np.interp(df.t_h.to_numpy(), col['t_h'], col['v_rel'])
+        out['v_rel_col'] = rc
+        out['z_end_vt_col'] = cal.v_drift * km * uend * 1e-3 * rc
+        summ['v_rel_col_min'], summ['v_rel_col_max'] = float(rc.min()), float(rc.max())
     d = os.path.join(out_root, r['run'], r['subrun'], r['det'])
     os.makedirs(d, exist_ok=True)
     out.to_parquet(os.path.join(d, 'events_vt.parquet'), index=False)
     json.dump(dict(vm, source='rerun/vt_all/vt_bench.py (model) + rerun/vt_all/crosscheck/vtc_apply.py (table)',
-                   pass1_table=wdir), open(os.path.join(d, 'vt_map.json'), 'w'), indent=1)
+                   estimator='M3 ladder (angle scale)', pass1_table=wdir, timing=col),
+              open(os.path.join(d, 'vt_map.json'), 'w'), indent=1)
     print(json.dumps(summ), flush=True)
     return summ
 
@@ -76,11 +91,12 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('keys', nargs='+'); ap.add_argument('--vt-dir', required=True); ap.add_argument('--out-root', required=True)
     ap.add_argument('--root', default=vb.ROOT); ap.add_argument('--summary', default=None)
+    ap.add_argument('--measure', default=None, help="vtc_measure.py's output dir (adds the timing v columns)")
     a = ap.parse_args()
     if 'Analysis_pass1' in os.path.abspath(a.out_root):
         ap.error('--out-root must not be inside Analysis_pass1 (read-only)')
     reg = {r['key']: r for r in csv.DictReader(open(os.path.join(REPO, 'rerun', 'pass_registry.csv')))}
-    S = [apply(k, reg, a.vt_dir, a.out_root, a.root) for k in a.keys]
+    S = [apply(k, reg, a.vt_dir, a.out_root, a.root, a.measure) for k in a.keys]
     if a.summary:
         json.dump(S, open(a.summary, 'w'), indent=1)
 
