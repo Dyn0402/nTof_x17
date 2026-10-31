@@ -93,7 +93,7 @@ GAS = `rerun/paper1_gas/README.md` (2026-10-31; figure `gas_vE_timing` recommend
 | hits value 33 ns, not quoted | still not quoted; at SPS the time resolution is not measurable (t0_X − t0_Y 180–390 ns; leading edge 130–210 ns X−Y, ~400 ns vs trigger): a stated limitation | OK (as a non-quote) | SPS §4 |
 | "waveform result to come" (tbw) | **event time vs the trigger σ ≈ 40–46 ns (s68), 1.5–1.7 mm** from the column start (det2 41.7, det3 40.3, det7 45.6 ns on the golden rows, M3-matched); per view X−Y/√2 22–28 ns (det3 22.2, det2 27.6), common to X and Y 35–40 ns; trigger term ≈ 0 except on 6-23/6-24 (40–60 ns, det4 era); det6 78 ns; same at every angle; HV: det3 102 → 41 ns (425 → 500 V); drift: det3 114 → 38.5 ns (104 → 382 V/cm) | **NEW** (CHOICE: event time recommended, split in the text) | `rerun/paper1_timing/README.md` |
 | the hits 33 ns ↔ waveform | 33 ns = hits plane-to-plane (X−Y/√2 of single-strip leading edges); the waveform X−Y/√2 on the same row (sat_det3) is 22 ns; hits "absolute" 37.7 ns ↔ waveform event time 42 ns | reconciled | `rerun/paper1_timing/README.md` |
-| SPS timing | edge estimator on det4 at H4: X−Y/√2 160–205 ns (ZS), 115–145 ns with cf20; the low-amplitude end of the bench curve, not an intrinsic number | limitation (reason now measured) | `rerun/paper1_timing/` |
+| SPS timing | edge estimator on det4 at H4: X−Y/√2 160–205 ns (ZS), 140–218 ns (RAW run71), 115–145 ns with cf20 (ZS); at equal early amplitude RAW times like the bench in drift units (1.0–1.4 vs 0.8–1.3 mm); the low-amplitude end of the bench curve, not an intrinsic number | limitation (reason now measured) | `rerun/paper1_timing/` |
 
 ### §8 Tracking
 
