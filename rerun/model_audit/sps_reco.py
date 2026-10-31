@@ -60,6 +60,11 @@ def one(eid):
             fits[plane] = None; continue
         if _RAW:                     # an exact 0 on a RAW row is a sample the FEU dropped, not a measurement (see main)
             P = dict(P, missing=np.asarray(P['W']) == 0.0)
+        cens = ev.get(f'censor_{plane}') or []
+        if cens:                     # coupled to an oscillator that is ON in this event (sps_build_cache.COUPLE_*):
+            miss = np.asarray(P['missing']) if 'missing' in P else np.zeros(np.shape(P['W']), bool)
+            miss = miss | np.isin(np.asarray(P['ch']), cens)[:, None]          # unknown charge, like a dead strip
+            P = dict(P, missing=miss)
         try:
             fits[plane] = wr.fit_plane(P, plane, wm.CAL)
         except Exception:
@@ -79,7 +84,9 @@ def one(eid):
         row[f'{plane}_p_mid'] = row.get(f'{plane}_p0', np.nan) + H_MID * row.get(f'{plane}_tan_theta', np.nan) \
             if row.get(f'{plane}_ok') else np.nan
         P = ev.get(plane)
-        c = sps_cluster.cluster(P, bad=wm.DEAD.get(plane, ())) if P is not None else None
+        bad = list(wm.DEAD.get(plane, ())) + list(ev.get(f'censor_{plane}') or [])
+        c = sps_cluster.cluster(P, bad=bad) if P is not None else None
+        row[f'{plane}_n_coupled'] = len(ev.get(f'censor_{plane}') or [])
         for k in ('pos', 'n_strips', 'q_sum', 'q_lead', 'lead_frac', 'nb_lo', 'nb_hi', 't_peak_ns'):
             row[f'{plane}_c_{k}'] = c[k] if c else np.nan
     return row
@@ -113,6 +120,8 @@ def main():
         if len(evs) >= a.per_plateau:
             break
     hot = sorted({c for (r_, s_, L), cs in sbc.HOT_LAST.items() if r_ == row['run'] and L == row['plateau'] for c in cs})
+    coupled = {f'{s_}': {str(o): cs for o, cs in d.items()} for (r_, s_, L), d in sbc.COUPLE_LAST.items()
+               if r_ == row['run'] and L == row['plateau'] and d}
     from det4_sps_map import VIEW
     extra_dead = {p: [c for c in hot if VIEW[c] == p] for p in ('x', 'y')}
     os.makedirs(a.out, exist_ok=True)
@@ -127,7 +136,10 @@ def main():
     df, q_med = wr.quality_flags(df)          # chi2/dof flag, CHI2DOF_REL x the table median per view (GE)
     df.to_parquet(os.path.join(a.out, 'events.parquet'), index=False)
     meta = dict(n_events=len(df), registry_row=row, quality_rule=wr.quality_rule(q_med), bundle=a.bundle, v_drift=v, n_depth_bins=k, n_samples=nsamp, zeros='missing (RAW)' if raw else 'measured (ZS)',
-                channel_layer=a.mask, hot_seed_channels=hot, seeding='own brightest strip +- half_win (not RAW_CM_BAD, not the hot channels)', half_win=a.half_win,
+                channel_layer=a.mask, hot_seed_channels=hot, coupled_channels=coupled,
+                n_events_coupled_censored={p: int((df[f'{p}_n_coupled'] > 0).sum()) for p in 'xy'},
+                seeding='own brightest strip +- half_win (not RAW_CM_BAD, not the hot channels, not the channels coupled '
+                        'to an oscillator in its ON events)', half_win=a.half_win,
                 env={k_: v_ for k_, v_ in os.environ.items() if k_.startswith('WFT_')},
                 diagnostic_overrides={k_: str(v_) for k_, v_ in __import__('wft.diag').diag.ACTIVE.items()},
                 code=os.environ.get('RERUN_CODE_COMMIT', '?'))

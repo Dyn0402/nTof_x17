@@ -114,7 +114,7 @@ def hot_probe(f3, raw, nsamp, n=None):
     """The pass's hot-seed rule (sps_build_cache.hot_channels) on the first HOT_SCAN events of this file that pass the
     PASS selection (peak >= 300 ADC, >= 4 strips), seeded with SEED_BAD: the same probe sps_build_cache runs per plateau."""
     import uproot
-    n = n or sbc.HOT_SCAN
+    n = n or 2000                       # its own per-file probe (sbc.HOT_SCAN is None = the row's events since 10-31)
     t = uproot.open(f3)['nt']; cnt = np.zeros(512); k = 0
     for lo in range(0, t.num_entries, CHUNK):
         arr = t.arrays(['sample', 'channel', 'amplitude'], entry_start=lo, entry_stop=min(lo + CHUNK, t.num_entries), library='np')

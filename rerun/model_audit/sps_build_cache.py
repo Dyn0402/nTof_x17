@@ -49,10 +49,36 @@ SEED_BAD[list(RAW_CM_BAD)] = True
 #: +-4 position neighbours in the same view is excluded from seeding for that plateau (HOT_LAST records it).  A real
 #: beam strip seeds ~1 % (Y) to ~7 % (X, inside a 12 mm live band) with neighbours at the same level, a band-edge strip
 #: at most ~3x its neighbours; the oscillating strips seed 4-45 % against 0-15 / 3000 around them (rerun/sps_audit/README.md).
-HOT_SCAN = 2000
+#: The probe reads the plateau's OWN events (HOT_SCAN None = the row's per_plateau, the same first events the cache
+#: keeps).  It was a fixed 2000 until 2026-10-31: on run61 d210 ch 373 seeds 4.2 % of the row but < 3 % of its first
+#: 2000 events (it oscillates in part of the plateau only), so the row kept a 1.3 % excess (rerun/sps_junk/README.md).
+HOT_SCAN = None
 HOT_FRAC = 0.03
 HOT_RATIO = 10.0
 HOT_LAST = {}
+#: Cross-talk of an oscillator onto its neighbours (rerun/sps_junk/README.md, 2026-10-31).  The oscillation is periodic
+#: (a lobe every ~15 samples) and, in the events where it is on, appears on adjacent channels at ~0.3-0.7 of its height
+#: and the same phase: on run55 d700 ch 375 (156.0 mm) exceeds 300 ADC in 80 % of the events in which ch 373 is on and in
+#: 0.2 % of the others.  Those copies stay below the hot-seed rule (the oscillator itself is excluded, and the copies split
+#: over 2-3 strips) but win the seed whenever the event's real Y signal is weaker, and put 2-13 % of a row's Y windows at
+#: 155-160 mm.  So, per plateau, from the probe: an oscillator o (SEED_BAD or hot) is ON in an event when its peak exceeds
+#: COUPLE_ON_ADC.  A channel within COUPLE_NB position neighbours of o (same view) is COUPLED to o when it is lit (peak >
+#: COUPLE_LIT_ADC) in at least COUPLE_MIN of the ON events and its lit rate in ON events is more than COUPLE_RATIO x its
+#: rate in the OFF events, divided by the same ratio of the view's strips away from every oscillator (the beam's own
+#: modulation between ON and OFF events, e.g. an oscillator that is on only while the beam is).  A real strip is lit by
+#: the beam whether or not the oscillator is on, so it is not coupled.  In an event where o is ON its coupled channels
+#: are treated like o: kept out of the seed and the own-centroid ref, blanked in the window and censored in the fit
+#: (record 'censor_x' / 'censor_y'); in the other events they are ordinary strips.  The rule only applies where o
+#: actually oscillates in the plateau: its ON rate must exceed COUPLE_OSC_RATIO x the median ON rate of its +-COUPLE_NB
+#: position neighbours.  A SEED_BAD channel that is quiet in the plateau (ch 510 sits in the beam, 250 mm) is ON only
+#: when a track crosses it, like its neighbours, and those tracks share charge with the neighbours: that is not coupling.
+COUPLE_ON_ADC = 300.0
+COUPLE_LIT_ADC = 100.0
+COUPLE_NB = 4
+COUPLE_MIN = 10
+COUPLE_RATIO = 10.0
+COUPLE_OSC_RATIO = 10.0
+COUPLE_LAST = {}
 
 
 def hot_channels(seed_counts, n):
@@ -64,6 +90,49 @@ def hot_channels(seed_counts, n):
         for i, c in enumerate(o):
             nb = np.r_[o[max(0, i - 4):i], o[i + 1:i + 5]]
             out[c] = cnt[c] > HOT_FRAC * n and cnt[c] > HOT_RATIO * max(np.median(cnt[nb]), 1.0)
+    return out
+
+
+def coupled_channels(peaks, osc):
+    """{oscillator: [coupled channels]} from the probe's per-event peaks (array [n_events, 512], baseline-subtracted ADC)
+    and the oscillators (bool[512] or channel list); the rule is described at COUPLE_*.  An oscillator with fewer than
+    COUPLE_MIN ON or OFF events gives no coupling (nothing to compare)."""
+    pk = np.asarray(peaks, float)
+    oscs = np.flatnonzero(osc) if np.asarray(osc).dtype == bool else np.asarray(sorted(osc), int)
+    out = {}; lit = pk > COUPLE_LIT_ADC
+    order_of, rank_of = {}, {}
+    for view in ('x', 'y'):
+        chs = np.flatnonzero(VIEW == view); order_of[view] = chs[np.argsort(POSITION_MM[chs])]
+        rank_of[view] = {int(c): i for i, c in enumerate(order_of[view])}
+    # the strips of BOTH views away from every oscillator: the beam's own ON/OFF modulation is measured on them (the
+    # other view always sees the beam)
+    near = set()
+    for o in oscs:
+        v = VIEW[o]; i = rank_of[v][int(o)]
+        near |= {int(c) for c in order_of[v][max(0, i - COUPLE_NB - 4):i + COUPLE_NB + 5]}
+    far = np.array([c for c in range(512) if c not in near and VIEW[c] in ('x', 'y')], int)
+    for view in ('x', 'y'):
+        order, rank = order_of[view], rank_of[view]
+        vo = [int(o) for o in oscs if VIEW[o] == view]
+        for o in vo:
+            on = pk[:, o] > COUPLE_ON_ADC; n1, n0 = int(on.sum()), int((~on).sum())
+            if n1 < COUPLE_MIN or n0 < COUPLE_MIN:
+                continue
+            i = rank[o]
+            nbs = [int(c) for c in order[max(0, i - COUPLE_NB):i + COUPLE_NB + 1] if int(c) not in vo]
+            nb_rate = np.median((pk[:, nbs] > COUPLE_ON_ADC).mean(0)) if nbs else 0.0
+            if on.mean() <= COUPLE_OSC_RATIO * max(nb_rate, 1.0 / len(pk)):
+                continue                                   # not oscillating here: ON = a track crossing it
+            f1, f0 = lit[on][:, far].mean(), lit[~on][:, far].mean()
+            base = (f1 / f0) if f0 > 0 else (np.inf if f1 > 0 else 1.0)
+            got = []
+            for c in nbs:
+                k1, k0 = int(lit[on, c].sum()), int(lit[~on, c].sum())
+                r = (k1 / n1) / (max(k0, 1) / n0)
+                if k1 >= COUPLE_MIN and r > COUPLE_RATIO * max(base, 1.0):
+                    got.append(c)
+            if got:
+                out[o] = got
     return out
 
 
@@ -170,13 +239,18 @@ def acquisitions(files, spans):
 
 
 def build_cache(run, subrun, dataset, per_plateau=1000, half_win=16, tan=None, edge_s=20.0, qmin=300.0, only=None, verbose=True,
-                hot_scan=HOT_SCAN):
+                hot_scan=HOT_SCAN, keep_peaks=False):
     """{plateau: {eid: event}} for the decoded FEU 03 files of one sub-run (``only``: restrict to these plateaus).
-    hot_scan > 0: probe that many events per plateau first and keep its hot channels out of the seed (HOT_LAST)."""
+    Probe first (hot_scan events per plateau; None = per_plateau, 0 = no probe): its hot channels are kept out of the
+    seed (HOT_LAST) and the channels coupled to an oscillator are censored in its ON events (COUPLE_LAST).
+    keep_peaks: each record also carries 'peak' (float32[512], the event's per-channel peak; the probe's input)."""
     a = argparse.Namespace(run=run, subrun=subrun, dataset=dataset, per_plateau=per_plateau, half_win=half_win,
-                           tan=float(np.tan(np.radians(25.64))) if tan is None else tan, edge_s=edge_s, qmin=qmin, seed_bad={})
-    if hot_scan and per_plateau > 0:
-        probe = build_cache(run, subrun, dataset, hot_scan, half_win, tan, edge_s, qmin, only, False, hot_scan=0)
+                           tan=float(np.tan(np.radians(25.64))) if tan is None else tan, edge_s=edge_s, qmin=qmin, seed_bad={},
+                           couple={}, keep_peaks=keep_peaks)
+    n_scan = per_plateau if hot_scan is None else hot_scan
+    if n_scan and per_plateau > 0:
+        probe = build_cache(run, subrun, dataset, n_scan, half_win, tan, edge_s, qmin, only, False, hot_scan=0,
+                            keep_peaks=True)
         for L, evs in probe.items():
             cnt = np.zeros(512)
             for e in evs.values():
@@ -187,6 +261,12 @@ def build_cache(run, subrun, dataset, per_plateau=1000, half_win=16, tan=None, e
             if hot.any():
                 print(f'{subrun} {L}: hot seed channels {HOT_LAST[(run, subrun, L)]} kept out of the seed '
                       f'({", ".join(f"{int(cnt[c])}/{len(evs)}" for c in np.flatnonzero(hot))})', flush=True)
+            cp = coupled_channels(np.array([e['peak'] for e in evs.values()]), a.seed_bad[L]) if evs else {}
+            a.couple[L] = {o: np.array(cs, int) for o, cs in cp.items()}
+            COUPLE_LAST[(run, subrun, L)] = {int(o): [int(c) for c in cs] for o, cs in cp.items()}
+            if cp:
+                print(f'{subrun} {L}: channels coupled to an oscillator, censored in its ON events '
+                      f'{COUPLE_LAST[(run, subrun, L)]}', flush=True)
     import uproot
     D = datasets.get(a.dataset); nsmp = int(D['n_samples'])
     files = sorted(glob.glob(os.path.join(RUNS, a.run, a.subrun, 'decoded_root_fa80c06', '*_datrun_*_03.root')))
@@ -208,16 +288,28 @@ def build_cache(run, subrun, dataset, per_plateau=1000, half_win=16, tan=None, e
     return out
 
 
-def event_record(ch, sm, am, raw, nsmp, half_win=16, qmin=300.0, tan=0.0, seed_bad=None, min_strips=4):
-    """One event's cache record ({'x': window, 'y': window, ref_mesh_x/y, seed_ch_x/y, tan_x/y}) from its decoded
-    samples, or None when a view is empty, its peak is below qmin or its window has < min_strips strips with samples
-    (the pass: 300 ADC, 4; the resolution sample of rerun/sps_audit drops both).  Per view the brightest
+def event_record(ch, sm, am, raw, nsmp, half_win=16, qmin=300.0, tan=0.0, seed_bad=None, min_strips=4, couple=None,
+                 keep_peaks=False):
+    """One event's cache record ({'x': window, 'y': window, ref_mesh_x/y, seed_ch_x/y, tan_x/y, censor_x/y}) from its
+    decoded samples, or None when a view is empty, its peak is below qmin or its window has < min_strips strips with
+    samples (the pass: 300 ADC, 4; the resolution sample of rerun/sps_audit drops both).  Per view the brightest
     strip that is not in ``seed_bad`` (default SEED_BAD) seeds a +-half_win-strip window in POSITION (the plugs are
     inverted: det4_sps_map).  The window keeps every strip, bad ones included; the own-centroid ref leaves the bad
-    (oscillating) ones out."""
+    (oscillating) ones out.  ``couple`` ({oscillator: channels}, coupled_channels): in this event, the channels coupled
+    to an oscillator that is ON are bad as well, and listed in censor_x/censor_y for the fit (sps_reco)."""
     bad = SEED_BAD if seed_bad is None else seed_bad
     am = _baseline(ch, sm, am, raw)
     rec = dict(tan_x=tan, tan_y=tan)
+    if couple or keep_peaks:
+        pk_all = np.zeros(512, np.float32); np.maximum.at(pk_all, ch, am)
+        if keep_peaks:
+            rec['peak'] = pk_all
+        if couple:
+            on = [cs for o, cs in couple.items() if pk_all[o] > COUPLE_ON_ADC]
+            if on:
+                bad = bad.copy(); ev_cens = np.zeros(512, bool); ev_cens[np.concatenate(on)] = True
+                ev_cens &= ~bad; bad |= ev_cens
+                rec['_cens'] = ev_cens
     for view in ('x', 'y'):
         k = VIEW[ch] == view
         if not k.any():
@@ -248,6 +340,9 @@ def event_record(ch, sm, am, raw, nsmp, half_win=16, qmin=300.0, tan=0.0, seed_b
                          noise=np.full(len(chs), NOISE_ADC, np.float32))
         rec[f'ref_mesh_{view}'] = float((q * POSITION_MM[chs]).sum() / max(q.sum(), 1e-9))
         rec[f'seed_ch_{view}'] = c0
+        cens = rec.get('_cens')
+        rec[f'censor_{view}'] = [int(c) for c in chs[cens[chs]]] if cens is not None else []
+    rec.pop('_cens', None)
     return rec
 
 
@@ -272,7 +367,8 @@ def _fill(out, files, a, D, plateaus, t_lo, ts0, scale, nsmp, verbose, base):
                 if L is None or len(out.get(L, {})) >= a.per_plateau:
                     continue
                 ch = arr['channel'][j].astype(int); sm = arr['sample'][j].astype(int); am = arr['amplitude'][j].astype(np.float32)
-                rec = event_record(ch, sm, am, bool(D.get('raw', False)), nsmp, a.half_win, a.qmin, a.tan, seed_bad=a.seed_bad.get(L))
+                rec = event_record(ch, sm, am, bool(D.get('raw', False)), nsmp, a.half_win, a.qmin, a.tan,
+                                   seed_bad=a.seed_bad.get(L), couple=a.couple.get(L), keep_peaks=a.keep_peaks)
                 ok = rec is not None
                 if ok:
                     rec.update(eid=int(arr['eventId'][j]), t_wall=float(tw[j]), file=os.path.basename(f),
