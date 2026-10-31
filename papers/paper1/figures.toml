@@ -87,11 +87,12 @@ note = "The -3 deg edge tilt is a hits angle. Re-measure with wft angles (D4). T
 # --- 6 Gas --------------------------------------------------------------------
 
 [fig.gas_vE]
-title = "Drift velocity v(E): six det3 drift-scan fields, waveform fit vs Magboltz"
-state = "placeholder"
+title = "Drift velocity v(E): det3's 6-27 drift scan on pass 1 (angle-scale v) vs Magboltz for the bench gas"
+state = "current"
+source = "rerun/paper1_res/figures/gas_vE.pdf"
 section_state = "partial"
-note = "cloud_basics/driftscan_fit.py has the composition fit; the r06 v(E) points are D2. Replaces the hits-era 70-det3A-drift-velocity-vs-magboltz."
-producer = "cd sps_beam_test_26/analysis/cloud_basics && ../../../.venv/bin/python driftscan_fit.py"
+note = "Pass 1 (2026-10-31): v_drift x mean kw per row, the M3-calibrated angle-scale v (it carries kw: not a timing v); the 333 V/cm cluster is the 6-27 HV-scan rows at 1000 V drift. Magboltz bench gas 0.95 % H2O (0.6 / 1.4 % bracket), cloud_basics FINDINGS 22. The composition fit is cloud_basics/driftscan_fit.py."
+producer = "cd rerun/paper1_res && ../../.venv/bin/python make_report.py"
 
 [fig.attachment]
 title = "Attachment: charge loss vs drift time, bench (no O2) vs beam run_71 (163 ppm O2)"
@@ -111,10 +112,12 @@ note = "33 ns is from hit times. Port PLAN_42 to waveforms (D3)."
 # --- 8 Tracking and resolution ------------------------------------------------
 
 [fig.tracking_perf]
-title = "Cosmic tracking on r06: sigma_theta vs angle, within-5 mm efficiency, five chambers"
-state = "placeholder"
+title = "Cosmic tracking on pass 1: sigma_theta vs angle (interior_good), within-5 mm efficiency, five chambers"
+state = "current"
+source = "rerun/paper1_res/figures/tracking_perf.pdf"
 section_state = "requote"
-note = "From the reproduced r06 products (C1 done 10-09; D1 to do). Reconstruction from Paper II."
+note = "Pass 1 (2026-10-31), headline row per chamber (det2/det3 the quoted golden rows; det4/6/7 the calibration rows, in-sample), v(t) arm on det2/det4/det6/det7. rerun/paper1_res/PASS1_RESOLUTION_2026-10-31.md; efficiency from rerun/effbudget/PASS1_RESULT_2026-10-31.md."
+producer = "cd rerun/paper1_res && ../../.venv/bin/python make_report.py"
 
 [fig.sps_resolution]
 title = "det4 intrinsic resolution at SPS: 176 +- 10 um = 0.30 x pitch"
@@ -129,14 +132,16 @@ note = "make_figures.py needs residuals.npz (not on the desktop)."
 [fig.bow_profiles]
 title = "Mesh height across the chamber from position residuals vs M3 slope, X and Y strips, five chambers"
 state = "current"
-source = "rerun/model_audit/followups/fb_bow_maps/figures/bow_profiles.pdf"
-producer = "cd rerun/model_audit/followups/fb_bow_maps && ../../../../.venv/bin/python xcheck.py && ../../../../.venv/bin/python profiles.py && ../../../../.venv/bin/python paper_figs.py"
+source = "rerun/paper1_res/figures/bow_profiles.pdf"
+note = "Pass 1 golden rows (2026-10-31), fb_bow_maps' estimator unchanged, v(t) arm (w read at one v). The audit-table version is rerun/model_audit/followups/fb_bow_maps/figures/bow_profiles.pdf."
+producer = "rerun/paper1_res/bow_pass1.py build (lxplus) then fig --in-dir <fetched tables>"
 
 [fig.bow_closure]
 title = "Measured drift-tilt gradient vs the one predicted by the position-route curvature"
 state = "current"
-source = "rerun/model_audit/followups/fb_bow_maps/figures/bow_closure.pdf"
-producer = "cd rerun/model_audit/followups/fb_bow_maps && ../../../../.venv/bin/python paper_figs.py"
+source = "rerun/paper1_res/figures/bow_closure.pdf"
+note = "Pass 1 golden rows (2026-10-31), v(t) arm; the pass arm is rerun/paper1_res/figures/bow_closure_pass.pdf."
+producer = "rerun/paper1_res/bow_pass1.py build (lxplus) then fig --in-dir <fetched tables>"
 
 # --- 9 det4 stripes -----------------------------------------------------------
 

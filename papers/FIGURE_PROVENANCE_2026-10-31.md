@@ -33,13 +33,13 @@ from and when.
 | charge_balance | `rerun/paper1_charge/figures/charge_balance.pdf` (current) | pass 1, 10-31 | **rebuilt** | was the 07-12 hits figure 61. §5's text numbers (det3 0.487, det2 0.531, σ68 0.07) are the hits proxy; pass 1 gives 0.485 / 0.513, s68 0.014 / 0.016 (`rerun/paper1_charge/README.md`) |
 | efficiency_map | engineer_package 20 (current) | July recipe on hits, 07-14 | **stale** | re-make from the pass-1 `maps/` (manifest note D1) |
 | edge_turnon | engineer_package 80 (superseded) | hits angle, 07-12 | superseded | stays faded; the turn-on panel needs a pass-1 remake |
-| gas_vE | none (placeholder) | det3 drift scan v(E) | **pending-vt** | the per-row v (folded kw) and v(t) |
+| gas_vE | `rerun/paper1_res/figures/gas_vE.pdf` (current) | pass 1, 10-31 | **rebuilt** | det3 6-27 drift scan, angle-scale v (v_drift × mean kw: carries kw, not a timing v) vs Magboltz bench gas 0.95 % H2O; v(t) not relevant (short rows) (`rerun/paper1_res/`) |
 | attachment | none (placeholder) | cloud_basics §16–27 (bench + run71), outside the repo | **pending-sps** | run71 is being re-run with the seed fix |
 | timing | engineer_package 51 (superseded) | hit times | superseded | waveform timing (D3) not done |
-| tracking_perf | none (placeholder) | pass-1 angles | **pending-vt** | 7 bench rows need v(t), g_det4 among them |
+| tracking_perf | `rerun/paper1_res/figures/tracking_perf.pdf` (current) | pass 1, 10-31 | **rebuilt** | σθ vs angle on interior_good, headline rows, v(t) arm where a map exists; efficiency from the pass-1 effbudget (`rerun/paper1_res/PASS1_RESOLUTION_2026-10-31.md`) |
 | sps_resolution | spatial_resolution decomposition.png (placeholder, source missing) | run 53 hits centroid, 08-13 | **pending-sps** | the final SPS pass decides the run and the estimator |
-| bow_profiles | `rerun/model_audit/followups/fb_bow_maps/figures/bow_profiles.pdf` (current) | audit `ws_v_w0` tables (`~/x17/cosmic_bench/model_audit`), 10-27 | **stale → pending-vt** | predates pass 1. The committed paper copy (render 15:33) also differs from the committed source (15:35), so it is not the latest render. Re-make on pass 1 once v(t) is settled |
-| bow_closure | same folder (current) | audit tables, 10-27 | **stale → pending-vt** | as above (bytes match) |
+| bow_profiles | `rerun/paper1_res/figures/bow_profiles.pdf` (current) | pass 1 golden rows, 10-31 | **rebuilt** | fb_bow_maps' estimator unchanged on pass-1 tables (`bow_pass1.py`), v(t) arm; pass arm `bow_profiles_pass.pdf`. The audit render stays in `fb_bow_maps/figures/` |
+| bow_closure | `rerun/paper1_res/figures/bow_closure.pdf` (current) | pass 1 golden rows, 10-31 | **rebuilt** | as above |
 | det4_stripes | none (placeholder) | `14_board_map.py`: hits efficiency on `alignment_tpc_veto50` + Gerbers | placeholder (stale basis) | that alignment is retired (calib-reference lesson). Re-make from pass-1 det4 maps |
 | loss_band … loss_multi_deposit (14) | `~/x17/cosmic_bench/satstudy/appendix/*.pdf` (current; source missing on this machine) | Analysis_rr1 `final_phys` det3 table + phys bundle, 10-26 | **stale** | event displays with the pre-pass-1 fit overlaid. Re-pick and re-draw on the pass-1 det3 table with the A1 fractions (effbudget session) |
 
@@ -54,24 +54,23 @@ from and when.
 | event_waveforms | stephan_cosmics display (current) | raw waveforms, 07-12 | current | manifest asks to check there is no hits overlay |
 | forward_model | none (placeholder) | diagram | placeholder | |
 | toy_floor | none (placeholder) | script 18 on the R&D model | placeholder | needs a re-run on the production model (R6) |
-| tiers_benchmark | none (placeholder) | R1–R5 | **pending-vt** | |
+| tiers_benchmark | none (placeholder) | R1–R5 | placeholder | not a pass product: needs the hits tiers (H0–H2c) reconstructed on the same events; v(t) no longer blocks it (10-31) |
 | threshold_neighbours | none (placeholder) | R4 | placeholder | |
 | known_angle_geometry | angled_kernel geometry.png (current; PNG not on this machine) | schematic | current | |
 | known_angle | none (placeholder) | SPS rotated runs | **pending-sps** | SPS tan sign not pinned (only \|tan\|), `COORDINATES.md` §4b |
-| fleet | none (placeholder) | pass-1 angles | **pending-vt** | |
+| fleet | none (placeholder) | pass-1 angles + a hits arm | placeholder | the waveform side is in `rerun/paper1_res/results/summary.json` (headline s68, both arms); the hits side needs the hits tiers on pass-1 events, not produced. v(t) no longer blocks it (10-31) |
 
 ## Summary
 
 | status | count | figures |
 |---|---|---|
 | current | 5 | microtpc_principle, bench_setup, sharing_cartoon, event_waveforms, known_angle_geometry |
-| rebuilt on pass 1 | 1 | charge_balance |
+| rebuilt on pass 1 | 5 | charge_balance; gas_vE, tracking_perf, bow_profiles, bow_closure (10-31, `rerun/paper1_res/`) |
 | stale | 17 | hv_scan, spark_deadtime, efficiency_map, the 14 loss_* displays |
-| stale → pending-vt | 2 | bow_profiles, bow_closure |
-| pending-vt | 4 | gas_vE, tracking_perf, tiers_benchmark, fleet |
+| pending-vt | 0 | (v(t) settled 10-31: the four data figures rebuilt; tiers_benchmark and fleet moved to placeholder, they need a hits arm) |
 | pending-sps | 5 | attachment, sps_resolution, kernel_forms, angled_kernel, known_angle |
 | superseded | 2 | edge_turnon, timing |
-| placeholder | 8 | chamber_stack, readout_layout, sps_setup, det4_stripes (stale basis), ladder_compression, forward_model, toy_floor, threshold_neighbours |
+| placeholder | 10 | chamber_stack, readout_layout, sps_setup, det4_stripes (stale basis), ladder_compression, forward_model, toy_floor, threshold_neighbours, tiers_benchmark, fleet |
 
 New pass-1 figures available but not in either manifest (no `.tex` references them yet):
 `rerun/paper1_charge/figures/{gain_curves, drift_field, unsat_bias, golden_spectra}.pdf`.

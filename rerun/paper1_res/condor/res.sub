@@ -1,0 +1,15 @@
+# paper1_res table-level jobs (one per chamber: res_rows.py --dets; the window test), run from ~/x17rerun/paper1_res
+# with res.sh copied next to it:
+#   condor_submit res.sub -append 'code=...' ...   or through a DAG with VARS code / script / args / name
+executable     = /bin/bash
+arguments      = $ENV(HOME)/x17rerun/paper1_res/res.sh $(code) $(script) $(args)
+output         = log/$(name).out
+error          = log/$(name).err
+log            = log/res.log
+request_cpus   = 1
+request_memory = 6000
++JobFlavour    = "workday"
+should_transfer_files = NO
+# a worker whose EOS FUSE mount times out reading the archive (pass1 10-30)
+requirements   = (Machine != "b9g42p2031.cern.ch")
+queue
