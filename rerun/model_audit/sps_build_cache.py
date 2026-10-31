@@ -50,9 +50,16 @@ SEED_BAD[list(RAW_CM_BAD)] = True
 #: beam strip seeds ~1 % (Y) to ~7 % (X, inside a 12 mm live band) with neighbours at the same level, a band-edge strip
 #: at most ~3x its neighbours; the oscillating strips seed 4-45 % against 0-15 / 3000 around them (rerun/sps_audit/README.md).
 #: The probe reads the plateau's OWN events (HOT_SCAN None = the row's per_plateau, the same first events the cache
-#: keeps).  It was a fixed 2000 until 2026-10-31: on run61 d210 ch 373 seeds 4.2 % of the row but < 3 % of its first
-#: 2000 events (it oscillates in part of the plateau only), so the row kept a 1.3 % excess (rerun/sps_junk/README.md).
+#: keeps), in blocks of HOT_BLOCK events, and a channel hot in any block is hot for the plateau.  It was the first 2000
+#: events as one block until 2026-10-31: an oscillation that is on in part of the plateau only was missed or caught by
+#: chance (run61 d210: ch 373 seeds 4.2 % of the row but < 3 % of its first 2000 events, a 1.3 % excess kept; run55 d600:
+#: the reverse) (rerun/sps_junk/README.md).
+#: The neighbours are the +-4 position neighbours that are NOT under a dead amplification stripe or electronically dead
+#: (rerun/channel_layer/det4_sps_h4.json 'dead_stripes', STRIPE).  Until 2026-10-31 the dead ones counted, with ~0 seeds:
+#: the last live strip at a stripe edge inside a busy beam (X ch 172/173, 214 mm, on run55: the beam spot ends there) read
+#: as > 10x its neighbours and was censored as hot in run55 d500-d700, and with it the beam's edge.
 HOT_SCAN = None
+HOT_BLOCK = 1000
 HOT_FRAC = 0.03
 HOT_RATIO = 10.0
 HOT_LAST = {}
@@ -72,8 +79,8 @@ HOT_LAST = {}
 #: the beam whether or not the oscillator is on, so it is not coupled.  In an event where o is ON its coupled channels
 #: are treated like o: kept out of the seed and the own-centroid ref, blanked in the window and censored in the fit
 #: (record 'censor_x' / 'censor_y'); in the other events they are ordinary strips.  The rule only applies where o
-#: actually oscillates in the plateau: its ON rate must exceed COUPLE_OSC_RATIO x the median ON rate of its +-COUPLE_NB
-#: position neighbours.  A SEED_BAD channel that is quiet in the plateau (ch 510 sits in the beam, 250 mm) is ON only
+#: actually oscillates in the plateau: its ON rate must exceed COUPLE_OSC_RATIO x the median ON rate of its live
+#: +-COUPLE_NB position neighbours (live_neighbours).  A SEED_BAD channel that is quiet in the plateau (ch 510 sits in the beam, 250 mm) is ON only
 #: when a track crosses it, like its neighbours, and those tracks share charge with the neighbours: that is not coupling.
 COUPLE_ON_ADC = 300.0
 COUPLE_LIT_ADC = (100.0, 300.0)
@@ -84,15 +91,52 @@ COUPLE_OSC_RATIO = 10.0
 COUPLE_LAST = {}
 
 
-def hot_channels(seed_counts, n):
+def _stripe_mask():
+    """bool[512]: the H4 channel layer's 'dead_stripes' (electronically dead + under a dead amplification stripe)."""
+    import json
+    m = json.load(open(os.path.join(REPO, 'rerun', 'channel_layer', 'det4_sps_h4.json')))
+    out = np.zeros(512, bool)
+    for p in ('x', 'y'):
+        out[[int(c) for c in m[p]['dead_stripes']]] = True
+    return out
+
+
+STRIPE = _stripe_mask()
+
+
+def live_neighbours(c, nb=4, skip=None):
+    """The channels within +-nb position ranks of c in its view, not c and not in skip (default STRIPE)."""
+    skip = STRIPE if skip is None else skip
+    view = VIEW[c]; chs = np.flatnonzero(VIEW == view); o = chs[np.argsort(POSITION_MM[chs])]
+    i = int(np.flatnonzero(o == c)[0])
+    return [int(x) for x in np.r_[o[max(0, i - nb):i], o[i + 1:i + nb + 1]] if not skip[x]]
+
+
+def hot_channels(seed_counts, n, skip=None):
     """bool[512]: channels whose seed count (array[512]) over n events is > HOT_FRAC n and > HOT_RATIO x the median
-    of their +-4 position neighbours in the same view."""
+    of their live +-4 position neighbours in the same view (live_neighbours)."""
     cnt = np.asarray(seed_counts, float); out = np.zeros(512, bool)
-    for view in ('x', 'y'):
-        chs = np.flatnonzero(VIEW == view); o = chs[np.argsort(POSITION_MM[chs])]
-        for i, c in enumerate(o):
-            nb = np.r_[o[max(0, i - 4):i], o[i + 1:i + 5]]
-            out[c] = cnt[c] > HOT_FRAC * n and cnt[c] > HOT_RATIO * max(np.median(cnt[nb]), 1.0)
+    for c in np.flatnonzero(cnt > HOT_FRAC * n):
+        if VIEW[c] not in ('x', 'y'):
+            continue
+        nb = live_neighbours(int(c), skip=skip)
+        out[c] = cnt[c] > HOT_RATIO * max(np.median(cnt[nb]) if nb else 0.0, 1.0)
+    return out
+
+
+def hot_in_blocks(seeds, block=None):
+    """bool[512]: hot_channels over consecutive blocks of the probe's events (seeds: [(seed_x, seed_y)] in time order);
+    hot in any block of at least half a block (a shorter tail joins the block before it)."""
+    block = block or HOT_BLOCK
+    n = len(seeds); edges = list(range(0, n, block)) + [n]
+    if len(edges) > 2 and edges[-1] - edges[-2] < block // 2:
+        edges.pop(-2)
+    out = np.zeros(512, bool)
+    for lo, hi in zip(edges[:-1], edges[1:]):
+        cnt = np.zeros(512)
+        for sx, sy in seeds[lo:hi]:
+            cnt[sx] += 1; cnt[sy] += 1
+        out |= hot_channels(cnt, hi - lo)
     return out
 
 
@@ -123,7 +167,8 @@ def coupled_channels(peaks, osc):
                 continue
             i = rank[o]
             nbs = [int(c) for c in order[max(0, i - COUPLE_NB):i + COUPLE_NB + 1] if int(c) not in vo]
-            nb_rate = np.median((pk[:, nbs] > COUPLE_ON_ADC).mean(0)) if nbs else 0.0
+            live = [c for c in live_neighbours(o, COUPLE_NB) if c not in vo]
+            nb_rate = np.median((pk[:, live] > COUPLE_ON_ADC).mean(0)) if live else 0.0
             if on.mean() <= COUPLE_OSC_RATIO * max(nb_rate, 1.0 / len(pk)):
                 continue                                   # not oscillating here: ON = a track crossing it
             got = []
@@ -259,7 +304,7 @@ def build_cache(run, subrun, dataset, per_plateau=1000, half_win=16, tan=None, e
             cnt = np.zeros(512)
             for e in evs.values():
                 cnt[e['seed_ch_x']] += 1; cnt[e['seed_ch_y']] += 1
-            hot = hot_channels(cnt, len(evs))
+            hot = hot_in_blocks([(e['seed_ch_x'], e['seed_ch_y']) for e in evs.values()])
             a.seed_bad[L] = SEED_BAD | hot
             HOT_LAST[(run, subrun, L)] = [int(c) for c in np.flatnonzero(hot)]
             if hot.any():

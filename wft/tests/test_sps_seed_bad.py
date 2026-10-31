@@ -82,3 +82,30 @@ def test_hot_channel_found_per_plateau():
 def test_beam_and_narrow_live_band_not_hot():
     assert not sbc.hot_channels(_seed_counts(), 3000).any()
     assert not sbc.hot_channels(_seed_counts(band=True), 3000).any()  # all X seeds inside one 12 mm live band
+
+
+def test_stripe_edge_strip_in_a_busy_beam_not_hot():
+    # run55: the beam spot ends at X 214.5 mm (ch 172/173), where a dead amplification stripe starts (ch 170 ...):
+    # with the stripe strips' ~0 seeds in the median the edge strips read as hot; on live neighbours they do not
+    rng = np.random.default_rng(2); cnt = np.zeros(512)
+    xs = np.flatnonzero((VIEW == 'x') & (POSITION_MM > 200.0) & (POSITION_MM < 215.0))
+    np.add.at(cnt, rng.choice(xs, 3000), 1)
+    cnt[[172, 173]] += 60                                           # the edge collects the beam's tail
+    assert sbc.STRIPE[170] and not sbc.STRIPE[171] and not sbc.STRIPE[172]
+    assert not sbc.hot_channels(cnt, 3000)[[172, 173]].any()
+
+
+def test_oscillation_in_part_of_the_plateau_is_hot():
+    # run61 d210: ch 373 oscillates in part of the plateau only (4.2 % of the row, < 3 % of the first 2000 events)
+    rng = np.random.default_rng(4)
+    ys = np.flatnonzero((VIEW == 'y') & (POSITION_MM > 160) & (POSITION_MM < 290))
+    xs = np.flatnonzero((VIEW == 'x') & (POSITION_MM > 100) & (POSITION_MM < 140))
+    seeds = [(int(rng.choice(xs)), int(rng.choice(ys))) for _ in range(3000)]
+    for i in range(2200, 3000):
+        if rng.random() < 0.16:
+            seeds[i] = (seeds[i][0], 373)
+    cnt = np.zeros(512)
+    for sx, sy in seeds[:2000]:
+        cnt[sx] += 1; cnt[sy] += 1
+    assert not sbc.hot_channels(cnt, 2000)[373]                     # the old probe (first 2000 as one block)
+    assert sbc.hot_in_blocks(seeds)[373]
