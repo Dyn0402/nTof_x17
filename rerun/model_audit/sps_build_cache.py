@@ -236,6 +236,11 @@ def event_record(ch, sm, am, raw, nsmp, half_win=16, qmin=300.0, tan=0.0, seed_b
             return None
         W = np.zeros((len(chs), nsmp), np.float32); ci = np.searchsorted(chs, cc); m = (ss >= 0) & (ss < nsmp)
         W[ci[m], ss[m]] = aa[m]
+        # an oscillating / hot strip carries no charge information and the fit censors it (H4 dead list + sps_reco
+        # extra_dead): its samples are blanked so that nothing downstream reads the oscillation as charge.  Without this
+        # the fit's start (wft.model.init_guess: the brightest strip of the window) still landed on ch 372/373 whenever
+        # they sat inside a window: 2-8 % of the Y fits of run55/57/59/60 ZS rows at 156-160.5 mm (sps_audit, 10-31).
+        W[bad[chs]] = 0.0
         o = np.argsort(POSITION_MM[chs])
         q = np.where(bad[chs], 0.0, np.clip(W, 0, None).sum(1))
         rec[view] = dict(ch=chs[o].astype(np.int16), pos=POSITION_MM[chs[o]].astype(np.float32), W=W[o],

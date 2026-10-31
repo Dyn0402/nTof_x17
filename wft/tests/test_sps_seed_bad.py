@@ -53,6 +53,7 @@ def test_bad_channel_kept_in_window_for_censoring():
     ch, sm, am = _zs_event(track_mm=(185.0, 162.0))
     rec = sbc.event_record(ch, sm, am, raw=False, nsmp=32)
     assert 372 in rec['y']['ch']
+    assert not np.asarray(rec['y']['W'])[list(rec['y']['ch']).index(372)].any()   # blanked: no start on the oscillation
     assert abs(POSITION_MM[rec['seed_ch_y']] - 162.0) < 1.0
     assert abs(rec['ref_mesh_y'] - 162.0) < 1.0
 
