@@ -73,11 +73,15 @@ Sources (main, 2026-10-31):
 
 ### §6 Gas
 
+GAS = `rerun/paper1_gas/README.md` (2026-10-31; figure `gas_vE_timing` recommended over `gas_vE`).
+
 | text | pass 1 | status | source |
 |---|---|---|---|
 | det3 drift scan, six fields 35–382 V/cm | seven fields, 33–367 V/cm (drift 100–1100 V over 30 mm) | **WRONG** | RES §3 (gas_vE) |
-| v = 2.5–37.8 µm/ns | 2.55–38.8 µm/ns, angle-scale v (v_drift × kw, not a timing v; ~5 % above Magboltz everywhere); timing v of det3 at 333 V/cm 36.03 ± 0.34 | **WRONG** (and say which v) | RES, S4 re-check |
-| 0.95 % water, ≲ 10 ppm O₂ (bench) | not re-derived on pass 1 (the SPS/bench gas fit is a separate session) | NOT RE-DERIVED | — |
+| v = 2.5–37.8 µm/ns | timing v (gap / T) 17.7–37.2 µm/ns at 177–390 V/cm, on Magboltz 0.97 %; 2.55–38.8 µm/ns angle-scale v (v_drift × kw, not a timing v; ~5 % above Magboltz everywhere); timing v of det3 at 333 V/cm 36.03 ± 0.34 | **WRONG** (and say which v) | RES, S4 re-check, GAS |
+| 0.95 % water, ≲ 10 ppm O₂ (bench) | det3 drift scan, timing v, one water for 500–1100 V: **0.97 % [0.95, 0.99]**, χ² 2.5/3 (the pre-pass 0.955 % is reproduced). Other chambers' golden rows: det2 0.69, det4 0.42, det6 1.00, det7 0.48 % (per-chamber water; the gap ± err band is ±0.05–0.10 %). O₂ not re-derived (pass-1 stacks carry no attachment term) | OK (det3) + NEW (per chamber) | GAS |
+| (new) the bench water drifts in time | 6-26: det6 1.47 → 0.76 %, det7 0.68 → 0.35 % over 01:00–15:00, one time shape (r 0.975); det4 0.70 → 0.21 % through 6-23, back at 0.42 % on 6-24; det2 0.73 → 0.57 % on 6-22 | NEW | GAS |
+| (new) det6 early-night attachment | first ~4 h of 6-26: visible drift column 0.44 → 0.93, τ 1.1 → 1.7 µs, ~600 → 370 ppm O₂-equivalent (×2 model factor); it is why det6's ladder and column-duration v(t) disagreed | NEW (CHOICE: quote or not) | GAS |
 | beam run_71: 1.51 % water, 163 ppm O₂; run_63 230 → 147 ppm | not re-derived (gas-fit session) | NOT RE-DERIVED | — |
 | gap topography, bench det3 spread 1.5 mm | det3 gap 28.19 ± 0.19 mm (interior), input 28.08 ± 0.19 holds; the spread is not re-measured | OK (mean) / NOT RE-DERIVED (spread) | S4 re-check |
 
