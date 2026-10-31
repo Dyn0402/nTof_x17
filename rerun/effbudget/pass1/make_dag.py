@@ -7,6 +7,7 @@ Per non-excluded row of rerun/pass_registry.csv (READ-ONLY on Analysis_pass1; ev
   BUD_<k>  rerun/effbudget/budget.py on the row's pass table (wft/events.parquet), its group's waveform alignment and
            its candidates sidecar (trigger-track rule arms) -> OUTROOT/budget/<rel>/
   ANG_<k>  mx_june_wft/03_angles.py --fiducial interior_good on the same table / alignment -> OUTROOT/angles/<rel>/
+  A1_<k>   a1_job.py on the golden rows (C22 classes, sparks, candidate time extent) after BUD -> OUTROOT/a1/<rel>/
   BND_<k>  band_census.py (decoded files read from EOS, no staging) -> OUTROOT/bands/<rel>/   (one per run/subrun/det)
 stage_job runs with --no-sync and an empty --eos-analysis, so it neither pulls nor pushes any Analysis file.
 """
@@ -26,7 +27,7 @@ def rel(r):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('code'); ap.add_argument('--only', default=None)
-    ap.add_argument('--what', default='budget,angles,bands')
+    ap.add_argument('--what', default='budget,angles,bands,a1')
     ap.add_argument('--registry', default=os.path.join(HERE, '..', '..', 'pass_registry.csv'))
     a = ap.parse_args()
     rows = [r for r in csv.DictReader(open(a.registry)) if r['cls'] != 'excluded']
@@ -57,6 +58,13 @@ def main():
                  f'--fiducial interior_good --out {OUTROOT}/angles/{rel(r)}', 1, 8000)
         if 'bands' in what:
             node(f'BND_{n}', 'census.sub', f'{k} --out {OUTROOT}/bands', 1, 3000)
+        if 'a1' in what and r['cls'] in ('golden_calib', 'golden_quoted'):
+            d = SHORT[r['det']]
+            node(f'A1_{n}', 'stage1.sub', f'{sj} --script rerun/effbudget/pass1/a1_job.py -- {d} --table {t} '
+                 f'--alignment {al} --cand {t.replace(".parquet", ".candidates.parquet")} '
+                 f'--rays {OUTROOT}/budget/{rel(r)}/rays_{d}.parquet --out {OUTROOT}/a1/{rel(r)}', 1, 12000)
+            if 'budget' in what:
+                L.append(f'PARENT BUD_{n} CHILD A1_{n}')
     open('p1eff.dag', 'w').write('\n'.join(L) + '\n')
     print(f'wrote p1eff.dag: {sum(1 for l in L if l.startswith("JOB"))} nodes')
 
