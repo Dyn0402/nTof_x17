@@ -100,6 +100,8 @@ if VIEW != 'x':
 # its falling edge compressed in time by (1 + c) about the peak; c calibrated in pulse_calib() to give +0.06 at the
 # peak after the amplitude/time refit.
 PULSE_TARGET = 0.06
+K1_AMP = float(os.environ.get('K1_AMP', '0.06'))      # fraction (G, W, S, L) or ns (T)
+K1_WT = float(os.environ.get('K1_WT', '0.06'))        # MODEL_FRAC of the K1-aware fit
 
 # extra measured terms applied in quadrature outside the toy [deg]
 # bow: ws_widthtilt angle-map cross-validation, X s68 improvement det2 -12, det3 -12, det4 -3, det6 -26, det7 -1 %
@@ -114,11 +116,29 @@ RUNG_NAME = dict(L0='floor (exact model)', L1='production fit', L2='footprint sh
 HYP = dict(tskew_ns=10.0, shape_sigma=0.05, s0_event=(0.20, 0.45))
 RUNG_NAME.update(H1='per-channel time skew 10 ns', H2='per-channel pulse width +-5 %',
                  H3='per-event footprint 0.20-0.45 mm', H4='footprint 0.30 mm (FC) + tails')
+# K1 test (rerun/paper1_floor/K1_TEST_2026-11-01.md): plane-to-plane shape scatter of bright pulses (the locked model's
+# simplification K1, rerun/calib/saturation/DECISION_2026-10-29.md), injected per EVENT on top of the full toy (L8).
+# Size from K1_AMP (env), calibrated so the post-fit centre-strip residual scatter at the peak matches the data's
+# (TEMPLATE_STUDY T16: 0.06 of the peak).  A trailing 'w' in the rung name fits with MODEL_FRAC = K1_WT (the
+# signal-proportional variance term the pass does not use; toy only).
+K1_VAR = dict(G='per-strip gain jitter (per event)', T='per-strip time jitter (per event)',
+              W='per-event pulse-width stretch', S='per-sample proportional noise', L='per-event footprint width')
+for _k, _n in K1_VAR.items():
+    RUNG_NAME['K1' + _k] = 'K1: ' + _n
+    RUNG_NAME['K1' + _k + 'w'] = 'K1: ' + _n + ', K1-aware weights'
+RUNG_NAME['L8w'] = 'full toy, K1-aware weights'
 RUNG_KEYS = dict(H4=('footprint', 's030'), H1=('tskew',), H2=('chshape',), H3=('s0event',), L2=('footprint',), L3=('xcopy',), L4=('gainmap',), L5=('pulse',), L6=('diffx',),
                  L7=('dead', 'cm'), L8=('vdrift',))
 
 
 def flags_for(rung, alone=False):
+    if rung.startswith('K1') or rung == 'L8w':
+        out = flags_for('L8')
+        if rung.startswith('K1'):
+            out |= {'k1' + rung[2].lower()}
+        if rung.endswith('w'):
+            out |= {'k1wt'}
+        return out
     if rung in ('L0', 'L1'):
         return set()
     if alone:
@@ -211,6 +231,8 @@ def gen_event(det, tan, flags, adc, tmpl_gen, rng, chamber_state):
         sig0 = 0.30            # FC (cef45df): one sigma0 = 0.30 mm for both views, mostly resistive spread < 60 ns
     if 's0event' in flags:
         sig0 = rng.uniform(*HYP['s0_event'])
+    if 'k1l' in flags:
+        sig0 = sig0 * max(1 + K1_AMP * rng.normal(), 0.2)
     F = ft.footprint(pos, xl, sig0)
     if 'footprint' in flags:
         eta, gam = R['lor_eta'], R['lor_gamma']
@@ -220,12 +242,14 @@ def gen_event(det, tan, flags, adc, tmpl_gen, rng, chamber_state):
     A = F * (gain * adc)[None, :]
     ts = np.arange(ft.NSAMP) * ft.DT_SAMP
     H = np.interp(ts[None, :] - (t0 + ul)[:, None], g_t, h_t, left=0, right=0)
-    if 'tskew' in flags or 'chshape' in flags:
+    if 'tskew' in flags or 'chshape' in flags or 'k1t' in flags or 'k1w' in flags:
         W = np.empty((NBLK, ft.NSAMP))
         tt = ts[None, :] - (t0 + ul)[:, None]
+        k1t = K1_AMP * rng.normal(size=NBLK) if 'k1t' in flags else np.zeros(NBLK)     # [ns]
+        k1w = max(1 + K1_AMP * rng.normal(), 0.5) if 'k1w' in flags else 1.0
         for s_ in range(NBLK):
-            dt_s = chamber_state['tskew'][s_ + NBLK * blk] if 'tskew' in flags else 0.0
-            sc_s = chamber_state['chshape'][s_ + NBLK * blk] if 'chshape' in flags else 1.0
+            dt_s = (chamber_state['tskew'][s_ + NBLK * blk] if 'tskew' in flags else 0.0) + k1t[s_]
+            sc_s = (chamber_state['chshape'][s_ + NBLK * blk] if 'chshape' in flags else 1.0) * k1w
             ipk = g_t[int(np.argmax(h_t))]
             W[s_] = A[s_] @ np.interp(ipk + (tt - dt_s - ipk) / sc_s, g_t, h_t, left=0, right=0)
     else:
@@ -237,6 +261,10 @@ def gen_event(det, tan, flags, adc, tmpl_gen, rng, chamber_state):
     gstrip = np.arange(NBLK) + NBLK * blk
     if 'gainmap' in flags:
         W *= chamber_state['gain'][gstrip][:, None]
+    if 'k1g' in flags:
+        W *= np.maximum(1 + K1_AMP * rng.normal(size=NBLK), 0.0)[:, None]
+    if 'k1s' in flags:
+        W = W + K1_AMP * np.maximum(W, 0.0) * rng.normal(size=W.shape)
     dead_true = np.isin(gstrip, chamber_state['dead_true']) if 'dead' in flags else np.zeros(NBLK, bool)
     W[dead_true] = 0.0
     noise = np.full(NBLK, P['noise'])
@@ -314,14 +342,30 @@ def one(args):
         else:
             tp = reco.t0_prior_for(_CAL, VIEW, 0)
             tp = (tr['t0'], tp[1]) if tp is not None else None
+            from wft import model as wm
+            wm.MODEL_FRAC = K1_WT if 'k1wt' in flags else 0.0
             f = reco.fit_plane(win, VIEW, _CAL, t0_prior=tp)
+            wm.MODEL_FRAC = 0.0
             if f is None:
-                rows.append((ang, np.nan, np.nan, 0, np.nan, np.nan, tr['sat_event'], tr['n_strips'], tr['ne']))
+                rows.append((ang, np.nan, np.nan, 0, np.nan, np.nan, tr['sat_event'], tr['n_strips'], tr['ne'],
+                             np.nan, np.nan, np.nan))
                 continue
             tfit = f.w * 1e3 / v_um
             dof, chi2, s0u, t0f = f.dof, f.chi2, f._sigma_p0, f.t0
+            # T16's statistic: (data - model) / model peak on the brightest unsaturated strip at its peak sample
+            try:
+                Wg, nz, ps, st = wm.prep_plane(win, VIEW)
+                M = wm.model_waveforms(VIEW, ps, f.p0, f.w, f.t0, f._q, _CAL.hyper)
+                si, ki = np.unravel_index(int(np.argmax(np.where(np.asarray(st, bool), -np.inf, Wg))), Wg.shape)
+                rc = float((Wg[si, ki] - M[si, ki]) / max(M.max(), 1e-9))
+                pk = float(Wg[si, ki])
+            except Exception:
+                rc, pk = np.nan, np.nan
+            rows.append((ang, np.degrees(np.arctan(tfit)) - ang, chi2 / max(dof, 1), dof, s0u, t0f - tr['t0'],
+                         tr['sat_event'], tr['n_strips'], tr['ne'], float(f.q_sum), rc, pk))
+            continue
         rows.append((ang, np.degrees(np.arctan(tfit)) - ang, chi2 / max(dof, 1), dof, s0u, t0f - tr['t0'],
-                     tr['sat_event'], tr['n_strips'], tr['ne']))
+                     tr['sat_event'], tr['n_strips'], tr['ne'], np.nan, np.nan, np.nan))
     return rows
 
 
@@ -405,7 +449,9 @@ def job(a):
             else:
                 _init(a.det)
                 rows = [r for j in jobs for r in one(j)]
-            np.save(os.path.join(a.out, f"{a.det}_{rung}{'_alone' if a.alone else ''}_a{int(ang)}{VSUF}.npy"),
+            amp = (f"_k{K1_AMP:g}" + (f"_wt{K1_WT:g}" if rung.endswith('w') else '')) \
+                if (rung.startswith('K1') or rung == 'L8w') else ''
+            np.save(os.path.join(a.out, f"{a.det}_{rung}{amp}{'_alone' if a.alone else ''}_a{int(ang)}{VSUF}.npy"),
                     np.array(rows, float))
             print(a.det, rung, ang, 'done', flush=True)
 
