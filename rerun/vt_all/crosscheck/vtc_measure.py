@@ -95,6 +95,21 @@ def colsum_table(path, det):
                 x_ok_unsat=xok & ~z['x_sat'], x_ok_sat=xok & z['x_sat'])
 
 
+def eid_clock(C):
+    """{eid: t_h} for any event id inside the colsum range, interpolated (monotonic: checked)."""
+    k = np.isfinite(C['t_h'])
+    o = np.argsort(C['eid'][k])
+    E, T = C['eid'][k][o], C['t_h'][k][o]
+    if np.any(np.diff(T) < -1e-6):
+        raise RuntimeError('event id not monotonic in time')
+    class Clock(dict):
+        def get(self, e, d=np.nan):
+            return float(np.interp(e, E, T)) if E[0] <= e <= E[-1] else d
+        def __getitem__(self, e):
+            return self.get(e)
+    return Clock()
+
+
 def std_ratio(C, sel):
     """each trigger's T over the row-wide median T of its (4 x 4 x 100 mm) x (amplitude tercile) cell."""
     q3 = np.nanquantile(C['q'][sel], [1 / 3, 2 / 3])
@@ -159,7 +174,7 @@ def main():
     # the column on the head-on cache's own events (M3 |tan| < 0.06 in a view): same events as the stack, other estimator
     H0 = pickle.load(open(a.headon, 'rb'))
     hx = {k for k, e in H0.items() if abs(e['tan_x']) < xw.TAN}
-    ish = np.isin(C['eid'], np.fromiter(hx, int)) if out['colsum']['eid_unique'] else np.zeros(len(C['eid']), bool)
+    ish = np.isin(C['eid'], np.fromiter(hx, int))
     cols = {'col': ('T', C['unsat']), 'col_x': ('Tx', C['unsat']), 'col_y': ('Ty', C['unsat']),
             'col_sat': ('T', C['sat']), 'col_in30': ('T', C['unsat'] & C['inn']), 'col_std': ('std', C['unsat']),
             'col_head': ('Tx', ish & C['x_ok_unsat']), 'col_head_sat': ('Tx', ish & C['x_ok_sat'])}
@@ -174,7 +189,10 @@ def main():
 
     # ---- stack: head-on cache, masked, eid -> t_h through colsum
     H = pickle.load(open(a.headon, 'rb'))
-    t_of = dict(zip(C['eid'].tolist(), C['t_h'].tolist())) if out['colsum']['eid_unique'] else {}
+    # the cache's events on the clock: colsum keeps only the triggers with a cluster (~half the head-on events), so t is
+    # interpolated in the event id, which is global and monotonic in time over the row (g_det4: |error| <= 0.8 s
+    # against the pass table's own timestamps)
+    t_of = eid_clock(C)
     b = json.load(open(os.path.join(wdir, 'calib_bundle', 'bundle.json')))
     audit = json.load(open(os.path.join(CB, 'results', 'strip_gain_audit.json')))
     mk = sorted(set(b['dead']['x']) | bad_set(audit[GOLD[det]], 'x'))

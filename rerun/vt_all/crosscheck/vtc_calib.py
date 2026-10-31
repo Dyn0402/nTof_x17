@@ -112,7 +112,11 @@ def colsum_clock(path):
     t0 = np.array([(vb.stem_time(t) - vb.T_REF).total_seconds() / 3600 for t in z['acq_tags']])
     ts = np.where(z['x_ts'] >= 0, z['x_ts'], z['y_ts']).astype(float)
     t = t0[z['acq'].astype(int)] + ts * vb.TICK_S / 3600
-    return dict(zip(z['eid'].astype(int).tolist(), t.tolist()))
+    k = (ts >= 0)
+    o = np.argsort(z['eid'][k])
+    E, T = z['eid'][k][o].astype(float), t[k][o]
+    # colsum keeps only triggers with a cluster: interpolate in the (global, monotonic) event id (vtc_measure.eid_clock)
+    return lambda e: np.where((np.asarray(e) >= E[0]) & (np.asarray(e) <= E[-1]), np.interp(np.asarray(e, float), E, T), np.nan)
 
 
 def main():
@@ -145,7 +149,7 @@ def main():
                 T[f'bow_leak_{mn}'] = bow_leak(cal, V, f)
             R[key][tab] = T
             print(key, tab, {k: {p: round(v[p]['s68'], 3) for p in 'xy'} for k, v in T.items()
-                             if isinstance(v, dict) and 'x' in v and 's68' in v.get('x', {})}, flush=True)
+                             if isinstance(v, dict) and isinstance(v.get('x'), dict) and 's68' in v['x']}, flush=True)
     # S4: the two det4 samples on the clock
     row = GOLD['g_det4']
     clk = colsum_clock(os.path.join(S4I, row, 'fa', 'colsum.npz'))
@@ -162,7 +166,7 @@ def main():
         rc = lambda t: np.interp(t, tb, rb)
     s4 = {}
     for nm, ks in samples.items():
-        t = np.array([clk.get(k, np.nan) for k in ks])
+        t = clk(np.array(ks, float))
         s4[nm] = dict(n=len(ks), n_clock=int(np.isfinite(t).sum()), t_mean=float(np.nanmean(t)),
                       t_q=[float(x) for x in np.nanquantile(t, [0.1, 0.5, 0.9])],
                       inv_r_line=float(np.nanmean(1 / rl(t))),
