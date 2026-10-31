@@ -45,12 +45,12 @@ V0_SCAN = {100: 2.5, 300: 12.0, 500: 18.0, 700: 25.0, 900: 33.0, 1100: 38.0}   #
 def main():
     jobs = [l.split() for l in open(os.path.join(HERE, 'condor', 'stack_jobs.in')) if l.strip()]
     arms, sel, rows = {}, {}, {}
-    for key, row in jobs:
+    for key, row, _arow, brow in jobs:
         det = row.split('/')[-1]
         cache = os.path.join(STACKS, row, 's4', 'headon.pkl')
         if not os.path.exists(cache):
             print('missing', key); continue
-        b = os.path.join(PASS1, row, 'wft', 'calib_bundle')
+        b = os.path.join(PASS1, brow, 'wft', 'calib_bundle')
         dead = set(json.load(open(os.path.join(b, 'bundle.json')))['dead']['x'])
         mask = sorted(dead | bad_set(AUDIT[AUDIT_KEY[det]], 'x'))
         box = TRUE_ACTIVE_BY_DET[det]
