@@ -1,0 +1,12 @@
+# rerun/sps_junk/lobes.py on a few SPS rows: condor_submit code=<code dir> lobes.sub
+executable     = lobes_job.sh
+arguments      = $(code) $(key)
+output         = log/lb_$(key).out
+error          = log/lb_$(key).err
+log            = log/lb.log
+request_cpus   = 1
+request_memory = 8000
++JobFlavour    = "workday"
+should_transfer_files = NO
+requirements   = (Machine != "b9g42p2031.cern.ch")
+queue key in (run55_flatdrift__d600, run55_flatdrift__d400, run57_rot25_co2__d650, run59_co2__co2, run61_rot15_ladder__d210, run63_rot25__d325, run66_flat_resist__r655, run60_flush__ov13, run63_flat__flat700)

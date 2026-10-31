@@ -97,3 +97,15 @@ def test_off_event_strip_is_ordinary():
     ch, sm, am = _zs(track_y=156.0, osc_on=False)          # a real track ON the coupled strip, oscillator off
     rec = sbc.event_record(ch, sm, am, raw=False, nsmp=32, seed_bad=bad, qmin=100, couple=couple)
     assert rec['censor_y'] == [] and abs(POSITION_MM[rec['seed_ch_y']] - 156.0) < 1.0
+
+
+def test_weak_oscillator_next_to_a_known_one_is_found_but_not_its_copy():
+    # run55 d600: ch 373 ON in ~5 % of the events (below the seed rule), its copy 375 in most of those
+    pk = _peaks(on_frac=0.05, copy_frac=0.8)
+    osc = sbc.near_oscillators(pk, sbc.SEED_BAD.copy())
+    assert list(np.flatnonzero(osc)) == [OSC]
+
+
+def test_beam_strip_next_to_a_known_oscillator_is_not_an_oscillator():
+    pk = _peaks(on_frac=0.0, copy_frac=0.0, beam_mm=(150.0, 200.0))
+    assert not sbc.near_oscillators(pk, sbc.SEED_BAD.copy()).any()

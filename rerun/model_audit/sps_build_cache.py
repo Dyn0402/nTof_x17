@@ -60,14 +60,26 @@ SEED_BAD[list(RAW_CM_BAD)] = True
 #: (rerun/channel_layer/det4_sps_h4.json 'dead_stripes', STRIPE).  Until 2026-10-31 the dead ones counted, with ~0 seeds:
 #: the last live strip at a stripe edge inside a busy beam (X ch 172/173, 214 mm, on run55: the beam spot ends there) read
 #: as > 10x its neighbours and was censored as hot in run55 d500-d700, and with it the beam's edge.
-#: HOT_FRAC was 3 % of the 2000 events until 2026-10-31; it is 1 % of a 1000-event block (>= 10 seeds) since: on run55
-#: d600 ch 373 is ON in 4-7 % of the events and seeds 2.3-2.6 % of each block against 0.1-0.4 % for its live neighbours.
-#: The ratio to the live neighbours is what separates an oscillator from a beam strip; the floor only asks for statistics.
+#: HOT_FRAC stays 3 % (of a block).  1 % was tried (2026-10-31 census, rerun/sps_junk/README.md) and flags X strips in the
+#: beam that sit next to low-gain strips the H4 layer does not list (X ch 74/75 at 190 mm, 148/149 at 232 mm, 57, 129, 251:
+#: 10-33x their live neighbours in ON rate, single pulses, not oscillations): the X view's gain structure makes a pure
+#: rate rule unsafe below 3 %.  The weaker oscillators are caught by the rule below instead.
 HOT_SCAN = None
 HOT_SCAN_MIN = 2000
 HOT_BLOCK = 1000
-HOT_FRAC = 0.01
+HOT_FRAC = 0.03
 HOT_RATIO = 10.0
+#: An oscillation moves between neighbouring channels of the known oscillators (372 -> 373 on run55 d700): a channel within
+#: OSC_NEAR position ranks of a SEED_BAD channel is an oscillator for the plateau too when the probe's events have it ON
+#: (peak > COUPLE_ON_ADC) in at least OSC_MIN of them and at OSC_RATIO x the median ON rate of its live neighbours, unless it
+#: is a COPY of one already found (most of its ON events are that oscillator's ON events: the copies are handled by the
+#: coupling rule, per event).  On run55 d400/d600, run57 d550-d700, run59: ch 373 is ON in 4-11 % of the events at 8-21x its
+#: live neighbours but seeds only 1-3 % (the real Y track usually wins), below the seed rule; its copies on 371/374/375
+#: still put 2-3 % of those rows' Y windows at 155-160 mm.
+OSC_NEAR = 2
+OSC_MIN = 0.01
+OSC_RATIO = 5.0
+OSC_COPY = 0.5
 HOT_LAST = {}
 #: Cross-talk of an oscillator onto its neighbours (rerun/sps_junk/README.md, 2026-10-31).  The oscillation is periodic
 #: (a lobe every ~15 samples) and, in the events where it is on, appears on adjacent channels at ~0.3-0.7 of its height
@@ -143,6 +155,32 @@ def hot_in_blocks(seeds, block=None):
         for sx, sy in seeds[lo:hi]:
             cnt[sx] += 1; cnt[sy] += 1
         out |= hot_channels(cnt, hi - lo)
+    return out
+
+
+def near_oscillators(peaks, known):
+    """bool[512]: the channels within OSC_NEAR position ranks of a SEED_BAD channel that oscillate in the probe's events
+    (peaks [n_events, 512]); ``known`` (bool[512]): the oscillators already found (SEED_BAD | hot), whose copies are not
+    new oscillators.  The rule is described at OSC_*."""
+    pk = np.asarray(peaks, float); n = len(pk); out = np.zeros(512, bool)
+    if n == 0:
+        return out
+    on = pk > COUPLE_ON_ADC; rate = on.mean(0)
+    cand = set()
+    for b in np.flatnonzero(SEED_BAD):
+        cand |= {c for c in live_neighbours(int(b), OSC_NEAR) if not known[c]}
+    acc = [int(c) for c in np.flatnonzero(known) if VIEW[c] in ('x', 'y')]
+    scored = []
+    for c in cand:
+        nb = [x for x in live_neighbours(c) if x not in acc]
+        ratio = rate[c] / max(np.median(rate[nb]) if nb else 0.0, 1.0 / n)
+        if rate[c] >= OSC_MIN and ratio >= OSC_RATIO:
+            scored.append((ratio, c))
+    for ratio, c in sorted(scored, reverse=True):
+        mine = on[:, c]
+        if any((mine & on[:, a]).sum() > OSC_COPY * mine.sum() for a in acc):
+            continue                                       # a copy of an oscillator already found
+        out[c] = True; acc.append(c)
     return out
 
 
@@ -311,6 +349,8 @@ def build_cache(run, subrun, dataset, per_plateau=1000, half_win=16, tan=None, e
             for e in evs.values():
                 cnt[e['seed_ch_x']] += 1; cnt[e['seed_ch_y']] += 1
             hot = hot_in_blocks([(e['seed_ch_x'], e['seed_ch_y']) for e in evs.values()])
+            if evs:
+                hot |= near_oscillators(np.array([e['peak'] for e in evs.values()]), SEED_BAD | hot)
             a.seed_bad[L] = SEED_BAD | hot
             HOT_LAST[(run, subrun, L)] = [int(c) for c in np.flatnonzero(hot)]
             if hot.any():
