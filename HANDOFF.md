@@ -1,6 +1,57 @@
 # Handoff
 
-## From-scratch pass 1 (bench + SPS): steps 1–4 of the follow-ups done — next: two re-run decisions, then Paper I — updated 2026-10-30 (dylan-MS-7C84)
+## Pass 1 final: checks closed, Paper I numbers derived — next: Dylan's six arm choices, then edit the texts — updated 2026-10-31 (dylan-Yoga)
+
+**Resume:** read `rerun/PAPER1_NUMBERS_2026-10-31.md` (every Paper I / INFN / MPGD number: old vs pass-1 value, source, the
+choices to make). Everything below is on main; the ledger is clean (156/156 bench, 71/71 SPS).
+
+**Decisions for Dylan** (details in the numbers sheet):
+- A. SPS resolution run: run63 flat700 (recommended; telescope self-calibrated in-run) or run53 (cross-check).
+- B. SPS position estimator per view: fit p0, p at 7.5 mm, charge centroid, hits. They differ by up to 1.6×.
+- C. Bench angles: v(t) arm or pass arm. v(t) is always better, by ≤ 0.063°.
+- D. s68 convention: no clip, or the ±5° clip. Up to 0.75° apart on det4 X; the FD budget only closes clipped.
+- E. A1 loss table per chamber or det3 only.
+- F. Bow numbers per view or per-chamber mean.
+- G. 60 duplicate reproc files (76.6 GB) in the user EOS area. Delete or keep: list in `/eos/user/d/dneff/MOVED_TO_NTOF_2026-10-31.md`.
+- H. (optional) A time-resolved bench gas fit (water/O2 vs time) to explain the bench v(t). The fine bench Magboltz grid for it is ready.
+
+**Done 10-30 → 10-31** (one line each; the files have the detail):
+- det4 Y −0.25° = the pass template, not the bow: `rerun/calib/DET4Y_ABLATION_2026-10-30.md`.
+- S4 physics inputs hold on all five chambers once masks and the interior ≥ 30 mm cut are applied; no re-calibration.
+  The low-amplitude T excess = unmasked dead strips + the edge zone. `rerun/calib/S4_PHYSICS_INPUTS_2026-10-30.md` (last two sections).
+- v(t): plan for every data type, `rerun/VT_PLAN_2026-10-30.md`. 7 bench rows corrected, cross-checked by column duration
+  (det4/det2 confirmed; det6 amplitude uncertain ×2): `rerun/vt_all/CROSSCHECK_2026-10-31.md`. v(t) stays downstream (table level + per-row
+  w0/kw re-fold), not inside the calibration. n_TOF chamber C needs k per sub-run on 8 runs. SPS: none.
+- SPS:
+  - the oscillating-channel seed bug and its coupled neighbours, fixed at the source: `rerun/sps_audit/README.md`, `rerun/sps_junk/README.md`;
+  - all 71 rows on the final rule (33 re-run on c36322ec/48244778);
+  - run63 det4 X 209 ± 11 (p_mid) / Y 190 ± 10 µm (p0); run53 Y 176 ± 10 (hits);
+  - time resolution not measurable (stated limitation); footprint in `results/footprint.csv`;
+  - 8 of the 34 no-v rows get a v; run60 ov07 = beam off for its first 27 min.
+- Paper I:
+  - efficiency/loss/A1: `rerun/effbudget/PASS1_RESULT_2026-10-31.md`;
+  - charge (unsaturated) + tan_y sign pin: `rerun/paper1_charge/`;
+  - figure provenance: `papers/FIGURE_PROVENANCE_2026-10-31.md`;
+  - resolutions vs HV/field/angle, both v(t) arms: `rerun/paper1_res/PASS1_RESOLUTION_2026-10-31.md`;
+  - FD budget with the toys re-run on the pass bundles: unexplained 0.68–1.52° (54–88 % of the X variance),
+    `rerun/model_audit/followups/fd_floor_realism/REPORT.md`.
+- Magboltz: SPS grids adequate (interpolation test + midpoints); fine bench grid 2640 points, `air_merged` is the source for
+  all fits: `sps_beam_test_26/analysis/cloud_basics/MB_FINE_2026-10-31.md`.
+- EOS: 388 GB of experiment data moved from the user area to `/eos/experiment/ntof/data/x17/` (user area 82 → 43 %); symlinks
+  work over FUSE only, so use `root://eosexperiment` URLs: `rerun/EOS_MOVE_2026-10-31.md`.
+
+**Running at the time of writing:** the SPS gas fit (H2O + O2 per epoch, `rerun/sps_gasfit/`). When it finishes, move its dir:
+`ssh lxplus 'cd ~/x17rerun/eos_move && ./run_streams.sh L sps_gasfit'`.
+
+**Next:**
+1. Dylan's choices A–F, then edit the texts. The sheet flags 31 wrong numbers in Paper I, 2 in the INFN abstract and 7 in MPGD,
+   plus the old "176 µm = 0.30 × pitch" error (it is 0.23 × pitch).
+2. The stale figures (the loss displays, hv_scan, spark_deadtime, efficiency_map) re-rendered from pass 1 on EOS/desktop. The Paper II
+   tiers_benchmark/fleet figures need a hits reco on the pass-1 events.
+3. Open, stated as limitations unless resolved: what the unexplained 0.7–1.5° is; det6's v amplitude; det4's bench gain curve
+   (comes from SPS); the 3550 clip rule biases charge on det4/det6 (K4, locked).
+
+## (superseded by the section above) From-scratch pass 1 (bench + SPS): steps 1–4 of the follow-ups done — next: two re-run decisions, then Paper I — updated 2026-10-30 (dylan-MS-7C84)
 
 **Resume:** the four follow-ups below ran in parallel and are on main. Two decisions for Dylan (det4/det7 re-calibration, the 8 SPS v rows) come
 before the Paper I numbers.
