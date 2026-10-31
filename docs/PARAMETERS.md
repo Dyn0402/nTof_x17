@@ -231,6 +231,13 @@ These caught four rows whose scan had railed to the window edge.
 | `core_sigma_mm` | same | robust width of the radial distance r between waveform point and M3 ray, over r < 15 mm |
 | `s68_deg` | `angles/angular_resolution.json` | 68th percentile of \|Δθ − median Δθ\| (Δθ = detector − M3), per view. bow_finalize uses ½(p84 − p16) instead: close, not identical |
 | `implied_v` | same | v that would make the angle scale exact, per \|tan_ref\| bin: a check on kw · v |
+| fiducial `region` | `common/mx17_fiducial.py` (effbudget, `03_angles --fiducial`) | per M3 ray, footprint [mesh, mesh + 30 tan] in the raw strip frame against `TRUE_ACTIVE_BY_DET`: **interior** = ≥ `EDGE_OWN_MM` 30 mm from an unpassivated edge (X) and ≥ `EDGE_PASSIV_MM` 8 mm from a passivated one (Y), both views; edge bands 0–5 … 20–30 mm; outside = acceptance (never in a denominator) |
+| `good_x` / **interior_good** | same | det7: X footprint on ch 256–511 only, footprint x ≥ `DET7_X_CARD1_MM` 199.3 mm (card 1 = ch 0–255 excluded: M1 badly seated, pogo shorts). Other chambers: everywhere. interior_good = interior AND good_x: the headline selection for Paper I |
+| `interior_live` | effbudget | interior and not `hw_known`: det7 card 1 (as good_x) and det4's dead / low-gain bands (2 mm bins of x with the pre-pass C22 live ratio < 0.3, `outliers/an/live_det4.parquet`; a hardware map, same raw events) |
+| `detected` (budget) | `rerun/effbudget/budget.py` | both views fitted, raw-frame \|r\| ≤ R (5 mm; 3 mm also reported) from the M3 ray, n_dropped ≤ `MAX_DROPPED` 2 in both views; denominator: measured (decoder-complete) M3 rays, one good ray per event, inside the table's event range |
+| trigger-track rule (`detected_rule`) | `budget.cand_arms` | per view, among all ranked candidates (sidecar rank ≥ 0; the `plausible` flag is beam-tuned and not used), the most vertical (smallest \|tan_theta\|, ties to production rank); detected as above with the picked candidate's n_dropped. A downstream selection (Dylan 10-28), cosmic trigger only |
+| multi-track credit (`detected_any`) | same | any candidate within R in both views (uses the reference: a credit, never a selection) |
+| noise band | `rerun/effbudget/pass1/band_census.py` (= `satstudy/bands.py`) | a channel's CM-subtracted window mean > 5 σ with RMS < 2 σ; a chip is banded when ≥ 8 of its 64 channels are; census reads ≤ 4000 triggers per decoded file |
 | SPS `ref_x/ref_y` | events table | det4's own window centroid. On RAW rows the window is mostly noise strips, so it is **not** a position reference. Use the uRWELL telescope or the other view |
 
 ---
