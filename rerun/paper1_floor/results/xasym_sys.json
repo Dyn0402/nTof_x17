@@ -1,0 +1,147 @@
+{
+ "det2|calib": {
+  "key": "o22_long_det2",
+  "build": "det2",
+  "scale": 1.0,
+  "n": 3194,
+  "shift_um_rms": 48.06771998532658,
+  "shift_um_max": 118.6993547052145,
+  "arms": {
+   "none": {
+    "mesh_core_um": 460.15018262054446,
+    "mesh_s68_um": 556.2570254120322,
+    "mid_core_um": 475.1094980876919,
+    "mid_s68_um": 560.4891255408352
+   },
+   "K": {
+    "mesh_core_um": 455.2599420434299,
+    "mesh_s68_um": 549.5050986561408,
+    "mid_core_um": 470.8125546587193,
+    "mid_s68_um": 558.0449494892345
+   },
+   "K-1s": {
+    "mesh_core_um": 455.5746116041382,
+    "mesh_s68_um": 548.18749440973,
+    "mid_core_um": 469.37904842706155,
+    "mid_s68_um": 558.5591098026541
+   },
+   "K+1s": {
+    "mesh_core_um": 455.8166889393291,
+    "mesh_s68_um": 551.0797129006318,
+    "mid_core_um": 470.5920044241376,
+    "mid_s68_um": 556.515254880783
+   }
+  }
+ },
+ "det2|headline": {
+  "key": "c26__mx17_det2_det3_overnight_6-22-26__long_run__mx17_2",
+  "build": "det2",
+  "scale": 1.0,
+  "n": 16669,
+  "shift_um_rms": 47.85245986266658,
+  "shift_um_max": 118.6993547052145,
+  "arms": {
+   "none": {
+    "mesh_core_um": 476.76897276680955,
+    "mesh_s68_um": 582.4060535196081,
+    "mid_core_um": 481.51206550592497,
+    "mid_s68_um": 584.9549245760977
+   },
+   "K": {
+    "mesh_core_um": 475.7509664868455,
+    "mesh_s68_um": 583.2412199405478,
+    "mid_core_um": 479.2239206388686,
+    "mid_s68_um": 583.2060318546463
+   },
+   "K-1s": {
+    "mesh_core_um": 475.41190623484886,
+    "mesh_s68_um": 582.5733360678327,
+    "mid_core_um": 479.1131010801207,
+    "mid_s68_um": 582.3473020553986
+   },
+   "K+1s": {
+    "mesh_core_um": 475.8126287116921,
+    "mesh_s68_um": 581.4320283389585,
+    "mid_core_um": 479.8159271245937,
+    "mid_s68_um": 584.2182434927157
+   }
+  }
+ },
+ "det3|calib": {
+  "key": "sat_det3",
+  "build": "det3 June-15",
+  "scale": 0.44,
+  "n": 6196,
+  "shift_um_rms": 27.727177518022927,
+  "shift_um_max": 43.68581639430523,
+  "arms": {
+   "none": {
+    "mesh_core_um": 465.67620707503653,
+    "mesh_s68_um": 571.3659304230825,
+    "mid_core_um": 459.125260987332,
+    "mid_s68_um": 566.0896582418336
+   },
+   "K": {
+    "mesh_core_um": 465.5120224811545,
+    "mesh_s68_um": 571.426366137305,
+    "mid_core_um": 459.63129880888533,
+    "mid_s68_um": 566.893578468988
+   },
+   "K-1s": {
+    "mesh_core_um": 465.50984209627273,
+    "mesh_s68_um": 572.2550265402721,
+    "mid_core_um": 459.78332035760843,
+    "mid_s68_um": 566.301405538296
+   },
+   "K+1s": {
+    "mesh_core_um": 465.64659311514947,
+    "mesh_s68_um": 572.318059896097,
+    "mid_core_um": 459.6169539157212,
+    "mid_s68_um": 566.7238386857956
+   }
+  }
+ },
+ "det3|headline": {
+  "key": "c26__mx17_det3_p2_det1_overnight_6-27-26__long_run_p2_det1_sanity_check__mx17_3",
+  "build": "det3 June-15",
+  "scale": 0.44,
+  "n": 19218,
+  "shift_um_rms": 27.62149374045861,
+  "shift_um_max": 43.68581639430523,
+  "arms": {
+   "none": {
+    "mesh_core_um": 470.4387085537549,
+    "mesh_s68_um": 582.9936557169871,
+    "mid_core_um": 479.377171916122,
+    "mid_s68_um": 582.0128600795298
+   },
+   "K": {
+    "mesh_core_um": 469.8153747756628,
+    "mesh_s68_um": 582.7104302923844,
+    "mid_core_um": 479.88088496998347,
+    "mid_s68_um": 581.9376663651908
+   },
+   "K-1s": {
+    "mesh_core_um": 469.63419569606594,
+    "mesh_s68_um": 582.5565859939456,
+    "mid_core_um": 479.98122367524013,
+    "mid_s68_um": 582.1016680276564
+   },
+   "K+1s": {
+    "mesh_core_um": 470.08587147447315,
+    "mesh_s68_um": 582.8576467813396,
+    "mid_core_um": 479.783720051259,
+    "mid_s68_um": 582.467947629158
+   }
+  }
+ },
+ "K": -0.77,
+ "K_err": 0.13,
+ "excluded": {
+  "det4": "raw map too sparse (13 cells); correcting made the M3 residual map worse (chi2 162 -> 174)",
+  "det6": "26 cells, no improvement",
+  "det7": "9 cells, no improvement",
+  "det3 May": "no field (control)",
+  "det1": "no field (control)"
+ }
+}

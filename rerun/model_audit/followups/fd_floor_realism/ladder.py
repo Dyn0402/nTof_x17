@@ -49,6 +49,11 @@ import floor_toy as ft  # noqa: E402
 AUDIT = os.environ.get('FD_AUDIT') or os.path.expanduser('~/x17/cosmic_bench/model_audit')
 ft.AUDIT = AUDIT
 OUT = os.path.join(HERE, 'results')
+# FD_VIEW=y: the same toy fitted as the Y view (rerun/paper1_floor, 2026-10-31): the bundle's Y dead list, t0 prior and
+# fit_plane(..., 'y'); no one-sided X copy (an X-only effect); the X-numbered dead_extra misses do not apply.  The
+# generation (footprint core + X tails, pulse, noise, CM) is the X one: Y has no measured tails of its own.
+VIEW = os.environ.get('FD_VIEW', 'x')
+VSUF = '' if VIEW == 'x' else f'_{VIEW}'
 NBLK = 64            # strips per DREAM chip = per common-mode block
 PITCH = ft.PITCH
 
@@ -87,6 +92,9 @@ COMMON = dict(sigma0_true=0.25, cm_rms=135.0, cm_slope_sigma=0.033, pulse_c=None
 sys.path.insert(0, HERE)
 import pass1_basis as pb  # noqa: E402
 pb.apply(sys.modules[__name__], ft)
+if VIEW != 'x':
+    for _r in REALISM.values():
+        _r['dead_extra'] = []
 # pulse-shape mismatch (cloud_basics 37, det3): residual data - model in units of the model peak, bright unsaturated
 # peak strips: +0.061 at the peak, +0.055 one sample later, +0.022 two, -0.029 five.  Generated as the template with
 # its falling edge compressed in time by (1 + c) about the peak; c calibrated in pulse_calib() to give +0.06 at the
@@ -222,7 +230,7 @@ def gen_event(det, tan, flags, adc, tmpl_gen, rng, chamber_state):
             W[s_] = A[s_] @ np.interp(ipk + (tt - dt_s - ipk) / sc_s, g_t, h_t, left=0, right=0)
     else:
         W = A @ H
-    if 'xcopy' in flags and R['asym'] > 0:
+    if 'xcopy' in flags and R['asym'] > 0 and VIEW == 'x':
         Hd = np.interp(ts[None, :] - (t0 + ul + R['asym_tau'])[:, None], g_t, h_t, left=0, right=0)
         Wd = A @ Hd
         W[:-1] += R['asym'] * Wd[1:]          # each strip's prompt pulse copied onto its lower neighbour, late
@@ -271,7 +279,7 @@ def _init(det):
     R = REALISM[det]
     gain = np.exp(rs.normal(0, R['gain_sigma'], 512))
     gain /= np.exp(np.mean(np.log(gain)))
-    dead = list(_CAL.dead.get('x', []))
+    dead = list(_CAL.dead.get(VIEW, []))
     ex = R['dead_extra']
     if isinstance(ex, str):
         ex = list(rs.choice(np.setdiff1d(np.arange(512), dead), int(ex[4:]), replace=False))
@@ -304,9 +312,9 @@ def one(args):
             par, c2, _ = ft.fit_event(win['W'], sat, win['pos'], P, (g, h), dict(p0=tr['p0'], tan=tan, t0=tr['t0']))
             tfit, dof, chi2, s0u, t0f = par[1], int((~sat).sum()), c2, P['s0'], par[2]
         else:
-            tp = reco.t0_prior_for(_CAL, 'x', 0)
+            tp = reco.t0_prior_for(_CAL, VIEW, 0)
             tp = (tr['t0'], tp[1]) if tp is not None else None
-            f = reco.fit_plane(win, 'x', _CAL, t0_prior=tp)
+            f = reco.fit_plane(win, VIEW, _CAL, t0_prior=tp)
             if f is None:
                 rows.append((ang, np.nan, np.nan, 0, np.nan, np.nan, tr['sat_event'], tr['n_strips'], tr['ne']))
                 continue
@@ -397,7 +405,7 @@ def job(a):
             else:
                 _init(a.det)
                 rows = [r for j in jobs for r in one(j)]
-            np.save(os.path.join(a.out, f"{a.det}_{rung}{'_alone' if a.alone else ''}_a{int(ang)}.npy"),
+            np.save(os.path.join(a.out, f"{a.det}_{rung}{'_alone' if a.alone else ''}_a{int(ang)}{VSUF}.npy"),
                     np.array(rows, float))
             print(a.det, rung, ang, 'done', flush=True)
 
@@ -411,7 +419,9 @@ def collect(a):
             pc, _, pr = pulse_calib(det)
             res['pulse_c'], res['pulse_residual'] = pc, pr
             for rung in RUNGS + ['H1', 'H2', 'H3', 'H4']:
-                fs = sorted(glob.glob(os.path.join(a.inp, f"{det}_{rung}{'_alone' if alone else ''}_a*.npy")))
+                fs = sorted(glob.glob(os.path.join(a.inp, f"{det}_{rung}{'_alone' if alone else ''}_a*{VSUF}.npy")))
+                if not VSUF:
+                    fs = [f for f in fs if f.endswith(tuple(f'_a{x}.npy' for x in range(100)))]
                 if not fs:
                     continue
                 rows = np.concatenate([np.load(f) for f in fs])
@@ -427,7 +437,7 @@ def collect(a):
                 res['basis'] = dict(tag=pb.TAG, place=pb.PLACE, inputs={k: v for k, v in pb.INPUTS[det].items()
                                                                         if k not in ('v_rel', 'dead_x')})
             if res['rungs']:
-                path = os.path.join(OUT, f"ladder_{pb.TAG + '_' if pb.ON else ''}{det}{'_alone' if alone else ''}.json")
+                path = os.path.join(OUT, f"ladder_{pb.TAG + '_' if pb.ON else ''}{det}{'_alone' if alone else ''}{VSUF}.json")
                 json.dump(res, open(path, 'w'), indent=1)
                 for rung, s in res['rungs'].items():
                     print(f"{det} {'alone' if alone else 'cum  '} {rung:3s} {RUNG_NAME[rung]:28s} " + ' '.join(

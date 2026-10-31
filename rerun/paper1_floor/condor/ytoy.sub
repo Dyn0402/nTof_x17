@@ -1,0 +1,13 @@
+executable            = ytoy_job.sh
+arguments             = $(args)
+transfer_input_files  = fd_code.tgz
+should_transfer_files = YES
+when_to_transfer_output = ON_EXIT
+output                = logs/$(Cluster).$(Process).out
+error                 = logs/$(Cluster).$(Process).err
+log                   = logs/ytoy.log
+request_cpus          = 1
+request_memory        = 2000
+requirements          = (Machine != "b9g42p2031.cern.ch")
++JobFlavour           = "longlunch"
+queue

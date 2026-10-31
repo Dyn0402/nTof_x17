@@ -54,23 +54,23 @@ from and when.
 | event_waveforms | stephan_cosmics display (current) | raw waveforms, 07-12 | current | manifest asks to check there is no hits overlay |
 | forward_model | none (placeholder) | diagram | placeholder | |
 | toy_floor | none (placeholder) | script 18 on the R&D model | placeholder | needs a re-run on the production model (R6) |
-| tiers_benchmark | none (placeholder) | R1–R5 | placeholder | not a pass product: needs the hits tiers (H0–H2c) reconstructed on the same events; v(t) no longer blocks it (10-31) |
+| tiers_benchmark | none (placeholder) | R1–R5 | placeholder | H0 vs W on the same events now exists (`rerun/paper1_floor/hits_arm.py`, the fleet figure); the H1/H2a/H2b/H2c tiers are not pass products and H2c (forward fit on hit lists, R3) is new work, not a re-run: left open (10-31) |
 | threshold_neighbours | none (placeholder) | R4 | placeholder | |
 | known_angle_geometry | angled_kernel geometry.png (current; PNG not on this machine) | schematic | current | |
 | known_angle | none (placeholder) | SPS rotated runs | **pending-sps** | SPS tan sign not pinned (only \|tan\|), `COORDINATES.md` §4b |
-| fleet | none (placeholder) | pass-1 angles + a hits arm | placeholder | the waveform side is in `rerun/paper1_res/results/summary.json` (headline s68, both arms); the hits side needs the hits tiers on pass-1 events, not produced. v(t) no longer blocks it (10-31) |
+| fleet | `rerun/paper1_floor/figures/fleet.pdf` (current) | pass 1 + rr1 hits chain, 10-31 | **rebuilt** | H0 (rr1 event_results_veto50, angle scale calibrated on M3 per row) vs W (pass-1 v(t) arm) on the same interior_good events of the five calibration rows: angle s68, position core σ, efficiency within 5 mm (`rerun/paper1_floor/hits_arm.py`) |
 
 ## Summary
 
 | status | count | figures |
 |---|---|---|
 | current | 5 | microtpc_principle, bench_setup, sharing_cartoon, event_waveforms, known_angle_geometry |
-| rebuilt on pass 1 | 5 | charge_balance; gas_vE, tracking_perf, bow_profiles, bow_closure (10-31, `rerun/paper1_res/`) |
+| rebuilt on pass 1 | 6 | charge_balance; gas_vE, tracking_perf, bow_profiles, bow_closure (10-31, `rerun/paper1_res/`); fleet (10-31, `rerun/paper1_floor/`) |
 | stale | 17 | hv_scan, spark_deadtime, efficiency_map, the 14 loss_* displays |
 | pending-vt | 0 | (v(t) settled 10-31: the four data figures rebuilt; tiers_benchmark and fleet moved to placeholder, they need a hits arm) |
 | pending-sps | 5 | attachment, sps_resolution, kernel_forms, angled_kernel, known_angle |
 | superseded | 2 | edge_turnon, timing |
-| placeholder | 10 | chamber_stack, readout_layout, sps_setup, det4_stripes (stale basis), ladder_compression, forward_model, toy_floor, threshold_neighbours, tiers_benchmark, fleet |
+| placeholder | 9 | chamber_stack, readout_layout, sps_setup, det4_stripes (stale basis), ladder_compression, forward_model, toy_floor, threshold_neighbours, tiers_benchmark |
 
 New pass-1 figures available but not in either manifest (no `.tex` references them yet):
 `rerun/paper1_charge/figures/{gain_curves, drift_field, unsat_bias, golden_spectra}.pdf`.
