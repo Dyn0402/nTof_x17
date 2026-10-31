@@ -12,3 +12,11 @@ other 5 % go?"). Report: `~/x17/cosmic_bench/effbudget/report.html`, published a
 Needs the C22 outputs (`~/x17/cosmic_bench/outliers/classified_<det>.parquet`, `an/live_det4.parquet`) for the far
 classes and det4's band map. Reproduces `mx_june_wft/02_efficiency.py` (det3 far 4.45 % in both). Downstream of the
 reconstruction: re-run on the pass tables.
+
+## Pass 1 (2026-10-31): `pass1/`
+
+The budget on every pass-1 bench row, the interior_good fiducial (`common/mx17_fiducial.py`, det7 X ch 256–511), the
+trigger-track rule / multi-track credit / position-only arms, A1 on the golden rows, the noise-band census and the
+fine (8 mm) maps. Result: `PASS1_RESULT_2026-10-31.md`; report `pass1/report/report.html` (with figures on EOS
+`/eos/user/d/dneff/x17rerun/paper1_eff/report/`). Run order: `pass1/make_dag.py <code>` on lxplus (condor), then
+`collect.py`, `a1_recat.py`, `fine_maps.py` with the lock venv on lxplus, then `make_report.py`.

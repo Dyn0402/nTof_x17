@@ -30,17 +30,20 @@ def figs(T):
     fig, axs = plt.subplots(1, 3, figsize=(17, 5))
     for d in DETS:
         g = T[(T.det == d) & T.eff_ig.notna() & (T.n_ig >= 200)]
-        for dv, gg in g.groupby('drift_V'):
+        # one line per night and drift field; skeptical rows (chamber or slot suspect) as grey crosses
+        sk = g[g.cls == 'skeptical']
+        axs[0].plot(sk.resist_V, sk.eff_ig, 'x', color=COL[d], alpha=.35, ms=4)
+        for (run, dv), gg in g[g.cls != 'skeptical'].groupby(['run', 'drift_V']):
             gg = gg.sort_values('resist_V')
-            axs[0].errorbar(gg.resist_V, gg.eff_ig, yerr=gg.err_ig, fmt='o-' if dv == g.drift_V.mode().iloc[0] else 's:',
-                            color=COL[d], ms=4, lw=1, label=f'{d} drift {dv:g} V')
+            axs[0].errorbar(gg.resist_V, gg.eff_ig, yerr=gg.err_ig, fmt='o-' if len(gg) > 2 else 's', color=COL[d], ms=4,
+                            lw=1, label=f'{d} {run.split("_")[-1]} drift {dv:g} V')
         gb = T[(T.det == d) & T.band_any.notna()]
         axs[1].plot(gb.resist_V, gb.band_quiet, 'o', color=COL[d], ms=4, label=d)
         gs = T[(T.det == d) & T.loss_spark_ig.notna() & (T.n_ig >= 200)]
         axs[2].plot(gs.resist_V, gs.loss_spark_ig, 'o', color=COL[d], ms=4, label=d)
     axs[0].set_xlabel('resist (mesh) HV [V]'); axs[0].set_ylabel('detection efficiency, interior_good, R = 5 mm [%]')
     axs[0].set_ylim(0, 100); axs[0].legend(fontsize=6, ncol=2); axs[0].grid(alpha=.3)
-    axs[0].set_title('Efficiency vs HV, every pass-1 row with >= 200 interior rays', fontsize=10)
+    axs[0].set_title('Efficiency vs HV (x = skeptical rows), rows with >= 200 interior rays', fontsize=10)
     axs[1].set_xlabel('resist HV [V]'); axs[1].set_ylabel('triggers with a noise band (no spark) [%]'); axs[1].set_yscale('log')
     axs[1].legend(fontsize=7); axs[1].grid(alpha=.3); axs[1].set_title('Noise-band census, every row', fontsize=10)
     axs[2].set_xlabel('resist HV [V]'); axs[2].set_ylabel('interior_good rays lost to the spark veto [%]')
@@ -48,12 +51,50 @@ def figs(T):
     fig.tight_layout(); fig.savefig(os.path.join(FIG, 'eff_vs_hv.png'), dpi=90); plt.close(fig)
 
 
+def verdict(G, A1):
+    """Verdict text and limitations, generated from the numbers (so a re-run updates them)."""
+    head = '; '.join(f"{d} {f(G[d]['eff_ig'])} &plusmn; {f(G[d]['err_ig'])} %" for d in DETS if d in G)
+    keys = {G[d]['key'] for d in G}
+    gold = {o['det']: o for k, o in A1.items() if k in keys}
+    top = []
+    for d in DETS:
+        o = gold.get(d)
+        if not o:
+            continue
+        p = {k: v for k, v in o['interior_good']['pct'].items() if k != 'detected'}
+        k, v = max(p.items(), key=lambda t: t[1])
+        top.append(f'{d} {html.escape(k)} {v:.1f} %')
+    rule = '; '.join(f"{d} {G[d]['rule_ig'] - G[d]['eff_ig']:+.2f}" for d in DETS if d in G and G[d].get('rule_ig') is not None)
+    credit = '; '.join(f"{d} +{G[d]['any_ig'] - G[d]['eff_ig']:.1f}" for d in DETS if d in G and G[d].get('any_ig') is not None)
+    txt = (f'Detection efficiency on the pass-1 golden rows, interior_good, R = 5 mm: {head}. '
+           f'The largest single loss class per chamber (A1, interior_good): {"; ".join(top)}. '
+           f'The trigger-track rule as a selection changes the golden efficiencies by {rule} points. '
+           f'Multi-track credit (reference-assisted, not a selection) would add {credit} points.')
+    lim = ['Efficiencies use |r| <= 5 mm at the mesh, which does not depend on v; the interior_good angle s68 in the '
+           'tables DO depend on v(t) for g_det4, g_det6_long, g_det7_long and the other VT_PLAN rows.',
+           'The M3 reference is not perfect: far:POS_TAIL (mostly tracks bent between the M3 doublets, C22) is counted '
+           'as a chamber loss here.',
+           "det4's dead / low-gain band map (interior_live) is the pre-pass C22 live-ratio map on the same raw events: "
+           'hardware, not reconstruction, but not re-derived on the pass tables.',
+           'C22 classes are rebuilt on the pass tables without the M3 cluster trees (m3feat): only the POS_TAIL / '
+           'M3_ELSEWHERE explanation text is missing, not the class.',
+           'The row-level noise-band census reads at most 4000 triggers per decoded file (about 30 % of a long run); '
+           'the golden rows were re-read in full for A1.',
+           'Skeptical rows (det3 6-22, det3 6-23, det2 6-17) are listed, not quoted. On det3 6-23 the broken angle scale '
+           '(folded v 1.7-3.5 um/ns) moves right-position fits to fit_failed through the |tan| <= 3 sanity cut: the '
+           'position-only column is the efficiency there.',
+           'The spark veto (> 50 strips above the floor) removes 17-21 % of the det6/det7 golden interior tracks, '
+           'almost all classified as discharges from their waveforms: a property of those chambers at 495 V.']
+    return dict(verdict=txt, limits=lim)
+
+
 def main():
     T = pd.read_csv(os.path.join(RES, 'rows.csv'))
     S = json.load(open(os.path.join(RES, 'summary.json')))
     A1 = json.load(open(os.path.join(RES, 'a1.json'))) if os.path.exists(os.path.join(RES, 'a1.json')) else {}
     pools = json.load(open(os.path.join(RES, 'map_pools.json'))) if os.path.exists(os.path.join(RES, 'map_pools.json')) else {}
-    V = json.load(open(os.path.join(RES, 'verdict.json'))) if os.path.exists(os.path.join(RES, 'verdict.json')) else {}
+    V = verdict(S['golden'], A1)
+    json.dump(V, open(os.path.join(RES, 'verdict.json'), 'w'), indent=1)
     figs(T)
     G = S['golden']
     H = ['<!DOCTYPE html><html><head><meta charset="utf-8"><title>Paper I efficiency and losses on pass 1</title><style>'
@@ -62,7 +103,7 @@ def main():
          'th{background:#eee}td:first-child,th:first-child{text-align:left}.box{background:#f4f8ff;border:1px solid #9bd;padding:.6em 1em}'
          'img{max-width:100%}code{background:#f3f3f3}</style></head><body>']
     H.append('<h1>Paper I: efficiency, loss budget and A1 on the pass-1 bench tables (2026-10-31)</h1>')
-    H.append('<div class="box"><b>Verdict.</b> ' + V.get('verdict', 'see the tables below') + '</div>')
+    H.append('<div class="box"><b>Verdict.</b> ' + V['verdict'] + '</div>')
     H.append('<h2>Headline: golden rows</h2><p>Detection = both views fitted, |r| &le; R in the raw strip frame against the '
              'M3 ray (&chi;&sup2;&lt;1, NClus = 4, one good ray per event), &le; 2 competing strips per view. '
              '<b>interior_good</b> = the footprint &ge; 30 mm from an unpassivated edge and &ge; 8 mm from a passivated one, '
@@ -114,7 +155,7 @@ def main():
     rows = [[html.escape(str(r[c])) if c in ('det', 'subrun', 'cls') else (f(r[c], 2) if isinstance(r[c], float) else r[c]) for c in cols]
             for _, r in U.iterrows()]
     H.append('<h2>Every pass-1 bench row</h2>' + table(rows, cols))
-    H.append('<h2>What this does not rule out</h2><ul>' + ''.join(f'<li>{x}</li>' for x in V.get('limits', [])) + '</ul>')
+    H.append('<h2>What this does not rule out</h2><ul>' + ''.join(f'<li>{x}</li>' for x in V['limits']) + '</ul>')
     H.append('<p>Code: <code>rerun/effbudget/pass1/</code> (make_dag.py &rarr; condor; collect.py, a1_recat.py, fine_maps.py, '
              'make_report.py on lxplus). Outputs: <code>/eos/user/d/dneff/x17rerun/paper1_eff/</code>.</p></body></html>')
     open(os.path.join(REP, 'report.html'), 'w').write('\n'.join(H))

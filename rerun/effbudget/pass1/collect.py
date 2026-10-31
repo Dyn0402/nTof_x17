@@ -94,7 +94,7 @@ def main():
     keep = [c for c in T.columns if c.startswith(('n_', 'eff_', 'err_', 'rule_', 'any_', 'posonly_', 'loss_', 'band_', 's68_', 'closure',
                                                      'multi_views', 'prod_right', 'rule_right', 'spark_trig',
                                                      'discharge_trig'))]
-    S = dict(n_rows=len(T), missing=missing, golden={d: {c: (None if pd.isna(v) else v) for c, v in gold.loc[d, keep + ['key', 'resist_V', 'drift_V']].items()}
+    S = dict(n_rows=len(T), missing=missing, golden={d: {c: (None if pd.isna(v) else (v.item() if hasattr(v, 'item') else v)) for c, v in gold.loc[d, keep + ['key', 'resist_V', 'drift_V']].items()}
                                                     for d in gold.index})
     json.dump(S, open(os.path.join(a.out, 'summary.json'), 'w'), indent=1, default=str)
     print(json.dumps(dict(n_rows=len(T), missing=missing), indent=1))

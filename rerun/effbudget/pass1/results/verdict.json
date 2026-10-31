@@ -1,0 +1,12 @@
+{
+ "verdict": "Detection efficiency on the pass-1 golden rows, interior_good, R = 5 mm: det2 90.3 &plusmn; 0.5 %; det3 92.6 &plusmn; 0.3 %; det4 40.9 &plusmn; 0.5 %; det6 74.4 &plusmn; 0.5 %; det7 68.0 &plusmn; 0.7 %. The largest single loss class per chamber (A1, interior_good): det2 multi:other_picked 1.7 %; det3 multi:other_picked 1.4 %; det4 other:hw_known 33.9 %; det6 spark:discharge 17.1 %; det7 spark:discharge 24.3 %. The trigger-track rule as a selection changes the golden efficiencies by det2 +0.00; det3 +0.05; det4 -0.01; det6 -0.04; det7 +0.03 points. Multi-track credit (reference-assisted, not a selection) would add det2 +3.6; det3 +2.6; det4 +3.4; det6 +3.2; det7 +3.5 points.",
+ "limits": [
+  "Efficiencies use |r| <= 5 mm at the mesh, which does not depend on v; the interior_good angle s68 in the tables DO depend on v(t) for g_det4, g_det6_long, g_det7_long and the other VT_PLAN rows.",
+  "The M3 reference is not perfect: far:POS_TAIL (mostly tracks bent between the M3 doublets, C22) is counted as a chamber loss here.",
+  "det4's dead / low-gain band map (interior_live) is the pre-pass C22 live-ratio map on the same raw events: hardware, not reconstruction, but not re-derived on the pass tables.",
+  "C22 classes are rebuilt on the pass tables without the M3 cluster trees (m3feat): only the POS_TAIL / M3_ELSEWHERE explanation text is missing, not the class.",
+  "The row-level noise-band census reads at most 4000 triggers per decoded file (about 30 % of a long run); the golden rows were re-read in full for A1.",
+  "Skeptical rows (det3 6-22, det3 6-23, det2 6-17) are listed, not quoted. On det3 6-23 the broken angle scale (folded v 1.7-3.5 um/ns) moves right-position fits to fit_failed through the |tan| <= 3 sanity cut: the position-only column is the efficiency there.",
+  "The spark veto (> 50 strips above the floor) removes 17-21 % of the det6/det7 golden interior tracks, almost all classified as discharges from their waveforms: a property of those chambers at 495 V."
+ ]
+}
