@@ -1,0 +1,13 @@
+# fixed-HV gain proxy on 6-23 / 6-22 (consistency audit): condor_submit code=<code dir> hg.sub
+executable     = hg.sh
+arguments      = $(code) $(key)
+output         = log/hg_$(key).out
+error          = log/hg_$(key).err
+log            = log/hg.log
+request_cpus   = 1
+request_memory = 12000
++JobFlavour    = "longlunch"
+should_transfer_files = NO
+requirements   = (Machine != "b9g42p2031.cern.ch")
+max_retries    = 2
+queue key from keys.txt

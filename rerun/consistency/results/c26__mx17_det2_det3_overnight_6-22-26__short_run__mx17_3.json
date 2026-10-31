@@ -1,0 +1,29 @@
+{
+ "key": "c26__mx17_det2_det3_overnight_6-22-26__short_run__mx17_3",
+ "det": "mx17_3",
+ "run": "mx17_det2_det3_overnight_6-22-26",
+ "subrun": "short_run",
+ "cls": "skeptical",
+ "resist_V": 495.0,
+ "drift_V": 1000.0,
+ "n_mip": 11391,
+ "n_trig": 13298,
+ "x": {
+  "f_sat": 0.6181195680800632,
+  "lead_p25": 2695.59326171875,
+  "lead_p50": NaN,
+  "lead_p75": NaN,
+  "sum_p25": 8619.5283203125,
+  "sum_p50": NaN,
+  "n_strips_med": 6.0
+ },
+ "y": {
+  "f_sat": 0.6026687735931876,
+  "lead_p25": 2592.62744140625,
+  "lead_p50": NaN,
+  "lead_p75": NaN,
+  "sum_p25": 8796.8935546875,
+  "sum_p50": NaN,
+  "n_strips_med": 8.0
+ }
+}

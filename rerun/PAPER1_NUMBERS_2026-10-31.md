@@ -28,6 +28,7 @@ Sources (main, 2026-10-31):
 | K1 | `rerun/paper1_floor/K1_TEST_2026-11-01.md` (does the locked model's K1 shape scatter explain the remainder? toy only) | 553e4065 + the K1 write-up commit |
 | OPS | `rerun/paper1_ops/README.md` (§4: HV-scan optima, discharges and bursts, dead time, det4 SPS gain, M3-free gain proxy) | this commit |
 | FIGS | `rerun/paper1_figs/README.md` (§5 edge zone and efficiency map, §9 det4 stripes bench vs SPS, A1 displays and the class audit) | the paper1_figs commit |
+| CONS | `rerun/consistency/README.md` (cross-section audit 2026-11-01: the 6-23/6-24 night, the number-level table; edits to this sheet marked "CONS 11-01") | the consistency commit |
 
 ## Paper I
 
@@ -54,7 +55,7 @@ Sources (main, 2026-10-31):
 |---|---|---|---|
 | chosen points 480/480/440 V | the HV scans' optima on pass 1 (interior_good efficiency): det2 480 V (92.2 %), det3 470 V (93.8 %; plateau 460–490), det6 480 V (85.8 %), det7 430 V (89.8 %; plateau 430–435). So 480/480/440 = det3 (or det2) / det6 / det7 is what the data support. The golden rows ran at 490 (det3) and 495 V (det2, det4, det6, det7): det6/det7 there read 74.4 / 68.0 % with 16.8 / 24.7 % of interior tracks lost to discharges | **OK as optima** + **CHOICE**: say the golden rows are above them, quote both efficiencies for det6/det7 | OPS |
 | spark rate Poisson, muon-induced 4–6×, edges | Poisson / muon-induced / edges: not re-derived (needs discharge positions and random triggers). Pass 1: discharges (a chip ≥ 8 strips over 3000 ADC) per trigger rise ×10 every 26 / 27 / 21 / 42 V (det2/3/6/7), i.e. ∝ gain^2–2.7 (det7 gain^1.4); at the golden HV 0.13–0.17 /s (det2/det3), 0.69 (det6), 1.14 (det7). The pass's > 50-strip veto also removes bursts with no discharge: 6.3 % of g_det4's interior tracks, 7–10 % of det6's at 400–445 V | NOT RE-DERIVED (3 claims) + new numbers | OPS |
-| gain curves (no number in text) | ×2 every 16.6 (det2), 16.7 (det3), 19.1 (det6), 17.9 V (det7); curved. An M3-free hits proxy reproduces them (0.43 / 0.40–0.45 / 0.36 / 0.36–0.39 per 10 V) and shows the 6-23 night flat for det3 too (0.10–0.12): the 6-23 exclusion is the night, not M3. det4: no bench curve; at SPS its charge rises only ×1.65 over 580–780 V (run66, CF₄, telescope denominator) and is flat over 550–625 V (Ar/CO₂/iso) | new | CHG, OPS |
+| gain curves (no number in text) | ×2 every 16.6 (det2), 16.7 (det3), 19.1 (det6), 17.9 V (det7); curved. An M3-free hits proxy reproduces them (0.43 / 0.40–0.45 / 0.36 / 0.36–0.39 per 10 V) and shows the 6-23 night flat for det3 too (0.10–0.12): the 6-23 exclusion is the night, not M3. CONS 11-01: at a fixed 495 V both chambers' charge rose ×4 (det3) / ×7 (det4) and their efficiency 0.06 → 35 % / 3.9 → 28.5 % through 6-23 (not yet at working gain, recovering), and only 4–40 % of triggers are MIP-like (86 % on 6-22), so the descending scan cannot be inverted. det4: no bench curve; at SPS its charge rises only ×1.65 over 580–780 V (run66, CF₄, telescope denominator) and is flat over 550–625 V (Ar/CO₂/iso) | new | CHG, OPS |
 
 ### §5 Charge balance and efficiency
 
@@ -70,7 +71,7 @@ Sources (main, 2026-10-31):
 | det6 75 % | 74.4 ± 0.5 % | OK (rounds to 74; within 1 pt) | EFF |
 | det7 57 % | 68.0 ± 0.7 % (X on ch 256–511); 62.9 % with all X | **WRONG** | EFF |
 | (edge turn-on, D4: the hits −3° edge tilt) | the x sides (no passivation) carry a drift-field fringe over 20–30 mm: tan bias up to 0.1–0.36 within 5–20 mm, ≤ 0.016 at 30–45 mm; column duration longer and more charge there; efficiency plateau by ~5 mm (y sides) / 10–20 mm (x sides); the 0–5 mm strip on every side loses the column (truncation). A 10–30 mm y band keeps full efficiency but its Y-angle s68 is 1.3–1.9× the interior's (det2/det3) | NEW (replaces the hits number) + **CHOICE** (fiducial: 30 mm all sides, or 10 mm on y for efficiency only) | FIGS |
-| (edge T, S4 re-check: −86 / +40 / +60 ns unexplained) | column duration edge − interior −4 / +26 / +78 / +27 / −115 ns (det2/3/4/6/7); the bow alone predicts −45 to −64 ns; the fringe has the opposite sign | EXPLAINED (fringe at the x sides) | FIGS |
+| (edge T, S4 re-check: −86 / +40 / +60 ns unexplained) | column duration edge − interior −4 / +26 / +78 / +27 / −115 ns (det2/3/4/6/7); the bow alone predicts −45 to −64 ns; the fringe has the opposite sign | EXPLAINED (fringe at the x sides) for det3/det4 (stack +40 / +60 vs column +26 / +78, agree within errors); **det2 open** (CONS 11-01): the head-on stack's −86 ± 33 ns vs the column's −4 ns is a 2.5σ tension, on the chamber whose x-side tan bias also has the same sign on both sides | FIGS, CONS |
 
 ### §6 Gas
 
@@ -81,7 +82,7 @@ GAS = `rerun/paper1_gas/README.md` (2026-10-31; figure `gas_vE_timing` recommend
 | det3 drift scan, six fields 35–382 V/cm | seven fields, 33–367 V/cm (drift 100–1100 V over 30 mm) | **WRONG** | RES §3 (gas_vE) |
 | v = 2.5–37.8 µm/ns | timing v (gap / T) 17.7–37.2 µm/ns at 177–390 V/cm, on Magboltz 0.97 %; 2.55–38.8 µm/ns angle-scale v (v_drift × kw, not a timing v; ~5 % above Magboltz everywhere); timing v of det3 at 333 V/cm 36.03 ± 0.34 | **WRONG** (and say which v) | RES, S4 re-check, GAS |
 | 0.95 % water, ≲ 10 ppm O₂ (bench) | det3 drift scan, timing v, one water for 500–1100 V: **0.97 % [0.95, 0.99]**, χ² 2.5/3 (the pre-pass 0.955 % is reproduced). Other chambers' golden rows: det2 0.69, det4 0.42, det6 1.00, det7 0.48 % (per-chamber water; the gap ± err band is ±0.05–0.10 %). O₂ not re-derived (pass-1 stacks carry no attachment term) | OK (det3) + NEW (per chamber) | GAS |
-| (new) the bench water drifts in time | 6-26: det6 1.47 → 0.76 %, det7 0.68 → 0.35 % over 01:00–15:00, one time shape (r 0.975); det4 0.70 → 0.21 % through 6-23, back at 0.42 % on 6-24; det2 0.73 → 0.57 % on 6-22 | NEW | GAS |
+| (new) the bench water drifts in time | 6-26: det6 1.47 → 0.76 %, det7 0.68 → 0.35 % over 01:00–15:00, one time shape (r 0.975); det4 0.70 → 0.21 % through 6-23, back at 0.42 % on 6-24; det2 0.73 → 0.57 % on 6-22 | NEW; **det4 6-23 caveat (CONS 11-01)**: the stack inversion assumes no attachment, and 6-23 was not attachment-free (chambers recovering, CONS §1); the 0.70 is short_run's first third (T 1032 ± 451 ns). Quote det4 at 6-24 (0.42 %, clean) and drop or caveat the 6-23 night | GAS, CONS |
 | (new) det6 early-night attachment | first ~4 h of 6-26: visible drift column 0.44 → 0.93, τ 1.1 → 1.7 µs, ~600 → 370 ppm O₂-equivalent (×2 model factor); it is why det6's ladder and column-duration v(t) disagreed | NEW (CHOICE: quote or not) | GAS |
 | beam run_71: 1.51 % water, 163 ppm O₂; run_63 230 → 147 ppm | not re-derived (gas-fit session) | NOT RE-DERIVED | — |
 | gap topography, bench det3 spread 1.5 mm | det3 gap 28.19 ± 0.19 mm (interior), input 28.08 ± 0.19 holds; the spread is not re-measured | OK (mean) / NOT RE-DERIVED (spread) | S4 re-check |
@@ -135,7 +136,7 @@ paper figures show.
 
 | text | pass 1 | status | source |
 |---|---|---|---|
-| 62 % of det4's area does not amplify | the A1 class "dead / low-gain stripes" is 34 % of interior M3 tracks (interior_good, g_det4). Re-derived on pass 1 without a stripe map (FIGS): 52 % of the interior x range is below half the X plateau; two-view detection over the interior area 41 % | **WRONG** (re-word or replace with 52 % of the x range) | EFF, FIGS |
+| 62 % of det4's area does not amplify | the A1 class "dead / low-gain stripes" is 34 % of interior M3 tracks (interior_good, g_det4). Re-derived on pass 1 without a stripe map (FIGS): 52 % of the interior x range is below half the X plateau; two-view detection over the interior area 41 %. These agree once defined (CONS 11-01): tracks in the sub-half-plateau 52 % are partly still detected at low gain (a gain continuum) or lost to other classes, so 34 % of tracks fall in the stripe class; 71.3 % efficiency in the live bands | **WRONG** (re-word or replace with 52 % of the x range) | EFF, FIGS, CONS |
 | (stripe map bench vs SPS) | live/dead per 1 mm bin agree on 82 % (85 % at +0.5 mm) between bench g_det4 and SPS run63 over x 152–231 mm; the mirror agrees on 52 %. Run53 (lower gain) loses the marginal bands: the stripes are a gain continuum | NEW | FIGS |
 
 ### Appendix A1 (det3, sat_det3, interior_good, n = 6 454; text: 6 451, 91.18 % detected)
@@ -224,16 +225,24 @@ paper figures show.
 - Bench positions as quoted in `rerun/paper1_res` are upper bounds; the M3-scattering term is now measured (`rerun/paper1_floor/position_ms.py`, 240–370 µm) and the chamber term rests on the pointing P.
 - det4, det6, det7 headline angles are in-sample (their only golden row is the calibration row).
 - det6's drift velocity over 6-26 is known only to a factor ~2 (ladder vs column duration); its depths carry it.
-- det4 has no bench gain curve (6-23 night flat; degraded M3 matching or a gain drift); its gain comes from SPS.
+- det4 has no bench gain curve, and its gain comes from SPS. CONS 11-01 replaces the old reason ("degraded M3 matching
+  or a gain drift"): on 6-23 both det3 and det4 were not yet at working gain and recovered through the night (×4–7 at a
+  fixed HV), so the descending HV scan cannot be inverted. Separately, 6-23 and 6-24 carry a 40–60 ns trigger-timing
+  term of unidentified cause. Quote det4's bench timing nowhere, and its position resolution from SPS only.
 - Charge: no absolute gain (fit ADC units); the 3550 rule misses 37 % (det4) / 46 % (det6) of truly clipped samples,
   which count as unsaturated and read low (K4, locked).
 - SPS: tan sign not determinable (only |tan| quoted); the time resolution is not measured; the telescope term
-  (f 0.25–0.34) is a ±40 µm systematic on det4; four CO2-epoch ZS rows carry 2–8 % junk Y fits (positions-only rows;
-  being cleaned).
+  (f 0.25–0.34) is a ±40 µm systematic on det4. The CO₂-epoch Y junk is fixed (CONS 11-01; was "2–8 %, being cleaned"):
+  the coupled-oscillator rule brings all 30 re-run ZS rows to ≤ 0.55 %, and the three run71 RAW rows were re-run too
+  (`rerun/sps_junk/README.md`). Every SPS row is on the final rule.
 - **FD budget:** the toy was re-run on the pass-1 bundles (1500 events per angle, the data's angle mix, each row's own r(t)).
   54–88 % of the X variance is still unexplained. Interior_good, calibration rows, v(t) arm, FD convention: det2 0.72 of
   0.98°, det3 0.68 of 0.93°, det4 1.52 of 1.62°, det6 0.93 of 1.13°, det7 0.98 of 1.12°. All toy terms together are
   0.38–0.46°; the toy floor is 0.31–0.34°.
   **Ranked on pass 1 (`rerun/paper1_floor/README.md`):** not the reference (no M3-χ² dependence), not a per-event common cause (X–Y |r| ≤ 0.09), not structure finer than the tilt map (≤ 0.16°), not angle non-linearity (≤ 0.13°), not the X copy (Y has the same remainder). Event conditions the toy does not generate (saturated planes, bright tail, topology) are 12–37 % of U² (65–92 % on det7). The remainder on clean events is 0.56–0.65° (det2/3/7 X; det4 1.42°), present head-on, roughly angle-independent and **fit-visible**: a best-χ² selection removes the same share of it as of the toy's own error, the data χ²/dof is 4–15× the toy's and grows as Q^1.4–2 → an event-varying waveform-shape error the model does not describe. This reverses the 10-27 "not a waveform misfit" (raw χ² quintiles, audit tables). Y toy built (`FD_VIEW=y`, approximate).
-- The efficiency loss classes were tuned on det3 and not checked by eye on the other chambers; the det4 stripe map is
-  pre-pass.
+- The efficiency loss classes were tuned on det3. CONS 11-01 (was "not checked by eye; the stripe map is pre-pass"):
+  they were audited by eye, 6 events per class per chamber, and the rules hold. The det4 stripe map was re-derived on
+  pass 1, and bench and SPS agree on 82–85 % of 1 mm bins (`rerun/paper1_figs/README.md`). What remains: the audit is
+  visual, not a measured purity.
+- det2's edge-zone drift time disagrees between the head-on stack (−86 ± 33 ns) and the column duration (−4 ns), at
+  2.5σ; det3 and det4 agree (CONS 11-01). Open.
