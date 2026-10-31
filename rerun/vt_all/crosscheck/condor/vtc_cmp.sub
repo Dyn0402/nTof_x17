@@ -1,0 +1,13 @@
+# condor_submit vtc_cmp.sub   (run from ~/x17rerun/vt_check; jobs in vtc_cmp_jobs.txt: <code> <builder> <key> <out>)
+# 24 GB: the pre-b3cc38a6 builder keeps every RAW file mapped (17.6 GB on run71 in vt_all)
+executable     = $ENV(HOME)/x17rerun/vt_check/vtc_cmp.sh
+arguments      = $(args)
+output         = log/cmp.$(Cluster).$(ProcId).out
+error          = log/cmp.$(Cluster).$(ProcId).err
+log            = log/vtc_cmp.log
+request_cpus   = 1
+request_memory = 24000
++JobFlavour    = "workday"
+requirements   = (Machine != "b9g42p2031.cern.ch")
+should_transfer_files = NO
+queue args from vtc_cmp_jobs.txt
