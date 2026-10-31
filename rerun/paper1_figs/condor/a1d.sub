@@ -1,0 +1,14 @@
+# A1 event displays of one golden row (a1_displays.py), from the frozen code archive; reads EOS through FUSE, writes
+# only to the --out dir on the n_TOF EOS area (never Analysis_pass1).  jobs.txt: node, code dir, args.
+executable     = /bin/bash
+arguments      = $(code)/rerun/paper1_figs/condor/a1d.sh $(code) $(args)
+output         = log/$(node).out
+error          = log/$(node).err
+log            = log/a1d.log
+request_cpus   = 1
+request_memory = 4000
+environment    = "PYTHONDONTWRITEBYTECODE=1"
++JobFlavour    = "workday"
+should_transfer_files = NO
+requirements   = (Machine != "b9g42p2031.cern.ch")
+queue node, code, args from jobs.txt

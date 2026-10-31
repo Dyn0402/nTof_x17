@@ -45,27 +45,32 @@ def posmap(row):
                                                 det_z=float(row['det_z']), det_name=row['det'], zero_suppressed=False,
                                                 base_path=row['eos_run_dir'].rsplit('/', 1)[0] + '/')
     cfg = qa_config.RUNS[key]
-    pm = strip_position_map(cfg)
+
+    class _Cfg:                       # the registered config, with the run_config read from EOS (not the desktop tree)
+        run_config_path = os.path.join(row['eos_run_dir'], 'run_config.json')
+        MAP_CSV_PATH, DET_NAME, MX17_FEU_X, MX17_FEU_Y = cfg.MAP_CSV_PATH, cfg.DET_NAME, cfg.MX17_FEU_X, cfg.MX17_FEU_Y
+    pm = strip_position_map(_Cfg)
     return dict(x=pm[cfg.MX17_FEU_X], y=pm[cfg.MX17_FEU_Y]), cfg
 
 
 def read_waveforms(row, gen, want):
-    """{(acq_tag, eid): {'x': W, 'y': W}} for the wanted (acq_tag, eid) pairs."""
+    """{(acq_tag, eid): {'x': W, 'y': W}} for the wanted (acq_tag, eid) pairs: data files only (the pedestal files in
+    decoded_root reuse event ids), each event from the acquisition the pass took it from (event ids restart per file)."""
     from wft import io as wio
     dec = inputs.GENERATIONS[gen]['decoded_root']
     out = {}
     for v, feu in (('x', int(row['feu_x'])), ('y', int(row['feu_y']))):
-        fs = sorted(glob.glob(os.path.join(row['eos_run_dir'], row['subrun'], dec, f'*_{feu:02d}.root')))
+        fs = sorted(f for f in glob.glob(os.path.join(row['eos_run_dir'], row['subrun'], dec, f'*_{feu:02d}.root'))
+                    if '_datrun_' in os.path.basename(f))
         for f in fs:
             tag = wio.file_tag(f)
-            ids = {e for (t, e) in want if t is None or t == tag}
+            ids = {e for (t, e) in want if t == tag}
             if not ids:
                 continue
             r = wio.FeuReader(f)
             have = ids & set(r.event_ids.tolist())
             for e, _ft, W in r.iter_events(have):
-                k = (tag, int(e)) if (tag, int(e)) in want else (None, int(e))
-                out.setdefault(k, {})[v] = W.astype(np.float32)
+                out.setdefault((tag, int(e)), {})[v] = W.astype(np.float32)
             print(f'  {v} {os.path.basename(f)}: {len(have)} events', flush=True)
     return out
 
@@ -125,13 +130,14 @@ def main():
     picks = {}
     for cls, g in C[C.recat != 'detected'].groupby('recat'):
         ids = np.sort(g.event_id.values)
-        ids = [int(i) for i in ids if i in E.index or i in R.index]
+        ids = [int(i) for i in ids if i in E.index]          # the acquisition comes from the pass table
         picks[cls] = sorted(rng.choice(ids, size=min(a.n, len(ids)), replace=False).tolist()) if ids else []
     paper = dict(p.split('=') for p in a.paper.split(',') if p)
     for cls, e in paper.items():
         if int(e) not in picks.get(cls, []):
             picks.setdefault(cls, []).append(int(e))
-    want = {(None, e) for es in picks.values() for e in es}
+    ACQ = {int(e): str(E.loc[e, 'acq_tag']) for es in picks.values() for e in es if e in E.index}
+    want = {(ACQ[e], e) for es in picks.values() for e in es if e in ACQ}
     print(f'{a.key}: {sum(len(v) for v in picks.values())} events in {len(picks)} classes', flush=True)
     WF = read_waveforms(row, a.gen, want)
     PM, _ = posmap(row)
@@ -141,7 +147,7 @@ def main():
     def draw(axx, axy, e, zoom):
         r = R.loc[e] if e in R.index else None
         f = E.loc[e] if e in E.index else None
-        w = WF.get((None, e), {})
+        w = WF.get((ACQ.get(e), e), {})
         pcs = None
         for v, ax in (('x', axx), ('y', axy)):
             if v not in w:
