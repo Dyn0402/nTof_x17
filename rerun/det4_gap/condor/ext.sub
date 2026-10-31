@@ -1,0 +1,13 @@
+# one SPS row's wide-window strip-charge extraction (rerun/det4_gap/sps_extent.py)
+executable     = /bin/bash
+arguments      = $ENV(HOME)/x17rerun/det4_gap/ext_job.sh $(key)
+output         = log/$(key).out
+error          = log/$(key).err
+log            = log/ext.log
+request_cpus   = 1
+request_memory = $(mem)
++JobFlavour    = "workday"
+should_transfer_files = NO
+requirements   = (Machine != "b9g42p2031.cern.ch")
+max_retries    = 3
+queue key, mem from keys.txt

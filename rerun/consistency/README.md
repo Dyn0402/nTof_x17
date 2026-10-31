@@ -111,6 +111,7 @@ by the v2 rays (LESSONS, 2026-06-24), and is not a third effect.
 | angle s68 | 03_angles (no clip): det3 0.991 / 0.901°, det4 X 2.41° vs FD/G1 (±5° clip): det3 0.93°, det4 X 1.66° | yes (definitional) | decision D. |
 | det4 dead fraction | 62 % (old §9 text, hits) vs 52 % of the interior x range below half the X plateau (FIGS) vs 34 % of interior M3 tracks lost to "stripes" (A1) vs 41 % two-view detection, 71.3 % in live bands (EFF) | yes, once defined | tracks in sub-half-plateau regions are partly still detected at low gain (the stripes are a gain continuum, FIGS) or lost to other classes. Sheet §9 row amended with the reconciliation. |
 | bench vs SPS position | bench chamber term near normal det2 163/176 ± 25, det3 126/116 ± 35 µm (± ~50 from P) vs SPS det4 run63 X 209 ± 11 / Y 190 ± 10 µm, run53 Y 176 ± 10 | yes | different chambers (det4 is the fleet's weakest) and both carry a reference systematic (P ±50 µm bench; telescope f ±40 µm SPS). |
+| det4 drift gap (added 2026-11-01) | SPS gas fit 27.7 ± 0.1 stat (quoted 27.9, ± 0.9 shaper) vs bench input 30.48 ± 0.44 (`physics_inputs.json`, X-view `gap_extent`) vs geometric 28.6 ± 0.5 (bench Y view, no reference; SPS rot25 plateau at the ZS floor 28.1–28.9, a lower bound) | **resolved: the gap is ~28.6** | `rerun/det4_gap/README.md`. The gas fit's gap is within one profile step; its water at 28.8 mm is 0.10–0.19 % lower, inside its gap term. The bench input is 6 % long, on det4 only: its X view crosses the dead stripes (working explanation). Moves det4's timing v (−6 %), the field labels and the §6 det4 water; not the angles. Not changed in `physics_inputs.json` (decision for Dylan). |
 | timing HV dependence | sheet "det3 102 → 41 ns (425 → 500 V)" vs §7 report "83 → 21 ns" | yes | the first is the event time, the second the per-view X−Y/√2 part (`rerun/paper1_timing/README.md` l. 45, 49). |
 | SPS Y junk | sheet limitation "four CO₂-epoch ZS rows carry 2–8 % junk Y fits (being cleaned)" vs sps_junk: all 30 re-run rows ≤ 0.55 %, run71 RAW re-run | **stale → fixed** | sheet limitation updated. |
 | A1 class audit / det4 stripe map | sheet limitation "not checked by eye on other chambers; stripe map pre-pass" vs FIGS: audited (rules hold), stripe map re-derived on pass 1 (bench vs SPS agree 82–85 %) | **stale → fixed** | sheet limitation updated. |
@@ -123,6 +124,8 @@ needs a caveat (attachment-free assumption) and the §5 edge-T row a det2 caveat
 ## Still to fold in (running when this was written)
 
 - **The SPS gas fit** (`rerun/sps_gasfit`). The bench-vs-SPS gas comparison (§6 item 3) is provisional until it lands.
+  *Landed (4127f9ea).* Its det4 gap (27.7–27.9) was checked geometrically on 2026-11-01: det4's gap is 28.6 ± 0.5 mm
+  (`rerun/det4_gap/README.md`, row in the §2 table).
 - **The residual bootstrap of the angle floor** (`rerun/paper1_floor/BOOTSTRAP_*`).
 - **Provenance is stale for four figures.** `papers/FIGURE_PROVENANCE_2026-10-31.md` still lists five figures as
   "pending-sps":

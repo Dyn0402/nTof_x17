@@ -29,6 +29,8 @@ Sources (main, 2026-10-31):
 | OPS | `rerun/paper1_ops/README.md` (§4: HV-scan optima, discharges and bursts, dead time, det4 SPS gain, M3-free gain proxy) | this commit |
 | FIGS | `rerun/paper1_figs/README.md` (§5 edge zone and efficiency map, §9 det4 stripes bench vs SPS, A1 displays and the class audit) | the paper1_figs commit |
 | CONS | `rerun/consistency/README.md` (cross-section audit 2026-11-01: the 6-23/6-24 night, the number-level table; edits to this sheet marked "CONS 11-01") | the consistency commit |
+| GASFIT | `rerun/sps_gasfit/README.md` (SPS H₂O + O₂ on the final pass) | 4127f9ea |
+| DET4GAP | `rerun/det4_gap/README.md` (det4's drift gap from the strip extent of inclined tracks: bench Y view + SPS rotated runs) | the det4_gap commit |
 
 ## Paper I
 
@@ -84,7 +86,8 @@ GAS = `rerun/paper1_gas/README.md` (2026-10-31; figure `gas_vE_timing` recommend
 | 0.95 % water, ≲ 10 ppm O₂ (bench) | det3 drift scan, timing v, one water for 500–1100 V: **0.97 % [0.95, 0.99]**, χ² 2.5/3 (the pre-pass 0.955 % is reproduced). Other chambers' golden rows: det2 0.69, det4 0.42, det6 1.00, det7 0.48 % (per-chamber water; the gap ± err band is ±0.05–0.10 %). O₂ not re-derived (pass-1 stacks carry no attachment term) | OK (det3) + NEW (per chamber) | GAS |
 | (new) the bench water drifts in time | 6-26: det6 1.47 → 0.76 %, det7 0.68 → 0.35 % over 01:00–15:00, one time shape (r 0.975); det4 0.70 → 0.21 % through 6-23, back at 0.42 % on 6-24; det2 0.73 → 0.57 % on 6-22 | NEW; **det4 6-23 caveat (CONS 11-01)**: the stack inversion assumes no attachment, and 6-23 was not attachment-free (chambers recovering, CONS §1); the 0.70 is short_run's first third (T 1032 ± 451 ns). Quote det4 at 6-24 (0.42 %, clean) and drop or caveat the 6-23 night | GAS, CONS |
 | (new) det6 early-night attachment | first ~4 h of 6-26: visible drift column 0.44 → 0.93, τ 1.1 → 1.7 µs, ~600 → 370 ppm O₂-equivalent (×2 model factor); it is why det6's ladder and column-duration v(t) disagreed | NEW (CHOICE: quote or not) | GAS |
-| beam run_71: 1.51 % water, 163 ppm O₂; run_63 230 → 147 ppm | not re-derived (gas-fit session) | NOT RE-DERIVED | — |
+| beam run_71: 1.51 % water, 163 ppm O₂; run_63 230 → 147 ppm | SPS gas fit on the final pass, at one gap (27.9 mm): CF₄ water 1.68–1.85 %, O₂ 130–260 ppm (run71 RAW 1.68 % / 226 ppm); CO₂ water 1.9–2.1 %, O₂ 320–440 ppm. O₂ required (χ² ×1.5–117 without). **At det4's geometric gap (28.6 ± 0.5 mm, DET4GAP; nearest profiled 28.8 mm):** CF₄ water 1.57–1.70 %, CO₂ 1.75–1.94 %, O₂ ~30–40 ppm lower; inside the gas fit's own gap term (±0.16 %), O₂ ordering unchanged | **WRONG** (old values, 30 mm labels) → quote the gas fit; water ±0.15–0.5 % | `rerun/sps_gasfit/README.md`, DET4GAP |
+| (new) det4 drift gap | **28.6 ± 0.5 mm, geometric** (strip extent of inclined tracks, no v, no pulse model): bench Y view 28.9–29.0 ± 0.4 raw (217 events, g_det4 + 6-23), minus the estimator's validated +0.3 ± 0.2 (det3 Y 28.4 vs 28.0–28.2, det2 Y 31.6 vs 31.1–31.5); SPS rot25 plateau at the ZS floor 28.1–28.9 (lower bound, both gases); SPS gas fit 27.7–27.9 ± 0.9 consistent. The input 30.48 ± 0.44 (`physics_inputs.json`, X-view `gap_extent`) disagrees by 1.9 mm (3σ), on det4 only (its X view crosses the dead stripes; working explanation, not demonstrated) | **NEW; the det4 input gap is 6 % long** — not changed (decision for Dylan): det4 timing v 32.70 → ~30.7 µm/ns, field labels 197 → 210 V/cm at 600 V, the §6 det4 water moves up; angles do not move (M3-scaled per row) | DET4GAP |
 | gap topography, bench det3 spread 1.5 mm | det3 gap 28.19 ± 0.19 mm (interior), input 28.08 ± 0.19 holds; the spread is not re-measured | OK (mean) / NOT RE-DERIVED (spread) | S4 re-check |
 
 ### §7 Timing

@@ -1,0 +1,13 @@
+# bench Y-inclined caches for the det4 gap (rerun/det4_gap/bench_ycache.py); each line of ycache_jobs.txt: <code> <key> <row>
+executable     = /bin/bash
+arguments      = $ENV(HOME)/x17rerun/det4_gap/ycache_job.sh $(args)
+output         = log/yc.$(Cluster).$(ProcId).out
+error          = log/yc.$(Cluster).$(ProcId).err
+log            = log/yc.log
+request_cpus   = 2
+request_memory = 8000
++JobFlavour    = "workday"
+should_transfer_files = NO
+requirements   = (Machine != "b9g42p2031.cern.ch")
+max_retries    = 3
+queue args from ycache_jobs.txt

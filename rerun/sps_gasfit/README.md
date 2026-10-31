@@ -103,6 +103,14 @@ Both are small against the quoted errors.
   - Statistically the RAW χ² picks the gap to ~0.1 mm. Because of the shaper freedom, one profile step (0.9 mm) is the
     systematic that is carried.
   - The bench-template arm, with no free shaper, moves the results by ≤ 0.06 % water and ≤ 41 ppm O₂.
+  - **Checked against a geometric gap (2026-11-01, `rerun/det4_gap/README.md`).** det4's gap from the strip extent of
+    inclined tracks, with no v and no pulse model, is 28.6 ± 0.5 mm. That comes from the bench Y view, validated on det3 and
+    det2; the SPS rot25 plateau at the ZS floor is 28.1–28.9 mm, a lower bound.
+    - The 27.7–27.9 mm used here is within one profile step of it.
+    - At the nearest profiled gap (28.8 mm) the water is 0.10–0.19 % lower (CF₄ 1.57–1.70 %, CO₂ 1.75–1.94 %) and the O₂
+      ~30–40 ppm lower: inside the carried gap term.
+    - The ordering of the O₂ between epochs is unchanged.
+    - The bench input 30.48 mm would be outside the RAW χ² profile (Δχ² ≈ 117 at 30.0 mm). The geometric gap removes that tension.
 - **Air ↔ electronics droop.** Attachment loses charge at a rate per time similar at every field, as a slow droop would.
   - The RAW fit breaks this with the post-drift-end shape: no undershoot at the end, three fields, a fixed shaper.
   - On ZS stacks the post-end region relies on the RAW emulation. Arm `zswin`, which fits ZS stacks only up to 2.9 µs, is
