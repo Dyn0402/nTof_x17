@@ -49,17 +49,18 @@ note = "The mpgd26 render exists as a script; its inputs are listed in mpgd26/sl
 # --- 4 Operation --------------------------------------------------------------
 
 [fig.hv_scan]
-title = "HV scan: efficiency and spark rate (det3)"
+title = "HV scans of det2/det3/det6/det7: interior efficiency, tracks lost to discharges, discharge rate"
 state = "current"
-source = "mx_june_cosmic_qa/engineer_package/figures/30-det3A-hv-scan-efficiency-sparks.pdf"
-producer = "cd mx_june_cosmic_qa && ../.venv/bin/python 10_hv_scan_efficiency.py"
-note = "Detection efficiency from hits: allowed (QA)."
+source = "rerun/paper1_ops/figures/hv_scan.pdf"
+producer = "lxplus: rerun/paper1_ops/condor/spark.sub (spark_timeline.py per pass-1 row) -> .venv/bin/python rerun/paper1_ops/make_report.py --spark <spark> --telgain <tel_gain> --spsgain <sps_gain> --hitsgain <hits_gain>"
+note = "Rebuilt 2026-10-31 on pass 1 (was the 06-29 hits figure 30, det3 only). Efficiency = the loss budget's interior_good (rerun/effbudget/pass1); discharge = a vetoed trigger (> 50 strips) with a chip of >= 8 strips over 3000 ADC; bursts (vetoed, no discharge) dotted. Numbers: rerun/paper1_ops/report.html."
 
 [fig.spark_deadtime]
-title = "No dead time after a spark"
+title = "Efficiency and charge against the time since the previous discharge: no dead time"
 state = "current"
-source = "mx_june_cosmic_qa/engineer_package/figures/44-det3A-spark-deadtime-null.pdf"
-producer = "cd mx_june_cosmic_qa && ../.venv/bin/python 39_spark_deadtime.py"
+source = "rerun/paper1_ops/figures/spark_deadtime.pdf"
+producer = "as hv_scan (rerun/paper1_ops/make_report.py)"
+note = "Rebuilt 2026-10-31 on pass 1, all five chambers (was the 07 det3 hits figure 44). Dead time per discharge integrated below 0.1 s."
 
 # --- 5 Charge balance and efficiency -----------------------------------------
 
