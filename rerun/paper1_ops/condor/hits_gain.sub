@@ -1,0 +1,13 @@
+# M3-free charge proxy per bench scan row (rerun/paper1_ops/hits_gain.py): condor_submit code=<code dir> hits_gain.sub
+executable     = hits_gain.sh
+arguments      = $(code) $(key)
+output         = log/hg_$(key).out
+error          = log/hg_$(key).err
+log            = log/hg.log
+request_cpus   = 1
+request_memory = 12000
++JobFlavour    = "longlunch"
+should_transfer_files = NO
+requirements   = (Machine != "b9g42p2031.cern.ch")
+max_retries    = 2
+queue key from hits_gain_keys.txt

@@ -1,0 +1,13 @@
+# det4 response on every telescope track (rerun/paper1_ops/tel_gain.py): condor_submit code=<code dir> tel_gain.sub
+executable     = tel_gain.sh
+arguments      = $(code) $(tag) $(run) $(sub) $(keys)
+output         = log/tg_$(tag).out
+error          = log/tg_$(tag).err
+log            = log/tg.log
+request_cpus   = 1
+request_memory = 12000
++JobFlavour    = "workday"
+should_transfer_files = NO
+requirements   = (Machine != "b9g42p2031.cern.ch")
+max_retries    = 2
+queue tag,run,sub,keys from tel_gain_jobs.txt

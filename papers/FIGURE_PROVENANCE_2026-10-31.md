@@ -28,8 +28,8 @@ from and when.
 | microtpc_principle | engineer_package 02 (current) | schematic, 07-12 | current | |
 | bench_setup | engineer_package 00 (current) | schematic, 07-12 | current | |
 | sps_setup | mpgd26 render (placeholder, source missing) | schematic | placeholder | inputs listed in `mpgd26/slides/HANDOFF_offline_rebuild.md` |
-| hv_scan | engineer_package 30 (current) | June hits QA, 07-14 | **stale** | predates the 7-24 reprocessing (+40 % hits), the 10-23 re-decode and pass 1. Re-make efficiency vs HV from `Analysis_pass1/*/efficiency/` (efficiency session) |
-| spark_deadtime | engineer_package 44 (current) | June hits QA, 07-14 | **stale** | allowed content (hit timing QA), but on the pre-7-24, pre-re-decode hits |
+| hv_scan | `rerun/paper1_ops/figures/hv_scan.pdf` (current) | pass 1, 10-31 | **rebuilt** | was the 06-29 hits figure 30 (det3 only). Now det2/det3/det6/det7: interior_good efficiency (effbudget), tracks lost to discharges vs bursts, discharges per trigger; golden rows starred (`rerun/paper1_ops/README.md`) |
+| spark_deadtime | `rerun/paper1_ops/figures/spark_deadtime.pdf` (current) | pass 1, 10-31 | **rebuilt** | all five chambers on the rr1 hits + the budget's rays: efficiency and charge vs time since the previous discharge; dead time per discharge ≤ 1.2–2.6 ms (95 %, det2/3/6/7), det4 ≤ 15 ms |
 | charge_balance | `rerun/paper1_charge/figures/charge_balance.pdf` (current) | pass 1, 10-31 | **rebuilt** | was the 07-12 hits figure 61. §5's text numbers (det3 0.487, det2 0.531, σ68 0.07) are the hits proxy; pass 1 gives 0.485 / 0.513, s68 0.014 / 0.016 (`rerun/paper1_charge/README.md`) |
 | efficiency_map | engineer_package 20 (current) | July recipe on hits, 07-14 | **stale** | re-make from the pass-1 `maps/` (manifest note D1) |
 | edge_turnon | engineer_package 80 (superseded) | hits angle, 07-12 | superseded | stays faded; the turn-on panel needs a pass-1 remake |
@@ -65,8 +65,8 @@ from and when.
 | status | count | figures |
 |---|---|---|
 | current | 5 | microtpc_principle, bench_setup, sharing_cartoon, event_waveforms, known_angle_geometry |
-| rebuilt on pass 1 | 6 | charge_balance; gas_vE, tracking_perf, bow_profiles, bow_closure (10-31, `rerun/paper1_res/`); fleet (10-31, `rerun/paper1_floor/`) |
-| stale | 17 | hv_scan, spark_deadtime, efficiency_map, the 14 loss_* displays |
+| rebuilt on pass 1 | 8 | charge_balance; gas_vE, tracking_perf, bow_profiles, bow_closure (10-31, `rerun/paper1_res/`); fleet (10-31, `rerun/paper1_floor/`); hv_scan, spark_deadtime (10-31, `rerun/paper1_ops/`) |
+| stale | 15 | efficiency_map, the 14 loss_* displays |
 | pending-vt | 0 | (v(t) settled 10-31: the four data figures rebuilt; tiers_benchmark and fleet moved to placeholder, they need a hits arm) |
 | pending-sps | 5 | attachment, sps_resolution, kernel_forms, angled_kernel, known_angle |
 | superseded | 2 | edge_turnon, timing |

@@ -1,0 +1,13 @@
+# whole-plane discharges per bench row (rerun/paper1_ops/spark_timeline.py): condor_submit code=<code dir> spark.sub
+executable     = spark.sh
+arguments      = $(code) $(key)
+output         = log/sp_$(key).out
+error          = log/sp_$(key).err
+log            = log/sp.log
+request_cpus   = 1
+request_memory = 12000
++JobFlavour    = "longlunch"
+should_transfer_files = NO
+requirements   = (Machine != "b9g42p2031.cern.ch")
+max_retries    = 2
+queue key from spark_keys.txt
