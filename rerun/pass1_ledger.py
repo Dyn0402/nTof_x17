@@ -36,6 +36,13 @@ CODE_SPS = {'3ac0e79'}
 #: meta keys and table columns the final SPS rows must carry
 SPS_META_KEYS = ('hot_seed_channels',)
 SPS_COLUMNS = ('x_p_mid', 'y_p_mid', 'x_c_pos', 'y_c_pos', 'x_c_n_strips', 'y_c_n_strips', 'ftst')
+#: the rows re-run on 2026-10-31 for the oscillation's neighbours (rerun/sps_junk/README.md): one code version, the
+#: coupled-channel meta and per-event columns.  The other rows' events do not change under it (rerun/sps_junk census),
+#: so they stay on CODE_SPS.
+SPS_COUPLED_ROWS = os.path.join(HERE, 'sps_junk', 'results', 'promoted_rows.txt')
+CODE_SPS_COUPLED = {'c36322ec'}
+SPS_COUPLED_META = ('hot_seed_channels', 'coupled_channels', 'n_events_coupled_censored')
+SPS_COUPLED_COLUMNS = SPS_COLUMNS + ('x_n_coupled', 'y_n_coupled')
 
 
 def bench(root):
@@ -111,11 +118,13 @@ def bench(root):
 
 def sps(root):
     rows, bad = [], []
+    coupled = set(open(SPS_COUPLED_ROWS).read().split()) if os.path.exists(SPS_COUPLED_ROWS) else set()
     for r in csv.DictReader(open(os.path.join(HERE, 'sps_registry.csv'))):
         d = os.path.join(root, 'sps', r['key'])
         mp = os.path.join(d, 'events.meta.json')
         m = json.load(open(mp)) if os.path.exists(mp) else {}
-        want = CODE_SPS
+        new = r['key'] in coupled
+        want = CODE_SPS_COUPLED if new else CODE_SPS
         problems = []
         tp = os.path.join(d, 'events.parquet')
         if not os.path.exists(tp):
@@ -123,11 +132,11 @@ def sps(root):
         else:
             import pyarrow.parquet as pq
             cols = set(pq.read_schema(tp).names)
-            miss = [c for c in SPS_COLUMNS if c not in cols]
+            miss = [c for c in (SPS_COUPLED_COLUMNS if new else SPS_COLUMNS) if c not in cols]
             if miss:
                 problems.append(f"columns {','.join(miss)}")
         if m:
-            miss = [k for k in SPS_META_KEYS if k not in m]
+            miss = [k for k in (SPS_COUPLED_META if new else SPS_META_KEYS) if k not in m]
             if miss:
                 problems.append(f"meta {','.join(miss)}")
             elif 'RAW_CM_BAD' not in str(m.get('seeding', '')):
@@ -151,7 +160,9 @@ def main():
     B, Bbad = bench(a.root); S, Sbad = sps(a.root)
     L = [f'# Pass 1 completion ledger', '',
          f'Bench: {len(B)} non-excluded rows, {len(B) - len(Bbad)} complete; SPS: {len(S)} rows, {len(S) - len(Sbad)} complete.',
-         f'Expected code: bench {sorted(CODE)}, SPS {sorted(CODE_SPS)} (seed fix + head-on estimators: meta {list(SPS_META_KEYS)}, columns {list(SPS_COLUMNS)}); 01-04: {sorted(CODE_POST)}. Alignment within '
+         f'Expected code: bench {sorted(CODE)}, SPS {sorted(CODE_SPS)} (seed fix + head-on estimators: meta {list(SPS_META_KEYS)}, columns {list(SPS_COLUMNS)}); the rows of '
+         f'{os.path.relpath(SPS_COUPLED_ROWS, HERE)} {sorted(CODE_SPS_COUPLED)} (+ coupled channels: meta {list(SPS_COUPLED_META)}, '
+         f'columns x/y_n_coupled); 01-04: {sorted(CODE_POST)}. Alignment within '
          f'{ALIGN_TOL_MM:g} mm of its night, reco_far <= {FAR_MAX_PCT:g} %.', '']
     if Bbad:
         L += ['## Bench rows with problems', '| row | cls | n | problems |', '|---|---|---|---|']

@@ -218,6 +218,10 @@ strips above 50 ADC within ±4 samples of the lead's peak.
   - In the pass tables they can be cut with `y_c_q_lead < 400` and |y_c_pos − 155.5| < 2 mm.
   - Excluding the neighbours of a hot strip from the seed would remove them. It was not done, because it needs a fourth
     SPS re-run (~4.5 h, set by raw275) for rows that carry no angle scale anyway (positions-only rows, pass-1 review P3).
+  - **CLOSED 2026-10-31 (`rerun/sps_junk/README.md`).** The copies are in-phase cross-talk of the oscillator. They are now
+    censored per event when it is ON (coupled-channel rule, code `c36322ec`). 30 ZS rows were re-run and promoted; their
+    excess at 155–158 mm is now ≤ 0.55 % (run55 d700: 19.7 % → ≤ 0). The cut above is no longer needed on those rows.
+    The RAW run71 rows were not re-run (their census did not finish).
 - **Time resolution:** not measured (section 4).
 - **The SPS gases (Ar/CO2/iso 95/3/2, Ar/CF4/iso 88/10/2) are not n_TOF's.** These numbers characterise the
   detector technology at normal incidence, not the n_TOF conditions.
@@ -410,6 +414,12 @@ Re-run the run71 rows first: they are the only RAW rows, and the only rows where
   - It also flags some X channels: 172/173 in run55 d500–d700, 75 in ov00, and 70/74/128 in ov07 (beam-off
     triggers). Each seeds 10–40× its neighbours, which charge sharing cannot do, so they are judged hot. They are
     excluded from the seed and censored for those rows only.
+  - **Revised 2026-10-31 (`rerun/sps_junk`).**
+    - The probe now runs in 1000-event blocks over at least 2000 events, and compares a channel with its LIVE neighbours
+      (H4 `dead_stripes` excluded). This catches run61 d210 (excess 1.5 % → ≤ 0).
+    - 172/173 are no longer flagged: they are the stripe-edge strips at the end of run55's beam spot, not oscillators.
+    - 75 (ov00) and the ov07 set stay as they were: those rows do not change.
+    - New: X ch 149 is flagged in run61 d070/d140, probably a real strip, censored there.
 - **pass_mid.** The 7.5 mm depth was chosen on run63 and applied unchanged elsewhere. It does not help rows without a
   measured v (run53, run55: the angle scale is the bench v).
 - **Unexplained telescope artefacts.** The robust fit drops them, but they were not chased: a steep segment at

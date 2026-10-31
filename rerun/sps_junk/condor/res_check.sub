@@ -1,0 +1,12 @@
+# rerun/sps_junk/res_check.py on the resolution sample's FEU 03 files (run53, run63 flat700): condor_submit code=<dir> res_check.sub
+executable     = res_check_job.sh
+arguments      = $(code) $(run) $(sub) $(grp) $(f3) $(ns)
+output         = log/rc_$(run)_$(sub)_$(grp).out
+error          = log/rc_$(run)_$(sub)_$(grp).err
+log            = log/rc.log
+request_cpus   = 1
+request_memory = 6000
++JobFlavour    = "workday"
+should_transfer_files = NO
+requirements   = (Machine != "b9g42p2031.cern.ch")
+queue run sub grp f3 ns from res_check_jobs.txt
