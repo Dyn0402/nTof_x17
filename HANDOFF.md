@@ -33,7 +33,25 @@ is in `rerun/PAPER1_NUMBERS_2026-10-31.md`. The decisions A–R are on the deck'
 - EOS: the incident where the move deleted 12 golden-row M3 v2 rays, restored and verified; `eosmove.py` now refuses symlinked trees (`tools/eos_move/README.md`).
   All user-area experiment data is in the n_TOF area. 60 duplicate reproc files (76.6 GB) wait for Dylan's delete/keep.
 
-**Next:** Dylan's decisions A–R, then edit the three texts (Paper I, the INFN abstract, MPGD) from the numbers sheet.
+**Next:**
+1. Dylan reads the deck and decides A–R. The deck's decisions slide lists them; the source is `rerun/PAPER1_STORY_2026-11-01.md`.
+2. Apply the choices: edit the three texts (Paper I `papers/paper1/sections/*.tex`, the INFN abstract, the MPGD proceedings) from
+   `rerun/PAPER1_NUMBERS_2026-10-31.md`. The sheet flags 31 / 2 / 7 wrong numbers, plus the old "176 µm = 0.30 × pitch" error (0.23 × pitch).
+3. If R = yes: set det4's gap to 28.6 mm in `rerun/calib/physics_inputs.json` and re-derive the det4 timing v, field labels and §6 water (bench det4 point
+   in the `attachment` figure). Angles don't move.
+4. Rebuild the deck after any change: `python3 papers/paper1/make_review_deck.py`, then
+   `python3 ~/PycharmProjects/dylan-cern-site/scripts/add-note.py papers/paper1/review_deck/mx17-paper1-review.html --slug mx17-paper1-review --force --deploy`.
+
+**Gotchas:**
+- **lxplus 2FA expires overnight.** Background waiters then spin on failed ssh. After a re-login, check `condor_q` and outputs directly.
+- **xrootd URLs** for moved dirs must use `root://eosexperiment.cern.ch//eos/experiment/ntof/data/x17/...`; the user-area symlinks only work over FUSE.
+- **`tools/eos_move/eosmove.py` refuses trees with symlinks** (the m3_audit incident). Don't override it without a test.
+- **Open, unresolved:**
+  - det6's within-night v amplitude (×2);
+  - the cause of the 6-23/6-24 trigger term;
+  - det4's SPS HV path (ask Stephan);
+  - why det2's edge bias has the same sign on both sides.
+- `hub/index.html` in dylan-cern-site has an uncommitted change that isn't from this session. Left alone.
 
 ## Pass 1 final: checks closed, Paper I numbers derived — next: Dylan's six arm choices, then edit the texts — updated 2026-10-31 (dylan-Yoga)
 
@@ -75,8 +93,7 @@ choices to make). Everything below is on main; the ledger is clean (156/156 benc
 - EOS: 388 GB of experiment data moved from the user area to `/eos/experiment/ntof/data/x17/` (user area 82 → 43 %); symlinks
   work over FUSE only, so use `root://eosexperiment` URLs: `rerun/EOS_MOVE_2026-10-31.md`.
 
-**Running at the time of writing:** the SPS gas fit (H2O + O2 per epoch, `rerun/sps_gasfit/`). When it finishes, move its dir:
-`ssh lxplus 'cd ~/x17rerun/eos_move && ./run_streams.sh L sps_gasfit'`.
+**SPS gas fit and the sps_gasfit move:** both done 10-31 (`rerun/sps_gasfit/`; all user-area experiment data is in the n_TOF area).
 
 **Next:**
 1. Dylan's choices A–F, then edit the texts. The sheet flags 31 wrong numbers in Paper I, 2 in the INFN abstract and 7 in MPGD,
