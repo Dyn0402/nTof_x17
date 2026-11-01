@@ -32,6 +32,15 @@ reproduce `budget_pass1.json`'s tilt_2d40 to the printed digit. Report: `report.
      quintiles on the audit tables.
    - **Not identified:** which part of the signal it is (per-event pulse or footprint shape, the resistive spread,
      correlated noise). It is bounded and characterised, not explained.
+   - **Follow-ups (2026-11-01):**
+     - **K1 is not it** (`K1_TEST_2026-11-01.md`): K1's plane-to-plane shape scatter at its measured size adds ≈ 0 %.
+     - **The residual bootstrap** (`BOOTSTRAP_2026-11-01.md`):
+       - the data's own fit residuals, moved onto toy truths, move the angle 1.5–2.0× as much as the toy's;
+       - calibrated with the method's efficiency they carry 105 ± 17 / 59 ± 10 / 54 ± 11 % of the remainder² on det2/det3/det4 X;
+       - no named structure is data-specific: the chip baseline, the mean template shape, the per-plane time shape and the
+         ±1-strip antisymmetry each carry the same share in data as in toy residuals.
+     - **The answer:** the remainder is more of the toy's own event-to-event charge-pattern fluctuation, larger in the
+       data. The toy under-generates it.
 4. **xasym ± systematic: ≤ 5 µm on the bench X position, nothing on the angle.**
    - The K map moves X by 48 µm rms on det2 and 28 µm rms on det3 (map scale 0.44 for its session).
    - The re-aligned X core σ changes 460 → 455 µm (det2) and 466 → 466 µm (det3); K ± 1σ adds ≤ 2 µm.
@@ -121,8 +130,12 @@ reproduce `budget_pass1.json`'s tilt_2d40 to the printed digit. Report: `report.
 
 ## Limitations
 
-- **The remainder is characterised, not identified.** No candidate on hand explains it; a per-event pulse or footprint
-  shape model would be the next test, and no new data can be taken.
+- **The remainder is characterised, not identified as a model term.**
+  - The residual bootstrap places it in the same fluctuation-like, coherent, track-antisymmetric residual the toy makes,
+    larger in the data (`BOOTSTRAP_2026-11-01.md`).
+  - Which fluctuation the toy under-generates (Polya θ, δ-rays, cluster sizes, per-event resistive spread) is a toy
+    question. No new data can be taken.
+  - The bootstrap's shares are calibrated by its own efficiency (ε ≈ 0.3); its raw shares are 5–11 %.
 - **The Y toy generates X physics** (X footprint tails, pulse) and fits it with the Y bundle. Its production-fit rung
   reads χ²/dof up to ~1700 at 3°, a generation/fit mismatch rather than Y physics. So the Y toy_all is an upper
   estimate, and the Y U and remainder are lower estimates. With the exact-model floor instead (0.32–0.34°), Y's
