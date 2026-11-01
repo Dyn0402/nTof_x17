@@ -1,5 +1,40 @@
 # Handoff
 
+## Paper I weekend: every section analysed on pass 1, review deck published — next: Dylan's decisions A–R — updated 2026-11-01 (dylan-Yoga)
+
+**Resume:** read the deck https://dylan-neff.web.cern.ch/notes/mx17-paper1-review.html (22 slides, Paper I order; generator
+`papers/paper1/make_review_deck.py`). The one-page spine is `rerun/PAPER1_STORY_2026-11-01.md`. Every number (old text value → pass 1, with source)
+is in `rerun/PAPER1_NUMBERS_2026-10-31.md`. The decisions A–R are on the deck's decisions slide; the four facts only Dylan/Stephan can supply are on the closing slide.
+
+**Done 10-31 → 11-01** (one line each; each README leads with its verdict):
+- §4 operation `rerun/paper1_ops/`:
+  - discharge rate and dead time on all rows;
+  - the 480/480/440 V scan optima (golden rows ran above them);
+  - det4 gain from SPS barely depends on HV.
+- §5/§9/A1 `rerun/paper1_figs/`:
+  - the edge zone is a drift-field fringe at the x sides (justifies the 30 mm cut);
+  - det4 stripes agree bench vs SPS (52 %, not 62 %);
+  - A1 audited by eye, discharge vs burst split;
+  - every figure rebuilt.
+- §6 gas `rerun/paper1_gas/`:
+  - bench v(t) = the chambers drying out (det6 1.47 → 0.76 % water);
+  - det6's early-night attachment;
+  - det3 0.97 % water;
+  - `gas_vE_timing`.
+- SPS gas `rerun/sps_gasfit/`: water plus O2 in every period, O2 CO2 > CF4 robustly. Magboltz fine grid: `air_merged` is the source for all fits.
+- det4 drift gap geometric 28.6 ± 0.5 mm (`rerun/det4_gap/`). `physics_inputs.json` still says 30.48: decision R.
+- §7 timing `rerun/paper1_timing/`: event time 40–46 ns (`edge25` estimator); SPS not measurable; the MPGD 33 ns was the hits number.
+- §8 `rerun/paper1_floor/`:
+  - the unexplained term ranked; bench and SPS positions consistent once M3's scattering is measured;
+  - the K1 null (`K1_TEST_2026-11-01.md`);
+  - the residual bootstrap (`BOOTSTRAP_2026-11-01.md`): the data residuals carry 54–105 % of the remainder, no single structure, so the toy under-generates charge fluctuations.
+- SPS figures `rerun/paper1_spsfigs/`: all built; **SPS det4 X has no resolution measurement** (dead stripes in the beam spot): quote Y 190 ± 10 (run63) / 176 ± 10 (run53).
+- Consistency `rerun/consistency/`: 6-23 = chambers not yet at gain plus a separate 6-23/6-24 trigger term (det4 bench position/timing not quotable).
+- EOS: the incident where the move deleted 12 golden-row M3 v2 rays, restored and verified; `eosmove.py` now refuses symlinked trees (`tools/eos_move/README.md`).
+  All user-area experiment data is in the n_TOF area. 60 duplicate reproc files (76.6 GB) wait for Dylan's delete/keep.
+
+**Next:** Dylan's decisions A–R, then edit the three texts (Paper I, the INFN abstract, MPGD) from the numbers sheet.
+
 ## Pass 1 final: checks closed, Paper I numbers derived — next: Dylan's six arm choices, then edit the texts — updated 2026-10-31 (dylan-Yoga)
 
 **Resume:** read `rerun/PAPER1_NUMBERS_2026-10-31.md` (every Paper I / INFN / MPGD number: old vs pass-1 value, source, the
