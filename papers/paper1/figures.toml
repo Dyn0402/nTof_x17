@@ -105,11 +105,12 @@ note = "Pass 1 (2026-10-31, rerun/paper1_gas): det3 6-27 drift scan, timing v fr
 producer = "cd rerun/paper1_gas && python pg_gas.py <fit dir> && python pg_figs.py"
 
 [fig.attachment]
-title = "Attachment: charge loss vs drift time, bench (no O2) vs beam run_71 (163 ppm O2)"
-state = "placeholder"
+title = "What gas each setup had: water (bench golden rows vs SPS epochs) and O2 at SPS"
+state = "current"
 section_state = "partial"
-note = "From cloud_basics sections 16-27; report at ~/x17/cosmic_bench/cloud_basics/attachment/."
-
+source = "rerun/paper1_spsfigs/figures/attachment.pdf"
+producer = "cd rerun/paper1_spsfigs && ../../.venv/bin/python make_figs.py --only attachment"
+note = "SPS from rerun/sps_gasfit/results/verdict.json (4127f9ea, gap 27.9 mm); bench from rerun/paper1_gas/results/summary.json (det4 point at the old 30.48 mm gap; 337f7fd1 measures 28.6 mm)."
 # --- 7 Timing -----------------------------------------------------------------
 
 [fig.timing]
@@ -131,13 +132,12 @@ note = "Pass 1 (2026-10-31), headline row per chamber (det2/det3 the quoted gold
 producer = "cd rerun/paper1_res && ../../.venv/bin/python make_report.py"
 
 [fig.sps_resolution]
-title = "det4 intrinsic resolution at SPS: 176 +- 10 um = 0.30 x pitch"
-state = "placeholder"
-section_state = "ready"
-source = "sps_beam_test_26/analysis/spatial_resolution/figures/decomposition.png"
-producer = "cd sps_beam_test_26/analysis/spatial_resolution && ../../../.venv/bin/python make_figures.py"
-note = "make_figures.py needs residuals.npz (not on the desktop)."
-
+title = "det4 intrinsic resolution at SPS H4: the 3-zone telescope decomposition, run63 flat700 (CF4) with run53 (Ar/CO2) as cross-check"
+state = "current"
+section_state = "requote"
+source = "rerun/paper1_spsfigs/figures/sps_resolution.pdf"
+producer = "cd rerun/paper1_spsfigs && ../../.venv/bin/python make_figs.py --only sps_resolution"
+note = "Final SPS chain (rerun/sps_junk/results/final_rule.json). Y p0 190 +- 10 um (chi2/1 0.3) is the clean measurement; the X zone fits fail (chi2/1 7-88), so X has no intercept measurement (open markers) -- decisions A/B. 176 um = 0.23 x pitch (not 0.30)."
 # --- 8b The chamber bow (draft, FB 2026-10-27) ---------------------------------
 
 [fig.bow_profiles]

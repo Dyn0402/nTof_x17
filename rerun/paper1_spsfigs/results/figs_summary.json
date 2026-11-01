@@ -629,5 +629,66 @@
     "rms": 0.05
    }
   }
+ },
+ "attachment": {
+  "gap_quoted_mm": 27.9,
+  "groups": {
+   "co2_run55": {
+    "water": 1.938,
+    "err_w": 0.51,
+    "o2_ppm": 443,
+    "err_o2": 117,
+    "edge": false
+   },
+   "co2_run56": {
+    "water": 2.0,
+    "err_w": 0.417,
+    "o2_ppm": 363,
+    "err_o2": 131,
+    "edge": false
+   },
+   "co2_run57": {
+    "water": 2.0,
+    "err_w": 0.23,
+    "o2_ppm": 322,
+    "err_o2": 94,
+    "edge": false
+   },
+   "co2_run59": {
+    "water": 2.125,
+    "err_w": 0.494,
+    "o2_ppm": 322,
+    "err_o2": 94,
+    "edge": false
+   },
+   "cf4_run62_ladder": {
+    "water": 1.85,
+    "err_w": 0.234,
+    "o2_ppm": 258,
+    "err_o2": 98,
+    "edge": false
+   },
+   "cf4_run63_ladder": {
+    "water": 1.8,
+    "err_w": 0.197,
+    "o2_ppm": 258,
+    "err_o2": 94,
+    "edge": false
+   },
+   "cf4_run63_flat": {
+    "water": 1.825,
+    "err_w": 0.163,
+    "o2_ppm": 129,
+    "err_o2": 93,
+    "edge": false
+   },
+   "cf4_run71_raw": {
+    "water": 1.675,
+    "err_w": 0.174,
+    "o2_ppm": 226,
+    "err_o2": 87,
+    "edge": false
+   }
+  }
  }
 }

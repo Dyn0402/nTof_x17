@@ -29,20 +29,20 @@ def draw(verdict_path, save):
         c = CF4_C if r['gas'] == 'beam' else CO2_C
         ax.errorbar(x, r['water'], yerr=r['err_w'], fmt='s', color=c, capsize=2, mfc='white' if r['edge'] else c)
         axs[1].errorbar(x - 5.5, r['o2_ppm'], yerr=r['err_o2'], fmt='s', color=c, capsize=2, mfc='white' if r['edge'] else c)
-        g = r['group'].replace('cf4_', '').replace('co2_', '').replace('_', ' ')
+        g = r['group'].replace('cf4_', '').replace('co2_', '').replace('_ladder', ' ldr').replace('_', ' ')
         labels.append(('CF₄\n' if r['gas'] == 'beam' else 'CO₂\n') + g)
         summ['groups'][r['group']] = dict(water=round(r['water'], 3), err_w=round(r['err_w'], 3), o2_ppm=round(r['o2_ppm']),
                                           err_o2=round(r['err_o2']), edge=r['edge'])
         x += 1
     xs = list(range(5)) + list(np.arange(5.5, 5.5 + len(V['table'])))
-    ax.set_xticks(xs); ax.set_xticklabels(labels, fontsize=6.5)
+    ax.set_xticks(xs); ax.set_xticklabels(labels, fontsize=6.5, rotation=45, ha='right')
     ax.set_ylabel('water [%]'); ax.set_ylim(0, None)
     ax.set_title(f"water: bench golden rows vs SPS (gap {V['gap_quoted']} mm)", fontsize=9)
     ax = axs[1]
     ax.axhspan(370, 600, color='#cccccc', alpha=0.5, lw=0)
-    ax.text(len(V['table']) - 0.6, 610, 'bench det6, first ~4 h of 6-26\n(O₂-equivalent, ×2 model)', fontsize=6.5, ha='right', va='bottom')
+    ax.text(len(V['table']) - 0.6, 590, 'bench det6, first ~4 h of 6-26\n(O₂-equivalent, ×2 model)', fontsize=6.5, ha='right', va='top')
     ax.axhline(0, color=BENCH_C, lw=1); ax.text(-0.3, 15, 'bench, steady state: attachment-free', fontsize=6.5, color=BENCH_C)
-    ax.set_xticks(range(len(V['table']))); ax.set_xticklabels(labels[5:], fontsize=6.5)
+    ax.set_xticks(range(len(V['table']))); ax.set_xticklabels(labels[5:], fontsize=6.5, rotation=45, ha='right')
     ax.set_ylabel('O₂ [ppm]'); ax.set_ylim(-20, None)
     ax.set_title('O₂ (attachment) at SPS', fontsize=9)
     save(fig, 'attachment')

@@ -133,4 +133,4 @@ needs a caveat (attachment-free assumption) and the §5 edge-T row a det2 caveat
     sps_junk are done;
   - `attachment` waits for the SPS gas fit.
 
-  Nobody has built them yet.
+  **Done 11-01:** all five are built on the final SPS chain (`rerun/paper1_spsfigs/README.md`).
