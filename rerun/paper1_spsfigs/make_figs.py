@@ -177,7 +177,7 @@ def known_angle():
     fig, axs = plt.subplots(1, 2, figsize=(9.0, 3.4), gridspec_kw=dict(wspace=0.3, width_ratios=[1.3, 1]))
     ax = axs[0]
     marks = {'registry': ('o', '#4a4a4a', 'own v (registry)'), 'column': ('s', '#1a7f37', 'v from the column duration'),
-             'bench': ('x', '#b0341d', 'no v (bench 33 µm/ns)')}
+             'bench': ('x', '#b0341d', 'no v (bench 33 µm/ns): not an angle')}
     summ = {}
     for k, r in sorted(D['rows'].items()):
         for src in ('column', 'registry', 'bench'):
@@ -196,15 +196,17 @@ def known_angle():
     ax.set_xlabel('drift field [V/cm]'); ax.set_ylabel('|median tan θ_y| (inclined view)'); ax.set_ylim(0, 0.6)
     ax.set_title('det4 at a known stage angle', fontsize=9)
     ax = axs[1]
+    ax.axhspan(0.97, 1.03, color='#e6e5e1', lw=0)
     for k, r in sorted(D['rows'].items()):
-        t = r.get('tan_y_column') or r.get('tan_y_registry')
-        if t is None:
+        if r['stage_deg'] != 25.4:
             continue
-        ax.plot(abs(r['tan_x']), abs(t) / np.tan(np.radians(r['stage_deg'])), 'o', ms=4,
-                color='#1a7f37' if r.get('tan_y_column') else '#4a4a4a')
+        for src, mk, c in (('registry', 'o', '#4a4a4a'), ('column', 's', '#1a7f37')):
+            t = r.get(f'tan_y_{src}')
+            if t is not None:
+                ax.plot(r['field_Vcm'] + (2 if src == 'column' else -2), abs(t) / np.tan(np.radians(25.4)), mk, ms=4.5, color=c)
     ax.axhline(1, ls='--', color=MUTED, lw=1)
-    ax.set_xlabel('|median tan θ_x| (normal view)'); ax.set_ylabel('measured / stage tan (inclined view)')
-    ax.set_title('ratio to the stage angle', fontsize=9)
+    ax.set_xlabel('drift field [V/cm]'); ax.set_ylabel('measured / tan 25.4° (inclined view)'); ax.set_ylim(0.5, 1.1)
+    ax.set_title('25.4° mount: the column-duration v closes it', fontsize=9)
     save(fig, 'known_angle')
     SUMMARY['known_angle'] = dict(rows=summ, headline=D.get('headline'))
 
