@@ -1,5 +1,42 @@
 # Handoff
 
+## SPS det4 on one working region — updated 2026-11-01 (dylan-Yoga)
+
+**Resume:** det4 intrinsic resolution now comes from region R (decided); next: write it into Paper I §SPS with caveats.
+
+**Goal:** quote det4's SPS resolution, timing, footprint and efficiency from one small fully working patch instead of the
+whole beam spot (dead stripes, three gain bands, three telescope zones).
+
+**Done:**
+- `rerun/sps_region/` (commit dd1abd42): region R = X 150–160 × Y 222–246 mm, run 63 flat700. σ_X 138 µm (p_mid), σ_Y 120 µm
+  (p0) after the telescope (f 0.266, range 0.254–0.284, from det4 Y zone pairs inside each live band); model-free bounds
+  X ≤ 153, Y ≤ 145 µm; efficiency 89.9 % both views (new all-track table, `eff_job.py`, EOS `x17rerun/sps_region/eff/`);
+  footprint RAW 3.1/3.5 strips; per-view timing 107/69 ns RAW (charge-limited); trigger ≤ 19 ns (uRWELL hit times).
+- Slide note https://dylan-neff.web.cern.ch/notes/mx17-sps-region.html (generator `rerun/sps_region/make_deck.py`).
+- **Decision (Dylan, 11-01): use R for det4's intrinsic resolution, cited with careful caveats.** Recorded as decisions
+  A + B in `rerun/PAPER1_NUMBERS_2026-10-31.md` and in the sps_region README.
+
+**Next steps:**
+1. Edit Paper I's SPS resolution text (`papers/paper1/sections/*.tex`) and the INFN/MPGD numbers: σ_X 138 (112–153),
+   σ_Y 120 (89–136) µm in R, bounds ≤ 153 / ≤ 145 µm, the region map figure (deck slide 2), and the caveats: one
+   10 × 24 mm² patch of the best band, Ar/CF4/iso, f-dependence of the subtraction, X > Y unexplained, "0.15–0.18 × pitch".
+2. Add the map + residual figures to `papers/paper1/figures.toml` (needs a matplotlib/PDF version; the deck is SVG only).
+3. Optional: the SPS event time with the uRWELL hit time as reference needs strip sums for the run-71 telescope events
+   (current `paper1_timing/sps` npz cover ~17 s per plateau, < 100 matched events).
+
+**Gotchas / decisions:**
+- f is fitted on det4 Y in a whole X band (zones 1.0 + 1.5; the 0.5 zone has 50–270 tracks at the beam edge, its σ is
+  unreliable). Applied to X assuming the telescope's y coordinate has the same f; the 2-strip subsample check supports it.
+- X needs p_mid; X p0/centroid are ~270 µm even for 3-strip clusters (cause open).
+- R2 (the 201–214 band, lower gain) is worse: whole-spot numbers average bands of different quality.
+- Inputs on the laptop were in a job tmp dir (gone); slim tel tables are on EOS `x17rerun/sps_region/tel_run*.parquet`,
+  the rest at their `sps_audit`/`paper1_timing` EOS paths; set `SPS_REGION_DATA` to a dir holding them (README "Files").
+- dylan-cern-site's branch is `master` (not main).
+
+**Key files & commands:**
+- `rerun/sps_region/README.md`, `region_analysis.py`, `eff_job.py`, `trigger_ref.py`, `make_deck.py`, `results/region.json`
+- `SPS_REGION_DATA=<dir> python rerun/sps_region/region_analysis.py && python rerun/sps_region/make_deck.py`
+
 ## Paper I weekend: every section analysed on pass 1, review deck published — next: Dylan's decisions A–R — updated 2026-11-01 (dylan-Yoga)
 
 **Resume:** read the deck https://dylan-neff.web.cern.ch/notes/mx17-paper1-review.html (22 slides, Paper I order; generator

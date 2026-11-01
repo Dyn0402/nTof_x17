@@ -205,7 +205,13 @@ paper figures show.
 
 ## Decisions for Dylan
 
-- **A. SPS run:** run 63 flat700 (CF4; telescope calibrated in the same run; recommended by the final SPS pass) or
+- **A + B DECIDED (Dylan, 2026-11-01): the det4 intrinsic resolution comes from the small working region R** (X 150–160 ×
+  Y 222–246 mm, run 63 flat700; `rerun/sps_region/README.md`): σ_X = 138 µm (p_mid; telescope-f range 112–153, stat ±7),
+  σ_Y = 120 µm (p0; 89–136, stat ±9); model-free upper bounds X ≤ 153 ± 6, Y ≤ 145 ± 6 µm (2-strip telescope clusters).
+  Quote it with the caveats: one 10 × 24 mm² patch of the best live band (not the whole chamber), one gas (Ar/CF4/iso,
+  not n_TOF's), the subtraction depends on the telescope f (0.254–0.284 in-band, assumed equal in both telescope
+  coordinates) while the bounds do not; X > Y unexplained. The whole-spot values below are superseded as the headline.
+- (superseded by the line above) **A. SPS run:** run 63 flat700 (CF4; telescope calibrated in the same run; recommended by the final SPS pass) or
   run 53 (the original 176 ± 10, Ar/CO2, Y only has all three zones).
 - **B. SPS position estimator, per view:** fit p0, p_mid (p0 at 7.5 mm), charge centroid, or hits. On run 63 the best
   is p_mid in X (209) and p0 in Y (190); on run 53 the centroid/hits (155/176 Y). Up to 1.6× between estimators.

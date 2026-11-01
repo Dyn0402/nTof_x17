@@ -1,5 +1,9 @@
 # det4 at SPS H4 on one small working region (2026-11-01)
 
+**Decision (Dylan, 2026-11-01): this region is the source of det4's intrinsic resolution in the papers**, cited with
+the caveats in "What this does not rule out" (one patch, one gas, telescope-f dependence of the subtracted values; quote
+the model-free bounds alongside). Recorded in `rerun/PAPER1_NUMBERS_2026-10-31.md` (decisions A + B).
+
 **Answer.** In region **R = det4 X 150–160 mm × Y 222–246 mm** (run 63 flat700, Ar/CF4/iso 88/10/2, resist 700 V,
 243 V/cm, ZS 64), with the telescope subtracted:
 
