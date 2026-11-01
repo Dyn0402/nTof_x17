@@ -1,0 +1,11 @@
+# det4 efficiency denominator, run 63 flat700 (sps_region/eff_job.py); one job per FEU file group
+executable     = /bin/bash
+arguments      = $(code)/condor/eff_job.sh $(code) $(run) $(sub) $(grp) $(key)
+output         = log/eff_$(sub)_$(grp).out
+error          = log/eff_$(sub)_$(grp).err
+log            = log/eff.log
+request_cpus   = 1
+request_memory = 8000
++JobFlavour    = "longlunch"
+should_transfer_files = NO
+queue code,run,sub,grp,key from eff_jobs.txt

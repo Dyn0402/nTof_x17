@@ -1,0 +1,55 @@
+{
+ "run": "run_63",
+ "files": {
+  "EicP2Bt_operating_02_datrun_260803_00H53_000_feu-combined_hits.root": {
+   "n": 41186,
+   "median": 632.293212890625,
+   "s68": 19.460955810546864
+  },
+  "EicP2Bt_operating_02_datrun_260803_00H53_001_feu-combined_hits.root": {
+   "n": 42381,
+   "median": 632.72998046875,
+   "s68": 20.31895751953124
+  },
+  "EicP2Bt_operating_02_datrun_260803_00H53_002_feu-combined_hits.root": {
+   "n": 41669,
+   "median": 632.7091064453125,
+   "s68": 19.261232910156252
+  },
+  "EicP2Bt_operating_02_datrun_260803_00H53_003_feu-combined_hits.root": {
+   "n": 22633,
+   "median": 633.04345703125,
+   "s68": 20.30329956054686
+  },
+  "EicP2Bt_operating_03_datrun_260803_01H24_000_feu-combined_hits.root": {
+   "n": 40043,
+   "median": 632.2969360351562,
+   "s68": 18.22234130859374
+  },
+  "EicP2Bt_operating_03_datrun_260803_01H24_001_feu-combined_hits.root": {
+   "n": 39496,
+   "median": 632.0548400878906,
+   "s68": 17.925494384765614
+  },
+  "EicP2Bt_operating_03_datrun_260803_01H24_002_feu-combined_hits.root": {
+   "n": 38443,
+   "median": 632.15625,
+   "s68": 16.731379394531245
+  },
+  "EicP2Bt_operating_03_datrun_260803_01H24_003_feu-combined_hits.root": {
+   "n": 38591,
+   "median": 632.2444458007812,
+   "s68": 17.00548095703124
+  },
+  "EicP2Bt_operating_03_datrun_260803_01H24_004_feu-combined_hits.root": {
+   "n": 9444,
+   "median": 632.1804809570312,
+   "s68": 16.694238281249966
+  }
+ },
+ "s68_mean": 18.540372673458513,
+ "s68_range": [
+  16.694238281249966,
+  20.31895751953124
+ ]
+}

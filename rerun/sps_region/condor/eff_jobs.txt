@@ -1,0 +1,9 @@
+/afs/cern.ch/user/d/dneff/x17rerun/sps_region run_63 operating_02 000 run63_flat__flat700
+/afs/cern.ch/user/d/dneff/x17rerun/sps_region run_63 operating_02 001 run63_flat__flat700
+/afs/cern.ch/user/d/dneff/x17rerun/sps_region run_63 operating_02 002 run63_flat__flat700
+/afs/cern.ch/user/d/dneff/x17rerun/sps_region run_63 operating_02 003 run63_flat__flat700
+/afs/cern.ch/user/d/dneff/x17rerun/sps_region run_63 operating_03 000 run63_flat__flat700
+/afs/cern.ch/user/d/dneff/x17rerun/sps_region run_63 operating_03 001 run63_flat__flat700
+/afs/cern.ch/user/d/dneff/x17rerun/sps_region run_63 operating_03 002 run63_flat__flat700
+/afs/cern.ch/user/d/dneff/x17rerun/sps_region run_63 operating_03 003 run63_flat__flat700
+/afs/cern.ch/user/d/dneff/x17rerun/sps_region run_63 operating_03 004 run63_flat__flat700
