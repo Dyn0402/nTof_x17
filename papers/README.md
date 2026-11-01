@@ -9,6 +9,8 @@ The two companion papers of `mx_june_cosmic_qa/PAPER_PLAN.md`, as LaTeX, at outl
 | `infn_in2p3_2026_abstract/` | abstract draft, INFN–IN2P3 detector R&D conference (Frascati, Dec 2026), not submitted | — |
 | `paper2/` | II. Reconstruction: why hit times fail, the waveform forward model, hits vs waveforms | not linked yet |
 
+Journals (decided 2026-11-01): Paper I → JINST, Paper II → NIM A; reasoning in `JOURNAL_STRATEGY.md`.
+
 PAPER_PLAN.md still owns the outline states and the work list. The `.tex` sections carry the same
 state in a box at the top of each section; when a state changes, change both.
 

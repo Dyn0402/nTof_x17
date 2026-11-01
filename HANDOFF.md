@@ -1,5 +1,38 @@
 # Handoff
 
+## Paper journals decided; next: the flow of Paper I for JINST — updated 2026-11-01 (dylan-Yoga)
+
+**Resume:** journals set (I → JINST, II → NIM A). Next: outline Paper I's body vs appendices for JINST.
+
+**Goal:** settle where each MX17 paper goes, then restructure Paper I. Results go in the body and the gory details
+in appendices.
+
+**Done:**
+- Decided (Dylan, 2026-11-01): **Paper I → JINST** (long, appendix-heavy), **Paper II → NIM A** (short, one general
+  claim). Both still go to arXiv the same day as companions. Reasoning, career argument and appendix guidelines:
+  `papers/JOURNAL_STRATEGY.md`.
+- Recorded in `mx_june_cosmic_qa/PAPER_PLAN.md` (header and C4, now "partial"), `papers/README.md` and the comment
+  headers of `papers/paper1/main.tex` and `papers/paper2/main.tex`.
+
+**Next steps:**
+1. Draft Paper I's flow: map each section (01–10, `08b_bow`, `A1_loss_categories`) and decisions A–R (see the
+   "Paper I weekend" section below) to body or appendix X. Give each appendix the one referee question it answers and
+   the one-sentence body summary that points to it. Target a body of ~12–15 pages and 4–6 short appendices.
+2. Split `papers/paper1/sections/08b_bow.tex` (~1,060 words, the largest body section): tilt and mesh depth plus one
+   figure stay in the body, while the fit, the transfer gate and the skeptic checks move to an appendix.
+3. Switch the LaTeX classes (`jinst` for I, `elsarticle` for II) and check that both still build. Not done yet.
+4. Still open under C4: author list, collaboration sign-off and journal expectations, and CERN open-access coverage
+   for IOP and Elsevier.
+5. Rebuild the paper-plan deck after the C4 edit (`python mx_june_cosmic_qa/make_paper_plan_deck.py`, then
+   republish, see the PAPER_PLAN header). Not done this session.
+
+**Gotchas / decisions:**
+- This decision replaces the 10-08 plan to send both papers to the same journal.
+- Ruled out: a short NIM A paper plus a long JINST paper with the same headline (duplicate publication). The I/II
+  split already makes the claims distinct.
+- EPJ C is a stretch option for Paper II, only if R3/R4 (the forward fit on hits, and the readout requirements) come
+  out strong.
+
 ## SPS det4 on one working region — updated 2026-11-01 (dylan-Yoga)
 
 **Resume:** det4 intrinsic resolution now comes from region R (decided); next: write it into Paper I §SPS with caveats.

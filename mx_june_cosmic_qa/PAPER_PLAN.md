@@ -14,8 +14,9 @@
 The dependency runs one way: **I cites II** for every position, angle and
 v_drift number, and for the sharing kernel. II needs only a short detector
 description and cites I for the rest. Post both to arXiv on the same day,
-submit them to the same journal as companions, and keep II at least level
-with I.
+submit them as companions, and keep II at least level with I.
+**Journals (decided 2026-11-01):** Paper I → JINST (long, appendix-heavy),
+Paper II → NIM A (short, focused). Reasoning: `papers/JOURNAL_STRATEGY.md`.
 
 **Scope:** the cosmic bench (det2, 3, 4, 6, 7) and SPS H4 (det4) in both.
 The n_TOF campaign is a separate physics paper. The ongoing n_TOF reconstruction
@@ -72,7 +73,7 @@ Section and item states: `ready` (analysis done, write it), `requote`
 | C1 | reproduce r06 | both | Reproduce the r06 golden numbers: pull lxplus ~/wft_campaign_r06, collect_results --promote, re-run mx_june_wft 01–04 on the five golden keys, check digest.py reproduces FLEET_DIGEST | ready | S | – | Done 10-09: every waveform-fit cell of FLEET_DIGEST reproduces exactly (efficiency, position, σ_θ, bias, implied-v, v) on all five keys. Needed the 07-24 reprocessed combined_hits from EOS for det2/det6/det7 (local June originals parked as combined_hits_root_june_orig) and 02_efficiency --max-dropped -1 for the headline. Not reproduced: the hits-chain comparison table on det2/6/7 (09-07 hits caches predate the significance floor) → rebuilt in R1. |
 | C2 | freeze calibration | both | Freeze the calibration | ready | – | – | **Decided 2026-10-23 (Dylan): the physical RC kernel** (σ0 per view, σ0_x ≈ 0.25; D_rc on Y; drift diffusion; no fitted copy amplitudes), calibrated with v free and the reference position profiled (rerun/CHECKS_2026-10-23.md C8: the hits-alignment reference biased v by 3–15 %). Supersedes the same morning's 'freeze r06'. Produced by the from-scratch lxplus re-run (rerun/RERUN_PLAN.md); wft.xasym stays a ± systematic. |
 | C3 | n_TOF tripwires | both | n_TOF tripwire check before submission | partial | S | – | See the tripwire table. None so far touches the model itself. |
-| C4 | journal & sign-off | both | Journal, author list, collaboration sign-off, companion-submission letter | decision | – | – | NIM A or JINST, both accept companion submissions. |
+| C4 | journal & sign-off | both | Journal, author list, collaboration sign-off, companion-submission letter | partial | – | – | **Journals decided 2026-11-01: I → JINST, II → NIM A** (papers/JOURNAL_STRATEGY.md). Open: author list, collaboration sign-off, OA coverage, switch LaTeX classes. |
 | R1 | hit tiers H0/H1 | II | Hit tiers from the DREAM waveforms on r06, all five chambers: H0 production combined_hits, H1 best per-strip estimator (CFD, leading edge, matched filter, peak time) | partial | M | C1 | July: det3 only, R&D model (scripts 04/05). |
 | R2 | hit corrections H2a/b | II | Hit-level corrections on r06: H2a slope remap (script 16) and H2b unsharing + angle-calibrated hybrid (scripts 26–34, 36) | partial | M | R1 | Both exist for det3 (July). The hybrid's constants were fitted on hits: refit on r06. |
 | R3 | forward fit on hits H2c | II | H2c, new: the forward model fitted to hit lists (one time + amplitude per strip) instead of waveforms | open | L | R1 | The key new result: how much of the gap a sharing-aware fit recovers without waveforms. |
