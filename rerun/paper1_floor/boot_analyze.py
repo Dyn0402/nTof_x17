@@ -127,6 +127,10 @@ def main():
                 r['ablation'] = {k: dict(s68=toy[k]['s68'], carried=float((Dd ** 2 - toy[k]['s68'] ** 2) / ex)
                                          if ex > 0 else np.nan)
                                  for k in ('Dcm', 'Dmean', 'Dtshape', 'Danti', 'Dtshuf', 'Dsshuf') if k in toy}
+                # like with like: the share of each residual's own angle effect a structure carries, data vs toy
+                r['own_share'] = {s_: dict(data=float(1 - toy['D' + s_]['s68'] ** 2 / Dd ** 2) if 'D' + s_ in toy else None,
+                                           toy=float(1 - toy['T' + s_]['s68'] ** 2 / T ** 2) if 'T' + s_ in toy else None)
+                                  for s_ in ('cm', 'tshape', 'anti', 'tshuf', 'sshuf', 'mean')}
             # data truths
             dd = {}
             for f in sorted(glob.glob(os.path.join(a.raw, f'DATA_{det}_{view}_*.npz'))):
@@ -137,6 +141,10 @@ def main():
                     dd[k] = dict(s68=s68(z[k][0]), n=int(np.isfinite(z[k][0]).sum()),
                                  chi2dof=float(np.nanmedian(z[k][1])))
             r['data_truth'] = dd
+            if 'dD' in dd and dd['dD']['s68'] > 0:
+                r['data_truth_share'] = {k[2:]: float(1 - v['s68'] ** 2 / dd['dD']['s68'] ** 2) for k, v in dd.items()
+                                         if k.startswith('dD') and k != 'dD'}
+                r['data_truth_over_measured'] = float(dd['dD']['s68'] / r['data_clean_s68'])
             pl = [p for p in D['planes'] if p['view'] == view and p['w_table'] is not None
                   and np.isfinite(p['w_table'])]
             r['n_planes'] = len(pl)
@@ -154,6 +162,9 @@ def main():
                   f" | replay {r['replay_closure']:.3f}")
             if 'ablation' in r:
                 print('    ablation carried: ' + ' '.join(f"{k} {v['carried']:+.2f}" for k, v in r['ablation'].items()))
+                print('    own share data/toy: ' + ' '.join(
+                    f"{k} {v['data'] if v['data'] is not None else np.nan:+.2f}/{v['toy'] if v['toy'] is not None else np.nan:+.2f}"
+                    for k, v in r['own_share'].items()))
     os.makedirs(os.path.dirname(a.out), exist_ok=True)
     json.dump(res, open(a.out, 'w'), indent=1, default=float)
     print('wrote', a.out)
