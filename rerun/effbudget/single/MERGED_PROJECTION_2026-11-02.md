@@ -158,7 +158,9 @@ a material change to beam tables with no two-particle truth to check it. **n_TOF
 - no stage-3 product changes.
 
 IPC pairs at small opening angle have the same structural weakness (an implausible member blocks the corroboration).
-Whether beam needs its own version of this rule is open.
+The beam decision belongs to Q7 of `rerun/ntof/NTOF_PASS_PLAN_2026-11-02.md` (select gate/cost and the two-track
+plausibility guards, scored with the tan_max scan on beam overlay pairs). `split_corrob='charge'` is now one arm that
+study can switch on per bundle (or with the `SPLIT_CORROB_MODE` worker option).
 
 **(d) det3 single-track efficiency.** `merged_effcheck.py`, `results/merged_effcheck.json`. Over every event the rule
 can touch, outside the one-view classes:
