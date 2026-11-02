@@ -39,6 +39,7 @@ producer = "cd mx_june_cosmic_qa/engineer_package && ../../.venv/bin/python make
 note = "Swap for the mpgd26 bench_side render when its inputs are on this machine."
 
 [fig.sps_setup]
+appendix_candidate = "Dylan 2026-11-02: keep in the body for now; maybe move to an appendix later (see how the paper reads)"
 title = "SPS H4: uRWELL references and det4 on the rail"
 state = "placeholder"
 section_state = "ready"
@@ -140,6 +141,7 @@ note = "Pass 1 (2026-10-31, rerun/paper1_gas): det3 6-27 drift scan, timing v fr
 producer = "cd rerun/paper1_gas && python pg_gas.py <fit dir> && python pg_figs.py"
 
 [fig.attachment]
+appendix_candidate = "Dylan 2026-11-02: keep in the body for now; maybe move to an appendix later (see how the paper reads)"
 title = "What gas each setup had: water (bench golden rows vs SPS epochs) and O2 at SPS"
 state = "current"
 section_state = "partial"
@@ -149,6 +151,7 @@ note = "SPS from rerun/sps_gasfit/results/verdict.json (4127f9ea, gap 27.9 mm); 
 # --- 7 Timing -----------------------------------------------------------------
 
 [fig.timing]
+appendix_candidate = "Dylan 2026-11-02: keep in the body for now; maybe move to an appendix later (see how the paper reads)"
 title = "Time resolution from the waveforms: HV scans, the uncorrelated part vs signal size (bench and det4 at SPS), golden-row split"
 state = "current"
 source = "rerun/paper1_timing/figures/timing.pdf"
@@ -167,6 +170,7 @@ note = "Pass 1 (2026-10-31), headline row per chamber (det2/det3 the quoted gold
 producer = "cd rerun/paper1_res && ../../.venv/bin/python make_report.py"
 
 [fig.sps_resolution]
+appendix_candidate = "Dylan 2026-11-02: keep in the body for now; maybe move to an appendix later (see how the paper reads)"
 title = "det4 intrinsic resolution at SPS H4: the 3-zone telescope decomposition, run63 flat700 (CF4) with run53 (Ar/CO2) as cross-check"
 state = "current"
 section_state = "requote"
@@ -183,6 +187,7 @@ note = "Pass 1 golden rows (2026-10-31), fb_bow_maps' estimator unchanged, v(t) 
 producer = "rerun/paper1_res/bow_pass1.py build (lxplus) then fig --in-dir <fetched tables>"
 
 [fig.bow_closure]
+appendix_candidate = "Dylan 2026-11-02: keep in the body for now; maybe move to an appendix later (see how the paper reads)"
 title = "Measured drift-tilt gradient vs the one predicted by the position-route curvature"
 state = "current"
 source = "rerun/paper1_res/figures/bow_closure.pdf"
