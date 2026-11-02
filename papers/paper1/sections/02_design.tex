@@ -4,6 +4,33 @@ spec page \texttt{notes/mx17-detector-spec.html}; Gerber files; PLAN\_38 (charge
 \intent{A complete, citable description of the MX17 module, layer by layer, and of how it was built and
 qualified. Most of this section is Stephan's: the production side is not in our analysis repository.}
 
+\subsection{Design choices}\label{sec:design_choices}
+\askStephan{Dylan (2026-11-02): the section is yours to write; these are the design points we think a reader needs, with
+what the data say about each. Keep, reword or drop as you see fit.}
+\tbw{\textbf{(1) Pads for an equal X/Y charge share.} The readout is a single plane of square pads, each routed to an X
+or a Y strip, instead of two stacked strip layers, so that both views see the same charge. It worked: the X fraction of
+the charge is $f=0.485$ (det3) and $0.513$ (det2), with an event-to-event spread of 0.014--0.032 (det7 0.116, its X
+readout fault). How much the balance matters for tracking is not measured; its only cost we know of is one more copper
+layer in the material budget.}
+\tbw{\textbf{(2) A resistive Micromegas in TPC mode.} The resistive layer spreads the charge and delays it: each strip's
+signal carries delayed copies of its neighbours' (${\sim}29\,\%$ at $\tau\approx47$\,ns to $\pm1$ strip). That compresses
+the drift-time ladder when strip times are used, and is the reason the reconstruction fits the waveforms with a
+charge-spreading model (Paper~II). For a micro-TPC alone we might not choose it again. In a high-rate or harsh
+environment, however, it quenches discharges and keeps the chamber alive and live (no measurable dead time per discharge
+on the bench, \cref{sec:operation}), so on balance it may still be the right choice.}
+\tbw{\textbf{(3) Resistive strips rather than a uniform resistive layer.} The strips were what could be made to work; a
+continuous resistive layer (which would spread the charge isotropically) was tried and had problems. \emph{Stephan: what
+were they?} The strip direction was a deliberate choice: the strips run along $y$, so the charge spreads along $y$ and
+stays narrow across $x$, which was meant to give the best resolution in the plane joining the n\_TOF chambers, where most
+of the pair opening angle is measured. \emph{(Dylan, for the text: on cosmics the two views reach similar angles, det3
+X/Y 0.98/0.90\textdegree, det2 1.03/1.08\textdegree, so the intended X advantage is not visible in the bench numbers;
+the Y view's broadening is the RC spread, which the model absorbs.)}}
+\tbw{\textbf{(4) Passivation and the active area.} The two $y$ ends of the strip plane are passivated (covered) over
+18.0 and 18.7\,mm, which removes ${\sim}10\,\%$ of the area (efficient area $399.4\times359.9$\,mm$^2$). \emph{Stephan:
+why it was needed (the strip termination / HV bus at the strip ends, and discharges there?).} The two $x$ sides are not
+passivated, and there the drift field fringes over 20--30\,mm, which biases the X angle and sets our 30\,mm fiducial
+(\cref{sec:efficiency}); the passivated sides are sharp.}
+
 \subsection{Chamber layout}
 \tbw{Entrance window and flange, 30\,mm drift gap, cathode, field cage. Active area; measured efficient area
 $399.4\times359.9$\,mm$^2$.}

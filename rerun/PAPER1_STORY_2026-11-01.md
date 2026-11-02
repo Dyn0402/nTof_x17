@@ -51,6 +51,30 @@ identified.
   terms named.
 - **Q.** §5 edge figure: det3 (the paper's chamber) or det2 (10× the triggers).
 
+### Dylan, 2026-11-02 (answers to the laptop outline review, session 40c9307a)
+
+- **Focus on det3.** The fleet efficiency maps appear early and show that det4/det6/det7 have production problems;
+  no detailed efficiency study of the other chambers. (Settles E: A1 is det3 only.)
+- **Efficiency definition (det3):** the default number gives credit when one of several reconstructed tracks is the M3
+  track (95.1 %, not 92.6 %). δ-electrons (DELTA + FIT_SAT) are **losses**: a true inefficiency, named as a category.
+  Break det3 down into single-track and multi-track events separately. Open: which further classes leave the
+  denominator (proposal in the 11-02 reply: bent-M3 position tail and the other-coordinate edge = reference/geometry).
+- **Discharges:** a well-built chamber reaches full efficiency before discharges limit it; show efficiency vs HV with
+  the discharge loss overlaid.
+- **det4 at SPS:** state that det4 went to SPS because the four good chambers (det3/det2/det6/det7 = A/B/C/D) were
+  installed at n_TOF over the same weeks (SPS runs 30 Jul–2 Aug 2026). Dylan to confirm wording.
+- **Body, briefly:** X/Y charge sharing and the time resolution (M: yes, in the body). Edge study: expand, possibly
+  grouped with the bow as "geometrical / mechanical deviations" (they are separate mechanisms: the bow predicts the
+  edge column shorter, the fringe makes it longer; both are field/geometry non-uniformities).
+- **Resolution:** quote the intrinsic resolution only with the reference subtraction stated and realistic
+  uncertainties, on the bench (det3 near normal 126/116 ± 35 stat, ±~50 µm from ±10 % on the M3 pointing) and at SPS
+  (region R 138/120 µm, telescope-f range 112–153 / 89–136). (P: the chamber term, with the caveat.)
+- **n_TOF:** nothing in Paper I beyond motivation and requirements.
+- **Design section:** starter notes for Stephan in `papers/paper1/sections/02_design.tex` §Design choices (pads for
+  X/Y balance, resistive TPC trade-off, strips vs layer and their orientation, passivation).
+- **AI disclosure:** Claude Code's role is stated explicitly (draft in `main.tex` Acknowledgements; methods paragraph
+  in §3 still to write).
+
 (The HANDOFF's G/H, the duplicate reproc files and the bench gas fit, are not paper decisions. The gas fit is done, in §6.)
 
 ## Facts only Dylan or Stephan can supply (the data can't)
