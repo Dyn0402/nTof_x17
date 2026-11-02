@@ -43,6 +43,31 @@ reconstructed in 94.5–96.1 %: the chamber is as efficient with two particles a
 counts when one of its tracks is the M3 track. No δ-like "attached" second particles were found among the two-view
 events (second particles sit a median ~70 mm from the muon).
 
+## 1b. The two loss groups looked at closely (`single_track_v2.py`, Dylan 2026-11-02 p.m.)
+
+**One-view second deposits (233 events): mostly two real particles merged in one projection.** In the view with a
+single candidate, that candidate is wider than a single track (median 15 strips on the muon, 25 when off it, against 12),
+carries the charge of both particles, or sits 5–15 mm off the muon (between the two, inside the 12 mm seed gap).
+195 events (84 %) are "merged in projection": a two-particle event at the two-track separation limit of one projection,
+not a chamber malfunction; 41 % of them are still credited. 14 are a faint (⅓ of the muon), short deposit seen in one
+view only: all 14 credited, so not losses. 24 unclear (kept in the sample).
+
+**Spark-vetoed deposits: local, i.e. δ-rays, not outside showers.** Extra M3 clusters per event, upper / lower doublet
+(sat_det3): detected muons 0.56 / 0.72; independent second particle 1.55 / 1.46; **'shower' 0.49 / 0.47**;
+'muon+other' 0.65 / 0.38; discharge 0.72 / 0.84. Nothing accompanies the 'shower' muons through the telescope, so the
+deposit is made in det3 (gas, cathode, window). 54–80 strips over threshold at 0.7–0.9 % of muons: in order of
+magnitude, knock-on electrons above ~0.1 MeV (~1–1.5 % of muons). Counted as losses with the other δ classes;
+'muon+other' (a clean muon plus a separate deposit, vetoed together) is a two-particle event and leaves the sample.
+
+**Revised single-track efficiency (pooled, 25 588 tracks): 96.0 ± 0.1 %** (sat_det3 96.24 ± 0.24, 6-27 long
+95.87 ± 0.14); 96.8 % if the δ-ray deposits are excused too. Losses: δ 2.5 % (on track 0.9, saturated blob 0.9,
+vetoed 0.7–0.9), discharges 0.5, noise bands 0.2, fit off 0.3, non-particle second deposit 0.2. Hardware alone
+(discharges + bands): 0.7 %.
+
+**Fiducial** (`results/fiducial_variants.json`, both rows): 30 mm from every side vs the current 30 x / 8 y interior:
+production 92.31 vs 92.29 %, credit 95.01 vs 94.98 %, single-track 95.83 vs 95.96 %, −9 % tracks. Whole active area
+91.50 / 94.13 %. Efficiency is insensitive to the y cut.
+
 ## 2. X/Y pairing on real two-particle cosmics
 
 552 events (both rows) with ≥ 2 candidates in each view where M3 marks exactly one X and one Y candidate (< 5 mm,

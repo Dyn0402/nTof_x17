@@ -1,99 +1,104 @@
 {
- "det1 (strip)": {
-  "n_subruns": 21,
-  "runs": [
-   "mx17_det1_det2_overnight_6-17-26",
-   "mx17_det4_ArIso_HV_Scan_5-7-26"
-  ],
-  "V_range": [
-   440.2300109863281,
-   520.1900024414062
-  ],
-  "I_med_range_uA": [
-   0.0428999997675418,
-   4.4642250537872314
-  ],
-  "I_med_near_490V_uA": 0.0650499984622001,
-  "V_near": 489.9800109863281,
-  "R_eff_near_490V_GOhm": 7.535742102928437,
-  "slope_uA_per_100V": 2.2384522314429653,
-  "intercept_uA": -10.192029156805363,
-  "spikes_per_h_median": 0.0
+ "per_board_night_near_490V": {
+  "det2 mx17_det1_det2_overnight_6-17-26": {
+   "V": 489.9800109863281,
+   "I_uA": 1.026350021362305,
+   "n_subruns": 11
+  },
+  "det2 mx17_det2_det3_overnight_6-22-26": {
+   "V": 490.3800048828125,
+   "I_uA": 2.3883750438690186,
+   "n_subruns": 19
+  },
+  "det3 mx17_det1_det2_overnight_6-17-26": {
+   "V": 490.3599853515625,
+   "I_uA": 0.4778999984264374,
+   "n_subruns": 11
+  },
+  "det3 mx17_det2_det3_overnight_6-22-26": {
+   "V": 489.989990234375,
+   "I_uA": 0.705299973487854,
+   "n_subruns": 19
+  },
+  "det3 mx17_det3_det4_overnight_6-23-26": {
+   "V": 490.0,
+   "I_uA": 0.2865499854087829,
+   "n_subruns": 16
+  },
+  "det3 mx17_det3_p2_det1_overnight_6-27-26": {
+   "V": 490.2099914550781,
+   "I_uA": 1.14014995098114,
+   "n_subruns": 1
+  },
+  "det3 mx17_det3_saturday_scan_6-27-26": {
+   "V": 490.239990234375,
+   "I_uA": 1.0707999467849731,
+   "n_subruns": 25
+  },
+  "det4 mx17_det3_det4_overnight_6-23-26": {
+   "V": 490.4100036621094,
+   "I_uA": 0.5818249881267548,
+   "n_subruns": 16
+  },
+  "det4 mx17_det4_day_6-24-26": {
+   "V": 495.3699951171875,
+   "I_uA": 0.124949999153614,
+   "n_subruns": 2
+  },
+  "det6 mx17_det6_det7_hv_scan_6-26-26": {
+   "V": 490.0499877929688,
+   "I_uA": 0.4507000148296356,
+   "n_subruns": 19
+  },
+  "det6 mx17_det6_det7_overnight_6-26-26": {
+   "V": 495.0,
+   "I_uA": 0.7760499715805054,
+   "n_subruns": 9
+  },
+  "det7 mx17_det6_det7_hv_scan_6-26-26": {
+   "V": 490.3999938964844,
+   "I_uA": 5.984899997711182,
+   "n_subruns": 19
+  },
+  "det7 mx17_det6_det7_overnight_6-26-26": {
+   "V": 490.4800109863281,
+   "I_uA": 6.376150131225586,
+   "n_subruns": 9
+  }
  },
- "det1 (strip_with_silver_paste)": {
-  "n_subruns": 20,
-  "runs": [
-   "mx17_det0_Ar_Iso_HV_Scan_4-7-26",
-   "mx17_det3_HV_Scan_5-5-26"
-  ],
-  "V_range": [
-   410.1400146484375,
-   530.27001953125
-  ],
-  "I_med_range_uA": [
-   0.0292499996721744,
-   5.02857518196106
-  ],
-  "I_med_near_490V_uA": 2.9340500831604004,
-  "V_near": 490.2200012207031,
-  "R_eff_near_490V_GOhm": 0.1671034899366162,
-  "slope_uA_per_100V": -0.737893322621456,
-  "intercept_uA": 5.641989928289083,
-  "spikes_per_h_median": 0.0
- },
- "det2 (strip)": {
+ "det2": {
   "n_subruns": 30,
   "runs": [
    "mx17_det1_det2_overnight_6-17-26",
    "mx17_det2_det3_overnight_6-22-26"
   ],
   "V_range": [
-   450.3599853515625,
+   450.010009765625,
    525.4099731445312
   ],
   "I_med_range_uA": [
-   0.2614000141620636,
+   0.0428999997675418,
    5.971099853515625
   ],
   "I_med_near_490V_uA": 2.161875009536743,
-  "V_near": 490.3599853515625,
+  "V_near": 489.9800109863281,
   "R_eff_near_490V_GOhm": 0.2245458226308045,
-  "slope_uA_per_100V": 3.527804571484202,
-  "intercept_uA": -15.192627372612195,
+  "slope_uA_per_100V": 4.75423583874131,
+  "intercept_uA": -20.983960240636154,
   "spikes_per_h_median": 1.8556779920416284
  },
- "det2 (strip_resit_with_plein_on_top)": {
-  "n_subruns": 1,
+ "det3": {
+  "n_subruns": 72,
   "runs": [
-   "mx17_det2_overnight_run_1-28-26"
-  ],
-  "V_range": [
-   530.219970703125,
-   530.219970703125
-  ],
-  "I_med_range_uA": [
-   0.4886499941349029,
-   0.4886499941349029
-  ],
-  "I_med_near_490V_uA": 0.4886499941349029,
-  "V_near": 530.219970703125,
-  "R_eff_near_490V_GOhm": 1.0850710673634958,
-  "slope_uA_per_100V": NaN,
-  "intercept_uA": NaN,
-  "spikes_per_h_median": 0.0
- },
- "det3 (strip)": {
-  "n_subruns": 80,
-  "runs": [
+   "mx17_det1_det2_overnight_6-17-26",
    "mx17_det2_det3_overnight_6-22-26",
-   "mx17_det2_det3_weekend_6-20-26",
    "mx17_det3_det4_overnight_6-23-26",
    "mx17_det3_p2_det1_overnight_6-27-26",
    "mx17_det3_saturday_scan_6-27-26"
   ],
   "V_range": [
    425.3200073242188,
-   525.4099731445312
+   525.2999877929688
   ],
   "I_med_range_uA": [
    0.1670500040054321,
@@ -102,11 +107,11 @@
   "I_med_near_490V_uA": 0.705299973487854,
   "V_near": 490.0,
   "R_eff_near_490V_GOhm": 0.694725660928744,
-  "slope_uA_per_100V": 4.557160620473093,
-  "intercept_uA": -20.65891298909188,
-  "spikes_per_h_median": 1.8420683357558445
+  "slope_uA_per_100V": 4.0679269003204555,
+  "intercept_uA": -18.736274119274842,
+  "spikes_per_h_median": 1.861429084749243
  },
- "det4 (strip)": {
+ "det4": {
   "n_subruns": 18,
   "runs": [
    "mx17_det3_det4_overnight_6-23-26",
@@ -127,7 +132,7 @@
   "intercept_uA": -4.484188134691533,
   "spikes_per_h_median": 0.0
  },
- "det6 (strip)": {
+ "det6": {
   "n_subruns": 28,
   "runs": [
    "mx17_det6_det7_hv_scan_6-26-26",
@@ -148,7 +153,7 @@
   "intercept_uA": -13.331191106678554,
   "spikes_per_h_median": 2.943589229303515
  },
- "det7 (strip)": {
+ "det7": {
   "n_subruns": 28,
   "runs": [
    "mx17_det6_det7_hv_scan_6-26-26",

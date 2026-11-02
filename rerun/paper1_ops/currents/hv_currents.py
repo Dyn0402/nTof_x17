@@ -23,6 +23,30 @@ ORDER = ['mx17_2', 'mx17_3', 'mx17_4', 'mx17_6', 'mx17_7']
 LABEL = {'mx17_2': 'det2', 'mx17_3': 'det3', 'mx17_4': 'det4', 'mx17_6': 'det6', 'mx17_7': 'det7', 'mx17_1': 'det1'}
 
 
+# Physical board from the run-config description: the config NAMES were renumbered between nights (6-17: mx17_1 is
+# the Arnaud board, later mx17_2), the descriptions follow the board. det2 (Arnaud, 12 June) is the first board of the
+# n_TOF batch; Dylan 2026-11-02: no current data from before it is used (the Jan-May prototypes stay in the CSV only).
+BOARDS = (('Bulked by Arnaud June 12', 'det2'), ('Bulked by Stephan June 15', 'det3'), ('Was board C', 'det4'),
+          ('Was board D', 'det6'), ('Was board B', 'det7'))
+FIRST_DAY = pd.Timestamp('2026-06-17')
+# 6-19/6-20 weekend: the 'mx17_3' (Stephan 15 June) curve is the 6-22 det2 curve point for point (same 1.9 uA floor),
+# and that weekend carries the known slot confusion (MEMORY: weekend det2/det3) -> board assignment not trusted
+AMBIGUOUS_RUNS = {'mx17_det2_det3_weekend_6-20-26'}
+
+
+def board_of(desc):
+    for k, b in BOARDS:
+        if k in (desc or ''):
+            return b
+    return None
+
+
+def run_day(run):
+    import re
+    m = re.search(r'(\d{1,2})-(\d{1,2})-(\d{2})$', run)
+    return pd.Timestamp(2000 + int(m.group(3)), int(m.group(1)), int(m.group(2))) if m else pd.NaT
+
+
 def subrun_rows(run_dir):
     cfg = json.load(open(os.path.join(run_dir, 'run_config.json')))
     dets = [d for d in cfg['detectors'] if d.get('det_type') == 'mx17' or d['name'].startswith('mx17')]
@@ -74,13 +98,22 @@ def main():
         if os.path.exists(os.path.join(rd, 'run_config.json')):
             rows += subrun_rows(rd)
     T = pd.DataFrame(rows).sort_values(['det', 'run', 'V'])
+    T['board'] = T.description.map(board_of)
+    T['day'] = T.run.map(run_day)
+    T['use'] = T.board.notna() & (T.day >= FIRST_DAY) & ~T.run.isin(AMBIGUOUS_RUNS)
     T.to_csv(os.path.join(a.out, 'currents.csv'), index=False)
     summ = {}
-    for (det, rt), g in T.groupby(['det', 'resist_type']):
+    U = T[T.use]
+    # per board and night, the current at the HV nearest 490 V
+    summ['per_board_night_near_490V'] = {
+        f'{b} {r}': dict(V=float(g.iloc[(g.V - 490).abs().argsort()[:1]].V.iloc[0]),
+                         I_uA=float(g.iloc[(g.V - 490).abs().argsort()[:1]].I_med.iloc[0]), n_subruns=int(len(g)))
+        for (b, r), g in U.groupby(['board', 'run'])}
+    for (det, rt), g in U.groupby(['board', 'resist_type']):
         # linear fit I = G V + I0 over the chamber's sub-runs (the leakage part is ohmic if I0 ~ 0)
         G, I0 = np.polyfit(g.V, g.I_med, 1) if g.V.nunique() > 2 else (np.nan, np.nan)
         near = g.iloc[(g.V - 490).abs().argsort()[:3]]
-        summ[f'{LABEL.get(det, det)} ({rt})'] = dict(
+        summ[det] = dict(
             n_subruns=int(len(g)), runs=sorted(g.run.unique().tolist()), V_range=[float(g.V.min()), float(g.V.max())],
             I_med_range_uA=[float(g.I_med.min()), float(g.I_med.max())],
             I_med_near_490V_uA=float(near.I_med.median()), V_near=float(near.V.median()),
@@ -101,20 +134,32 @@ def main():
         print('det3 6-27 fit:', summ['det3_6-27_fit'])
     json.dump(summ, open(os.path.join(a.out, 'currents.json'), 'w'), indent=1)
     for k, v in summ.items():
-        if 'n_subruns' not in v:
+        if not isinstance(v, dict) or 'n_subruns' not in v:
             continue
         print(f"{k:40s} n={v['n_subruns']:3d} V {v['V_range'][0]:.0f}-{v['V_range'][1]:.0f}  I(~{v['V_near']:.0f} V) "
               f"{v['I_med_near_490V_uA']:.3f} uA  R_eff {v['R_eff_near_490V_GOhm']:.2f} GOhm  "
               f"slope {v['slope_uA_per_100V']:.3f} uA/100V  I0 {v['intercept_uA']:.3f}  spikes/h {v['spikes_per_h_median']:.1f}")
     try:
         import matplotlib; matplotlib.use('Agg'); import matplotlib.pyplot as plt
+        col = {'det2': '#E69F00', 'det3': '#0072B2', 'det4': '#009E73', 'det6': '#D55E00', 'det7': '#CC79A7'}
         fig, ax = plt.subplots(figsize=(6.2, 4.1))
-        for (det, rt), g in T.groupby(['det', 'resist_type']):
-            ax.plot(g.V, g.I_med, 'o', ms=3.5, label=f'{LABEL.get(det, det)} ({rt})')
+        scan = U[U.subrun.str.contains('resist_') & ~U.subrun.str.startswith('drift_scan')]
+        for (b, r), g in scan.groupby(['board', 'run']):
+            g = g.sort_values('V')
+            if len(g) < 4:
+                continue
+            ax.plot(g.V, g.I_med, 'o-', ms=3, lw=0.8, color=col[b], alpha=0.85,
+                    label=f"{b}, {r.split('_')[-1]}")
+        fit = summ.get('det3_6-27_fit')
+        if fit:
+            V = np.linspace(440, 528, 100)
+            ax.plot(V, fit['b_uA'] + fit['A_uA_at_490'] * 2 ** ((V - 490) / fit['V2_doubling_V']), 'k--', lw=1.0,
+                    label=f"det3 6-27 fit: doubles every {fit['V2_doubling_V']:.1f} V")
         ax.set_xlabel('resistive-electrode HV [V]'); ax.set_ylabel('median resist current [µA]')
-        ax.set_yscale('log'); ax.legend(fontsize=7, frameon=False); ax.grid(alpha=0.3)
+        ax.set_yscale('log'); ax.legend(fontsize=6.5, frameon=False, ncol=2); ax.grid(alpha=0.3)
         fig.tight_layout(); fig.savefig(os.path.join(a.out, 'figures', 'currents_vs_hv.png'), dpi=150)
         fig.savefig(os.path.join(a.out, 'figures', 'currents_vs_hv.pdf'))
+        U.to_csv(os.path.join(a.out, 'figures', 'currents_vs_hv.csv'), index=False)
     except Exception as e:
         print('figure skipped:', e)
 

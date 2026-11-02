@@ -1,0 +1,52 @@
+{
+ "active area: production pick": {
+  "n": 29398,
+  "eff": 91.5,
+  "err": 0.16
+ },
+ "active area: any candidate within 5 mm (credit)": {
+  "n": 29398,
+  "eff": 94.13,
+  "err": 0.14
+ },
+ "interior 30 x / 8 y (current): production pick": {
+  "n": 26542,
+  "eff": 92.29,
+  "err": 0.16
+ },
+ "interior 30 x / 8 y (current): any candidate within 5 mm (credit)": {
+  "n": 26542,
+  "eff": 94.98,
+  "err": 0.13
+ },
+ "interior 30 x / 8 y (current): credit, ref/geom out": {
+  "n": 26442,
+  "eff": 95.22,
+  "err": 0.13
+ },
+ "interior 30 x / 8 y (current): SINGLE-TRACK v2": {
+  "n": 25588,
+  "eff": 95.96,
+  "err": 0.12
+ },
+ "30 mm from every side: production pick": {
+  "n": 24145,
+  "eff": 92.31,
+  "err": 0.17
+ },
+ "30 mm from every side: any candidate within 5 mm (credit)": {
+  "n": 24145,
+  "eff": 95.01,
+  "err": 0.14
+ },
+ "30 mm from every side: credit, ref/geom out": {
+  "n": 24101,
+  "eff": 95.06,
+  "err": 0.14
+ },
+ "30 mm from every side: SINGLE-TRACK v2": {
+  "n": 23318,
+  "eff": 95.83,
+  "err": 0.13
+ }
+}
