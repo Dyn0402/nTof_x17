@@ -130,9 +130,12 @@ def build(paper, only=None, run=False, listing=False):
         rows.append((fid, made, e.get("source", "")))
         if listing:
             continue
+        dst = figdir / f"{fid}{src.suffix.lower()}" if made == "current" else None
+        if dst is not None and dst.resolve() == src.resolve():
+            continue                     # the figure is produced in place (source == output): never clear it
         clear(figdir, fid)
         if made == "current":
-            shutil.copy2(src, figdir / f"{fid}{src.suffix.lower()}")
+            shutil.copy2(src, dst)
         elif made == "superseded":
             superseded(figdir / f"{fid}.pdf", fid, e, src)
         else:

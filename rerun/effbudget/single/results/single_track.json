@@ -1,0 +1,618 @@
+{
+ "sat_det3": {
+  "n_interior_good": 6454,
+  "pairing_ref": {
+   "lq_med": -0.0577870636869007,
+   "lq_rsig": 0.0615148129790968
+  },
+  "selections": {
+   "all": {
+    "credit": {
+     "n": 6454,
+     "k": 6137,
+     "eff": 95.08831732259064,
+     "err": 0.26900741497521485
+    },
+    "strict": {
+     "n": 6454,
+     "k": 5979,
+     "eff": 92.64022311744654,
+     "err": 0.32502565332102834
+    },
+    "classes": {
+     "detected": 5979,
+     "multi:other_picked": 92,
+     "multi:m3_picked": 66,
+     "far:DELTA": 58,
+     "far:FIT_SAT": 54,
+     "spark:shower": 43,
+     "multi:m3_not_found": 37,
+     "spark:discharge": 32,
+     "spark:muon+other": 26,
+     "far:FIT": 15,
+     "band": 14,
+     "far:POS_TAIL": 13,
+     "far:MULTI": 12,
+     "far:EDGE": 10,
+     "fit_failed": 1,
+     "cut:other": 1,
+     "other:charge_elsewhere": 1
+    }
+   },
+   "all, ref/geom dropped": {
+    "credit": {
+     "n": 6431,
+     "k": 6137,
+     "eff": 95.42839371792878,
+     "err": 0.26045575768610085
+    },
+    "strict": {
+     "n": 6431,
+     "k": 5979,
+     "eff": 92.97154408334629,
+     "err": 0.3187614030554954
+    },
+    "classes": {
+     "detected": 5979,
+     "multi:other_picked": 92,
+     "multi:m3_picked": 66,
+     "far:DELTA": 58,
+     "far:FIT_SAT": 54,
+     "spark:shower": 43,
+     "multi:m3_not_found": 37,
+     "spark:discharge": 32,
+     "spark:muon+other": 26,
+     "far:FIT": 15,
+     "band": 14,
+     "far:MULTI": 12,
+     "fit_failed": 1,
+     "cut:other": 1,
+     "other:charge_elsewhere": 1
+    }
+   },
+   "det3-tagged single (biased)": {
+    "credit": {
+     "n": 6155,
+     "k": 5979,
+     "eff": 97.14053614947198,
+     "err": 0.21243620021481766
+    },
+    "strict": {
+     "n": 6155,
+     "k": 5979,
+     "eff": 97.14053614947198,
+     "err": 0.21243620021481766
+    },
+    "classes": {
+     "detected": 5979,
+     "far:DELTA": 58,
+     "far:FIT_SAT": 54,
+     "spark:discharge": 32,
+     "far:FIT": 15,
+     "band": 14,
+     "fit_failed": 1,
+     "cut:other": 1,
+     "other:charge_elsewhere": 1
+    }
+   },
+   "det3-tagged multi": {
+    "credit": {
+     "n": 276,
+     "k": 158,
+     "eff": 57.2463768115942,
+     "err": 2.9778712992699843
+    },
+    "strict": {
+     "n": 276,
+     "k": 0,
+     "eff": 0.0,
+     "err": 0.0
+    },
+    "classes": {
+     "multi:other_picked": 92,
+     "multi:m3_picked": 66,
+     "spark:shower": 43,
+     "multi:m3_not_found": 37,
+     "spark:muon+other": 26,
+     "far:MULTI": 12
+    }
+   },
+   "M3 clean (external single)": {
+    "credit": {
+     "n": 6429,
+     "k": 6136,
+     "eff": 95.44252605381864,
+     "err": 0.26011257414530764
+    },
+    "strict": {
+     "n": 6429,
+     "k": 5979,
+     "eff": 93.00046663555763,
+     "err": 0.3182038243658908
+    },
+    "classes": {
+     "detected": 5979,
+     "multi:other_picked": 91,
+     "multi:m3_picked": 66,
+     "far:DELTA": 58,
+     "far:FIT_SAT": 54,
+     "spark:shower": 43,
+     "multi:m3_not_found": 36,
+     "spark:discharge": 32,
+     "spark:muon+other": 26,
+     "far:FIT": 15,
+     "band": 14,
+     "far:MULTI": 12,
+     "fit_failed": 1,
+     "cut:other": 1,
+     "other:charge_elsewhere": 1
+    }
+   },
+   "M3 clean, m3_extra == 0 (strictest)": {
+    "credit": {
+     "n": 2604,
+     "k": 2492,
+     "eff": 95.6989247311828,
+     "err": 0.39757728210167165
+    },
+    "strict": {
+     "n": 2604,
+     "k": 2450,
+     "eff": 94.08602150537635,
+     "err": 0.46225533563763066
+    },
+    "classes": {
+     "detected": 2450,
+     "far:DELTA": 24,
+     "multi:other_picked": 23,
+     "spark:shower": 22,
+     "far:FIT_SAT": 21,
+     "multi:m3_picked": 19,
+     "multi:m3_not_found": 11,
+     "spark:muon+other": 11,
+     "spark:discharge": 10,
+     "far:MULTI": 4,
+     "far:FIT": 4,
+     "band": 4,
+     "fit_failed": 1
+    }
+   },
+   "M3 second line, both views": {
+    "credit": {
+     "n": 0,
+     "k": 0,
+     "eff": NaN,
+     "err": NaN
+    },
+    "strict": {
+     "n": 0,
+     "k": 0,
+     "eff": NaN,
+     "err": NaN
+    },
+    "classes": {}
+   },
+   "M3 second line, one view only": {
+    "credit": {
+     "n": 2,
+     "k": 1,
+     "eff": 50.0,
+     "err": 35.35533905932738
+    },
+    "strict": {
+     "n": 2,
+     "k": 0,
+     "eff": 0.0,
+     "err": 0.0
+    },
+    "classes": {
+     "multi:other_picked": 1,
+     "multi:m3_not_found": 1
+    }
+   },
+   "SKEPTICAL single: all but an independent 2nd particle": {
+    "credit": {
+     "n": 6304,
+     "k": 6017,
+     "eff": 95.44733502538071,
+     "err": 0.2625467504570789
+    },
+    "strict": {
+     "n": 6304,
+     "k": 5979,
+     "eff": 94.84454314720813,
+     "err": 0.2785041368423301
+    },
+    "classes": {
+     "detected": 5979,
+     "far:DELTA": 58,
+     "far:FIT_SAT": 54,
+     "spark:shower": 43,
+     "spark:discharge": 32,
+     "multi:m3_not_found": 30,
+     "spark:muon+other": 26,
+     "multi:other_picked": 20,
+     "multi:m3_picked": 18,
+     "far:FIT": 15,
+     "band": 14,
+     "far:MULTI": 12,
+     "fit_failed": 1,
+     "cut:other": 1,
+     "other:charge_elsewhere": 1
+    }
+   },
+   "independent 2nd particle (both views, paired, detached)": {
+    "credit": {
+     "n": 127,
+     "k": 120,
+     "eff": 94.48818897637796,
+     "err": 2.025042123800394
+    },
+    "strict": {
+     "n": 127,
+     "k": 0,
+     "eff": 0.0,
+     "err": 0.0
+    },
+    "classes": {
+     "multi:other_picked": 72,
+     "multi:m3_picked": 48,
+     "multi:m3_not_found": 7
+    }
+   },
+   "det3 multi, 2nd particle attached to the muon (delta)": {
+    "credit": {
+     "n": 0,
+     "k": 0,
+     "eff": NaN,
+     "err": NaN
+    },
+    "strict": {
+     "n": 0,
+     "k": 0,
+     "eff": NaN,
+     "err": NaN
+    },
+    "classes": {}
+   },
+   "det3 multi, 2nd candidate in one view only": {
+    "credit": {
+     "n": 59,
+     "k": 28,
+     "eff": 47.45762711864407,
+     "err": 6.5010251344576355
+    },
+    "strict": {
+     "n": 59,
+     "k": 0,
+     "eff": 0.0,
+     "err": 0.0
+    },
+    "classes": {
+     "multi:m3_not_found": 28,
+     "multi:m3_picked": 14,
+     "multi:other_picked": 14,
+     "far:MULTI": 3
+    }
+   },
+   "det3 multi, no candidates (spark-vetoed: shower / muon+other)": {
+    "credit": {
+     "n": 69,
+     "k": 0,
+     "eff": 0.0,
+     "err": 0.0
+    },
+    "strict": {
+     "n": 69,
+     "k": 0,
+     "eff": 0.0,
+     "err": 0.0
+    },
+    "classes": {
+     "spark:shower": 43,
+     "spark:muon+other": 26
+    }
+   }
+  },
+  "crosstab": {
+   "det3_multi=False, m3_2nd_any=False": 6178,
+   "det3_multi=False, m3_2nd_any=True": 0,
+   "det3_multi=True, m3_2nd_any=False": 274,
+   "det3_multi=True, m3_2nd_any=True": 2
+  }
+ },
+ "p2_det3": {
+  "n_interior_good": 20088,
+  "pairing_ref": {
+   "lq_med": -0.054759203166511165,
+   "lq_rsig": 0.06286888077327504
+  },
+  "selections": {
+   "all": {
+    "credit": {
+     "n": 20088,
+     "k": 19040,
+     "eff": 94.78295499800876,
+     "err": 0.15689498564842974
+    },
+    "strict": {
+     "n": 20088,
+     "k": 18516,
+     "eff": 92.17443249701314,
+     "err": 0.18949371377562374
+    },
+    "classes": {
+     "detected": 18516,
+     "multi:other_picked": 291,
+     "multi:m3_picked": 233,
+     "far:FIT_SAT": 194,
+     "spark:shower": 173,
+     "far:DELTA": 173,
+     "multi:m3_not_found": 109,
+     "spark:discharge": 101,
+     "spark:muon+other": 67,
+     "far:FIT": 58,
+     "band": 44,
+     "far:EDGE": 44,
+     "far:MULTI": 43,
+     "far:POS_TAIL": 33,
+     "fit_failed": 4,
+     "cut:other": 2,
+     "other:charge_elsewhere": 2,
+     "other:not_seeded": 1
+    }
+   },
+   "all, ref/geom dropped": {
+    "credit": {
+     "n": 20011,
+     "k": 19040,
+     "eff": 95.1476687821698,
+     "err": 0.1518937481790142
+    },
+    "strict": {
+     "n": 20011,
+     "k": 18516,
+     "eff": 92.52910899005546,
+     "err": 0.18586216617684836
+    },
+    "classes": {
+     "detected": 18516,
+     "multi:other_picked": 291,
+     "multi:m3_picked": 233,
+     "far:FIT_SAT": 194,
+     "far:DELTA": 173,
+     "spark:shower": 173,
+     "multi:m3_not_found": 109,
+     "spark:discharge": 101,
+     "spark:muon+other": 67,
+     "far:FIT": 58,
+     "band": 44,
+     "far:MULTI": 43,
+     "fit_failed": 4,
+     "cut:other": 2,
+     "other:charge_elsewhere": 2,
+     "other:not_seeded": 1
+    }
+   },
+   "det3-tagged single (biased)": {
+    "credit": {
+     "n": 19095,
+     "k": 18516,
+     "eff": 96.96779261586803,
+     "err": 0.12408902547000455
+    },
+    "strict": {
+     "n": 19095,
+     "k": 18516,
+     "eff": 96.96779261586803,
+     "err": 0.12408902547000455
+    },
+    "classes": {
+     "detected": 18516,
+     "far:FIT_SAT": 194,
+     "far:DELTA": 173,
+     "spark:discharge": 101,
+     "far:FIT": 58,
+     "band": 44,
+     "fit_failed": 4,
+     "cut:other": 2,
+     "other:charge_elsewhere": 2,
+     "other:not_seeded": 1
+    }
+   },
+   "det3-tagged multi": {
+    "credit": {
+     "n": 916,
+     "k": 524,
+     "eff": 57.20524017467249,
+     "err": 1.6348031524281987
+    },
+    "strict": {
+     "n": 916,
+     "k": 0,
+     "eff": 0.0,
+     "err": 0.0
+    },
+    "classes": {
+     "multi:other_picked": 291,
+     "multi:m3_picked": 233,
+     "spark:shower": 173,
+     "multi:m3_not_found": 109,
+     "spark:muon+other": 67,
+     "far:MULTI": 43
+    }
+   },
+   "M3 clean (external single)": {
+    "credit": {
+     "n": 0,
+     "k": 0,
+     "eff": NaN,
+     "err": NaN
+    },
+    "strict": {
+     "n": 0,
+     "k": 0,
+     "eff": NaN,
+     "err": NaN
+    },
+    "classes": {}
+   },
+   "M3 clean, m3_extra == 0 (strictest)": {
+    "credit": {
+     "n": 0,
+     "k": 0,
+     "eff": NaN,
+     "err": NaN
+    },
+    "strict": {
+     "n": 0,
+     "k": 0,
+     "eff": NaN,
+     "err": NaN
+    },
+    "classes": {}
+   },
+   "M3 second line, both views": {
+    "credit": {
+     "n": 0,
+     "k": 0,
+     "eff": NaN,
+     "err": NaN
+    },
+    "strict": {
+     "n": 0,
+     "k": 0,
+     "eff": NaN,
+     "err": NaN
+    },
+    "classes": {}
+   },
+   "M3 second line, one view only": {
+    "credit": {
+     "n": 0,
+     "k": 0,
+     "eff": NaN,
+     "err": NaN
+    },
+    "strict": {
+     "n": 0,
+     "k": 0,
+     "eff": NaN,
+     "err": NaN
+    },
+    "classes": {}
+   },
+   "SKEPTICAL single: all but an independent 2nd particle": {
+    "credit": {
+     "n": 19571,
+     "k": 18617,
+     "eff": 95.12544070308108,
+     "err": 0.1539251237135116
+    },
+    "strict": {
+     "n": 19571,
+     "k": 18516,
+     "eff": 94.60937100812427,
+     "err": 0.16142852942363023
+    },
+    "classes": {
+     "detected": 18516,
+     "far:FIT_SAT": 194,
+     "far:DELTA": 173,
+     "spark:shower": 173,
+     "spark:discharge": 101,
+     "multi:m3_not_found": 92,
+     "spark:muon+other": 67,
+     "multi:m3_picked": 59,
+     "far:FIT": 58,
+     "band": 44,
+     "far:MULTI": 43,
+     "multi:other_picked": 42,
+     "fit_failed": 4,
+     "cut:other": 2,
+     "other:charge_elsewhere": 2,
+     "other:not_seeded": 1
+    }
+   },
+   "independent 2nd particle (both views, paired, detached)": {
+    "credit": {
+     "n": 440,
+     "k": 423,
+     "eff": 96.13636363636363,
+     "err": 0.9187886669825158
+    },
+    "strict": {
+     "n": 440,
+     "k": 0,
+     "eff": 0.0,
+     "err": 0.0
+    },
+    "classes": {
+     "multi:other_picked": 249,
+     "multi:m3_picked": 174,
+     "multi:m3_not_found": 17
+    }
+   },
+   "det3 multi, 2nd particle attached to the muon (delta)": {
+    "credit": {
+     "n": 0,
+     "k": 0,
+     "eff": NaN,
+     "err": NaN
+    },
+    "strict": {
+     "n": 0,
+     "k": 0,
+     "eff": NaN,
+     "err": NaN
+    },
+    "classes": {}
+   },
+   "det3 multi, 2nd candidate in one view only": {
+    "credit": {
+     "n": 174,
+     "k": 77,
+     "eff": 44.252873563218394,
+     "err": 3.765367391914091
+    },
+    "strict": {
+     "n": 174,
+     "k": 0,
+     "eff": 0.0,
+     "err": 0.0
+    },
+    "classes": {
+     "multi:m3_not_found": 88,
+     "multi:m3_picked": 48,
+     "multi:other_picked": 29,
+     "far:MULTI": 8,
+     "spark:muon+other": 1
+    }
+   },
+   "det3 multi, no candidates (spark-vetoed: shower / muon+other)": {
+    "credit": {
+     "n": 240,
+     "k": 0,
+     "eff": 0.0,
+     "err": 0.0
+    },
+    "strict": {
+     "n": 240,
+     "k": 0,
+     "eff": 0.0,
+     "err": 0.0
+    },
+    "classes": {
+     "spark:shower": 173,
+     "spark:muon+other": 67
+    }
+   }
+  },
+  "crosstab": {
+   "det3_multi=False, m3_2nd_any=False": 19172,
+   "det3_multi=False, m3_2nd_any=True": 0,
+   "det3_multi=True, m3_2nd_any=False": 916,
+   "det3_multi=True, m3_2nd_any=True": 0
+  }
+ }
+}

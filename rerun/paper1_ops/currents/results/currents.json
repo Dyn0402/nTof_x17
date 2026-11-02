@@ -1,0 +1,187 @@
+{
+ "det1 (strip)": {
+  "n_subruns": 21,
+  "runs": [
+   "mx17_det1_det2_overnight_6-17-26",
+   "mx17_det4_ArIso_HV_Scan_5-7-26"
+  ],
+  "V_range": [
+   440.2300109863281,
+   520.1900024414062
+  ],
+  "I_med_range_uA": [
+   0.0428999997675418,
+   4.4642250537872314
+  ],
+  "I_med_near_490V_uA": 0.0650499984622001,
+  "V_near": 489.9800109863281,
+  "R_eff_near_490V_GOhm": 7.535742102928437,
+  "slope_uA_per_100V": 2.2384522314429653,
+  "intercept_uA": -10.192029156805363,
+  "spikes_per_h_median": 0.0
+ },
+ "det1 (strip_with_silver_paste)": {
+  "n_subruns": 20,
+  "runs": [
+   "mx17_det0_Ar_Iso_HV_Scan_4-7-26",
+   "mx17_det3_HV_Scan_5-5-26"
+  ],
+  "V_range": [
+   410.1400146484375,
+   530.27001953125
+  ],
+  "I_med_range_uA": [
+   0.0292499996721744,
+   5.02857518196106
+  ],
+  "I_med_near_490V_uA": 2.9340500831604004,
+  "V_near": 490.2200012207031,
+  "R_eff_near_490V_GOhm": 0.1671034899366162,
+  "slope_uA_per_100V": -0.737893322621456,
+  "intercept_uA": 5.641989928289083,
+  "spikes_per_h_median": 0.0
+ },
+ "det2 (strip)": {
+  "n_subruns": 30,
+  "runs": [
+   "mx17_det1_det2_overnight_6-17-26",
+   "mx17_det2_det3_overnight_6-22-26"
+  ],
+  "V_range": [
+   450.3599853515625,
+   525.4099731445312
+  ],
+  "I_med_range_uA": [
+   0.2614000141620636,
+   5.971099853515625
+  ],
+  "I_med_near_490V_uA": 2.161875009536743,
+  "V_near": 490.3599853515625,
+  "R_eff_near_490V_GOhm": 0.2245458226308045,
+  "slope_uA_per_100V": 3.527804571484202,
+  "intercept_uA": -15.192627372612195,
+  "spikes_per_h_median": 1.8556779920416284
+ },
+ "det2 (strip_resit_with_plein_on_top)": {
+  "n_subruns": 1,
+  "runs": [
+   "mx17_det2_overnight_run_1-28-26"
+  ],
+  "V_range": [
+   530.219970703125,
+   530.219970703125
+  ],
+  "I_med_range_uA": [
+   0.4886499941349029,
+   0.4886499941349029
+  ],
+  "I_med_near_490V_uA": 0.4886499941349029,
+  "V_near": 530.219970703125,
+  "R_eff_near_490V_GOhm": 1.0850710673634958,
+  "slope_uA_per_100V": NaN,
+  "intercept_uA": NaN,
+  "spikes_per_h_median": 0.0
+ },
+ "det3 (strip)": {
+  "n_subruns": 80,
+  "runs": [
+   "mx17_det2_det3_overnight_6-22-26",
+   "mx17_det2_det3_weekend_6-20-26",
+   "mx17_det3_det4_overnight_6-23-26",
+   "mx17_det3_p2_det1_overnight_6-27-26",
+   "mx17_det3_saturday_scan_6-27-26"
+  ],
+  "V_range": [
+   425.3200073242188,
+   525.4099731445312
+  ],
+  "I_med_range_uA": [
+   0.1670500040054321,
+   6.540425062179565
+  ],
+  "I_med_near_490V_uA": 0.705299973487854,
+  "V_near": 490.0,
+  "R_eff_near_490V_GOhm": 0.694725660928744,
+  "slope_uA_per_100V": 4.557160620473093,
+  "intercept_uA": -20.65891298909188,
+  "spikes_per_h_median": 1.8420683357558445
+ },
+ "det4 (strip)": {
+  "n_subruns": 18,
+  "runs": [
+   "mx17_det3_det4_overnight_6-23-26",
+   "mx17_det4_day_6-24-26"
+  ],
+  "V_range": [
+   465.4100036621094,
+   525.4299926757812
+  ],
+  "I_med_range_uA": [
+   0.124949999153614,
+   1.6012499928474426
+  ],
+  "I_med_near_490V_uA": 0.5386999845504761,
+  "V_near": 490.4100036621094,
+  "R_eff_near_490V_GOhm": 0.9011694920692737,
+  "slope_uA_per_100V": 1.0395819174342331,
+  "intercept_uA": -4.484188134691533,
+  "spikes_per_h_median": 0.0
+ },
+ "det6 (strip)": {
+  "n_subruns": 28,
+  "runs": [
+   "mx17_det6_det7_hv_scan_6-26-26",
+   "mx17_det6_det7_overnight_6-26-26"
+  ],
+  "V_range": [
+   400.0,
+   530.1599731445312
+  ],
+  "I_med_range_uA": [
+   0.0568999983370304,
+   5.896949768066406
+  ],
+  "I_med_near_490V_uA": 0.4507000148296356,
+  "V_near": 490.0499877929688,
+  "R_eff_near_490V_GOhm": 1.0873085681574859,
+  "slope_uA_per_100V": 3.0743061157889175,
+  "intercept_uA": -13.331191106678554,
+  "spikes_per_h_median": 2.943589229303515
+ },
+ "det7 (strip)": {
+  "n_subruns": 28,
+  "runs": [
+   "mx17_det6_det7_hv_scan_6-26-26",
+   "mx17_det6_det7_overnight_6-26-26"
+  ],
+  "V_range": [
+   400.3500061035156,
+   505.5199890136719
+  ],
+  "I_med_range_uA": [
+   0.342849999666214,
+   9.297800064086914
+  ],
+  "I_med_near_490V_uA": 5.984899997711182,
+  "V_near": 490.3999938964844,
+  "R_eff_near_490V_GOhm": 0.08193954687363685,
+  "slope_uA_per_100V": 8.76121573534887,
+  "intercept_uA": -36.842792136852246,
+  "spikes_per_h_median": 2.917341977309562
+ },
+ "det3_6-27_fit": {
+  "model": "I = b + A * 2**((V-490)/V2)",
+  "b_uA": 0.012395208259255126,
+  "b_err": 0.03807345628079794,
+  "A_uA_at_490": 1.0485453130295364,
+  "A_err": 0.046457769797260434,
+  "V2_doubling_V": 13.320774331985339,
+  "V2_err": 0.32386202283015453,
+  "gain_doubling_V": 16.7,
+  "excess_gain_power": 1.2536808734835025,
+  "drift_scan_I_range_uA": [
+   1.0279500484466553,
+   1.1052500009536743
+  ]
+ }
+}

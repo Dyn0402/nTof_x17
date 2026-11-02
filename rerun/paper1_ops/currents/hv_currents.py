@@ -1,0 +1,123 @@
+#!/usr/bin/env python3
+"""hv_currents.py [--hv DIR] [--out DIR] -- Paper I §2/§4: resistive-electrode currents on the cosmic bench.
+
+Stephan's design argument (Dylan, 2026-11-02): a uniform resistive layer came out with too low a resistance and
+showed "hot spots" where current flowed; resistive strips plus passivation allowed a higher resistance and much less
+current. This puts numbers on the strip chambers' currents, per chamber and against the resist HV, from the CAEN
+monitor written every few seconds during each sub-run (hv_monitor.csv: '<board>:<ch> vmon/imon', imon in uA).
+
+Per detector and sub-run (channels from that run's run_config.json, 'resist' and 'drift'):
+  V            median resist vmon [V]
+  I_med        median resist imon [uA] (the steady current: leakage + signal)
+  I_p99        99th percentile (spikes: discharges recharging the electrode)
+  spikes/h     samples with imon > I_med + max(0.05 uA, 5 x robust sigma), merged into episodes, per hour
+  R_eff        V / I_med [GOhm] (an effective DC resistance to ground; not a model of the leakage path)
+Inputs: <hv>/<run>/run_config.json and <hv>/<run>/<subrun>/hv_monitor.csv (copied from EOS cosmic_bench; the
+fetch is in the 11-02 session notes). Writes <out>/currents.csv, currents.json and figures/currents_vs_hv.png.
+"""
+import argparse, glob, json, os
+import numpy as np
+import pandas as pd
+
+ORDER = ['mx17_2', 'mx17_3', 'mx17_4', 'mx17_6', 'mx17_7']
+LABEL = {'mx17_2': 'det2', 'mx17_3': 'det3', 'mx17_4': 'det4', 'mx17_6': 'det6', 'mx17_7': 'det7', 'mx17_1': 'det1'}
+
+
+def subrun_rows(run_dir):
+    cfg = json.load(open(os.path.join(run_dir, 'run_config.json')))
+    dets = [d for d in cfg['detectors'] if d.get('det_type') == 'mx17' or d['name'].startswith('mx17')]
+    rows = []
+    for f in sorted(glob.glob(os.path.join(run_dir, '*', 'hv_monitor.csv'))):
+        sub = os.path.basename(os.path.dirname(f))
+        try:
+            H = pd.read_csv(f)
+        except Exception:
+            continue
+        if len(H) < 20:
+            continue
+        t = pd.to_datetime(H.timestamp, errors='coerce'); hours = (t.max() - t.min()).total_seconds() / 3600
+        dt = float(np.nanmedian(np.diff(t.astype('int64'))) / 1e9) if len(t) > 2 else np.nan
+        for d in dets:
+            ch = d.get('hv_channels', {})
+            if 'resist' not in ch:
+                continue
+            b, c = ch['resist']; vcol, icol = f'{b}:{c} vmon', f'{b}:{c} imon'
+            if vcol not in H or icol not in H:
+                continue
+            v = pd.to_numeric(H[vcol], errors='coerce').to_numpy(); i = pd.to_numeric(H[icol], errors='coerce').to_numpy()
+            on = np.isfinite(v) & np.isfinite(i) & (v > 0.9 * np.nanmax(v)) & (np.nanmax(v) > 100)
+            if on.sum() < 20:
+                continue
+            vv, ii = v[on], i[on]
+            med = float(np.median(ii)); rs = float(1.4826 * np.median(np.abs(ii - med)))
+            thr = med + max(0.05, 5 * rs)
+            hi = ii > thr
+            episodes = int(np.sum(hi[1:] & ~hi[:-1]) + (hi[0] if len(hi) else 0))
+            dv, di = ch.get('drift', [None, None]), None
+            if dv[0] is not None and f'{dv[0]}:{dv[1]} imon' in H:
+                di = float(np.nanmedian(pd.to_numeric(H[f'{dv[0]}:{dv[1]} imon'], errors='coerce')[on]))
+            rows.append(dict(run=cfg['run_name'], subrun=sub, det=d['name'], label=LABEL.get(d['name'], d['name']),
+                             resist_type=d.get('resist_type'), description=d.get('description', ''), gas=cfg.get('gas'),
+                             V=float(np.median(vv)), I_med=med, I_rsig=rs, I_p99=float(np.percentile(ii, 99)),
+                             I_max=float(ii.max()), spikes_per_h=episodes / max(hours, 1e-3), hours=hours, dt_s=dt,
+                             R_eff_GOhm=float(np.median(vv)) / med / 1e3 if med > 0 else np.nan, I_drift=di))
+    return rows
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument('--hv', default=os.path.join(os.environ.get('WORK_DATA', '/tmp'), 'claude-jobs/17c92c46/hv'))
+    ap.add_argument('--out', default=os.path.join(os.path.dirname(os.path.abspath(__file__)), 'results'))
+    a = ap.parse_args(); os.makedirs(os.path.join(a.out, 'figures'), exist_ok=True)
+    rows = []
+    for rd in sorted(glob.glob(os.path.join(a.hv, '*'))):
+        if os.path.exists(os.path.join(rd, 'run_config.json')):
+            rows += subrun_rows(rd)
+    T = pd.DataFrame(rows).sort_values(['det', 'run', 'V'])
+    T.to_csv(os.path.join(a.out, 'currents.csv'), index=False)
+    summ = {}
+    for (det, rt), g in T.groupby(['det', 'resist_type']):
+        # linear fit I = G V + I0 over the chamber's sub-runs (the leakage part is ohmic if I0 ~ 0)
+        G, I0 = np.polyfit(g.V, g.I_med, 1) if g.V.nunique() > 2 else (np.nan, np.nan)
+        near = g.iloc[(g.V - 490).abs().argsort()[:3]]
+        summ[f'{LABEL.get(det, det)} ({rt})'] = dict(
+            n_subruns=int(len(g)), runs=sorted(g.run.unique().tolist()), V_range=[float(g.V.min()), float(g.V.max())],
+            I_med_range_uA=[float(g.I_med.min()), float(g.I_med.max())],
+            I_med_near_490V_uA=float(near.I_med.median()), V_near=float(near.V.median()),
+            R_eff_near_490V_GOhm=float(near.R_eff_GOhm.median()), slope_uA_per_100V=float(100 * G),
+            intercept_uA=float(I0), spikes_per_h_median=float(g.spikes_per_h.median()))
+    # det3 on its own (6-27 Saturday scan: one chamber, no slot ambiguity): base + gain-driven excess
+    from scipy.optimize import curve_fit
+    g = T[(T.run == 'mx17_det3_saturday_scan_6-27-26') & T.subrun.str.contains('hv_scan')].sort_values('V')
+    if len(g) > 5:
+        f = lambda V, b, A, V2: b + A * 2 ** ((V - 490) / V2)
+        (b, A, V2), cov = curve_fit(f, g.V, g.I_med, p0=(0.17, 1.0, 12.0))
+        e = np.sqrt(np.diag(cov))
+        D = T[(T.run == 'mx17_det3_saturday_scan_6-27-26') & T.subrun.str.startswith('drift_scan')]
+        summ['det3_6-27_fit'] = dict(model='I = b + A * 2**((V-490)/V2)', b_uA=float(b), b_err=float(e[0]),
+                                     A_uA_at_490=float(A), A_err=float(e[1]), V2_doubling_V=float(V2), V2_err=float(e[2]),
+                                     gain_doubling_V=16.7, excess_gain_power=float(16.7 / V2),
+                                     drift_scan_I_range_uA=[float(D.I_med.min()), float(D.I_med.max())] if len(D) else None)
+        print('det3 6-27 fit:', summ['det3_6-27_fit'])
+    json.dump(summ, open(os.path.join(a.out, 'currents.json'), 'w'), indent=1)
+    for k, v in summ.items():
+        if 'n_subruns' not in v:
+            continue
+        print(f"{k:40s} n={v['n_subruns']:3d} V {v['V_range'][0]:.0f}-{v['V_range'][1]:.0f}  I(~{v['V_near']:.0f} V) "
+              f"{v['I_med_near_490V_uA']:.3f} uA  R_eff {v['R_eff_near_490V_GOhm']:.2f} GOhm  "
+              f"slope {v['slope_uA_per_100V']:.3f} uA/100V  I0 {v['intercept_uA']:.3f}  spikes/h {v['spikes_per_h_median']:.1f}")
+    try:
+        import matplotlib; matplotlib.use('Agg'); import matplotlib.pyplot as plt
+        fig, ax = plt.subplots(figsize=(6.2, 4.1))
+        for (det, rt), g in T.groupby(['det', 'resist_type']):
+            ax.plot(g.V, g.I_med, 'o', ms=3.5, label=f'{LABEL.get(det, det)} ({rt})')
+        ax.set_xlabel('resistive-electrode HV [V]'); ax.set_ylabel('median resist current [µA]')
+        ax.set_yscale('log'); ax.legend(fontsize=7, frameon=False); ax.grid(alpha=0.3)
+        fig.tight_layout(); fig.savefig(os.path.join(a.out, 'figures', 'currents_vs_hv.png'), dpi=150)
+        fig.savefig(os.path.join(a.out, 'figures', 'currents_vs_hv.pdf'))
+    except Exception as e:
+        print('figure skipped:', e)
+
+
+if __name__ == '__main__':
+    main()

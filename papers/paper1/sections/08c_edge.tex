@@ -1,0 +1,29 @@
+\subsection{The edge of the drift volume: a field fringe at the unpassivated sides}\label{sec:edge}
+\sectionstate{partial}{\texttt{rerun/paper1\_figs/README.md} (edge study, pass 1, 2026-10-31: \texttt{edge\_study.py},
+\texttt{edge\_angles.py}); figure \texttt{edge\_turnon}}
+\intent{Dylan 2026-11-02: expand the edge study; keep it separate from the bow (different mechanisms). What happens near the
+chamber sides, measured three independent ways with the same depth, why it occurs only on the two sides without
+passivation (\cref{sec:design_choices}), and why it sets the 30\,mm fiducial for angles but not for efficiency.}
+
+\tbw{\textbf{Three signals, one depth.} Within 20--30\,mm of the two $x$ sides ($x=0$ and $398.6$\,mm, no passivation):
+(i) the X angle is biased, $\tan_\mathrm{fit}-\tan_\mathrm{M3}$ up to 0.1--0.36 within 5--20\,mm of a side and below 0.01 by
+30\,mm, with opposite signs on the two sides on det3, det4 and det6: the drift lines converge inwards, so charge released
+near the cathode lands further inside than it started; (ii) the drift column is longer (det3 up to $+1.1$\,\textmu s at
+5--10\,mm; det2 $+0.17/+0.48$\,\textmu s), with more charge and more strips: the edge strips collect electrons from outside
+the strip area, over longer paths; (iii) the efficiency reaches its plateau by 10--20\,mm on the $x$ sides, by ${\sim}5$\,mm
+on the passivated $y$ sides. These use no track model (ii), the M3 reference (i, iii), or both.}
+\tbw{\textbf{Not the bow.} The bow predicts the edge column \emph{shorter} (mesh nearer the cathode at the rim, $-45$ to
+$-64$\,ns), the fringe makes it longer; measured edge shifts $-4/{+26}/{+78}/{+27}/{-115}$\,ns (det2/3/4/6/7) are the sum.}
+\tbw{\textbf{The fiducial.} The passivated $y$ sides are sharp for efficiency but not for angles: a 10--30\,mm $y$ band keeps
+full efficiency while its Y-angle $s_{68}$ is 1.3--1.9$\times$ the interior's (det2, det3). So the ${\ge}30$\,mm interior
+is the right fiducial for angles and positions; for efficiency alone 10\,mm from the $y$ sides would do (+9--10\,\%
+tracks).}
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.85\linewidth]{edge_turnon}
+  \caption{\tbw{det3 near the chamber sides: X-angle bias against M3, drift-column duration, and efficiency turn-on,
+  against the distance to the side.}}
+  \label{fig:edge}
+\end{figure}
+\askDylan{Decision I (still open): quote efficiency in the 30\,mm interior everywhere (current), or with 10\,mm from the
+$y$ sides for efficiency-only numbers?}

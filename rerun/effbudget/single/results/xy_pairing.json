@@ -1,0 +1,123 @@
+{
+ "sat_det3": {
+  "reference": {
+   "n": 5983,
+   "lq_med": -0.0577870636869007,
+   "lq_rsig": 0.0615148129790968,
+   "du_med": 4.041139205399588,
+   "du_rsig": 42.805707344579545
+  },
+  "n": 124
+ },
+ "p2_det3": {
+  "reference": {
+   "n": 18527,
+   "lq_med": -0.054759203166511165,
+   "lq_rsig": 0.06286888077327504,
+   "du_med": 3.723487188919364,
+   "du_rsig": 43.3400972118443
+  },
+  "n": 428
+ },
+ "pooled": {
+  "all": {
+   "n": 552,
+   "production": {
+    "correct": 0.8007246376811594,
+    "wrong": 0.15942028985507245,
+    "unpaired": 0.03985507246376811
+   },
+   "production_correct": {
+    "frac": 0.8007246376811594,
+    "err": 0.017001954932966874
+   },
+   "production_correct_of_paired": {
+    "frac": 0.8339622641509434,
+    "err": 0.015838245202443015
+   },
+   "production_correct_all_plausible": {
+    "frac": 0.9481865284974094,
+    "err": 0.009434061368316456
+   },
+   "n_all_plausible": 386,
+   "charge": {
+    "frac": 0.9565217391304348,
+    "err": 0.008679884885920546
+   },
+   "charge_time": {
+    "frac": 0.980072463768116,
+    "err": 0.005948210900731842
+   },
+   "brightness": {
+    "frac": 0.9565217391304348,
+    "err": 0.008679884885920546
+   }
+  },
+  "two particles of similar charge (|ln q1/q2| < 0.5)": {
+   "n": 268,
+   "production": {
+    "correct": 0.8171641791044776,
+    "wrong": 0.15298507462686567,
+    "unpaired": 0.029850746268656716
+   },
+   "production_correct": {
+    "frac": 0.8171641791044776,
+    "err": 0.023611191652317624
+   },
+   "production_correct_of_paired": {
+    "frac": 0.8423076923076923,
+    "err": 0.022262464543786848
+   },
+   "production_correct_all_plausible": {
+    "frac": 0.93,
+    "err": 0.015585584614033376
+   },
+   "n_all_plausible": 200,
+   "charge": {
+    "frac": 0.9104477611940298,
+    "err": 0.0174420827665265
+   },
+   "charge_time": {
+    "frac": 0.9589552238805971,
+    "err": 0.012118830554251225
+   },
+   "brightness": {
+    "frac": 0.9104477611940298,
+    "err": 0.0174420827665265
+   }
+  },
+  "different charge (|ln q1/q2| >= 0.5)": {
+   "n": 284,
+   "production": {
+    "correct": 0.7852112676056338,
+    "wrong": 0.16549295774647887,
+    "unpaired": 0.04929577464788732
+   },
+   "production_correct": {
+    "frac": 0.7852112676056338,
+    "err": 0.024369119574592788
+   },
+   "production_correct_of_paired": {
+    "frac": 0.825925925925926,
+    "err": 0.022499788012250797
+   },
+   "production_correct_all_plausible": {
+    "frac": 0.967741935483871,
+    "err": 0.010484307823002564
+   },
+   "n_all_plausible": 186,
+   "charge": {
+    "frac": 1.0,
+    "err": 0.0
+   },
+   "charge_time": {
+    "frac": 1.0,
+    "err": 0.0
+   },
+   "brightness": {
+    "frac": 1.0,
+    "err": 0.0
+   }
+  }
+ }
+}

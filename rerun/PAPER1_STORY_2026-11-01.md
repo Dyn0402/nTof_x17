@@ -75,6 +75,26 @@ identified.
 - **AI disclosure:** Claude Code's role is stated explicitly (draft in `main.tex` Acknowledgements; methods paragraph
   in §3 still to write).
 
+### Dylan, 2026-11-02 (second round) and what the data said
+
+- **Single-track efficiency is the det3 headline**, skeptically isolated (`rerun/effbudget/single/README.md`):
+  95.2 ± 0.1 (stat) +0.6/−0.5 (R) %, upper end 97.0 % (if every one-view second deposit and vetoed shower were an
+  outside particle). An M3 tag cannot isolate single tracks (2 of 276 det3 second particles are straight through M3);
+  the two-view rule (both views, charge-paired, detached) can. With an independent second particle the muon is still
+  found in 94.5–96.1 %.
+- **New §5 subsection: two particles and X/Y pairing** — 98.0 ± 0.6 % correct on 552 real cosmic two-particle events
+  (charge alone 95.7 %). Bench chain finding: the beam-tuned `plausible` gate makes production pair wrongly (80 %
+  correct; 95 % with all candidates plausible); decision for Dylan (quote the rule, or fix the bench gate).
+- **R = 5 mm** is the knee of eff(R) (figure `eff_vs_radius`): 9 core σ, accidentals 0.07 %.
+- **det4 at SPS** because the other four were at n_TOF: in §3. **SPS is a cross-check** (may go to an appendix).
+- **Bow and edge stay separate**: new `sections/08c_edge.tex`.
+- **Stephan notes** updated: uniform layer = low resistance + hot spots; orientation chosen for where the
+  passivation loss falls; resolution across vs along strips: no significant difference (det3 reversed). Bench
+  currents (`rerun/paper1_ops/currents/README.md`): det3 I = 1.05 µA × 2^((V−490)/13.3 V) ∝ gain^1.25, a dark current;
+  no uniform-layer chamber has a log, so that comparison is Stephan's.
+- **AI disclosure**: explicit and complete in the Acknowledgements (draft in `main.tex`); no methods text unless the
+  editor asks; Zenodo DOI for the code to decide.
+
 (The HANDOFF's G/H, the duplicate reproc files and the bench gas fit, are not paper decisions. The gas fit is done, in §6.)
 
 ## Facts only Dylan or Stephan can supply (the data can't)
