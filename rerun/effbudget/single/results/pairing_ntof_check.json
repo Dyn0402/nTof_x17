@@ -1,0 +1,123 @@
+[
+ {
+  "table": "/media/ucla/work/ntof_pass1/tanmax/r145_A_tm0.6.candidates.parquet",
+  "bundle": "/media/ucla/work/ntof_pass1/bundles/tm0.6_A",
+  "tan_max": 0.6,
+  "u_window": [
+   236.8421052631579,
+   1263.1578947368423
+  ],
+  "n_cand": 4003,
+  "implausible": 0.3687234574069448,
+  "winner_implausible": 0.22870140612076095,
+  "implausible_why": {
+   "tan": 0.9471544715447154,
+   "uend_lo": 0.1537940379403794,
+   "uend_hi": 0.0
+  },
+  "events": 1500,
+  "reproduced": 1500,
+  "changed": 182,
+  "ntr": {
+   "0->0": 984,
+   "1->0": 23,
+   "1->1": 464,
+   "2->0": 2,
+   "2->1": 9,
+   "2->2": 15,
+   "3->1": 1,
+   "3->2": 1,
+   "3->3": 1
+  },
+  "gate_one_pair_with_second_coincident": 120
+ },
+ {
+  "table": "/media/ucla/work/ntof_pass1/tanmax/r145_C_tm0.6.candidates.parquet",
+  "bundle": "/media/ucla/work/ntof_pass1/bundles/tm0.6_C",
+  "tan_max": 0.6,
+  "u_window": [
+   313.588850174216,
+   1672.473867595819
+  ],
+  "n_cand": 4850,
+  "implausible": 0.544742268041237,
+  "winner_implausible": 0.32922603003465534,
+  "implausible_why": {
+   "tan": 0.9019682059046177,
+   "uend_lo": 0.27100681302043905,
+   "uend_hi": 0.0
+  },
+  "events": 1500,
+  "reproduced": 1500,
+  "changed": 345,
+  "ntr": {
+   "0->0": 1013,
+   "1->0": 45,
+   "1->1": 410,
+   "2->0": 2,
+   "2->1": 12,
+   "2->2": 16,
+   "3->2": 1,
+   "3->3": 1
+  },
+  "gate_one_pair_with_second_coincident": 255
+ },
+ {
+  "table": "/media/ucla/work/ntof_pass1/tanmax/r149_A_tm0.6.candidates.parquet",
+  "bundle": "/media/ucla/work/ntof_pass1/bundles/tm0.6_A",
+  "tan_max": 0.6,
+  "u_window": [
+   236.8421052631579,
+   1263.1578947368423
+  ],
+  "n_cand": 6880,
+  "implausible": 0.46162790697674416,
+  "winner_implausible": 0.43634315145662317,
+  "implausible_why": {
+   "tan": 0.9587531486146096,
+   "uend_lo": 0.09603274559193954,
+   "uend_hi": 0.0
+  },
+  "events": 3357,
+  "reproduced": 3357,
+  "changed": 105,
+  "ntr": {
+   "0->0": 2429,
+   "1->0": 6,
+   "1->1": 888,
+   "1->2": 1,
+   "2->1": 1,
+   "2->2": 32
+  },
+  "gate_one_pair_with_second_coincident": 96
+ },
+ {
+  "table": "/media/ucla/work/ntof_pass1/tanmax/r149_C_tm0.6.candidates.parquet",
+  "bundle": "/media/ucla/work/ntof_pass1/bundles/tm0.6_C",
+  "tan_max": 0.6,
+  "u_window": [
+   313.588850174216,
+   1672.473867595819
+  ],
+  "n_cand": 6389,
+  "implausible": 0.49475661292847084,
+  "winner_implausible": 0.4665968951683237,
+  "implausible_why": {
+   "tan": 0.9421069281872825,
+   "uend_lo": 0.17462828218918064,
+   "uend_hi": 0.0
+  },
+  "events": 3071,
+  "reproduced": 3071,
+  "changed": 100,
+  "ntr": {
+   "0->0": 2254,
+   "1->0": 11,
+   "1->1": 785,
+   "2->1": 2,
+   "2->2": 17,
+   "3->3": 2
+  },
+  "gate_one_pair_with_second_coincident": 88
+ }
+]

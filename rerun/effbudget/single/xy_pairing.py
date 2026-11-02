@@ -87,7 +87,9 @@ def main():
                              bright=(xm.q_sum > xo.q_sum) == (ym.q_sum > yo.q_sum), lq_true_m=lq(xm, ym),
                              lq_true_o=lq(xo, yo), lq_swap_1=lq(xm, yo), lq_swap_2=lq(xo, ym), q_asym=qa,
                              sep_x=abs(xm.p0 - xo.p0), sep_y=abs(ym.p0 - yo.p0),
-                             dt0=abs(xm.t0 - xo.t0), nx=int(len(gx)), ny=int(len(gy)), n_implausible=n_impl))
+                             dt0=abs(xm.t0 - xo.t0), nx=int(len(gx)), ny=int(len(gy)), n_implausible=n_impl,
+                             xm_rank=int(xm['rank']), ym_rank=int(ym['rank']), xo_rank=int(xo['rank']),
+                             yo_rank=int(yo['rank'])))
         E = pd.DataFrame(rows); evs.append(E)
         res[key] = dict(reference=ref, n=int(len(E)))
     E = pd.concat(evs, ignore_index=True)

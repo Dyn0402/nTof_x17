@@ -1,0 +1,22 @@
+{
+ "sat_det3": {
+  "candidates": 14700,
+  "candidates_tan_moved": 97,
+  "rank0_tan_moved": 0,
+  "rule_pick_changed": 0,
+  "rule_views": 14249,
+  "second_particle_events": 266,
+  "second_particle_verdict_changed": 0,
+  "changed_events": []
+ },
+ "p2_det3": {
+  "candidates": 45948,
+  "candidates_tan_moved": 342,
+  "rank0_tan_moved": 0,
+  "rule_pick_changed": 4,
+  "rule_views": 44442,
+  "second_particle_events": 896,
+  "second_particle_verdict_changed": 0,
+  "changed_events": []
+ }
+}

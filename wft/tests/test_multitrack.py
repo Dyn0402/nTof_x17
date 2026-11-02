@@ -167,6 +167,78 @@ def test_rescued_candidates():
           [r['rescued'] for r in rows if r['plane'] == 'y'] == [False, True])
 
 
+COST = dict(PAIRING, select='cost')
+
+
+def test_cost_mode():
+    print("mode 'cost' (bench): pair by xy_pair_cost, gate after (PAIRING_FIX_2026-11-02)")
+    sel = lambda xs, ys, p=COST, **kw: wr.select_tracks({'x': xs, 'y': ys}, 0, Cal(), pairing=p, **kw)
+    ij = lambda pairs: sorted((i, j) for i, j, _g in pairs)
+    # the bench failure: particle A (q 3e4) and B (q 1e4), both views coincident; B's x fails 'plausible'
+    # (a real cosmic with a long column) and B's y has the larger dchi2
+    xs = [fit(400.0, 800.0, q_sum=3e4), fit(405.0, 300.0, plausible=False, q_sum=1e4)]
+    ys = [fit(418.8, 500.0, q_sum=3e4), fit(423.8, 700.0, q_sum=1e4)]
+    g = sel(xs, ys, PAIRING)
+    check("'gate': one gated pair, A's x joined to B's y (the bug)", g == [(0, 1, True)], f'got {g}')
+    c = sel(xs, ys)
+    check("'cost': A with A, B with B", ij(c) == [(0, 0), (1, 1)], f'got {c}')
+    check("'cost': A gated, B kept ungated (its x is implausible), gated first",
+          c == [(0, 0, True), (1, 1, False)], f'got {c}')
+    check('the track count is unchanged here', sum(g_ for *_a, g_ in c) == sum(g_ for *_a, g_ in g))
+    # A's own x implausible: 'gate' leaves A in no track or joins it to B; 'cost' pairs both
+    xs = [fit(400.0, 300.0, plausible=False, q_sum=3e4), fit(405.0, 800.0, q_sum=1e4)]
+    ys = [fit(418.8, 900.0, q_sum=3e4), fit(423.8, 500.0, q_sum=1e4)]
+    c = sel(xs, ys)
+    check("'cost': implausible member still paired by charge", ij(c) == [(0, 0), (1, 1)], f'got {c}')
+    check("'cost': B gated first, A ungated", c == [(1, 1, True), (0, 0, False)], f'got {c}')
+    # two clean tracks: the same answer as 'gate'
+    xs = [fit(400.0, 800.0, q_sum=3e4), fit(405.0, 600.0, q_sum=1e4)]
+    ys = [fit(418.8, 500.0, q_sum=3e4), fit(423.8, 700.0, q_sum=1e4)]
+    check("all plausible: 'cost' == 'gate' + repair", ij(sel(xs, ys)) == ij(sel(xs, ys, PAIRING)))
+    # a non-coincident combination is not kept as a further track
+    xs = [fit(400.0, 800.0, q_sum=3e4), fit(900.0, 600.0, q_sum=1e4)]
+    ys = [fit(418.8, 700.0, q_sum=3e4), fit(80.0, 500.0, q_sum=1e4)]
+    c = sel(xs, ys)
+    check('non-coincident pair dropped', c == [(0, 0, True)], f'got {c}')
+    # one candidate in a view: identical to 'gate', whatever the charges say
+    xs = [fit(400.0, 800.0, q_sum=3e4)]
+    ys = [fit(418.8, 700.0, q_sum=1e4), fit(420.0, 300.0, plausible=False, q_sum=3e4)]
+    check("one candidate in a view -> 'gate'", sel(xs, ys) == sel(xs, ys, PAIRING), f'{sel(xs, ys)}')
+    check('single track and empty unchanged',
+          sel([fit(400.0, 800.0)], [fit(418.8, 700.0)]) == [(0, 0, True)] and sel([], []) == [])
+    # rescued candidates never take pair 0 from a production pair
+    xs = [fit(400.0, 800.0, q_sum=3e4), fit(405.0, 600.0, q_sum=1e4)]
+    ys = [fit(418.8, 700.0, q_sum=1e4), fit(423.8, 900.0, q_sum=3e4)]
+    ys[1]._rescued = True
+    c = sel(xs, ys)
+    check('a matching uses as few rescued pairs as it can, and the rescued pair is not pair 0',
+          c[0][1] == 0 and len(c) == 2, f'got {c}')
+    # mode selection
+    check("no 'select' -> 'gate'", wr.pair_select_mode(PAIRING) == 'gate')
+    check("'select': 'cost' -> 'cost'", wr.pair_select_mode(COST) == 'cost')
+    check("no pairing calibration -> 'gate'", wr.pair_select_mode(None) == 'gate'
+          and wr.pair_select_mode({'select': 'cost'}) == 'gate')
+    wr.PAIR_SELECT_MODE = 'cost'
+    try:
+        check('PAIR_SELECT_MODE overrides the bundle', wr.pair_select_mode(PAIRING) == 'cost')
+    finally:
+        wr.PAIR_SELECT_MODE = None
+    try:
+        sel(xs, ys, mode='nope')
+        refused = False
+    except ValueError:
+        refused = True
+    check('unknown mode refused', refused)
+    from wft.calib import check_xy_pairing
+    try:
+        check_xy_pairing(dict(PAIRING, select='greedy'))
+        refused = False
+    except ValueError:
+        refused = True
+    check("bundle with an unknown 'select' refused", refused)
+    check_xy_pairing(COST)
+
+
 def test_single_and_empty():
     print('single-track and degenerate events')
     pairs = wr.select_tracks({'x': [fit(400.0, 800.0)],
@@ -212,6 +284,7 @@ if __name__ == '__main__':
     test_time_degenerate_pairing()
     test_charge_pairing()
     test_rescued_candidates()
+    test_cost_mode()
     test_single_and_empty()
     test_candidate_rows()
     print('\n' + ('ALL PASS' if not FAILS else f'FAILURES: {FAILS}'))

@@ -12,6 +12,8 @@ What carries, what is replaced, and why (each choice is written into the bundle'
       in situ), and the BOW block (Dylan 11-02: carried, then tested bow-on vs bow-off on the run_149 A-C line and the
       capsule focus).  Of the bow block the tilt (a_*), scale (s_*) and mesh-height (h_*) surfaces carry; the bench
       rigid tilt (w0_const_*) belongs to the bench mounting and is dropped with w0.
+  replaced, x-y pairing
+      xy_pairing['select'] -> 'gate' (the bench golden rows carry 'cost': rerun/effbudget/single/PAIRING_FIX_2026-11-02.md)
   dropped
       v_map (bench v(x,y) of one night), w0 (rigid tilt of the bench mounting), the bench t0_abs (the bench latency).
   replaced
@@ -71,6 +73,12 @@ def build(arm, out, src=None, v=None, k=20, sat=3550.0, bow=True, latency=None, 
     cal.v_drift = float(v if v is not None else V_START[arm])
     rec['v_drift'] = f'{cal.v_drift} um/ns ({"given" if v is not None else "V_START: is2 in-situ / wall / Magboltz"}); ' \
                      'NOT the column-duration measurement yet'
+    # x-y pairing: the bench golden rows pair first and gate after (xy_pairing select 'cost',
+    # rerun/effbudget/single/PAIRING_FIX_2026-11-02.md); n_TOF keeps the 'gate' selection its stage-3 products were
+    # made with until the change is shown right on beam, where 'plausible' is mostly the tan_max acceptance.
+    if cal.xy_pairing:
+        rec['xy_pairing_select'] = dict(source=cal.xy_pairing.get('select', 'gate'), ntof='gate')
+        cal.xy_pairing = dict(cal.xy_pairing, select='gate')
     cal.n_depth_bins = int(k)
     cal.sat_adc = float(sat)
     cal.tan_max = None if tan_max is None else float(tan_max)

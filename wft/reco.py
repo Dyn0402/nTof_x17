@@ -20,7 +20,7 @@ from typing import Dict, Optional
 
 import numpy as np
 
-from .calib import CalibrationBundle, check_xy_pairing
+from .calib import CalibrationBundle, check_xy_pairing, XY_SELECT_MODES as PAIR_SELECT_MODES
 from . import model as wm
 
 # ---------------------------------------------------------------- quality
@@ -1450,9 +1450,35 @@ def lq_balance(pairing: Optional[dict], cls: str):
     return None, None
 
 
+#: How select_tracks forms tracks (rerun/effbudget/single/PAIRING_FIX_2026-11-02.md).
+#:   'gate'  greedy on (coincident, both plausible, summed dchi2); every pair after the first must pass the gate
+#:           (coincident AND both plausible), and the pairing cost only re-pairs two GATED tracks.  The n_TOF / SPS
+#:           behaviour, unchanged since 2026-09-14.
+#:   'cost'  pair first, gate after (the bench): with >= 2 candidates in both views, the x-y matching of least summed
+#:           xy_pair_cost (plausibility takes no part in which x goes with which y); each pair is then gated exactly as
+#:           in 'gate', and only coincident pairs are kept (:func:`_select_tracks_cost`).  With one candidate in a
+#:           view it is 'gate'.  Why: 'plausible' (column end in the u window, raw |tan| < tan_max) is False on 6-8 %
+#:           of real bench cosmic winners; in 'gate' one implausible member drops the second particle's pair and the
+#:           first is then chosen by dchi2, not by the pairing cost.  On 552 det3 events with an M3-identified
+#:           particle and >= 2 candidates per view, 'gate' pairs it correctly in 80.1 %, 'cost' in 96.7 %.
+#: Selected per bundle by ``xy_pairing['select']`` (absent = 'gate'); a bundle without a pairing calibration is 'gate'.
+#: PAIR_SELECT_MODE (a worker option) overrides it for A/B runs.
+# PAIR_SELECT_MODES = wft.calib.XY_SELECT_MODES = ('gate', 'cost'), imported above
+PAIR_SELECT_MODE: Optional[str] = None
+
+
+def pair_select_mode(pairing: Optional[dict]) -> str:
+    """The select_tracks mode this pairing calibration asks for (:data:`PAIR_SELECT_MODES`)."""
+    if PAIR_SELECT_MODE is not None:
+        return PAIR_SELECT_MODE if (pairing or {}).get('features') else 'gate'
+    if not (pairing or {}).get('features'):
+        return 'gate'
+    return str(pairing.get('select') or 'gate')
+
+
 def select_tracks(cand_fits: Dict[str, list], ftst_diff: Optional[int],
                   cal: CalibrationBundle, max_tracks: int = 3,
-                  pairing: Optional[dict] = None) -> list:
+                  pairing: Optional[dict] = None, mode: Optional[str] = None) -> list:
     """Disjoint time-coincident (x, y) candidate pairs, ranked — the
     multi-track generalisation of :func:`select_pair`.
 
@@ -1481,10 +1507,25 @@ def select_tracks(cand_fits: Dict[str, list], ftst_diff: Optional[int],
 
     Both are described, with their validation, in wft/MULTITRACK_2026-09-14.md.
 
+    ``mode`` (default :func:`pair_select_mode` of ``pairing``): ``'gate'`` is the
+    behaviour described above; ``'cost'`` (the bench) pairs first and gates
+    after -- :func:`_select_tracks_cost`, rerun/effbudget/single/PAIRING_FIX_2026-11-02.md.
+
     Returns ``[(ix, iy, gated)]`` indices into ``cand_fits['x']/['y']``;
     the event's track count is ``sum(gated)``.
     """
     dt = cal.dt_xy.get(int(ftst_diff), -18.8) if ftst_diff is not None else -18.8
+    mode = mode or pair_select_mode(pairing)
+    if mode not in PAIR_SELECT_MODES:
+        raise ValueError(f'select_tracks mode must be one of {PAIR_SELECT_MODES}: {mode!r}')
+    if mode == 'cost':
+        return _select_tracks_cost(cand_fits, ftst_diff, pairing, dt, max_tracks)
+    return _select_tracks_gate(cand_fits, ftst_diff, pairing, dt, max_tracks)
+
+
+def _select_tracks_gate(cand_fits: Dict[str, list], ftst_diff, pairing: Optional[dict], dt: float,
+                        max_tracks: int) -> list:
+    """select_tracks, mode 'gate' (the behaviour its docstring describes)."""
     combos = []
     for i, fx in enumerate(cand_fits.get('x') or []):
         for j, fy in enumerate(cand_fits.get('y') or []):
@@ -1627,6 +1668,49 @@ def _repair_pairs(out: list, cand_fits: Dict[str, list], pairing: dict, dt: floa
     return out
 
 
+def _select_tracks_cost(cand_fits: Dict[str, list], ftst_diff, pairing: dict, dt: float, max_tracks: int) -> list:
+    """select_tracks, mode 'cost': pair first (least pairing cost), gate after.
+
+    0. With fewer than two candidates in either view the answer is mode 'gate''s (nothing to pair).
+    1. Among all matchings of k = min(n_x, n_y, max_tracks) disjoint x-y pairs: the fewest pairs using a rescued
+       candidate (rescue adds tracks, never replaces one), then the least summed :func:`xy_pair_cost`.  The cost holds
+       the column-time difference ('tc') among its features, so a non-coincident combination is expensive but not
+       forbidden; plausibility takes no part in which x goes with which y.
+    2. Each pair is gated exactly as in 'gate' (coincident and both plausible); ``n_tracks`` = the gated pairs.
+    3. Kept: the coincident pairs (gated first, then by summed dchi2).  A non-coincident pair is not a track and is
+       dropped, unless nothing else is left: then the cheapest is pair 0, as 'gate' always keeps a pair 0.
+    Candidates per view are <= 5 (6 after a split), so the enumeration is at most 20 x 120 matchings.
+    """
+    from itertools import combinations, permutations
+    X, Y = cand_fits.get('x') or [], cand_fits.get('y') or []
+    xs = [i for i, f in enumerate(X) if f is not None]
+    ys = [j for j, f in enumerate(Y) if f is not None]
+    if len(xs) < 2 or len(ys) < 2:
+        # one candidate in a view: there is no x-y pairing to decide, only which of the other view's candidates is
+        # the lone one's partner -- a selection, left to 'gate' (on the det3 M3 test the cost rule gained 10 and lost
+        # 11 of these 135 events; PAIRING_FIX_2026-11-02.md §3)
+        return _select_tracks_gate(cand_fits, ftst_diff, pairing, dt, max_tracks)
+    k = min(len(xs), len(ys), max_tracks)
+    resc = lambda f: bool(getattr(f, '_rescued', False))
+    info = {}
+    for i in xs:
+        for j in ys:
+            info[(i, j)] = (int(resc(X[i]) or resc(Y[j])), bool(_gate(X[i], Y[j], ftst_diff)),
+                            bool(_coincident(X[i], Y[j], ftst_diff)), xy_pair_cost(X[i], Y[j], pairing, dt, ftst_diff))
+    best, bk = None, None
+    for sx in combinations(xs, k):
+        for sy in permutations(ys, k):
+            m = list(zip(sx, sy))
+            key = (sum(info[q][0] for q in m), sum(info[q][3] for q in m))
+            if bk is None or key < bk:
+                best, bk = m, key
+    d = lambda q: (getattr(X[q[0]], '_dchi2', 0.0) or 0.0) + (getattr(Y[q[1]], '_dchi2', 0.0) or 0.0)
+    kept = sorted((q for q in best if info[q][2]), key=lambda q: (info[q][1], -info[q][0], d(q)), reverse=True)
+    if not kept:
+        kept = [min(best, key=lambda q: (info[q][0], info[q][3]))]
+    return [(i, j, info[(i, j)][1]) for i, j in kept]
+
+
 def load_pairing(path: str) -> dict:
     with open(path) as f:
         p = json.load(f)
@@ -1762,7 +1846,8 @@ def row_from_fits(event_id: int, fits: Dict[str, Optional[PlaneFit]],
 WORKER_OPTS = ('TWO_TRACK', 'TWO_TRACK_F', 'TWO_TRACK_F_CORROB', 'TWO_TRACK_T0',
                'TWO_TRACK_RESID_Z', 'TWO_TRACK_WIDTH_MARGIN', 'TWO_TRACK_MAX_TRY',
                'TWO_TRACK_SELECTED_ONLY', 'TWO_TRACK_SCALE', 'TWO_TRACK_SEARCH',
-               'TWO_TRACK_F_LADDER', 'PIVOT_START', 'HEADON_RESCUE', 'HEADON_RESCUE_Z')
+               'TWO_TRACK_F_LADDER', 'PIVOT_START', 'HEADON_RESCUE', 'HEADON_RESCUE_Z',
+               'PAIR_SELECT_MODE')
 
 
 def _worker_init(bundle_path, pairing_path=None, opts=None):
@@ -2074,6 +2159,7 @@ def reconstruct_run(cfg, cal: CalibrationBundle, out_path: str,
                                event_filter=bool(event_filter)),
                 multi_track=dict(emit_candidates=EMIT_CANDIDATES,
                                  xy_pairing=(cal.xy_pairing or {}).get('features'),
+                                 xy_select=pair_select_mode(cal.xy_pairing),
                                  max_tracks=MAX_TRACKS,
                                  two_track_fit=TWO_TRACK,
                                  two_track_f=TWO_TRACK_F if TWO_TRACK else None,

@@ -99,6 +99,9 @@ def check_kernel_ordering(hyper: dict, where: str = '') -> None:
 #: the full q_sum, which NNLS inflates to 1e6-1e26 on 12-33 % of run_145 tracks
 #: (bins arriving after the last sample; wft.model.constrained_bins)
 XY_FEATURES = ('lq', 'lqc', 'u50', 'u90', 't0', 'tc')
+#: xy_pairing['select']: how wft.reco.select_tracks forms tracks (wft.reco.PAIR_SELECT_MODES; absent = 'gate').
+#: 'cost' on the bench, 'gate' on n_TOF / SPS (rerun/effbudget/single/PAIRING_FIX_2026-11-02.md).
+XY_SELECT_MODES = ('gate', 'cost')
 
 
 def check_xy_pairing(p: dict, where: str = '') -> None:
@@ -113,6 +116,9 @@ def check_xy_pairing(p: dict, where: str = '') -> None:
     if not feats or bad:
         raise ValueError(f'unusable xy_pairing calibration{" in " + where if where else ""}: '
                          f'features {feats}, bad {bad}')
+    if p.get('select') not in (None,) + XY_SELECT_MODES:
+        raise ValueError(f'xy_pairing select must be one of {XY_SELECT_MODES}{" in " + where if where else ""}: '
+                         f'{p.get("select")!r}')
 
 
 @dataclass

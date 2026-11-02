@@ -1,0 +1,66 @@
+{
+ "all": {
+  "n": 25197,
+  "gate": {
+   "correct": 25039,
+   "wrong": 137,
+   "unpaired": 21
+  },
+  "cost": {
+   "correct": 25131,
+   "wrong": 61,
+   "unpaired": 5
+  },
+  "changed": 104,
+  "transitions": {
+   "correct->wrong": 4,
+   "unpaired->correct": 20,
+   "wrong->correct": 76,
+   "wrong->unpaired": 4
+  }
+ },
+ "1 in one view": {
+  "n": 135,
+  "gate": {
+   "correct": 87,
+   "wrong": 48
+  },
+  "cost": {
+   "correct": 87,
+   "wrong": 48
+  },
+  "changed": 0,
+  "transitions": {}
+ },
+ "1x1": {
+  "n": 24510,
+  "gate": {
+   "correct": 24510
+  },
+  "cost": {
+   "correct": 24510
+  },
+  "changed": 0,
+  "transitions": {}
+ },
+ ">=2 both": {
+  "n": 552,
+  "gate": {
+   "correct": 442,
+   "wrong": 89,
+   "unpaired": 21
+  },
+  "cost": {
+   "correct": 534,
+   "wrong": 13,
+   "unpaired": 5
+  },
+  "changed": 104,
+  "transitions": {
+   "correct->wrong": 4,
+   "unpaired->correct": 20,
+   "wrong->correct": 76,
+   "wrong->unpaired": 4
+  }
+ }
+}

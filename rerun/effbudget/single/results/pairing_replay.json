@@ -1,0 +1,71 @@
+{
+ "replay": {
+  "events": 29443,
+  "track_id_reproduced": 1.0,
+  "tan_reproduced": 0.9994905410454098,
+  "truth_gate_matches_xy_pairing": 1.0
+ },
+ "gate": {
+  "truth": {
+   "n": 552,
+   "correct": 442,
+   "wrong": 88,
+   "unpaired": 22,
+   "frac_correct": 0.8007246376811594,
+   "frac_correct_err": 0.017001954932966874
+  },
+  "events_pairs_changed": 0,
+  "events_pairs_changed_frac": 0.0,
+  "changed_single_candidate_events": 0,
+  "ntracks_changed": 0,
+  "ntracks_transitions": {},
+  "ntracks_eq1": {
+   "gate": 24483,
+   "new": 24483
+  },
+  "winner_tan_moved": 0,
+  "candidate_tan_moved_events": 0,
+  "candidate_dtan_p50_p99_max_of_moved": null
+ },
+ "cost": {
+  "truth": {
+   "n": 552,
+   "correct": 534,
+   "wrong": 12,
+   "unpaired": 6,
+   "frac_correct": 0.967391304347826,
+   "frac_correct_err": 0.007559590393689224
+  },
+  "events_pairs_changed": 259,
+  "events_pairs_changed_frac": 0.008796657949257889,
+  "changed_single_candidate_events": 0,
+  "ntracks_changed": 19,
+  "ntracks_transitions": {
+   "1->0": 9,
+   "1->2": 8,
+   "2->1": 2
+  },
+  "ntracks_eq1": {
+   "gate": 24483,
+   "new": 24468
+  },
+  "winner_tan_moved": 0,
+  "candidate_tan_moved_events": 231,
+  "candidate_dtan_p50_p99_max_of_moved": [
+   0.0032698493214200486,
+   0.021570343748881532,
+   0.2828281860689632
+  ]
+ },
+ "truth_transitions": {
+  "cost": {
+   "correct->correct": 438,
+   "correct->wrong": 4,
+   "unpaired->correct": 20,
+   "unpaired->unpaired": 2,
+   "wrong->correct": 76,
+   "wrong->unpaired": 4,
+   "wrong->wrong": 8
+  }
+ }
+}
