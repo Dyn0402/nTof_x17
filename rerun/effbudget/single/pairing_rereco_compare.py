@@ -60,14 +60,15 @@ def main():
     res = {}
     for key, rel in rows.items():
         d = os.path.join(a.rereco, key)
-        if not os.path.exists(os.path.join(d, 'cost', 'events.parquet')):
+        if not os.path.exists(os.path.join(d, 'gate', 'events.parquet')):
             continue
+        has_cost = os.path.exists(os.path.join(d, 'cost', 'events.parquet'))   # det6/det7: gate only (§7)
         Eg = pd.read_parquet(os.path.join(d, 'gate', 'events.parquet')).set_index('event_id')
-        Ec = pd.read_parquet(os.path.join(d, 'cost', 'events.parquet')).set_index('event_id')
+        Ec = pd.read_parquet(os.path.join(d, 'cost' if has_cost else 'gate', 'events.parquet')).set_index('event_id')
         Ep = pd.read_parquet(os.path.join(a.root, 'Analysis_pass1', rel, 'wft/events.parquet')).set_index('event_id')
         Ep = Ep.loc[Ep.index.intersection(Eg.index)]
         Cg = cand(os.path.join(d, 'gate', 'events.candidates.parquet'))
-        Cc = cand(os.path.join(d, 'cost', 'events.candidates.parquet'))
+        Cc = cand(os.path.join(d, 'cost' if has_cost else 'gate', 'events.candidates.parquet'))
         Cp = cand(os.path.join(a.root, 'Analysis_pass1', rel, 'wft/events.candidates.parquet'))
         Cp = Cp[Cp.index.get_level_values(0).isin(Eg.index)]
         ntr = pd.DataFrame({'g': Eg.n_tracks, 'c': Ec.n_tracks.reindex(Eg.index)})
@@ -80,15 +81,17 @@ def main():
             gate_vs_pass1=dict(events_table_diff=same(Eg, Ep, EV), candidate_fit_diff=same(Cg, Cp, FIT),
                                track_id_diff=same(Cg, Cp, ['track_id', 'track_gated']),
                                n_tracks_diff=int((Eg.n_tracks != Ep.n_tracks.reindex(Eg.index)).sum())),
-            cost_vs_gate=dict(events_table_diff=same(Ec, Eg, EV), candidate_fit_diff=same(Cc, Cg, FIT),
+            cost_run=has_cost,
+            cost_vs_gate=None if not has_cost else dict(events_table_diff=same(Ec, Eg, EV), candidate_fit_diff=same(Cc, Cg, FIT),
                               track_id_diff=same(Cc, Cg, ['track_id', 'track_gated']),
                               tan_diff=same(Cc, Cg, ['tan_theta']),
                               n_tracks_transitions={f'{o}->{n}': int(c) for (o, n), c in
                                                     ntr[ntr.g != ntr.c].groupby(['g', 'c']).size().items()},
                               n_splits_diff=int((Ec.n_splits.reindex(Eg.index) != Eg.n_splits).sum())
                               if 'n_splits' in Eg else None),
-            m3=dict(n=len(ev), pass1=m3(Cp, rk, ev), gate=m3(Cg, rk, ev), cost=m3(Cc, rk, ev)),
-            m3_two_particle=dict(n=len(two), pass1=m3(Cp, rk, two), gate=m3(Cg, rk, two), cost=m3(Cc, rk, two)))
+            m3=dict(n=len(ev), pass1=m3(Cp, rk, ev), gate=m3(Cg, rk, ev), **({'cost': m3(Cc, rk, ev)} if has_cost else {})),
+            m3_two_particle=dict(n=len(two), pass1=m3(Cp, rk, two), gate=m3(Cg, rk, two),
+                                 **({'cost': m3(Cc, rk, two)} if has_cost else {})))
     s = json.dumps(res, indent=1)
     print(s)
     if a.out:

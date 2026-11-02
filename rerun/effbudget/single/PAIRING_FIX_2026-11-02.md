@@ -7,6 +7,13 @@ mode, **`cost`**: pair first by `xy_pair_cost`, gate after. It is switched on pe
 the bench only. On the 552 det3 events where M3 identifies one particle, correct pairing goes from **80.1 % to 96.7 %**.
 Events with one candidate in a view do not move at all, and the events table does not move. **n_TOF is unchanged.**
 
+**Follow-up (same day, §5 and §7).**
+- All five bench chambers improve on their M3-tagged two-particle events: det2 76.5 → 96.8 %, det3 81.6 → 95.9 %,
+  det4 88.8 → 94.0 %, det6 83.1 → 92.2 %, det7 72.8 → 90.1 %. None is worse; det4 gains least.
+- Every pass-1 bench table now has a `cost`-mode copy on EOS, `Analysis_pass1/<rel>/wft/pairing_cost/`.
+- No Paper I number moves at its quoted precision.
+- The two-track split revert now counts tracks in `gate` (`_n_gated`), so the mode can no longer change a fit.
+
 ## 1 · Mechanism (confirmed on the pass-1 tables)
 
 `select_tracks` (mode `gate`, the pass-1 behaviour) works in two steps:
@@ -205,14 +212,20 @@ All in `results/`:
 - `pairing_rereco_compare.json`
 - `pairing_eff_check.json`
 - `pairing_ntof_check.json`
+- `pairing_downstream.json`
 
-The working tree is `$WORK_DATA/claude-jobs/pairfix/`: re-reco outputs and cost-mode tables, 13 MB. The 7.9 GB of
-staged inputs were deleted; they are on EOS.
+Tools: `pairing_replay.py`, `pairing_m3_all.py`, `pairing_rereco.py`, `pairing_rereco_tree.py`,
+`pairing_rereco_compare.py`, `pairing_eff_check.py`, `pairing_downstream.py`, `pairing_ntof_check.py`,
+`stamp_select.py`.
+
+The working tree is `$WORK_DATA/claude-jobs/pairfix/`. The refreshed tables are in `refresh/` (also on EOS); the
+staged waveform inputs were deleted after use (they are on EOS).
 
 ## What this does not rule out
 
-- The 552 truth events are one chamber (det3), one gas, one HV. Other bench chambers have their own `xy_pairing`
-  calibration, and the same mechanism applies to them, but their gain is not measured here.
+- The M3 truth tags one particle per event, on cosmics, in Ar/iso 95/5. §7 covers all five chambers over every pass-1
+  row and HV, but det4's sample is small (116 two-particle events), and that is the one chamber whose golden row
+  does not gain.
 - The remaining 12 wrong pairings are cost failures: similar charges, or a u50 distorted in one view. 6 more events are
   unpaired because the M3 particle's own X and Y fail the column-time tolerance.
 - The bench truth tags one particle per event. The second particle's pairing follows from the 2×2, and is not
