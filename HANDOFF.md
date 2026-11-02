@@ -388,8 +388,8 @@ closed on 19 Oct, so this is a late submission.
 **Done:**
 - 10-28: rewrote with Dylan, line by line (~150 words): X17 requirement (opening angle, low material) → the detector →
   the resistive-layer timing bias and the waveform reconstruction → results + n_TOF capsule imaging.
-- Files in `papers/infn_in2p3_2026_abstract/`: `abstract.md` (draft + sources), `abstract.tex` → `abstract.pdf`
-  (compiled), `abstract.txt` (plain Unicode text to paste into the email). All three carry the same text.
+- Files in `papers/infn_in2p3_2026_abstract/`: `abstract.md` (draft + sources), `abstract.tex` → `Neff_Abstract.pdf`
+  (compiled; renamed from `abstract.pdf` 2026-11-02, same bytes), `abstract.txt` (plain Unicode text to paste into the email). All three carry the same text.
 
 **Next steps:**
 1. Add co-authors/affiliations to `abstract.tex` (header has a TODO; currently "D. Neff, CEA Saclay, Irfu"), recompile
