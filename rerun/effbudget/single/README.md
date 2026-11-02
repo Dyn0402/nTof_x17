@@ -109,7 +109,7 @@ drops the second track when a candidate fails the beam-tuned `plausible` gate (F
 PASS1_RESULT bug 4), and the single surviving pair then often joins the M3 segment of one view to the other
 particle's segment in the other. The pairing cost is right; the plausibility gate should not apply on the bench.
 **Fixed 2026-11-02** (`wft.reco.select_tracks` mode `cost`, bundle `xy_pairing['select']`): 96.7 % on these 552,
-no change on single-candidate events, n_TOF unchanged. Mechanism, validation and what needs re-running:
+no change on single-candidate events, n_TOF unchanged. Every pass-1 bench row re-selected in `cost`: `Analysis_pass1/<rel>/wft/pairing_cost/` on EOS (all five chambers improve, §7 of the report). Mechanism, validation and what needs re-running:
 `PAIRING_FIX_2026-11-02.md` (scripts `pairing_replay.py`, `pairing_m3_all.py`, `pairing_rereco.py`,
 `pairing_rereco_compare.py`, `pairing_ntof_check.py`).
 

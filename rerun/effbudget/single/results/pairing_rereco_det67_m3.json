@@ -1,0 +1,230 @@
+{
+ "modes": [
+  "gate",
+  "cost"
+ ],
+ "rows_without_rays": [],
+ "pooled": {
+  "all": {
+   "n": 311,
+   "gate": {
+    "correct": 286,
+    "wrong": 22,
+    "unpaired": 3
+   },
+   "cost": {
+    "correct": 303,
+    "wrong": 7,
+    "unpaired": 1
+   },
+   "changed": 20,
+   "transitions": {
+    "correct->wrong": 1,
+    "unpaired->correct": 3,
+    "wrong->correct": 15,
+    "wrong->unpaired": 1
+   }
+  },
+  "1 in one view": {
+   "n": 6,
+   "gate": {
+    "correct": 5,
+    "wrong": 1,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 5,
+    "wrong": 1,
+    "unpaired": 0
+   },
+   "changed": 0,
+   "transitions": {}
+  },
+  "1x1": {
+   "n": 173,
+   "gate": {
+    "correct": 173,
+    "wrong": 0,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 173,
+    "wrong": 0,
+    "unpaired": 0
+   },
+   "changed": 0,
+   "transitions": {}
+  },
+  ">=2 both": {
+   "n": 132,
+   "gate": {
+    "correct": 108,
+    "wrong": 21,
+    "unpaired": 3
+   },
+   "cost": {
+    "correct": 125,
+    "wrong": 6,
+    "unpaired": 1
+   },
+   "changed": 20,
+   "transitions": {
+    "correct->wrong": 1,
+    "unpaired->correct": 3,
+    "wrong->correct": 15,
+    "wrong->unpaired": 1
+   }
+  }
+ },
+ "chambers": {
+  "mx17_6": {
+   "all": {
+    "n": 253,
+    "gate": {
+     "correct": 239,
+     "wrong": 14,
+     "unpaired": 0
+    },
+    "cost": {
+     "correct": 248,
+     "wrong": 4,
+     "unpaired": 1
+    },
+    "changed": 10,
+    "transitions": {
+     "wrong->correct": 9,
+     "wrong->unpaired": 1
+    }
+   },
+   "1 in one view": {
+    "n": 6,
+    "gate": {
+     "correct": 5,
+     "wrong": 1,
+     "unpaired": 0
+    },
+    "cost": {
+     "correct": 5,
+     "wrong": 1,
+     "unpaired": 0
+    },
+    "changed": 0,
+    "transitions": {}
+   },
+   "1x1": {
+    "n": 154,
+    "gate": {
+     "correct": 154,
+     "wrong": 0,
+     "unpaired": 0
+    },
+    "cost": {
+     "correct": 154,
+     "wrong": 0,
+     "unpaired": 0
+    },
+    "changed": 0,
+    "transitions": {}
+   },
+   ">=2 both": {
+    "n": 93,
+    "gate": {
+     "correct": 80,
+     "wrong": 13,
+     "unpaired": 0
+    },
+    "cost": {
+     "correct": 89,
+     "wrong": 3,
+     "unpaired": 1
+    },
+    "changed": 10,
+    "transitions": {
+     "wrong->correct": 9,
+     "wrong->unpaired": 1
+    }
+   }
+  },
+  "mx17_7": {
+   "all": {
+    "n": 58,
+    "gate": {
+     "correct": 47,
+     "wrong": 8,
+     "unpaired": 3
+    },
+    "cost": {
+     "correct": 55,
+     "wrong": 3,
+     "unpaired": 0
+    },
+    "changed": 10,
+    "transitions": {
+     "correct->wrong": 1,
+     "unpaired->correct": 3,
+     "wrong->correct": 6
+    }
+   },
+   "1x1": {
+    "n": 19,
+    "gate": {
+     "correct": 19,
+     "wrong": 0,
+     "unpaired": 0
+    },
+    "cost": {
+     "correct": 19,
+     "wrong": 0,
+     "unpaired": 0
+    },
+    "changed": 0,
+    "transitions": {}
+   },
+   ">=2 both": {
+    "n": 39,
+    "gate": {
+     "correct": 28,
+     "wrong": 8,
+     "unpaired": 3
+    },
+    "cost": {
+     "correct": 36,
+     "wrong": 3,
+     "unpaired": 0
+    },
+    "changed": 10,
+    "transitions": {
+     "correct->wrong": 1,
+     "unpaired->correct": 3,
+     "wrong->correct": 6
+    }
+   }
+  }
+ },
+ "rows_two_particle": {
+  "mx17_det6_det7_overnight_6-26-26/long_run/mx17_6": {
+   "gate": {
+    "correct": 80,
+    "wrong": 13,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 89,
+    "wrong": 3,
+    "unpaired": 1
+   }
+  },
+  "mx17_det6_det7_overnight_6-26-26/long_run/mx17_7": {
+   "gate": {
+    "correct": 28,
+    "wrong": 8,
+    "unpaired": 3
+   },
+   "cost": {
+    "correct": 36,
+    "wrong": 3,
+    "unpaired": 0
+   }
+  }
+ }
+}
