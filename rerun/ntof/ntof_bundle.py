@@ -45,7 +45,7 @@ V_START = {'A': 38.0, 'B': 42.6, 'C': 28.7, 'D': 28.0}
 BOW_DROP = ('w0_const_x', 'w0_const_y')
 
 
-def build(arm, out, src=None, v=None, k=20, sat=3550.0, bow=True, latency=None, t0_sigma=5.0,
+def build(arm, out, src=None, v=None, k=20, sat=3550.0, bow=True, latency=None, t0_sigma=5.0, tan_max=None,
           n_samples=20, sample_ns=60.0, conditions=None):
     from wft.calib import CalibrationBundle
     chamber, row = GOLDEN[arm]
@@ -73,6 +73,8 @@ def build(arm, out, src=None, v=None, k=20, sat=3550.0, bow=True, latency=None, 
                      'NOT the column-duration measurement yet'
     cal.n_depth_bins = int(k)
     cal.sat_adc = float(sat)
+    cal.tan_max = None if tan_max is None else float(tan_max)
+    rec['tan_max'] = cal.tan_max if tan_max is not None else 'reco default (0.6)'
     cal.sample_ns = float(sample_ns)
     if latency:
         from wft.calibrate import t0_abs_from_latency
@@ -105,8 +107,9 @@ def main():
     ap.add_argument('--no-bow', action='store_true')
     ap.add_argument('--latency', default=None, help='n_TOF latency json (measure_latency output) -> pinned t0')
     ap.add_argument('--t0-sigma', type=float, default=5.0)
+    ap.add_argument('--tan-max', type=float, default=None, help='candidate |tan| limit for this dataset (registry tan_max)')
     a = ap.parse_args()
-    build(a.arm, a.out, a.src, a.v, a.k, a.sat, not a.no_bow, a.latency, a.t0_sigma,
+    build(a.arm, a.out, a.src, a.v, a.k, a.sat, not a.no_bow, a.latency, a.t0_sigma, a.tan_max,
           conditions=dict(gas='Ar/Iso 90/10', latency=27))
 
 

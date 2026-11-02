@@ -285,6 +285,15 @@ A failing arm is held, as on the bench.
   - B has no field-shaping ring, so its drift field (and its bow-induced tilt) is not the bench's: B carries no angle
     either way.
 
+- **Re-decode (11-02, approved).** Full campaign, fa80c06, into `decoded_root_fa80c06/` next to the old files:
+  `rerun/ntof/redecode/` (job per acquisition, 3,937 jobs, condor 4612805; one record per FEU file in
+  `.../july_beam/Analysis_pass1/checks/redecode/`). The pass reads only `decoded_root_fa80c06`.
+- **Angle limit per dataset (11-02).** `CalibrationBundle.tan_max` (None = the reco default 0.6, which every bench/SPS
+  bundle keeps); `wft.reco.tan_max()` applies it and a `WFT_DIAG reco.TAN_MAX` still wins. Registry column `tan_max`
+  is 1.0, provisional; 0.6 vs 1.0 is tested on run_145 + run_149 (P5). Old study scripts that assign
+  `wreco.TAN_MAX` directly (g4_digi, yield_gate) are overridden by a bundle that sets its own; they must pass
+  `--tan-max` into the bundle instead.
+
 ## 6. Findings so far
 - **Registry (P0, 11-02).** 3,941 acquisitions in scope; 3,937 kept: production 36 runs / 3,233 acquisitions / 2.83 TB
   decoded, cosmics 40 runs / 704 acquisitions / 0.58 TB. Every kept acquisition has latency 27, 20 samples, Ar/iso

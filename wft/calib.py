@@ -213,6 +213,10 @@ class CalibrationBundle:
     # driver that sizes K for its window (sps_reco, wft_beam, cli --n-depth-bins) needs no change. 1 = the 60 ns grid.
     depth_subdiv: int = 1
     sat_adc: float = 3550.0
+    # --- angular acceptance of the candidate search (Dylan 2026-11-02: per dataset): |tan| above which a candidate's
+    # fit is implausible (wft.reco.TAN_MAX).  None = the reco default 0.6 (every bench/SPS bundle); the n_TOF bundles
+    # set their own (rerun/ntof/ntof_registry.csv tan_max), pairs there reach 30-45 deg.  A WFT_DIAG reco.TAN_MAX wins.
+    tan_max: Optional[float] = None
 
     # --- sharing-kernel form: 'delay' (legacy) | 'lp' (RC-dispersed copy,
     # the H4-beam-measured structure; tau_s becomes the RC constant) ---
@@ -256,6 +260,7 @@ class CalibrationBundle:
                     xy_pairing=self.xy_pairing,
                     pitch_mm=self.pitch_mm, sample_ns=self.sample_ns,
                     n_depth_bins=self.n_depth_bins, depth_subdiv=int(self.depth_subdiv), sat_adc=self.sat_adc,
+                    tan_max=(None if self.tan_max is None else float(self.tan_max)),
                     share_mode=self.share_mode,
                     detector=self.detector, run_key=self.run_key,
                     conditions=self.conditions, provenance=prov)
@@ -291,6 +296,7 @@ class CalibrationBundle:
                    n_depth_bins=m.get('n_depth_bins', 18),
                    depth_subdiv=int(m.get('depth_subdiv', 1) or 1),
                    sat_adc=m.get('sat_adc', 3550.0),
+                   tan_max=m.get('tan_max'),
                    share_mode=m.get('share_mode', 'delay'),
                    detector=m.get('detector', ''), run_key=m.get('run_key', ''),
                    conditions=m.get('conditions', {}),

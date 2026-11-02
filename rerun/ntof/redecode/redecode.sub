@@ -1,0 +1,12 @@
+executable = job.sh
+arguments  = $(run) $(subrun) $(tag)
+output     = logs/$(run)_$(tag).out
+error      = logs/$(run)_$(tag).err
+log        = logs/redecode.log
+request_memory = 2 GB
+request_disk = 2 GB
++JobFlavour = "longlunch"
+max_retries = 3
+max_materialize = 300
+should_transfer_files = NO
+queue run, subrun, tag from jobs.txt

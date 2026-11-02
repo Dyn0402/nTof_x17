@@ -621,6 +621,17 @@ def u_window(cal=None) -> tuple:
 TAN_MAX = 0.6
 
 
+def tan_max(cal=None) -> float:
+    """The candidate search's |tan| limit for this bundle: ``cal.tan_max`` when the bundle sets one (per dataset: the
+    n_TOF bundles, Dylan 2026-11-02), else :data:`TAN_MAX`; a ``WFT_DIAG reco.TAN_MAX`` override always wins."""
+    from wft import diag
+    cal = wm.CAL if cal is None else cal
+    if 'reco.TAN_MAX' in diag.ACTIVE:
+        return TAN_MAX
+    t = getattr(cal, 'tan_max', None)
+    return float(t) if t is not None else TAN_MAX
+
+
 def _candidate_score(P, plane, fit: PlaneFit) -> tuple:
     """(plausible, dchi2) for one candidate cluster's fit."""
     W, noise, pos, sat = wm.prep_plane(P, plane)
@@ -628,7 +639,7 @@ def _candidate_score(P, plane, fit: PlaneFit) -> tuple:
     u = fit.q_uend
     u_lo, u_hi = u_window()
     plausible = (np.isfinite(u) and u_lo <= u <= u_hi
-                 and abs(fit.tan_theta) < TAN_MAX)
+                 and abs(fit.tan_theta) < tan_max())
     return bool(plausible), float(chi_null - fit.chi2)
 
 
@@ -1145,7 +1156,7 @@ def fit_plane_two(P, plane: str, cal: CalibrationBundle, parent: PlaneFit,
     qfrac = min(fa.q_sum, fb.q_sum) / qtot if qtot > 0 else 0.0
     u_lo, u_hi = u_window(cal)
     plaus = [bool(np.isfinite(f.q_uend) and u_lo <= f.q_uend <= u_hi
-                  and abs(f.tan_theta) < TAN_MAX) for f in (fa, fb)]
+                  and abs(f.tan_theta) < tan_max()) for f in (fa, fb)]
     thr = TWO_TRACK_F if f_thresh is None else f_thresh
     guards = dict(distinguishable=bool(r['dist'] >= 1.0),
                   column_shared=bool(r['overlap'] >= wm.TWO_MIN_OVERLAP),

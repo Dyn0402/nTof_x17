@@ -162,6 +162,8 @@ def main():
             feu_min_rel = float(dec.bytes.min() / dec.bytes.median()) if len(dec) else float('nan')
             row['dec_feu_min_rel'] = round(feu_min_rel, 4)
             row['redecode'] = bool((ratio < 0.5 or feu_min_rel < 0.5) and row['fdf_gb'] > 0.01)
+            # candidate |tan| limit (bundle tan_max, Dylan 11-02: per dataset); provisional until P5 tests 0.6 vs 1.0
+            row['tan_max'] = 1.0
             row['excluded'] = bool(reasons)
             row['exclude_reason'] = '; '.join(reasons)
             rows.append(row)
