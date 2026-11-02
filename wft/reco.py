@@ -1518,7 +1518,7 @@ def select_tracks(cand_fits: Dict[str, list], ftst_diff: Optional[int],
     mode = mode or pair_select_mode(pairing)
     if mode not in PAIR_SELECT_MODES:
         raise ValueError(f'select_tracks mode must be one of {PAIR_SELECT_MODES}: {mode!r}')
-    if mode == 'cost':
+    if mode == 'cost' and (pairing or {}).get('features'):      # no pairing calibration: nothing to cost -> 'gate'
         return _select_tracks_cost(cand_fits, ftst_diff, pairing, dt, max_tracks)
     return _select_tracks_gate(cand_fits, ftst_diff, pairing, dt, max_tracks)
 
