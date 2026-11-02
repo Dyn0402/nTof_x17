@@ -1,0 +1,92 @@
+{
+ "scenario": "ATOMKI 2016 anomaly",
+ "mass": 16.7,
+ "R_ATOMKI": 5.8e-06,
+ "level": "MM 15° + TOF",
+ "cases": {
+  "as built|1": {
+   "hw": "as built",
+   "I_uA": 1.0,
+   "x17_per_day": 17.236342789095687,
+   "bkg_per_day": 1812.6120814228907,
+   "days_3sigma": 17.03826110434776,
+   "days_5sigma": 47.328503067632674,
+   "esum_window": "13-19",
+   "live": 0.9989567650626052,
+   "produced_per_day": 920.3788938317094
+  },
+  "as built|4": {
+   "hw": "as built",
+   "I_uA": 4.0,
+   "x17_per_day": 68.94390191508893,
+   "bkg_per_day": 7223.581573832384,
+   "days_3sigma": 4.151388907987048,
+   "days_5sigma": 11.531635855519577,
+   "esum_window": "13-19",
+   "live": 0.9989354770703094,
+   "produced_per_day": 3681.5155753268377
+  },
+  "big plastics|1": {
+   "hw": "big plastics",
+   "I_uA": 1.0,
+   "x17_per_day": 134.987678921936,
+   "bkg_per_day": 12083.79645773259,
+   "days_3sigma": 0.99840476715419,
+   "days_5sigma": 2.7733465754283055,
+   "esum_window": "14-19",
+   "live": 0.9934252834168308,
+   "produced_per_day": 920.3788938317094
+  },
+  "big plastics|4": {
+   "hw": "big plastics",
+   "I_uA": 4.0,
+   "x17_per_day": 539.8470817765134,
+   "bkg_per_day": 48292.5029526284,
+   "days_3sigma": 0.2497413041190984,
+   "days_5sigma": 0.6937258447752733,
+   "esum_window": "14-19",
+   "live": 0.9932346131489104,
+   "produced_per_day": 3681.5155753268377
+  }
+ },
+ "pair_tag": {
+  "as built": 0.032565,
+  "big plastics": 0.231556
+ },
+ "trigger_gain": 7.110578842315371,
+ "x17_gain": 7.831573122770216,
+ "days_gain": 17.065484525792968,
+ "atomki_pair_acc": 0.025,
+ "price_keur": {
+  "PS": {
+   "plates_keur": [
+    53.52,
+    92.8,
+    141.92
+   ],
+   "all_in_keur": [
+    70.52,
+    120.8,
+    184.92
+   ]
+  },
+  "PVT": {
+   "plates_keur": [
+    78.48,
+    136.48,
+    216.8
+   ],
+   "all_in_keur": [
+    95.48,
+    164.48,
+    259.8
+   ]
+  }
+ },
+ "sources": {
+  "reach": "lnl/out/geant/reach_geant.csv (days_3d, S3d_per_day, B3d_per_day)",
+  "trigger": "lnl/out/geant/acceptance_geant.csv (pair_tag)",
+  "price": "trigger_scint/costs.py"
+ },
+ "notes": "range = [low, central, high]; days to 3σ/5σ at R(ATOMKI) = 5.8e-6; 5σ = 3σ × 25/9"
+}
