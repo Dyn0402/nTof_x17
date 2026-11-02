@@ -162,8 +162,10 @@ def main():
             feu_min_rel = float(dec.bytes.min() / dec.bytes.median()) if len(dec) else float('nan')
             row['dec_feu_min_rel'] = round(feu_min_rel, 4)
             row['redecode'] = bool((ratio < 0.5 or feu_min_rel < 0.5) and row['fdf_gb'] > 0.01)
-            # candidate |tan| limit (bundle tan_max, Dylan 11-02: per dataset); provisional until P5 tests 0.6 vs 1.0
-            row['tan_max'] = 1.0
+            # candidate |tan| limit (bundle tan_max, Dylan 11-02: per dataset).  0.6 vs 1.0 on the run_149 A-C line
+            # (11-02, NTOF_PASS_PLAN §6): 1.0 changes no common event and adds ~4:1 wrong steep fits; 0.6, tentative
+            # until the full run_149 sample on the in-situ v re-checks it
+            row['tan_max'] = 0.6
             row['excluded'] = bool(reasons)
             row['exclude_reason'] = '; '.join(reasons)
             rows.append(row)

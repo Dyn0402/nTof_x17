@@ -290,7 +290,7 @@ A failing arm is held, as on the bench.
   `.../july_beam/Analysis_pass1/checks/redecode/`). The pass reads only `decoded_root_fa80c06`.
 - **Angle limit per dataset (11-02).** `CalibrationBundle.tan_max` (None = the reco default 0.6, which every bench/SPS
   bundle keeps); `wft.reco.tan_max()` applies it and a `WFT_DIAG reco.TAN_MAX` still wins. Registry column `tan_max`
-  is 1.0, provisional; 0.6 vs 1.0 is tested on run_145 + run_149 (P5). Old study scripts that assign
+  is **0.6, tentative** after the first test (§6). Old study scripts that assign
   `wreco.TAN_MAX` directly (g4_digi, yield_gate) are overridden by a bundle that sets its own; they must pass
   `--tan-max` into the bundle instead.
 
@@ -335,3 +335,21 @@ A failing arm is held, as on the bench.
     q_u50 at the grid edge. `COL_GUARD` (built in since) removes it. The real distribution is the prompt peak.
   - The pin still applies to the trigger track only; the second track of a pair keeps a free t0 (Q2 test).
 
+- **tan_max 0.6 vs 1.0 (11-02, `rerun/ntof/ac_line.py`, run_149 cosbounce_cos_0000, first 1,500 seeded events per
+  acquisition, v0 bundles: v not yet measured in situ).** Scored against the A–C cosmic line (residual angle between
+  each chamber's direction and the line through both mesh crossings, sep < 60 mm).
+  - 1.0 moves **no** track on the 158 A–C events both settings find (no p0 change > 1 mm).
+  - 1.0 adds 33 A–C events and loses 7. Of the 33, ~27 are truly shallow tracks (line tans < 0.6 in both views)
+    given a wrong steep fit in one arm; ~6 are genuinely steep and fitted roughly. Median residual of the 33: 16° (A),
+    11° (C).
+  - At 0.6 the line's 31–40° bin is still reconstructed (A 68 % residual 2.8°): plausibility is per view in raw tan,
+    and a 35° line splits between the views.
+  - **The two-sided search** (`WFT_DIAG reco.TWO_SIDED=1`, is2_v2's fix) costs 12–14 CPU-s per event (5×) and does
+    not improve either setting on the line (0.6: A 68 % 2.6 → 2.8°; 1.0 adds the same kind of junk).
+  - **On beam (run_145, 1,500 events) the limit is a preference, not a cut.** Per-plane ok is identical; even at 0.6,
+    21–33 % of winners have |tan| > 0.6 (the best implausible candidate is kept when no plausible one exists); 1.0
+    swaps the winner on 6–13 % of planes.
+  - **Cost:** cosmics 2.1–2.9 CPU-s per event; beam A 2.6–3.5, C 6.7–8.1. 1.0 costs +20–35 % on beam.
+  - **Verdict (tentative): 0.6, no two-sided.** Statistics are one sub-run (~170 line events). Re-check on the full
+    staged run_149 (12 sub-runs) once v is measured in situ, and look at what the beam's steep winners are (25 % of
+    beam planes: real steep electrons, flash-tail junk, or mis-fits).
