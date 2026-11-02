@@ -1,0 +1,194 @@
+# Paper I figure log -- read by make_figures_deck.py (notes/mx17-paper1-figures).
+# One [[entry]] per change, newest last. `fig` is the figures.toml id ("*" = all figures / the style).
+# `status` (optional) sets the figure's review state from that entry on:
+#   "not ready"  Dylan has seen it and it is not publication-ready
+#   "in work"    being reworked
+#   "for review" changed, waiting for Dylan to look
+#   "accepted"   Dylan has accepted it
+# Dylan 2026-11-02: "we'll have to work on these one-by-one over the next few days, so let's keep updating the
+# current slides as we go and log the changes in the details."
+
+[[entry]]
+date = "2026-11-02"
+fig = "*"
+status = "not ready"
+change = "Dylan looked through all figures (the pre-restyle versions): none is close to publication-ready. Work through them one by one."
+
+[[entry]]
+date = "2026-11-02"
+fig = "*"
+change = "papers/paper_style.py: one palette and style for every paper figure (det3 #0b3d91 on top, det2 #56B4E9, det6 #E69F00, det7 #CC79A7, det4 #999999 underneath; X solid / Y dashed open; mathtext; pdf+png+csv). Commit 66cc3ea5."
+
+[[entry]]
+date = "2026-11-02"
+fig = "hv_scan"
+status = "for review"
+change = "Restyled on paper_style; split: (a) interior efficiency, (b) discharges per trigger. The tracks-lost-to-discharge panel moved to eff_vs_hv_discharge. det4 golden star gets its own legend entry. Commit 85f95581."
+
+[[entry]]
+date = "2026-11-02"
+fig = "eff_vs_hv_discharge"
+status = "for review"
+change = "New (was a placeholder): det3, det6, det7 panels, interior efficiency (filled) and % of M3 tracks lost to discharges (dashed, open) vs resist HV; shaded plateau (within 1 pt of max). Commit 85f95581."
+
+[[entry]]
+date = "2026-11-02"
+fig = "spark_deadtime"
+status = "for review"
+change = "Restyled; det3 first and on top, det2/6/7 lighter; det4 in its own small panel (c); bootstrap errors on the gain ratio; dead times moved from the legend to the caption. Commit 85f95581."
+
+[[entry]]
+date = "2026-11-02"
+fig = "charge_balance"
+status = "for review"
+change = "Restyled; mathtext ln(Q_X/Q_Y); legend in the empty upper right (median, core sigma, n); det3 first. Caption now gives f = 0.485 next to the ln median. Commit 85f95581."
+
+[[entry]]
+date = "2026-11-02"
+fig = "currents_vs_hv"
+status = "for review"
+change = "Restyled; one colour per board, marker per night; reference slope gain x2 / 16.7 V (dotted); det3 6-27 fit kept. Boards from 6-17 only, 6-20 weekend excluded (earlier the same day). Commit 85f95581."
+
+[[entry]]
+date = "2026-11-02"
+fig = "efficiency_map"
+status = "for review"
+change = "Restyled; det3 large, det2/4/6/7 small 2x2; golden-row interior efficiency in the titles; outside-area pixels masked; det7 'X ch 0-255' boxed; interior box now 30 mm x / 8 mm y (was 30 all round). Commit 85f95581."
+
+[[entry]]
+date = "2026-11-02"
+fig = "tracking_perf"
+status = "for review"
+change = "Restyled; right efficiency panel removed; det3 X/Y heavy with s68 errors; det4 on its own small panel; axis just sigma_theta (s68 defined in the caption). Commit 85f95581."
+
+[[entry]]
+date = "2026-11-02"
+fig = "bow_profiles"
+status = "for review"
+change = "Restyled from results/bow/profiles_*.json (new bow_pass1.py plot mode); X solid / Y dashed open. Commit 85f95581."
+
+[[entry]]
+date = "2026-11-02"
+fig = "bow_closure"
+status = "for review"
+change = "Restyled; axes in words (measured drift-tilt gradient vs predicted from the mesh curvature, um/ns per m); reference lines named. Appendix candidate. Commit 85f95581."
+
+[[entry]]
+date = "2026-11-02"
+fig = "edge_turnon"
+status = "for review"
+change = "Restyled; linear 0-60 mm axis (was symlog), 30 mm edge zone shaded, one shared legend for the four sides. Commit 85f95581."
+
+[[entry]]
+date = "2026-11-02"
+fig = "timing"
+status = "for review"
+change = "Restyled; one chamber legend above the panels; (c) ordered det3, det2, det6, det7, det4; det4 at SPS grey open. Appendix candidate for (b). Commit 85f95581."
+
+[[entry]]
+date = "2026-11-02"
+fig = "det4_stripes"
+status = "for review"
+change = "Restyled; thick legend handles; SPS gases in ps.GAS (CF4 blue, Ar/CO2 red); bench det4 grey. Commit 85f95581."
+
+[[entry]]
+date = "2026-11-02"
+fig = "bench_setup"
+status = "for review"
+change = "z of the M3 planes (24/144/1185/1302 mm) and the slots (232/702 mm); det3 golden rows marked in the top slot (run_config det_center_coords); figure title moved to the caption. Commit 85f95581."
+
+[[entry]]
+date = "2026-11-02"
+fig = "eff_vs_radius"
+status = "for review"
+change = "Moved to paper_style (det3 blue credit, light blue production pick, grey accidentals). Commit f4bca616."
+
+[[entry]]
+date = "2026-11-02"
+fig = "residuals"
+status = "for review"
+change = "Moved to paper_style. Commit f4bca616."
+
+[[entry]]
+date = "2026-11-02"
+fig = "xy_pairing"
+status = "for review"
+change = "Moved to paper_style. Commit f4bca616."
+
+[[entry]]
+date = "2026-11-02"
+fig = "loss_budget"
+status = "for review"
+change = "New: where the det3 single-track inefficiency goes, full area, by class and group (delta-rays, chamber, reconstruction, edges). Commit f4bca616."
+
+[[entry]]
+date = "2026-11-02"
+fig = "two_particle"
+status = "for review"
+change = "New: muon recovery per two-particle configuration (pass 1, before the two-track and veto fixes; rebuild after). Commit f4bca616."
+
+[[entry]]
+date = "2026-11-02"
+fig = "microtpc_principle"
+status = "for review"
+change = "Redone (was the per-strip hit-time fit the paper rejects): (a) geometry sketch (drift, avalanche, resistive strips, pads, X/Y strips, sharing inset 29 % / 5 %), (b) real det3 event 7884 X view, data next to the forward model at the pass-1 fit. Producer papers/paper1/figs/make_principle.py. Commit 3645ed15."
+
+[[entry]]
+date = "2026-11-02"
+fig = "loss_band"
+status = "for review"
+change = "All 14 A1 displays: readable class names + event number in the titles (no fractions), shared display palette (figs/evd_style.py: white to det3 navy, M3 black dashed, fit vermillion); loss_headon is now the fit-failed example (no head-on loss on pass 1). Commit 3645ed15."
+
+[[entry]]
+date = "2026-11-02"
+fig = "display_two_separate"
+status = "for review"
+change = "New §5 display: two particles separate in both views, each fitted (event 1063). Commit 3645ed15."
+
+[[entry]]
+date = "2026-11-02"
+fig = "display_merged_projection"
+status = "for review"
+change = "New §5 display: separate in X, merged in projection in Y (event 17907). Commit 3645ed15."
+
+[[entry]]
+date = "2026-11-02"
+fig = "display_muon_deposit"
+status = "for review"
+change = "New §5 display: clean muon plus a separate deposit ~150 mm away, vetoed (> 50 strips) (event 36603). Commit 3645ed15."
+
+[[entry]]
+date = "2026-11-02"
+fig = "gas_vE"
+status = "for review"
+change = "Redone: timing v (g/T, 4 fields) and angle-scale v (M3 ladder, 7 fields, new stat errors) on one Magboltz curve at 0.97 % [0.95, 0.99] water (chi2 2.5/3), ratio panel; old angle-only figure retired. Producer rerun/paper1_gas/pg_figs.py. Commit a957faab."
+
+[[entry]]
+date = "2026-11-02"
+fig = "two_velocities"
+status = "for review"
+change = "New: (a) head-on stacks with column start/end, (b) M3 ladder w vs tan_M3 (slope v, no gap), (c) gap = v_ladder x T per field: 28.2 +- 0.5 mm (chi2 4.1/3) vs strip extent 28.19 +- 0.19 (the story's 29 [28, 30] was the gap/water profile, a different estimate). Producer rerun/paper1_gas/pg_twov.py. Commit a957faab."
+
+[[entry]]
+date = "2026-11-02"
+fig = "gas_drying"
+status = "for review"
+change = "New: (a) det6/det7 water through 6-26 (1.47 -> 0.76, 0.68 -> 0.35 %), (b) one time shape (r = 0.975), (c) det3 one water at every field. From gas.json only. Commit a957faab."
+
+[[entry]]
+date = "2026-11-02"
+fig = "attachment"
+status = "for review"
+change = "Restyled: CO2 / CF4 legend (ps.GAS), unrotated run labels, bench points replaced by grey bands. Commit a957faab."
+
+[[entry]]
+date = "2026-11-02"
+fig = "bench_position_res"
+status = "for review"
+change = "New: (a) det3 near-normal core width vs M3 chi2 quintile, extrapolated to chi2 -> 0 (274 / 237 um) with the pointing P drawn; (b) chamber term sqrt(sigma0^2 - P^2) vs assumed P: det3 126 +- 34 / 116 +- 36 um, det2 163 / 176; +-10 % on P band. Producer rerun/paper1_floor/position_ms_fig.py. Commit a957faab."
+
+[[entry]]
+date = "2026-11-02"
+fig = "sps_resolution"
+status = "for review"
+change = "Redone on region R (decision A+B): X/Y residual histograms with cores, det4 sigma vs telescope f with upper-bound bands: 138 / 120 um, bounds 153 / 145. Old zone fits kept as sps_resolution_zones. Commit a957faab."

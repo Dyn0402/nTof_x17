@@ -140,6 +140,29 @@ These are fair two-particle events and count as losses where the muon is not rec
   changes).}}
   \label{fig:twoparticle}
 \end{figure}
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{display_two_separate}
+  \caption{\tbw{Two particles separate in both views (about 105\,mm apart in X, 70\,mm in Y), each fitted as its own track
+  (vermillion: first, coinciding with M3; amber: second). M3 dashed.}}
+  \label{fig:disp_two}
+\end{figure}
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{display_merged_projection}
+  \caption{\tbw{Two particles separate in X and merged in projection in Y. In X the M3 particle (dashed) and a second
+  segment 63\,mm away are both found; the pass keeps the second (solid) and fits the M3 one only as a candidate it does
+  not keep (dotted). In Y the two columns lie within the 12\,mm seed gap and are fitted as one track, pulled between
+  them.}}
+  \label{fig:disp_merged}
+\end{figure}
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{display_muon_deposit}
+  \caption{\tbw{A clean muon on the M3 track (dashed) and a separate deposit ${\sim}150$\,mm away in both views. Together
+  they put more than 50 strips above the seeding floor, so the trigger is vetoed as a discharge and no fit is made.}}
+  \label{fig:disp_deposit}
+\end{figure}
 \tbw{\textbf{Overlap in one projection.} The reconstruction is built for it: a joint two-track fit offers a merged
 candidate a second track, with a lowered threshold when the other view resolves more candidates. On the bench it
 rarely fires: both its trigger and its acceptance require the candidates to pass a plausibility test tuned on beam
@@ -152,7 +175,10 @@ one makes two ghost tracks. The views share no coordinate, but they read the sam
 times, so the reconstruction pairs them by the charge balance and the charge-arrival time (Paper~II). On 552 real
 two-particle cosmic events where M3 marks one particle in both views, the pairing is right in
 $98.0\pm0.6$\,\% (charge alone: 95.7\,\%; 100\,\% when the two charges differ by more than a factor 1.65, 96\,\% when they
-are similar). This is the feasibility demonstration for pairs at n\_TOF.}
+are similar). This is the feasibility demonstration for pairs at n\_TOF. The production reconstruction makes the same choice (the
+matching with the lowest summed pairing cost, then the coincidence gate per pair) and pairs the two-particle events
+correctly on every chamber: det3 95.9\,\%, det2 96.8\,\%, det6 92.2\,\%, det7 90.1\,\%, det4 94.0\,\%
+(\texttt{rerun/effbudget/single/PAIRING\_FIX\_2026-11-02.md}).}
 \begin{figure}[t]
   \centering
   \includegraphics[width=0.6\linewidth]{xy_pairing}
@@ -164,4 +190,4 @@ are similar). This is the feasibility demonstration for pairs at n\_TOF.}
 cost, then applies the usual coincidence gate to each pair. On the same 552 events it pairs $96.7\pm0.8$\,\% correctly
 (re-reconstructed from the waveforms; \texttt{rerun/effbudget/single/PAIRING\_FIX\_2026-11-02.md}). An earlier selection,
 which let a beam-tuned plausibility flag decide which pairs survived, managed 80\,\%.}
-\analysis{PAIRFIX}{pairing fix on main (743d6d31, bundle switch xy\_pairing.select = cost); the pass-1 bench candidate tables still carry the old track\_id until refreshed (pairing\_replay.py or the next bench pass)}
+\analysis{PAIRFIX}{pairing fix on main (743d6d31, b5ae07c8); refreshed cost-mode tables for all 157 bench rows in Analysis\_pass1/<rel>/wft/pairing\_cost/}
