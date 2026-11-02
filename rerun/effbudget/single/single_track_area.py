@@ -86,6 +86,9 @@ def main():
         det = (B.cat_xy_5 == 'detected').to_numpy()
         credit = det | B.det_any_5.astype(bool).to_numpy()
         interior = (B.region == 'interior').to_numpy()
+        ev = pd.DataFrame(dict(cls=cls, recat=recat, region=B.region, cat=B.cat_xy_5, detected=det, credit=credit,
+                               dropped=drop), index=B.index)
+        ev.to_parquet(os.path.join(RES, f'single_track_area_events_{key}.parquet'))
         out = {'ref': ref}
         for area, m_area in (('active area', np.ones(len(B), bool)), ('interior 30x/8y', interior)):
             m = m_area & ~drop
