@@ -1,0 +1,2 @@
+# producer outputs; the pdf is the figures.toml source (committed so make_figures.py works on a fresh clone)
+*.png
