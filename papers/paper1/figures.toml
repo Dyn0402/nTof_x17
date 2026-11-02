@@ -139,29 +139,37 @@ note = "Rebuilt 2026-10-31 on pass 1 (D4: wft angles, M3 rays, FA column duratio
 # --- 6 Gas --------------------------------------------------------------------
 
 [fig.gas_vE]
-title = "Drift velocity v(E): det3's 6-27 drift scan on pass 1 (angle-scale v) vs Magboltz for the bench gas"
-state = "current"
-source = "rerun/paper1_res/figures/gas_vE.pdf"
-section_state = "partial"
-note = "Pass 1 (2026-10-31): v_drift x mean kw per row, the M3-calibrated angle-scale v (it carries kw: not a timing v); the 333 V/cm cluster is the 6-27 HV-scan rows at 1000 V drift. Magboltz bench gas 0.95 % H2O (0.6 / 1.4 % bracket), cloud_basics FINDINGS 22. The composition fit is cloud_basics/driftscan_fit.py."
-producer = "cd rerun/paper1_res && ../../.venv/bin/python make_report.py"
-
-[fig.gas_vE_timing]
-title = "Drift velocity v(E) on the bench: timing v (gap / T) and angle-scale v (v_drift x kw) against Magboltz, one water"
+title = "det3 drift scan: timing v (g / T) and angle-scale v (M3 ladder) on one Magboltz curve, 0.97 % water"
 state = "current"
 source = "rerun/paper1_gas/figures/gas_vE_timing.pdf"
 section_state = "partial"
-note = "Pass 1 (2026-10-31, rerun/paper1_gas): det3 6-27 drift scan, timing v from the head-on stack (S4 re-check recipe, 500-1100 V; 300 V does not fit in the window) and angle-scale v at all seven fields; one water 0.97 % [0.95, 0.99], chi2 2.5/3, Magboltz bench gas on the fine grid air_merged. Other chambers' golden timing v at their own field (0.42-1.00 % water). RECOMMENDED for section 6 over gas_vE (which shows only the angle-scale v, carrying kw)."
-producer = "cd rerun/paper1_gas && python pg_gas.py <fit dir> && python pg_figs.py"
+note = "2026-11-02: this id now carries the two-velocity drift scan (was gas_vE_timing, built 10-31, unused). det3 6-27, pass 1: timing v from the head-on stack at 500-1100 V (300 V: the column overruns the window), angle-scale v = v_drift x mean kw at all seven fields (100-1100 V and the 1000 V HV-scan row) with the ladder estimator's stat error (rerun/paper1_gas/results/twov.json); curve = Magboltz bench gas (fine grid air_merged) at the timing-v fit, 0.97 % [0.95, 0.99], chi2 2.5/3; lower panel v / Magboltz (angle-scale v within -1.7..+1.5 % from 106 to 390 V/cm). Other chambers' golden timing v (0.42-1.00 % water) are no longer drawn here: they are the text's water table. RETIRED: the angle-only figure rerun/paper1_res/figures/gas_vE.pdf (0.95 % label, no error bars)."
+producer = "cd rerun/paper1_gas && ../../.venv/bin/python pg_twov.py extract <data dir> && ../../.venv/bin/python pg_figs.py vE"
+
+[fig.two_velocities]
+title = "Two drift velocities and the gap: the head-on stack (T = g / v), the M3 ladder (slope = v, no gap) and g = v_M3 x T per field"
+state = "current"
+source = "rerun/paper1_gas/figures/two_velocities.pdf"
+section_state = "partial"
+note = "2026-11-02 (Dylan's outline). det3 6-27 drift scan, pass 1. (a) the in30 head-on stacks (rc_diffusion.stack, |tan_x| < 0.03, rr1 waveforms, unsaturated) with the s4f_fit model at its stored sigma_0, Dd, T, dt (A refitted, linear); markers = fitted column start dt and end dt + T. (b) M3 ladder: binned medians of the fitted w - w0 against the bow-corrected M3 slope, X filled / Y open, lines slope v_drift x kw. (c) g = v_ladder x T: 24.9 +- 2.9 / 27.9 +- 0.5 / 27.4 +- 1.1 / 29.4 +- 0.8 mm at 177 / 248 / 319 / 390 V/cm, mean 28.2 +- 0.5 mm (chi2 4.1/3), against the strip-extent gap 28.19 +- 0.19 (S4 re-check). NB: the 29 [28, 30] mm in the story is the gap profile of the timing-v Magboltz fit (results/summary.json scan.profile), not this ratio. Inputs copied from EOS x17rerun/paper1_gas (stacks, fit_v1) and Analysis_pass1 (03_angles, bundles); numbers in results/twov.json."
+producer = "cd rerun/paper1_gas && ../../.venv/bin/python pg_twov.py extract <data dir> && ../../.venv/bin/python pg_twov.py fig"
+
+[fig.gas_drying]
+title = "The bench gas dries over a night: det6/det7 water on 6-26, one time shape; det3 one water at every field"
+state = "current"
+source = "rerun/paper1_gas/figures/gas_drying.pdf"
+section_state = "partial"
+note = "2026-11-02, from rerun/paper1_gas/results/gas.json (no recomputation). (a) water from the anchored M3 ladder (k v_lad, k = timing stack / ladder on the attachment-free rows: det6 0.970 +- 0.013, det7 0.984 +- 0.011) through Magboltz: det6 1.47 -> 0.76 %, det7 0.68 -> 0.35 % (01:00 -> 15:00), dashed = afternoon plateaus; grey = the golden rows 06:00-10:20. (b) excess over plateau, det6 / 2.17: r = 0.975. (c) det3 6-27 timing-v water per field (0.87 / 0.97 / 0.91 / 1.05 %) on the one-water fit 0.97 % [0.95, 0.99]; the 390 V/cm point sits near the velocity maximum, hence its wide interval."
+producer = "cd rerun/paper1_gas && ../../.venv/bin/python pg_figs.py drying"
 
 [fig.attachment]
 appendix_candidate = "Dylan 2026-11-02: keep in the body for now; maybe move to an appendix later (see how the paper reads)"
-title = "What gas each setup had: water (bench golden rows vs SPS epochs) and O2 at SPS"
+title = "What gas det4 had at SPS: water and O2 of every run group (CO2 and CF4 mixtures), bench range for scale"
 state = "current"
 section_state = "partial"
 source = "rerun/paper1_spsfigs/figures/attachment.pdf"
 producer = "cd rerun/paper1_spsfigs && ../../.venv/bin/python make_figs.py --only attachment"
-note = "SPS from rerun/sps_gasfit/results/verdict.json (4127f9ea, gap 27.9 mm); bench from rerun/paper1_gas/results/summary.json (det4 point at the old 30.48 mm gap; 337f7fd1 measures 28.6 mm)."
+note = "Restyled 2026-11-02 (paper_style; gas legend from ps.GAS; unrotated run ticks). SPS from rerun/sps_gasfit/results/verdict.json (4127f9ea, gap 27.9 mm; at det4's geometric 28.6 mm water is ~0.1-0.2 % lower, O2 ~30-40 ppm lower). Bench chambers no longer drawn point by point (they are gas_vE / gas_drying): only the golden-row range 0.42-1.00 % as a grey band; det6 early-night O2-equivalent 370-600 ppm band in (b)."
 # --- 7 Timing -----------------------------------------------------------------
 
 [fig.timing]
@@ -183,14 +191,22 @@ section_state = "requote"
 note = "Pass 1 (2026-10-31), headline row per chamber (det2/det3 the quoted golden rows; det4/6/7 the calibration rows, in-sample), v(t) arm on det2/det4/det6/det7. rerun/paper1_res/PASS1_RESOLUTION_2026-10-31.md; efficiency from rerun/effbudget/PASS1_RESULT_2026-10-31.md. Restyled 2026-11-02 (paper_style): efficiency panel dropped (it repeated section 5 with stale values); det3 X/Y heavy on top with s68 errors (smaller than the markers); det4 in its own small panel at its own scale; sigma_theta defined in the caption, the axis says sigma_theta."
 producer = "cd rerun/paper1_res && ../../.venv/bin/python make_report.py --only tracking_perf --rows <EOS x17rerun/paper1_res/results_18efcd0d/rows, fetched over xrootd>"
 
+[fig.bench_position_res]
+title = "Bench intrinsic position resolution (det3 headline): residual vs M3 chi2 extrapolated to chi2 -> 0, then the M3 pointing subtracted"
+state = "current"
+section_state = "partial"
+source = "rerun/paper1_floor/figures/bench_position_res.pdf"
+producer = "cd rerun/paper1_floor && FLOOR_FRAMES=<frames dir> ../../.venv/bin/python position_ms_fig.py bins && ../../.venv/bin/python position_ms_fig.py fig"
+note = "2026-11-02, the §8 headline position result (rerun/paper1_floor/position_ms.py; near-normal |theta_M3| < 5 deg, headline rows). (a) det3 core sigma in M3-chi2 quintiles of the matching coordinate, sigma^2 linear in chi2 -> sigma_0 = 274 +- 16 (X) / 237 +- 18 um (Y); M3 pointing P 243 / 207 um. (b) chamber = sqrt(sigma_0^2 - P^2) against the assumed P scale: det3 126 +- 34 (X) / 116 +- 36 um (Y), det2 163 +- 29 / 176 +- 21 um (stat); +-10 % on P moves det3 X to 58-164 and Y to 67-147 um (grey band). det4 at SPS region R (120-138 um) for scale. The quintile bins of the near-normal subset were never stored: position_ms_fig.py bins recomputes them with position_ms's functions and checks the intercepts reproduce position_ms.json (they do, to 0.1 um). Frames: EOS x17rerun/paper1_floor/frames/."
+
 [fig.sps_resolution]
 appendix_candidate = "Dylan 2026-11-02: keep in the body for now; maybe move to an appendix later (see how the paper reads)"
-title = "det4 intrinsic resolution at SPS H4: the 3-zone telescope decomposition, run63 flat700 (CF4) with run53 (Ar/CO2) as cross-check"
+title = "det4 at SPS H4 in the small working region R (run 63 flat700, Ar/CF4/iso): residuals, telescope subtraction against f, model-free upper bounds"
 state = "current"
 section_state = "requote"
 source = "rerun/paper1_spsfigs/figures/sps_resolution.pdf"
 producer = "cd rerun/paper1_spsfigs && ../../.venv/bin/python make_figs.py --only sps_resolution"
-note = "Final SPS chain (rerun/sps_junk/results/final_rule.json). Y p0 190 +- 10 um (chi2/1 0.3) is the clean measurement; the X zone fits fail (chi2/1 7-88), so X has no intercept measurement (open markers) -- decisions A/B. 176 um = 0.23 x pitch (not 0.30)."
+note = "Redone 2026-11-02 on decision A + B (11-01): rerun/sps_region/results/region.json, R = X 150-160 x Y 222-246 mm. sigma_X 138 um (p_mid; f range 112-153, stat 7), sigma_Y 120 um (p0; 89-136, stat 9); f = 0.266 [0.254, 0.284]; upper bounds X <= 153 +- 6 (back and front 2-strip), Y <= 145 +- 6 (back 2-strip). The superseded full-beam 3-zone figure is make_figs.py sps_resolution_zones -> rerun/paper1_spsfigs/figures/sps_resolution_zones.pdf."
 # --- 8b The chamber bow (draft, FB 2026-10-27) ---------------------------------
 
 [fig.bow_profiles]
