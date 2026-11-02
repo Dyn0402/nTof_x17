@@ -1,0 +1,226 @@
+{
+ "sat_det3": {
+  "ref": {
+   "lq_med": -0.05743048940579321,
+   "lq_rsig": 0.0641059496477219
+  },
+  "active area | all rays: production pick": {
+   "n": 7140,
+   "k": 6563,
+   "eff": 91.9187675070028
+  },
+  "active area | all rays: credit": {
+   "n": 7140,
+   "k": 6744,
+   "eff": 94.45378151260505
+  },
+  "active area | single-track": {
+   "n": 6916,
+   "k": 6586,
+   "eff": 95.22845575477155
+  },
+  "active area | two: merged in one projection": {
+   "n": 59,
+   "k": 27,
+   "eff": 45.76271186440678
+  },
+  "active area | two: muon + separate deposit (vetoed)": {
+   "n": 26,
+   "k": 0,
+   "eff": 0.0
+  },
+  "active area | two: separate in both views": {
+   "n": 139,
+   "k": 131,
+   "eff": 94.24460431654676
+  },
+  "active area | all two-particle events": {
+   "n": 224,
+   "k": 158,
+   "eff": 70.53571428571429
+  },
+  "interior 30x/8y | all rays: production pick": {
+   "n": 6454,
+   "k": 5979,
+   "eff": 92.64022311744654
+  },
+  "interior 30x/8y | all rays: credit": {
+   "n": 6454,
+   "k": 6144,
+   "eff": 95.1967771924388
+  },
+  "interior 30x/8y | single-track": {
+   "n": 6247,
+   "k": 5999,
+   "eff": 96.03009444533376
+  },
+  "interior 30x/8y | two: merged in one projection": {
+   "n": 52,
+   "k": 24,
+   "eff": 46.15384615384615
+  },
+  "interior 30x/8y | two: muon + separate deposit (vetoed)": {
+   "n": 26,
+   "k": 0,
+   "eff": 0.0
+  },
+  "interior 30x/8y | two: separate in both views": {
+   "n": 129,
+   "k": 121,
+   "eff": 93.7984496124031
+  },
+  "interior 30x/8y | all two-particle events": {
+   "n": 207,
+   "k": 145,
+   "eff": 70.04830917874396
+  }
+ },
+ "p2_det3": {
+  "ref": {
+   "lq_med": -0.05451407739239492,
+   "lq_rsig": 0.06560462813405951
+  },
+  "active area | all rays: production pick": {
+   "n": 22258,
+   "k": 20335,
+   "eff": 91.36040974031809
+  },
+  "active area | all rays: credit": {
+   "n": 22258,
+   "k": 20928,
+   "eff": 94.02462036121844
+  },
+  "active area | single-track": {
+   "n": 21537,
+   "k": 20390,
+   "eff": 94.67428146909968
+  },
+  "active area | two: merged in one projection": {
+   "n": 173,
+   "k": 76,
+   "eff": 43.93063583815029
+  },
+  "active area | two: muon + separate deposit (vetoed)": {
+   "n": 67,
+   "k": 1,
+   "eff": 1.492537313432836
+  },
+  "active area | two: separate in both views": {
+   "n": 481,
+   "k": 461,
+   "eff": 95.84199584199584
+  },
+  "active area | all two-particle events": {
+   "n": 721,
+   "k": 538,
+   "eff": 74.61858529819695
+  },
+  "interior 30x/8y | all rays: production pick": {
+   "n": 20088,
+   "k": 18516,
+   "eff": 92.17443249701314
+  },
+  "interior 30x/8y | all rays: credit": {
+   "n": 20088,
+   "k": 19065,
+   "eff": 94.9074074074074
+  },
+  "interior 30x/8y | single-track": {
+   "n": 19410,
+   "k": 18561,
+   "eff": 95.6259659969088
+  },
+  "interior 30x/8y | two: merged in one projection": {
+   "n": 161,
+   "k": 70,
+   "eff": 43.47826086956522
+  },
+  "interior 30x/8y | two: muon + separate deposit (vetoed)": {
+   "n": 67,
+   "k": 1,
+   "eff": 1.492537313432836
+  },
+  "interior 30x/8y | two: separate in both views": {
+   "n": 450,
+   "k": 433,
+   "eff": 96.22222222222223
+  },
+  "interior 30x/8y | all two-particle events": {
+   "n": 678,
+   "k": 504,
+   "eff": 74.33628318584071
+  }
+ },
+ "pooled": {
+  "active area | all rays: production pick": {
+   "n": 29398,
+   "eff": 91.49602013742431,
+   "err": 0.16268717602971233
+  },
+  "active area | all rays: credit": {
+   "n": 29398,
+   "eff": 94.12885230287775,
+   "err": 0.13710837759093897
+  },
+  "active area | single-track": {
+   "n": 28453,
+   "eff": 94.80898323551119,
+   "err": 0.13151852463059827
+  },
+  "active area | two: merged in one projection": {
+   "n": 232,
+   "eff": 44.39655172413793,
+   "err": 3.2619814738023742
+  },
+  "active area | two: muon + separate deposit (vetoed)": {
+   "n": 93,
+   "eff": 1.075268817204301,
+   "err": 1.0694721775786498
+  },
+  "active area | two: separate in both views": {
+   "n": 620,
+   "eff": 95.48387096774194,
+   "err": 0.8339736610966242
+  },
+  "active area | all two-particle events": {
+   "n": 945,
+   "eff": 73.65079365079364,
+   "err": 1.4330342839334496
+  },
+  "interior 30x/8y | all rays: production pick": {
+   "n": 26542,
+   "eff": 92.28769497400347,
+   "err": 0.16375598285081047
+  },
+  "interior 30x/8y | all rays: credit": {
+   "n": 26542,
+   "eff": 94.97777107979806,
+   "err": 0.1340579014320887
+  },
+  "interior 30x/8y | single-track": {
+   "n": 25657,
+   "eff": 95.72436372140157,
+   "err": 0.1263015509868984
+  },
+  "interior 30x/8y | two: merged in one projection": {
+   "n": 213,
+   "eff": 44.13145539906103,
+   "err": 3.402263941280154
+  },
+  "interior 30x/8y | two: muon + separate deposit (vetoed)": {
+   "n": 93,
+   "eff": 1.075268817204301,
+   "err": 1.0694721775786498
+  },
+  "interior 30x/8y | two: separate in both views": {
+   "n": 579,
+   "eff": 95.68221070811744,
+   "err": 0.844708843789238
+  },
+  "interior 30x/8y | all two-particle events": {
+   "n": 885,
+   "eff": 73.33333333333333,
+   "err": 1.4864949695216119
+  }
+ }
+}

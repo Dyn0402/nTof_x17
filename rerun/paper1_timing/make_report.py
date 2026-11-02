@@ -27,7 +27,8 @@ GOLD = {'mx17_2': 'o22_long_det2', 'mx17_3': 'sat_det3', 'mx17_4': 'g_det4', 'mx
 QUOTED = {'mx17_2': 'c26__mx17_det2_det3_overnight_6-22-26__long_run__mx17_2',
           'mx17_3': 'c26__mx17_det3_p2_det1_overnight_6-27-26__long_run_p2_det1_sanity_check__mx17_3'}
 NAME = {'mx17_2': 'det2', 'mx17_3': 'det3', 'mx17_4': 'det4', 'mx17_6': 'det6', 'mx17_7': 'det7'}
-COL = {'mx17_2': '#1f77b4', 'mx17_3': '#d62728', 'mx17_4': '#7f7f7f', 'mx17_6': '#2ca02c', 'mx17_7': '#9467bd'}
+COL = {'mx17_2': '#56B4E9', 'mx17_3': '#0b3d91', 'mx17_4': '#999999', 'mx17_6': '#E69F00', 'mx17_7': '#CC79A7'}  # = paper_style
+ORDER = ['mx17_3', 'mx17_2', 'mx17_6', 'mx17_7', 'mx17_4']      # det3 leads (paper order)
 BAD_RUNS = ('mx17_det3_det4_overnight_6-23-26', 'mx17_det4_day_6-24-26')
 #: (run, drift HV) of each chamber's mesh-HV scan
 HV_RUNS = {'mx17_2': ('mx17_det2_det3_overnight_6-22-26', 1000), 'mx17_3': ('mx17_det3_saturday_scan_6-27-26', 1000),
@@ -52,51 +53,82 @@ def jload(name):
 
 
 def fig_paper(m, amp, sps):
-    fig, ax = plt.subplots(1, 3, figsize=(15, 4.4))
+    """The paper figure in the house style (papers/paper_style.py): det3 leads (dark blue, heavy, on top), det4 grey;
+    one chamber legend above the panels, in-panel legends only for what the line style means."""
+    import sys
+    sys.path.insert(0, os.path.join(HERE, '..', '..', 'papers'))
+    import paper_style as ps
+    from matplotlib.lines import Line2D
+    from matplotlib.patches import Patch
+    ps.use()
+    fig, ax = plt.subplots(1, 3, figsize=(6.6, 2.9), gridspec_kw=dict(width_ratios=[1, 1, 1.05]))
+    csv_rows = []
     # (a) HV scans, M3-matched
     a = ax[0]
-    for d, (run, dv) in HV_RUNS.items():
+    for d in ORDER:
+        if d not in HV_RUNS:
+            continue
+        run, dv = HV_RUNS[d]
         s = m[(m.det == d) & (m.run == run) & (m.n >= 150) & (m.cls != 'skeptical') & (m.drift_V == dv)]
         s = s.groupby('resist_V').agg(evt=('sigma_evt', 'median'), xy=('sigma_xy', 'median')).reset_index()
-        a.plot(s.resist_V, s.evt, 'o-', color=COL[d], label=f'{NAME[d]} event time')
-        a.plot(s.resist_V, s.xy, 's--', color=COL[d], mfc='none', label=f'{NAME[d]} X−Y / √2')
-    a.set_xlabel('mesh HV [V]'); a.set_ylabel('σ (s68) [ns]'); a.set_ylim(0, 140)
-    a.set_title('(a) cosmic bench: HV scans (M3-matched tracks)', fontsize=10); a.legend(fontsize=7, ncol=2); a.grid(alpha=0.3)
+        a.plot(s.resist_V, s.evt, **ps.det(NAME[d], view='x', ms=3.5 if d == 'mx17_3' else 2.8))
+        a.plot(s.resist_V, s.xy, **ps.det(NAME[d], view='y', ms=3.5 if d == 'mx17_3' else 2.8))
+        csv_rows += [dict(panel='a', det=NAME[d], x=r.resist_V, sigma_evt=r.evt, sigma_xy=r.xy) for r in s.itertuples()]
+    a.set_xlabel('resist HV [V]'); a.set_ylabel(r'$\sigma$ (s68) [ns]'); a.set_ylim(0, 140)
+    a.set_title('(a) HV scans')
+    a.legend(handles=[Line2D([], [], color=ps.MUTED, marker='o', ls='-', label='event time'),
+                      Line2D([], [], color=ps.MUTED, marker='o', mfc='white', ls='--', label=r'$(X-Y)/\sqrt{2}$')],
+             loc='upper right')
     # (b) amplitude curve: bench + SPS
     a = ax[1]
-    for d, v in amp.get('bench', {}).items():
-        b = v['bins']; a.plot([x['amp'] for x in b], [x['sigma_xy'] for x in b], 'o-', color=COL[d], ms=3, label=f'{NAME[d]} (bench)')
-    for tag, mk in (('zs', 'v'), ('raw', '^')):
+    for d in ORDER:
+        v = amp.get('bench', {}).get(d)
+        if not v:
+            continue
+        b = v['bins']
+        a.plot([x['amp'] for x in b], [x['sigma_xy'] for x in b], **ps.det(NAME[d], ms=3 if d == 'mx17_3' else 2.4))
+        csv_rows += [dict(panel='b', det=NAME[d], setup='bench', x=x['amp'], sigma_xy=x['sigma_xy']) for x in b]
+    sps_h = []
+    for tag, ls, lab in (('zs', ':', 'ZS'), ('raw', '-.', 'RAW run71')):
         if tag in amp.get('sps', {}):
             b = amp['sps'][tag]['bins']
-            a.plot([x['amp'] for x in b], [x['sigma_xy'] for x in b], mk + '-', color='k', ms=4,
-                   label=f'det4 at SPS ({"ZS" if tag == "zs" else "RAW run71"})')
+            a.plot([x['amp'] for x in b], [x['sigma_xy'] for x in b], **ps.det('det4', ls=ls, mfc='white', ms=3.5))
+            sps_h.append(Line2D([], [], color=ps.color('det4'), marker='v', mfc='white', ls=ls, label=f'det4 SPS {lab}'))
+            csv_rows += [dict(panel='b', det='det4', setup=f'SPS {lab}', x=x['amp'], sigma_xy=x['sigma_xy']) for x in b]
     a.set_xscale('log'); a.set_yscale('log'); a.set_ylim(8, 400)
-    a.set_xlabel('early amplitude of the strip sum, X + Y [ADC]'); a.set_ylabel('X−Y / √2 (s68) [ns]')
-    a.set_title('(b) the uncorrelated part against the signal size', fontsize=10); a.legend(fontsize=7); a.grid(alpha=0.3, which='both')
-    # (c) golden-row budget
+    a.set_xlabel('early amplitude, X + Y [ADC]'); a.set_ylabel(r'$(X-Y)/\sqrt{2}$ (s68) [ns]')
+    a.set_title('(b) vs signal size'); a.legend(handles=sps_h, loc='lower left', fontsize=ps.BASE_PT * 0.75)
+    # (c) golden-row budget, det3 first
     a = ax[2]
     ang = jload('angle.json')
-    keys = [QUOTED['mx17_2'], QUOTED['mx17_3'], GOLD['mx17_7'], GOLD['mx17_6'], GOLD['mx17_4']]
-    dets = ['mx17_2', 'mx17_3', 'mx17_7', 'mx17_6', 'mx17_4']
+    dets = [d for d in ORDER]
+    keys = [QUOTED.get(d, GOLD[d]) for d in dets]
     xs = np.arange(len(keys))
     vals = [ang.get(k, {}).get('all', {}) for k in keys]
     xy = [v.get('sigma_xy', np.nan) for v in vals]; cm = [v.get('sigma_common', np.nan) for v in vals]
     ev = [v.get('sigma_evt', np.nan) for v in vals]
     tr = [np.sqrt(max(v.get('trig_cov_ns2', 0), 0)) for v in vals]
-    a.bar(xs - 0.27, ev, 0.27, color=[COL[d] for d in dets], label='event time vs trigger')
-    a.bar(xs, cm, 0.27, color=[COL[d] for d in dets], alpha=0.55, label='common to X and Y')
-    a.bar(xs + 0.27, xy, 0.27, color=[COL[d] for d in dets], alpha=0.25, hatch='//', label='X−Y / √2')
+    cols = [ps.color(NAME[d]) for d in dets]
+    a.bar(xs - 0.27, ev, 0.27, color=cols)
+    a.bar(xs, cm, 0.27, color=cols, alpha=0.55)
+    a.bar(xs + 0.27, xy, 0.27, color=cols, alpha=0.25, hatch='////', edgecolor=cols, lw=0)
     for x, t in zip(xs, tr):
         if t > 10:
-            a.plot([x - 0.4, x + 0.4], [t, t], 'k-', lw=2)
-            a.text(x, t + 3, f'trigger {t:.0f} ns', ha='center', fontsize=7)
-    a.set_xticks(xs); a.set_xticklabels([NAME[d] for d in dets]); a.set_ylabel('σ (s68) [ns]')
-    a.set_title('(c) golden rows (M3-matched): the parts', fontsize=10); a.legend(fontsize=7); a.grid(alpha=0.3, axis='y')
-    fig.tight_layout()
-    for ext in ('pdf', 'png'):
-        fig.savefig(os.path.join(F, f'timing.{ext}'), dpi=150)
-    plt.close(fig)
+            a.plot([x - 0.42, x + 0.42], [t, t], '-', color=ps.INK, lw=1.4)
+            a.text(x, t + 3, f'trigger\n{t:.0f} ns', ha='center', va='bottom', fontsize=ps.BASE_PT * 0.7)
+    csv_rows += [dict(panel='c', det=NAME[d], row=k, sigma_evt=e, sigma_common=c, sigma_xy=q, trigger=t)
+                 for d, k, e, c, q, t in zip(dets, keys, ev, cm, xy, tr)]
+    a.set_xticks(xs); a.set_xticklabels([NAME[d] for d in dets]); a.set_ylabel(r'$\sigma$ (s68) [ns]')
+    a.set_title('(c) golden rows'); a.grid(axis='x', visible=False)
+    a.set_ylim(0, max(np.nanmax(ev), max(tr)) * 1.45)
+    g = '#777777'
+    a.legend(handles=[Patch(fc=g, label='event time'), Patch(fc=g, alpha=0.55, label='common to X, Y'),
+                      Patch(fc=g, alpha=0.25, hatch='////', ec=g, lw=0, label=r'$(X-Y)/\sqrt{2}$')],
+             loc='upper left', fontsize=ps.BASE_PT * 0.75, ncol=1)
+    fig.tight_layout(rect=(0, 0, 1, 0.9), w_pad=0.8)
+    h = [Line2D([], [], **{k: v for k, v in ps.det(NAME[d]).items() if k != 'zorder'}) for d in ORDER]
+    fig.legend(handles=h, ncol=5, loc='upper center', bbox_to_anchor=(0.5, 1.0))
+    ps.save(fig, os.path.join(F, 'timing'), data=pd.DataFrame(csv_rows))
 
 
 def fig_angle():
