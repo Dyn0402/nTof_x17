@@ -1,22 +1,32 @@
 {
- "det2": {
-  "rows": 14,
-  "rays": 35186
- },
  "det3": {
   "rows": 30,
-  "rays": 70470
+  "rays": 70470,
+  "golden": "sat_det3",
+  "golden_eff_ig": 92.64022311744654
+ },
+ "det2": {
+  "rows": 14,
+  "rays": 35186,
+  "golden": "o22_long_det2",
+  "golden_eff_ig": 90.30927835051548
  },
  "det4": {
   "rows": 1,
-  "rays": 12801
+  "rays": 12801,
+  "golden": "g_det4",
+  "golden_eff_ig": 40.91621668698833
  },
  "det6": {
   "rows": 13,
-  "rays": 21245
+  "rays": 21245,
+  "golden": "g_det6_long",
+  "golden_eff_ig": 74.43168222062694
  },
  "det7": {
   "rows": 21,
-  "rays": 30053
+  "rays": 30053,
+  "golden": "g_det7_long",
+  "golden_eff_ig": 68.03571428571429
  }
 }
