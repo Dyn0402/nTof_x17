@@ -24,10 +24,11 @@ section_state = "partial"
 note = "Photo or drawing from production (Stephan), plus the measured efficient area 399.4 x 359.9 mm."
 
 [fig.microtpc_principle]
-title = "Micro-TPC principle"
+title = "Micro-TPC principle: (a) drift gap, mesh, resistive strips, pads -> X/Y strips; (b) a real det3 muon (event 7884, X view), data and forward model at the pass-1 fit"
 state = "current"
-source = "mx_june_cosmic_qa/engineer_package/figures/02-microtpc-principle-schematic.pdf"
-producer = "see mx_june_cosmic_qa/engineer_package/figures/FIGURE_GUIDE.md (02)"
+source = "papers/paper1/figs/out/microtpc_principle.pdf"
+producer = ".venv/bin/python papers/paper1/figs/make_principle.py --event 7884 --bench <X17_BENCH_ROOT staging of sat_det3 (rr1)> --ana <Analysis_pass1 copy> --rays <paper1_eff budget rays_det3.parquet>"
+note = "Redone 2026-11-02: the old figure (engineer_package 02) taught a per-strip hit-time fit and showed an n_TOF attachment threshold. The event is replayed through wft.reco (replay w equals the pass table's); the model panel is wft.model.model_waveforms at the pass fit."
 
 # --- 3 Setups -----------------------------------------------------------------
 
@@ -122,6 +123,27 @@ section_state = "partial"
 producer = ".venv/bin/python rerun/paper1_figs/edge_study.py ... && .venv/bin/python rerun/paper1_figs/edge_angles.py ... && .venv/bin/python rerun/paper1_figs/make_edge_figure.py"
 note = "Rebuilt 2026-10-31 on pass 1 (D4: wft angles, M3 rays, FA column duration). Replaces the 07-12 hits dashboard. The x sides (no passivation) carry a drift-field fringe over ~20-30 mm; the passivated y sides are sharp beyond 5 mm (rerun/paper1_figs/README.md)."
 
+[fig.display_merged_projection]
+title = "Two particles, separate in X and merged in projection in Y (det3 event 17907, pass 1)"
+state = "current"
+source = "papers/paper1/figs/out/display_merged_projection.pdf"
+producer = ".venv/bin/python papers/paper1/figs/make_two_particle_displays.py --only display_merged_projection --root <paper1_eff copy> --ana <Analysis_pass1 copy> --eos-run-dir <june_tests/mx17_det3_saturday_scan_6-27-26 copy>"
+note = "2026-11-02. One-view class 'merged in projection' (single_track_v2.py oneview_events, sat_det3). Lines from events.candidates.parquet."
+
+[fig.display_muon_deposit]
+title = "A clean muon plus a separate deposit, the trigger vetoed by the 50-strip discharge rule (det3 event 36603)"
+state = "current"
+source = "papers/paper1/figs/out/display_muon_deposit.pdf"
+producer = ".venv/bin/python papers/paper1/figs/make_two_particle_displays.py --only display_muon_deposit --root <paper1_eff copy> --ana <Analysis_pass1 copy> --eos-run-dir <june_tests/mx17_det3_saturday_scan_6-27-26 copy>"
+note = "2026-11-02. sparks class muon+other (x17rerun/paper1_eff/a1/<rel>/sparks_det3.parquet). Vetoed: no pass fit, M3 only."
+
+[fig.display_two_separate]
+title = "Two particles, separate in both views, both fitted by the pass (det3 event 1063)"
+state = "current"
+source = "papers/paper1/figs/out/display_two_separate.pdf"
+producer = ".venv/bin/python papers/paper1/figs/make_two_particle_displays.py --only display_two_separate --root <paper1_eff copy> --ana <Analysis_pass1 copy> --eos-run-dir <june_tests/mx17_det3_saturday_scan_6-27-26 copy>"
+note = "2026-11-02. n_tracks = 2 on pass 1, track_id 0/1 in both views."
+
 # --- 6 Gas --------------------------------------------------------------------
 
 [fig.gas_vE]
@@ -205,102 +227,103 @@ producer = ".venv/bin/python rerun/paper1_figs/det4_stripes.py --rays <paper1_ef
 note = "Rebuilt 2026-10-31 on pass 1 (was a placeholder on the retired hits alignment). Bench and SPS stripe positions agree on 82-85 % of 1 mm bins (run63), mirror 52 %. Stephan: production cause?"
 
 # --- Appendix A1 Loss categories (det3 interior, one real event per class) ----------------
-# Rebuilt on pass 1 (2026-10-31, rerun/paper1_figs/README.md); figures/<id>.pdf is committed.
+# Pass 1 (2026-10-31 picks); restyled 2026-11-02: class names of the A1 table as titles, no fractions, the paper's
+# display style (papers/paper1/figs/evd_style.py). Produced locally from copies of EOS (rerun/paper1_figs/a1_displays.py).
 
 [fig.loss_band]
-title = "det3 loss class band: noise band (baseline offset on a strip patch) (event 14789)"
+title = "det3 A1 display: Noise band on a strip patch (event 14789)"
 state = "current"
-source = "papers/paper1/figures/loss_band.pdf"
-producer = "rerun/paper1_figs/a1_displays.py sat_det3 --out <EOS paper1_figs/a1[_paper]> --paper ... (condor, rerun/paper1_figs/condor/a1d.sub)"
-note = "Rebuilt 2026-10-31 on pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
+source = "papers/paper1/figs/out/a1/loss_band.pdf"
+producer = ".venv/bin/python rerun/paper1_figs/a1_displays.py sat_det3 --out <scratch> --paper-figs papers/paper1/figs/out/a1 --only-paper --root <paper1_eff copy> --ana <Analysis_pass1 copy> --eos-run-dir <june_tests/mx17_det3_saturday_scan_6-27-26 copy>"
+note = "Pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
 
 [fig.loss_multi_m3picked]
-title = "det3 loss class multi:m3_picked: second particle: M3 one fitted, view cut (event 30375)"
+title = "det3 A1 display: Second particle: M3 one fitted, view cut (event 30375)"
 state = "current"
-source = "papers/paper1/figures/loss_multi_m3picked.pdf"
-producer = "rerun/paper1_figs/a1_displays.py sat_det3 --out <EOS paper1_figs/a1[_paper]> --paper ... (condor, rerun/paper1_figs/condor/a1d.sub)"
-note = "Rebuilt 2026-10-31 on pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
+source = "papers/paper1/figs/out/a1/loss_multi_m3picked.pdf"
+producer = ".venv/bin/python rerun/paper1_figs/a1_displays.py sat_det3 --out <scratch> --paper-figs papers/paper1/figs/out/a1 --only-paper --root <paper1_eff copy> --ana <Analysis_pass1 copy> --eos-run-dir <june_tests/mx17_det3_saturday_scan_6-27-26 copy>"
+note = "Pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
 
 [fig.loss_multi_otherpicked]
-title = "det3 loss class multi:other_picked: second particle: the other one fitted (event 28078)"
+title = "det3 A1 display: Second particle: the other one fitted (event 28078)"
 state = "current"
-source = "papers/paper1/figures/loss_multi_otherpicked.pdf"
-producer = "rerun/paper1_figs/a1_displays.py sat_det3 --out <EOS paper1_figs/a1[_paper]> --paper ... (condor, rerun/paper1_figs/condor/a1d.sub)"
-note = "Rebuilt 2026-10-31 on pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
+source = "papers/paper1/figs/out/a1/loss_multi_otherpicked.pdf"
+producer = ".venv/bin/python rerun/paper1_figs/a1_displays.py sat_det3 --out <scratch> --paper-figs papers/paper1/figs/out/a1 --only-paper --root <paper1_eff copy> --ana <Analysis_pass1 copy> --eos-run-dir <june_tests/mx17_det3_saturday_scan_6-27-26 copy>"
+note = "Pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
 
 [fig.loss_multi_merged]
-title = "det3 loss class multi:m3_not_found: second particle: merged in projection (event 30049)"
+title = "det3 A1 display: Second particle: merged in projection (event 30049)"
 state = "current"
-source = "papers/paper1/figures/loss_multi_merged.pdf"
-producer = "rerun/paper1_figs/a1_displays.py sat_det3 --out <EOS paper1_figs/a1[_paper]> --paper ... (condor, rerun/paper1_figs/condor/a1d.sub)"
-note = "Rebuilt 2026-10-31 on pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
+source = "papers/paper1/figs/out/a1/loss_multi_merged.pdf"
+producer = ".venv/bin/python rerun/paper1_figs/a1_displays.py sat_det3 --out <scratch> --paper-figs papers/paper1/figs/out/a1 --only-paper --root <paper1_eff copy> --ana <Analysis_pass1 copy> --eos-run-dir <june_tests/mx17_det3_saturday_scan_6-27-26 copy>"
+note = "Pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
 
 [fig.loss_spark_discharge]
-title = "det3 loss class spark:discharge: spark: discharge (event 18645)"
+title = "det3 A1 display: Spark: discharge (event 18645)"
 state = "current"
-source = "papers/paper1/figures/loss_spark_discharge.pdf"
-producer = "rerun/paper1_figs/a1_displays.py sat_det3 --out <EOS paper1_figs/a1[_paper]> --paper ... (condor, rerun/paper1_figs/condor/a1d.sub)"
-note = "Rebuilt 2026-10-31 on pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
+source = "papers/paper1/figs/out/a1/loss_spark_discharge.pdf"
+producer = ".venv/bin/python rerun/paper1_figs/a1_displays.py sat_det3 --out <scratch> --paper-figs papers/paper1/figs/out/a1 --only-paper --root <paper1_eff copy> --ana <Analysis_pass1 copy> --eos-run-dir <june_tests/mx17_det3_saturday_scan_6-27-26 copy>"
+note = "Pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
 
 [fig.loss_spark_muonother]
-title = "det3 loss class spark:muon+other: spark: muon + unrelated deposit (event 36694)"
+title = "det3 A1 display: Spark: muon + unrelated deposit (event 36694)"
 state = "current"
-source = "papers/paper1/figures/loss_spark_muonother.pdf"
-producer = "rerun/paper1_figs/a1_displays.py sat_det3 --out <EOS paper1_figs/a1[_paper]> --paper ... (condor, rerun/paper1_figs/condor/a1d.sub)"
-note = "Rebuilt 2026-10-31 on pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
+source = "papers/paper1/figs/out/a1/loss_spark_muonother.pdf"
+producer = ".venv/bin/python rerun/paper1_figs/a1_displays.py sat_det3 --out <scratch> --paper-figs papers/paper1/figs/out/a1 --only-paper --root <paper1_eff copy> --ana <Analysis_pass1 copy> --eos-run-dir <june_tests/mx17_det3_saturday_scan_6-27-26 copy>"
+note = "Pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
 
 [fig.loss_spark_shower]
-title = "det3 loss class spark:shower: spark: shower at the crossing (event 41538)"
+title = "det3 A1 display: Spark: shower at the crossing (event 41538)"
 state = "current"
-source = "papers/paper1/figures/loss_spark_shower.pdf"
-producer = "rerun/paper1_figs/a1_displays.py sat_det3 --out <EOS paper1_figs/a1[_paper]> --paper ... (condor, rerun/paper1_figs/condor/a1d.sub)"
-note = "Rebuilt 2026-10-31 on pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
+source = "papers/paper1/figs/out/a1/loss_spark_shower.pdf"
+producer = ".venv/bin/python rerun/paper1_figs/a1_displays.py sat_det3 --out <scratch> --paper-figs papers/paper1/figs/out/a1 --only-paper --root <paper1_eff copy> --ana <Analysis_pass1 copy> --eos-run-dir <june_tests/mx17_det3_saturday_scan_6-27-26 copy>"
+note = "Pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
 
 [fig.loss_delta]
-title = "det3 loss class far:DELTA: delta-ray on the track (event 28537)"
+title = "det3 A1 display: delta-ray on the track (event 28537)"
 state = "current"
-source = "papers/paper1/figures/loss_delta.pdf"
-producer = "rerun/paper1_figs/a1_displays.py sat_det3 --out <EOS paper1_figs/a1[_paper]> --paper ... (condor, rerun/paper1_figs/condor/a1d.sub)"
-note = "Rebuilt 2026-10-31 on pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
+source = "papers/paper1/figs/out/a1/loss_delta.pdf"
+producer = ".venv/bin/python rerun/paper1_figs/a1_displays.py sat_det3 --out <scratch> --paper-figs papers/paper1/figs/out/a1 --only-paper --root <paper1_eff copy> --ana <Analysis_pass1 copy> --eos-run-dir <june_tests/mx17_det3_saturday_scan_6-27-26 copy>"
+note = "Pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
 
 [fig.loss_satblob]
-title = "det3 loss class far:FIT_SAT: saturated delta blob, fit pulled off (event 41373)"
+title = "det3 A1 display: Saturated delta blob, fit pulled off (event 41373)"
 state = "current"
-source = "papers/paper1/figures/loss_satblob.pdf"
-producer = "rerun/paper1_figs/a1_displays.py sat_det3 --out <EOS paper1_figs/a1[_paper]> --paper ... (condor, rerun/paper1_figs/condor/a1d.sub)"
-note = "Rebuilt 2026-10-31 on pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
+source = "papers/paper1/figs/out/a1/loss_satblob.pdf"
+producer = ".venv/bin/python rerun/paper1_figs/a1_displays.py sat_det3 --out <scratch> --paper-figs papers/paper1/figs/out/a1 --only-paper --root <paper1_eff copy> --ana <Analysis_pass1 copy> --eos-run-dir <june_tests/mx17_det3_saturday_scan_6-27-26 copy>"
+note = "Pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
 
 [fig.loss_fit]
-title = "det3 loss class far:FIT: clean track, fit off (event 4490)"
+title = "det3 A1 display: Fit off, no other flag (event 4490)"
 state = "current"
-source = "papers/paper1/figures/loss_fit.pdf"
-producer = "rerun/paper1_figs/a1_displays.py sat_det3 --out <EOS paper1_figs/a1[_paper]> --paper ... (condor, rerun/paper1_figs/condor/a1d.sub)"
-note = "Rebuilt 2026-10-31 on pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
+source = "papers/paper1/figs/out/a1/loss_fit.pdf"
+producer = ".venv/bin/python rerun/paper1_figs/a1_displays.py sat_det3 --out <scratch> --paper-figs papers/paper1/figs/out/a1 --only-paper --root <paper1_eff copy> --ana <Analysis_pass1 copy> --eos-run-dir <june_tests/mx17_det3_saturday_scan_6-27-26 copy>"
+note = "Pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
 
 [fig.loss_headon]
-title = "det3 loss class head_on: head-on: 2-strip cluster, never seeded (event 12351)"
+title = "det3 A1 display: Fit failed in one view (the pre-pass head-on class is recovered on pass 1) (event 12351)"
 state = "current"
-source = "papers/paper1/figures/loss_headon.pdf"
-producer = "rerun/paper1_figs/a1_displays.py sat_det3 --out <EOS paper1_figs/a1[_paper]> --paper ... (condor, rerun/paper1_figs/condor/a1d.sub)"
-note = "Rebuilt 2026-10-31 on pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py. Class now fit_failed (the head-on class is recovered on pass 1: 0.02 % left)."
+source = "papers/paper1/figs/out/a1/loss_headon.pdf"
+producer = ".venv/bin/python rerun/paper1_figs/a1_displays.py sat_det3 --out <scratch> --paper-figs papers/paper1/figs/out/a1 --only-paper --root <paper1_eff copy> --ana <Analysis_pass1 copy> --eos-run-dir <june_tests/mx17_det3_saturday_scan_6-27-26 copy>"
+note = "Pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py. The figure id is kept for the .tex label; the event is the one fit_failed track of pass 1 (the pre-pass head-on class, a 2-strip cluster never seeded, is recovered: no head-on loss is left to show)."
 
 [fig.loss_edge]
-title = "det3 loss class far:EDGE: edge of the other coordinate (event 8662)"
+title = "det3 A1 display: Edge of the other coordinate (event 8662)"
 state = "current"
-source = "papers/paper1/figures/loss_edge.pdf"
-producer = "rerun/paper1_figs/a1_displays.py sat_det3 --out <EOS paper1_figs/a1[_paper]> --paper ... (condor, rerun/paper1_figs/condor/a1d.sub)"
-note = "Rebuilt 2026-10-31 on pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
+source = "papers/paper1/figs/out/a1/loss_edge.pdf"
+producer = ".venv/bin/python rerun/paper1_figs/a1_displays.py sat_det3 --out <scratch> --paper-figs papers/paper1/figs/out/a1 --only-paper --root <paper1_eff copy> --ana <Analysis_pass1 copy> --eos-run-dir <june_tests/mx17_det3_saturday_scan_6-27-26 copy>"
+note = "Pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
 
 [fig.loss_postail]
-title = "det3 loss class far:POS_TAIL: position tail (mostly bent M3 tracks) (event 9855)"
+title = "det3 A1 display: Position tail (mostly bent M3 tracks) (event 9855)"
 state = "current"
-source = "papers/paper1/figures/loss_postail.pdf"
-producer = "rerun/paper1_figs/a1_displays.py sat_det3 --out <EOS paper1_figs/a1[_paper]> --paper ... (condor, rerun/paper1_figs/condor/a1d.sub)"
-note = "Rebuilt 2026-10-31 on pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
+source = "papers/paper1/figs/out/a1/loss_postail.pdf"
+producer = ".venv/bin/python rerun/paper1_figs/a1_displays.py sat_det3 --out <scratch> --paper-figs papers/paper1/figs/out/a1 --only-paper --root <paper1_eff copy> --ana <Analysis_pass1 copy> --eos-run-dir <june_tests/mx17_det3_saturday_scan_6-27-26 copy>"
+note = "Pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
 
 [fig.loss_multi_deposit]
-title = "det3 loss class far:MULTI: second deposit (not particle-like) (event 963)"
+title = "det3 A1 display: Second deposit, not particle-like (event 963)"
 state = "current"
-source = "papers/paper1/figures/loss_multi_deposit.pdf"
-producer = "rerun/paper1_figs/a1_displays.py sat_det3 --out <EOS paper1_figs/a1[_paper]> --paper ... (condor, rerun/paper1_figs/condor/a1d.sub)"
-note = "Rebuilt 2026-10-31 on pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
+source = "papers/paper1/figs/out/a1/loss_multi_deposit.pdf"
+producer = ".venv/bin/python rerun/paper1_figs/a1_displays.py sat_det3 --out <scratch> --paper-figs papers/paper1/figs/out/a1 --only-paper --root <paper1_eff copy> --ana <Analysis_pass1 copy> --eos-run-dir <june_tests/mx17_det3_saturday_scan_6-27-26 copy>"
+note = "Pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."

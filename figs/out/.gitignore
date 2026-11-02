@@ -1,0 +1,3 @@
+# producer outputs; make_figures.py copies the pdf into ../../figures/
+*
+!.gitignore
