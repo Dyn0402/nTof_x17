@@ -235,6 +235,37 @@ def fig(name, w, h, tip=None):
     return sd.img(b.getvalue(), w=w, h=h, tip=tip or f'figures/{name}')
 
 
+SCOL = {'not ready': sd.RED, 'in work': sd.GOLD, 'for review': sd.BLUE, 'accepted': sd.GREEN}
+
+
+def load_log():
+    p = HERE / 'figure_log.toml'
+    return tomllib.loads(p.read_text()).get('entry', []) if p.exists() else []
+
+
+def status_of(name, log):
+    st = None
+    for e in log:
+        if e.get('status') and e['fig'] in ('*', name):
+            st = e['status']
+    return st or 'not ready'
+
+
+def schip(st, size=22):
+    return (f'<span style="display:inline-block;border:2px solid {SCOL[st]};color:{SCOL[st]};font-size:{size}px;'
+            f'font-weight:600;padding:2px 12px;border-radius:999px">{st}</span>')
+
+
+def log_html(name, log):
+    rows = [e for e in log if e['fig'] in ('*', name)]
+    if not rows:
+        return '<p><b>Log:</b> —</p>'
+    tr = ''.join(f'<tr><td style="white-space:nowrap;padding-right:16px">{e["date"]}</td>'
+                 f'<td style="padding-right:16px">{e.get("status", "")}</td><td>{sd.esc(e["change"])}</td></tr>'
+                 for e in reversed(rows))
+    return f'<p><b>Change log</b> (newest first; <code>papers/paper1/figure_log.toml</code>):</p><table>{tr}</table>'
+
+
 def chip(verdict, size=24):
     c = VCOL[verdict]
     return (f'<span style="display:inline-block;background:{c};color:#fff;font-size:{size}px;font-weight:600;'
@@ -270,7 +301,7 @@ def s_cover(D, F, man):
             '<code>papers/paper1/make_figures_deck.py</code>.</p>', dark=True, short='Cover')
 
 
-def s_board(D, F, man):
+def s_board(D, F, man, log=()):
     rows, cur = [], None
     for f in F:
         if f['name'].startswith('loss_'):
@@ -278,12 +309,13 @@ def s_board(D, F, man):
         v = verdict_of(f['name'], man.get(f['name'], {}).get('state'))
         sec = f['stitle'] if f['stitle'] != cur else ''
         cur = f['stitle']
-        rows.append([sec, f'<code>{f["name"]}</code>', chip(v, 20), REVIEW.get(f['name'], ('', ''))[1][:95]])
+        rows.append([sec, f'<code>{f["name"]}</code>', schip(status_of(f['name'], log), 18), chip(v, 18),
+                     REVIEW.get(f['name'], ('', ''))[1][:80]])
     leg = ' '.join(chip(k, 20) for k in ('keep', 'polish', 'revise', 'redo', 'move', 'placeholder'))
     half = (len(rows) + 1) // 2
     for k, part in enumerate((rows[:half], rows[half:])):
-        t = sd.table(['section', 'figure', 'verdict', 'what it needs (one line)'], part, size=20,
-                     widths=[240, 260, 160, 1000], align=['left', 'left', 'left', 'left'])
+        t = sd.table(['section', 'figure', 'status', 'review', 'what it needed (11-02 review)'], part, size=19,
+                     widths=[230, 250, 160, 150, 870], align=['left'] * 5)
         body = (sd.title(f'The board ({k + 1}/2): every body figure, in paper order',
                          'One line per figure; each has its own slide below') + t + (sd.p(leg, 20) if k == 0 else ''))
         D.slide(f'board{k + 1}', body, '<p>A1’s 14 loss displays are one slide at the end. The section column follows '
@@ -325,19 +357,24 @@ def s_missing(D):
             'efficiency work (<code>rerun/effbudget/single/README.md</code>).</p>', short='Missing')
 
 
-def s_figure(D, f, man):
+def s_figure(D, f, man, log):
     name = f['name']
     e = man.get(name, {})
     v, claim, issues, fix = REVIEW.get(name, (verdict_of(name, e.get('state')), name, [], ''))
+    st = status_of(name, log)
+    last = next((x for x in reversed(log) if x['fig'] == name), None)
+    if last:
+        issues = [f'{last["date"]}: ' + last['change'][:150] + ('…' if len(last['change']) > 150 else '')] + \
+                 [i for i in issues][:2]
     figbox = fig(name, 1040, 640, tip=f'figures/{name} · state {e.get("state", "?")}')
-    side = sd.col(sd.p(chip(v) + f'&nbsp;&nbsp;<span style="color:{sd.MUT};font-size:22px">{f["stitle"]}</span>', 22),
+    side = sd.col(sd.p(schip(st) + '&nbsp;' + chip(v, 20) + f'&nbsp;&nbsp;<span style="color:{sd.MUT};font-size:20px">{f["stitle"]}</span>', 22),
                   *[sd.callout(i, VCOL[v], 23) for i in issues], w=560, gap=20)
     body = sd.title(claim, f'{name} · figures.toml: {e.get("state", "not in manifest")}') + sd.row(figbox, side, gap=48)
     notes = (f'<p><b>Caption (draft):</b> {sd.esc(f["caption"]) or "—"}</p>'
              f'<p><b>Fix:</b> {sd.esc(fix)}</p>'
              f'<p><b>Source:</b> <code>{sd.esc(e.get("source", "—"))}</code><br><b>Producer:</b> '
              f'<code>{sd.esc(e.get("producer", "—"))}</code></p>'
-             f'<p><b>Manifest note:</b> {sd.esc(e.get("note", "—"))}</p>')
+             f'<p><b>Manifest note:</b> {sd.esc(e.get("note", "—"))}</p>' + log_html(name, log))
     D.slide(f'f_{name}', body, notes, short=name)
 
 
@@ -371,6 +408,36 @@ def s_unused(D, F, man):
     D.slide('unused', body, '<p>gas_vE_timing is the one to bring back (the drift-scan figure the story wants).</p>', short='Unused')
 
 
+CHECKLIST = [
+    ('Size', 'drawn at the width it is printed (full width 6.1 in, half 3.0 in); no rescaling in LaTeX; type 7–9 pt in print'),
+    ('No titles inside', 'the caption carries the title; panels labelled (a), (b), … in a corner'),
+    ('Axes', 'every axis labelled with quantity and unit in mathtext; sensible ticks; ranges that show the data, shared where compared'),
+    ('Chambers', 'paper palette only (det3 dark blue on top); X solid, Y dashed open; det4 grey'),
+    ('Data vs model', 'data as markers with error bars; models/fits as lines; the claim visible without reading the caption'),
+    ('Legend', 'only what the reader needs; off the data; one per figure if panels share it'),
+    ('Ink', 'no gridline clutter, no boxes, no superfluous annotations; text in the plot only for the one point it makes'),
+    ('Numbers', 'every plotted number traceable: the figure ships its CSV; caption and text quote the same values'),
+    ('Vector', 'PDF, embedded fonts; rasters only for maps/displays, at ≥ 300 dpi'),
+]
+
+
+def s_checklist(D):
+    t = sd.table(['', 'standard'], [[f'<b>{a}</b>', b] for a, b in CHECKLIST], size=24, widths=[260, 1400], align=['left', 'left'])
+    body = sd.title('What “publication-ready” means here: the checklist every figure has to pass',
+                    'JINST, full text width ≈ 15.5 cm; applied one figure at a time with Dylan') + t
+    D.slide('checklist', body, '<p>Proposed 2026-11-02 after Dylan judged the figures not publication-ready. Edit the list '
+            'in make_figures_deck.py (CHECKLIST) as standards are agreed.</p>', short='Checklist')
+
+
+def s_log(D, log):
+    rows = [[e['date'], f'<code>{e["fig"]}</code>', e.get('status', ''), sd.esc(e['change'])[:150]] for e in reversed(log)]
+    t = sd.table(['date', 'figure', 'status', 'change'], rows[:18], size=18, widths=[150, 260, 150, 1100], align=['left'] * 4)
+    body = sd.title(f'Change log: {len(log)} entries', 'Newest first (latest 18 shown; all in Details and in figure_log.toml)') + t
+    full = ''.join(f'<tr><td>{e["date"]}</td><td><code>{e["fig"]}</code></td><td>{e.get("status", "")}</td><td>{sd.esc(e["change"])}</td></tr>'
+                   for e in reversed(log))
+    D.slide('log', body, f'<table>{full}</table>', short='Change log')
+
+
 def s_close(D):
     order = [('1', 'One palette + style module', 'every figure inherits it; do first, it touches all producers'),
              ('2', 'Redo the principle figure', 'it shows the hit-time method the paper rejects'),
@@ -395,11 +462,12 @@ def main():
     a = ap.parse_args()
     man = tomllib.loads((HERE / 'figures.toml').read_text())['fig']
     F = paper_figures()
+    log = load_log()
     D = sd.Deck('MX17 Paper I: figure review', 'Every Paper I figure in paper order, with its status and what it needs')
-    s_cover(D, F, man); s_board(D, F, man); s_colours(D); s_missing(D)
+    s_cover(D, F, man); s_checklist(D); s_board(D, F, man, log); s_log(D, log); s_colours(D); s_missing(D)
     for f in F:
         if not f['name'].startswith('loss_'):
-            s_figure(D, f, man)
+            s_figure(D, f, man, log)
     s_a1(D, F, man); s_unused(D, F, man); s_close(D)
     D.write(a.out, note_meta=dict(title='MX17 Paper I: figure review',
                                   summary='Every Paper I figure in paper order: status, verdict and what to fix; one palette, '
