@@ -97,10 +97,13 @@ Variants tried and rejected (replay, same 552):
 production chain, twice: once with the bundle as is and once with `select='cost'`. The events were the 552 truth
 events, every event the replay changes, and 600 random others per row.
 
-- `gate` re-reco against pass 1: `track_id` and `n_tracks` identical. Fits agree to float noise (max |Δp0| 1e-6 mm).
-- `cost` against `gate`: every candidate fit and the whole events table are bit-identical, and `n_splits` is
-  identical. The split revert, the one path the replay cannot follow, did not move.
-- M3 truth, sat: 101 → **122 / 124**. p2: see `results/pairing_rereco_compare.json`, summarised in §6.
+- `gate` re-reco against pass 1: `track_id` and `n_tracks` identical. p2 is bit-identical; sat fits agree to float
+  noise (max |Δp0| 1e-6 mm).
+- `cost` against `gate`: every candidate fit (1 840 + 3 420) and the whole events table are bit-identical, and
+  `n_splits` is identical. The split revert, the one path the replay cannot follow, did not move.
+- `n_tracks` changes: 4 (sat) + 15 (p2) of 1 900 events, all among the events the replay predicted.
+- **M3 truth: sat 101 → 122 / 124, p2 341 → 412 / 428, together 442 → 534 / 552 (96.7 %).** This is exactly the
+  replay's number.
 
 **Efficiency and single-track numbers** (`pairing_eff_check.py`, on the cost-mode tables `pairing_replay.py --tables`
 writes):

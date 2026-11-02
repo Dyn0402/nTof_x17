@@ -1,0 +1,121 @@
+{
+ "sat_det3": {
+  "events": 753,
+  "gate_vs_pass1": {
+   "events_table_diff": [
+    88,
+    753
+   ],
+   "candidate_fit_diff": [
+    126,
+    1840
+   ],
+   "track_id_diff": [
+    0,
+    1840
+   ],
+   "n_tracks_diff": 0
+  },
+  "cost_vs_gate": {
+   "events_table_diff": [
+    0,
+    753
+   ],
+   "candidate_fit_diff": [
+    0,
+    1840
+   ],
+   "track_id_diff": [
+    157,
+    1840
+   ],
+   "tan_diff": [
+    97,
+    1840
+   ],
+   "n_tracks_transitions": {
+    "1->0": 2,
+    "1->2": 1,
+    "2->1": 1
+   },
+   "n_splits_diff": 0
+  },
+  "m3_truth": {
+   "n": 124,
+   "pass1": {
+    "correct": 101,
+    "wrong": 21,
+    "unpaired": 2
+   },
+   "gate": {
+    "correct": 101,
+    "wrong": 21,
+    "unpaired": 2
+   },
+   "cost": {
+    "correct": 122,
+    "wrong": 2
+   }
+  }
+ },
+ "p2_det3": {
+  "events": 1147,
+  "gate_vs_pass1": {
+   "events_table_diff": [
+    0,
+    1147
+   ],
+   "candidate_fit_diff": [
+    0,
+    3420
+   ],
+   "track_id_diff": [
+    0,
+    3420
+   ],
+   "n_tracks_diff": 0
+  },
+  "cost_vs_gate": {
+   "events_table_diff": [
+    0,
+    1147
+   ],
+   "candidate_fit_diff": [
+    0,
+    3420
+   ],
+   "track_id_diff": [
+    537,
+    3420
+   ],
+   "tan_diff": [
+    342,
+    3420
+   ],
+   "n_tracks_transitions": {
+    "1->0": 7,
+    "1->2": 7,
+    "2->1": 1
+   },
+   "n_splits_diff": 0
+  },
+  "m3_truth": {
+   "n": 428,
+   "pass1": {
+    "correct": 341,
+    "wrong": 67,
+    "unpaired": 20
+   },
+   "gate": {
+    "correct": 341,
+    "wrong": 67,
+    "unpaired": 20
+   },
+   "cost": {
+    "correct": 412,
+    "wrong": 10,
+    "unpaired": 6
+   }
+  }
+ }
+}
