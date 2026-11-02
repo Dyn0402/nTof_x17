@@ -62,6 +62,8 @@ def use() -> None:
         'axes.axisbelow': True, 'axes.spines.top': False, 'axes.spines.right': False,
         'lines.linewidth': 1.2, 'lines.markersize': 4.0, 'errorbar.capsize': 0,
         'axes.prop_cycle': mpl.cycler(color=[DET_COLOR[d] for d in DETS]),
+        'pdf.fonttype': 42, 'ps.fonttype': 42,            # embedded TrueType fonts (journal requirement)
+        'legend.borderaxespad': 0.3, 'legend.handletextpad': 0.5, 'legend.columnspacing': 1.0,
     })
 
 
@@ -92,11 +94,12 @@ def lbl(s: str) -> str:
     return re.sub(r'([A-Za-z\\]+)_([A-Za-z0-9]+)', r'$\1_{\2}$', s)
 
 
-def save(fig, path, data=None, png=True) -> Path:
-    """Write <path>.pdf (+ .png, + .csv of the plotted numbers when ``data`` is a DataFrame or dict of them)."""
+def save(fig, path, data=None, png=True, dpi=None) -> Path:
+    """Write <path>.pdf (+ .png, + .csv of the plotted numbers when ``data`` is a DataFrame or dict of them).
+    Raster artists inside the PDF (imshow/pcolormesh with rasterized=True) are written at ``dpi`` (default 300)."""
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(path.with_suffix('.pdf'))
+    fig.savefig(path.with_suffix('.pdf'), dpi=dpi or 300)
     if png:
         fig.savefig(path.with_suffix('.png'), dpi=200)
     if data is not None:
@@ -107,6 +110,72 @@ def save(fig, path, data=None, png=True) -> Path:
             data.to_csv(path.with_suffix('.csv'), index=False)
     plt.close(fig)
     return path.with_suffix('.pdf')
+
+
+#: Printed widths (inches) for the publication checklist: draw at the size the page prints, never rescale in LaTeX.
+WIDTH = {'full': 6.1, 'wide': 6.1, 'half': 3.0, 'twothirds': 4.3, 'col': 3.0}
+
+
+def fig_for(width='full', aspect=0.62, nrows=1, ncols=1, height=None, layout='constrained', **kw):
+    """plt.subplots at the printed size. ``width`` is 'full' (6.1 in), 'half' (3.0 in), 'twothirds' (4.3 in)
+    or a number of inches; height = width x aspect unless ``height`` (in) is given. Constrained layout by default,
+    so a figure saved with ``ps.save`` keeps (to the tight-bbox trim) the width it was drawn at."""
+    w = WIDTH.get(width, None) if isinstance(width, str) else float(width)
+    if w is None:
+        raise ValueError(f'width {width!r}')
+    h = height if height is not None else w * aspect
+    return plt.subplots(nrows, ncols, figsize=(w, h), layout=layout, **kw)
+
+
+def panel_label(ax, letter, loc='upper left', x=None, y=None, **kw):
+    """'(a)' in a corner of ``ax`` (axes fraction), bold, at the base type size. loc: 'upper left' (default, just
+    outside the top-left corner of the frame, above the y label column), 'inside upper left', 'inside upper right'."""
+    letter = str(letter).strip('()')
+    pos = {'upper left': (-0.02, 1.02, 'right', 'bottom'),
+           'outside upper left': (-0.02, 1.02, 'right', 'bottom'),
+           'inside upper left': (0.03, 0.97, 'left', 'top'),
+           'inside upper right': (0.97, 0.97, 'right', 'top'),
+           'inside lower left': (0.03, 0.03, 'left', 'bottom'),
+           'inside lower right': (0.97, 0.03, 'right', 'bottom')}[loc]
+    xx = pos[0] if x is None else x
+    yy = pos[1] if y is None else y
+    opts = dict(transform=ax.transAxes, ha=pos[2], va=pos[3], fontsize=BASE_PT, fontweight='bold', color=INK)
+    opts.update(kw)
+    return ax.text(xx, yy, f'({letter})', **opts)
+
+
+def panel_labels(axes, loc='upper left', start='a', **kw):
+    """Label every axes in ``axes`` (flattened, in order) (a), (b), ..."""
+    import numpy as np
+    out = []
+    for i, ax in enumerate(np.ravel(axes)):
+        out.append(panel_label(ax, chr(ord(start) + i), loc=loc, **kw))
+    return out
+
+
+def legend_above(fig_or_ax, handles=None, labels=None, ncol=5, **kw):
+    """One legend for the whole figure, centred above the panels (outside the data)."""
+    opts = dict(loc='lower center', bbox_to_anchor=(0.5, 1.0), ncol=ncol, frameon=False)
+    opts.update(kw)
+    if handles is None:
+        return fig_or_ax.legend(**opts)
+    if labels is None:
+        return fig_or_ax.legend(handles=handles, **opts)
+    return fig_or_ax.legend(handles, labels, **opts)
+
+
+def det_handles(dets=DETS, view=None, line=True, **kw):
+    """Legend handles for chambers, in the fixed order."""
+    from matplotlib.lines import Line2D
+    return [Line2D([], [], **{k: v for k, v in det(d, view=view, line=line, **kw).items() if k != 'zorder'})
+            for d in dets]
+
+
+def view_handles(color=INK, marker='o'):
+    """Two handles: X (solid, filled) and Y (dashed, open)."""
+    from matplotlib.lines import Line2D
+    return [Line2D([], [], color=color, ls='-', marker=marker, label='X'),
+            Line2D([], [], color=color, ls='--', marker=marker, mfc='white', mec=color, label='Y')]
 
 
 def legend_dets(ax, dets=DETS, **kw):

@@ -150,9 +150,15 @@ def fig():
     ps.use()
     D = json.load(open(RES))
     c3 = ps.DET_COLOR['det3']
-    # four fields of the one chamber: a sequential ramp of det3's blue (light = low field)
-    shade = dict(zip(map(str, STACK_V), ['#9ecae1', '#4f8fc7', '#1f5fa8', c3]))
-    fig, axs = plt.subplots(1, 3, figsize=(ps.FULL[0], 2.75), gridspec_kw=dict(width_ratios=[1.25, 1.1, 0.85], wspace=0.42))
+    # four fields of the one chamber: a sequential ramp of det3's blue (light = low field), tints of the palette colour
+    from matplotlib.colors import to_rgb
+    from matplotlib.lines import Line2D
+
+    def tint(c, f):                    # f = 0: white, 1: the colour
+        return tuple(1 - f * (1 - x) for x in to_rgb(c))
+    shade = dict(zip(map(str, STACK_V), [tint(c3, f) for f in (0.35, 0.58, 0.8, 1.0)]))
+    # checklist pass 2026-11-02: full width, no panel titles, (a)-(c) labels, one field legend above the panels
+    fig, axs = ps.fig_for('full', height=2.55, ncols=3, gridspec_kw=dict(width_ratios=[1.25, 1.1, 0.85]))
     rows = []
 
     ax = axs[0]
@@ -163,7 +169,7 @@ def fig():
         y, e, m = np.array(S['data'], float), np.array(S['err'], float), np.array(S['model'], float)
         k = np.isfinite(y)
         ax.errorbar(t[k][::2], y[k][::2], yerr=e[k][::2], fmt='o', ms=2.0, color=shade[Vd], lw=0.6, zorder=3)
-        ax.plot(t, m, '-', color=shade[Vd], lw=1.0, zorder=4, label=f'{F["E"]:.0f} V/cm')
+        ax.plot(t, m, '-', color=shade[Vd], lw=1.0, zorder=4)
         t0, t1 = S['dt'], S['dt'] + S['T']
         ax.plot([t0], [-0.06], marker='^', color=shade[Vd], ms=4, clip_on=False, zorder=5)
         ax.plot([t1], [-0.06], marker='v', color=shade[Vd], ms=4, clip_on=False, zorder=5)
@@ -171,9 +177,7 @@ def fig():
             rows.append(dict(panel='a', drift_V=int(Vd), E=F['E'], t_ns=t[i], stack=y[i], err=e[i], model=m[i],
                              col_start_ns=t0, col_end_ns=t1))
     ax.set_xlim(-250, 2750); ax.set_ylim(-0.1, 1.12)
-    ax.set_xlabel('time after the leading edge (ns)'); ax.set_ylabel('strip-sum signal (norm.)')
-    ax.legend(loc='center right', fontsize=6.5, handlelength=1.2, borderaxespad=0.1)
-    ax.set_title('(a) head-on stack: T = g / v')
+    ax.set_xlabel(r'time after the leading edge $t$ (ns)'); ax.set_ylabel('strip-sum signal (normalised)')
 
     ax = axs[1]
     for Vd in map(str, STACK_V):
@@ -185,12 +189,10 @@ def fig():
             for tt, mm, ee in zip(vw['t'], vw['dw_med'], vw['dw_err']):
                 rows.append(dict(panel='b', drift_V=int(Vd), view=p, tan_M3=tt, w_minus_w0=mm, err=ee))
         tt = np.linspace(-0.4, 0.4, 3)
-        ax.plot(tt, L['v_ang'] * tt, '-', color=shade[Vd], lw=1.0, zorder=4,
-                label=f'v = {L["v_ang"]:.1f}')
+        ax.plot(tt, L['v_ang'] * tt, '-', color=shade[Vd], lw=1.0, zorder=4)
     ax.set_xlim(-0.42, 0.42)
-    ax.set_xlabel(r'M3 slope $\tan\theta_{M3}$'); ax.set_ylabel(r'fitted $w = \mathrm{d}x/\mathrm{d}t$ (µm/ns)')
-    ax.legend(loc='upper left', fontsize=6.5, handlelength=1.2, title='µm/ns', title_fontsize=6.5, borderaxespad=0.2)
-    ax.set_title('(b) M3 ladder: slope = v')
+    ax.set_xlabel(r'M3 slope $\tan\theta_{\mathrm{M3}}$'); ax.set_ylabel(r'fitted $w - w_0$ (µm/ns)')
+    ax.legend(ps.view_handles(color=ps.MUTED), ['X', 'Y'], loc='lower right')
 
     ax = axs[2]
     G = D['gap_mean']
@@ -204,12 +206,14 @@ def fig():
         ax.errorbar(x, y, yerr=e, fmt='o', ms=4, color=shade[Vd], zorder=5)
         rows.append(dict(panel='c', drift_V=int(Vd), E=x, gap_mm=y, err=e, v_ang=D['fields'][Vd]['v_ang'],
                          v_timing=D['fields'][Vd]['v_timing'], T_ns=D['fields'][Vd]['T']))
-    ax.legend([hb, hh], [f"mean {G['gap']:.1f} ± {G['err']:.1f} (χ² {G['chi2']:.1f}/{G['ndf']})",
-                         f'strip extent {GAP_REF:.2f} ± {GAP_REF_ERR:.2f}'],
-              loc='upper left', fontsize=6.3, handlelength=1.4, borderaxespad=0.1)
+    ax.legend([hb, hh], ['mean', 'strip extent'], loc='upper left', handlelength=1.4)
     ax.set_xlim(150, 420); ax.set_ylim(21.5, 34)
-    ax.set_xlabel('drift field (V/cm)'); ax.set_ylabel('gap  g = v T  (mm)')
-    ax.set_title('(c) gap from the two')
+    ax.set_xlabel(r'drift field $E$ (V/cm)'); ax.set_ylabel(r'gap $g = v\,T$ (mm)')
+    hs = [Line2D([], [], color=shade[Vd], marker='o', ms=3.5,
+                 label=f"{D['fields'][Vd]['E']:.0f} V/cm: $v$ = {D['ladder'][Vd]['v_ang']:.1f}")
+          for Vd in map(str, STACK_V)]
+    ps.legend_above(fig, hs, ncol=4, handlelength=1.4, title=r"field: angle-scale $v$ (µm/ns)", title_fontsize=ps.BASE_PT * 0.85)
+    ps.panel_labels(axs)
     os.makedirs(OUT, exist_ok=True)
     ps.save(fig, os.path.join(OUT, 'two_velocities'), data=pd.DataFrame(rows))
     print('wrote', os.path.join(OUT, 'two_velocities.pdf'))

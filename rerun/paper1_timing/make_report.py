@@ -61,7 +61,7 @@ def fig_paper(m, amp, sps):
     from matplotlib.lines import Line2D
     from matplotlib.patches import Patch
     ps.use()
-    fig, ax = plt.subplots(1, 3, figsize=(6.6, 2.9), gridspec_kw=dict(width_ratios=[1, 1, 1.05]))
+    fig, ax = ps.fig_for('full', height=2.6, nrows=1, ncols=3, gridspec_kw=dict(width_ratios=[1, 1, 1.05]))
     csv_rows = []
     # (a) HV scans, M3-matched
     a = ax[0]
@@ -75,10 +75,6 @@ def fig_paper(m, amp, sps):
         a.plot(s.resist_V, s.xy, **ps.det(NAME[d], view='y', ms=3.5 if d == 'mx17_3' else 2.8))
         csv_rows += [dict(panel='a', det=NAME[d], x=r.resist_V, sigma_evt=r.evt, sigma_xy=r.xy) for r in s.itertuples()]
     a.set_xlabel('resist HV [V]'); a.set_ylabel(r'$\sigma$ (s68) [ns]'); a.set_ylim(0, 140)
-    a.set_title('(a) HV scans')
-    a.legend(handles=[Line2D([], [], color=ps.MUTED, marker='o', ls='-', label='event time'),
-                      Line2D([], [], color=ps.MUTED, marker='o', mfc='white', ls='--', label=r'$(X-Y)/\sqrt{2}$')],
-             loc='upper right')
     # (b) amplitude curve: bench + SPS
     a = ax[1]
     for d in ORDER:
@@ -95,9 +91,9 @@ def fig_paper(m, amp, sps):
             a.plot([x['amp'] for x in b], [x['sigma_xy'] for x in b], **ps.det('det4', ls=ls, mfc='white', ms=3.5))
             sps_h.append(Line2D([], [], color=ps.color('det4'), marker='v', mfc='white', ls=ls, label=f'det4 SPS {lab}'))
             csv_rows += [dict(panel='b', det='det4', setup=f'SPS {lab}', x=x['amp'], sigma_xy=x['sigma_xy']) for x in b]
-    a.set_xscale('log'); a.set_yscale('log'); a.set_ylim(8, 400)
+    a.set_xscale('log'); a.set_yscale('log'); a.set_ylim(8, 700)
     a.set_xlabel('early amplitude, X + Y [ADC]'); a.set_ylabel(r'$(X-Y)/\sqrt{2}$ (s68) [ns]')
-    a.set_title('(b) vs signal size'); a.legend(handles=sps_h, loc='lower left', fontsize=ps.BASE_PT * 0.75)
+    a.legend(handles=sps_h, loc='lower left')
     # (c) golden-row budget, det3 first
     a = ax[2]
     ang = jload('angle.json')
@@ -115,19 +111,22 @@ def fig_paper(m, amp, sps):
     for x, t in zip(xs, tr):
         if t > 10:
             a.plot([x - 0.42, x + 0.42], [t, t], '-', color=ps.INK, lw=1.4)
-            a.text(x, t + 3, f'trigger\n{t:.0f} ns', ha='center', va='bottom', fontsize=ps.BASE_PT * 0.7)
+            a.text(x, t + 3, 'trigger', ha='center', va='bottom', fontsize=ps.BASE_PT * 0.8)
     csv_rows += [dict(panel='c', det=NAME[d], row=k, sigma_evt=e, sigma_common=c, sigma_xy=q, trigger=t)
                  for d, k, e, c, q, t in zip(dets, keys, ev, cm, xy, tr)]
     a.set_xticks(xs); a.set_xticklabels([NAME[d] for d in dets]); a.set_ylabel(r'$\sigma$ (s68) [ns]')
-    a.set_title('(c) golden rows'); a.grid(axis='x', visible=False)
+    a.grid(axis='x', visible=False)
     a.set_ylim(0, max(np.nanmax(ev), max(tr)) * 1.45)
     g = '#777777'
     a.legend(handles=[Patch(fc=g, label='event time'), Patch(fc=g, alpha=0.55, label='common to X, Y'),
                       Patch(fc=g, alpha=0.25, hatch='////', ec=g, lw=0, label=r'$(X-Y)/\sqrt{2}$')],
-             loc='upper left', fontsize=ps.BASE_PT * 0.75, ncol=1)
-    fig.tight_layout(rect=(0, 0, 1, 0.9), w_pad=0.8)
-    h = [Line2D([], [], **{k: v for k, v in ps.det(NAME[d]).items() if k != 'zorder'}) for d in ORDER]
-    fig.legend(handles=h, ncol=5, loc='upper center', bbox_to_anchor=(0.5, 1.0))
+             loc='upper left', ncol=1)
+    ps.panel_labels(ax, y=1.05)
+    # one legend above: the chambers, then what the line styles of (a) mean
+    h = ps.det_handles([NAME[d] for d in ORDER]) + [
+        Line2D([], [], color=ps.INK, marker='o', ls='-', label='event time'),
+        Line2D([], [], color=ps.INK, marker='o', mfc='white', ls='--', label=r'$(X-Y)/\sqrt{2}$')]
+    ps.legend_above(fig, h, ncol=7, columnspacing=0.9, handlelength=2.0)
     ps.save(fig, os.path.join(F, 'timing'), data=pd.DataFrame(csv_rows))
 
 

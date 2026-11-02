@@ -182,7 +182,7 @@ def tracking_perf(R):
     sys.path.insert(0, os.path.join(REPO, 'papers'))
     import paper_style as ps
     ps.use()
-    fig, (ax, a4) = plt.subplots(1, 2, figsize=ps.WIDE, gridspec_kw=dict(width_ratios=[2.6, 1]))
+    fig, (ax, a4) = ps.fig_for('full', height=2.55, nrows=1, ncols=2, gridspec_kw=dict(width_ratios=[2.6, 1]))
     rows = []
     for d in ('det3', 'det2', 'det6', 'det7', 'det4'):
         o = R.get(HEAD[d])
@@ -204,13 +204,14 @@ def tracking_perf(R):
     ax.set_xlabel(r'$|\theta_{\rm M3}|$ [deg]'); ax.set_ylabel(r'$\sigma_\theta$ [deg]')
     ax.set_xlim(0, 20); ax.set_ylim(0.6, 1.7)
     a4.set_xlabel(r'$|\theta_{\rm M3}|$ [deg]'); a4.set_xlim(0, 20); a4.set_ylim(1.5, 3.1)
-    a4.set_title('det4 (stripes), own scale', fontsize=ps.BASE_PT * 0.85, color=ps.MUTED)
     for a in (ax, a4):
         a.set_xticks([0, 5, 10, 15, 20])
-    h, l = ax.get_legend_handles_labels()
-    h4, l4 = a4.get_legend_handles_labels()
-    fig.tight_layout(w_pad=1.2, rect=(0, 0, 1, 0.87))
-    fig.legend(h + h4, l + l4, ncol=5, loc='upper center', bbox_to_anchor=(0.5, 1.0), columnspacing=1.4, handlelength=2.4)
+    ps.panel_labels([ax, a4])
+    # one legend: chamber colours, then the view line styles (X solid filled, Y dashed open)
+    hd = ps.det_handles(('det3', 'det2', 'det6', 'det7', 'det4'))
+    for h_ in hd:
+        h_.set_label(h_.get_label())
+    ps.legend_above(fig, hd + ps.view_handles(), ncol=7, handlelength=2.2)
     ps.save(fig, os.path.join(HERE, 'figures', 'tracking_perf'), data=pd.DataFrame(rows))
 
 

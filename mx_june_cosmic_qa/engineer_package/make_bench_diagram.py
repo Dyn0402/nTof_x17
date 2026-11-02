@@ -46,9 +46,12 @@ SLOT_Z = {"bottom": 232, "top": 702}
 SCINT_Z = {"bottom": -110, "top": 1420}   # drawn just outside the stack (schematic)
 
 M3_W, MX_W, SC_W = 500, 400, 600          # widths (mm)
-M3_T, MX_T, SC_T = 22, 45, 40             # drawn thicknesses (mm)
+M3_T, MX_T, SC_T = 22, 45, 40             # drawn thicknesses (mm; the slab thicknesses are not to scale)
 
-fig, ax = plt.subplots(figsize=(6.1, 7.0))
+# Printed at 4.3 in (publication checklist 2026-11-02). The z positions are to scale; the horizontal scale is not the
+# vertical one (the caption says so, with the trigger and the golden-row dates that left the figure).
+fig, ax = ps.fig_for(4.3, height=3.7, layout=None)
+fig.subplots_adjust(0, 0, 1, 1)
 FS = ps.BASE_PT
 label_x = 360   # where the label leaders land (right)
 zlab_x = -330   # z labels (left)
@@ -73,45 +76,43 @@ def zlabel(zc, w, color=ps.INK, weight="normal"):
 # scintillators
 for side, z in SCINT_Z.items():
     slab(z, SC_W, SC_T, SCINT_C)
-label(SCINT_Z["top"], "trigger scintillator (60 × 60 cm)")
-label(SCINT_Z["bottom"], "trigger scintillator (60 × 60 cm)")
+label(SCINT_Z["top"], "trigger scintillator")
+label(SCINT_Z["bottom"], "trigger scintillator")
 
 # M3 planes
 for z in M3_Z:
     slab(z, M3_W, M3_T, M3_C)
     zlabel(z, M3_W)
-label((M3_Z[2] + M3_Z[3]) / 2, "reference tracker:\n2 M3 Micromegas (50 × 50 cm)")
-label((M3_Z[0] + M3_Z[1]) / 2, "reference tracker:\n2 M3 Micromegas (50 × 50 cm)")
+label((M3_Z[2] + M3_Z[3]) / 2, "2 M3 reference planes")
+label((M3_Z[0] + M3_Z[1]) / 2, "2 M3 reference planes")
 
 # test chambers
 slab(SLOT_Z["top"], MX_W, MX_T, DET3_C, lw=1.0)
 slab(SLOT_Z["bottom"], MX_W, MX_T, OTHER_C)
 zlabel(SLOT_Z["top"], MX_W, color=DET3_C, weight="bold")
 zlabel(SLOT_Z["bottom"], MX_W)
-label(SLOT_Z["top"], "MX17 chamber, top slot\ndet3 on its golden rows (6-27)", color=DET3_C, weight="bold")
-label(SLOT_Z["bottom"], "MX17 chamber, bottom slot")
+label(SLOT_Z["top"], "det3 (top slot)", color=DET3_C, weight="bold")
+label(SLOT_Z["bottom"], "MX17 chamber (bottom slot)")
 
 # z axis title on the left
-ax.text(zlab_x, 1540, "z (mm)", fontsize=FS, ha="right", va="bottom", color=ps.INK)
+ax.text(zlab_x, 1530, "$z$ [mm]", fontsize=FS, ha="right", va="bottom", color=ps.INK)
 
 # cosmic muon track (slightly inclined, downward)
 z_hi, z_lo = 1530, -220
 x_hi, x_lo = -95, 65
 ax.add_patch(FancyArrowPatch((x_hi, z_hi), (x_lo, z_lo), arrowstyle="-|>",
-                             mutation_scale=16, color=MUON_C, lw=1.8, zorder=4))
+                             mutation_scale=12, color=MUON_C, lw=1.5, zorder=4))
 ax.text(x_hi + 22, z_hi - 8, "cosmic muon", fontsize=FS, color=MUON_C,
         ha="left", va="top", fontstyle="italic")
 
-# coincidence note
-ax.text(160, -270, "Readout triggered by the top + bottom scintillator coincidence; the four M3 planes\n"
-        "reconstruct each muon independently of the chamber under test. Heights to scale.",
-        fontsize=FS * 0.85, ha="center", va="top", color=ps.MUTED)
-
-ax.set_xlim(-440, 760)
-ax.set_ylim(-360, 1600)
-ax.set_aspect("equal")
+ax.set_xlim(-490, 1040)
+ax.set_ylim(-240, 1600)
 ax.axis("off")
 
-fig.savefig(OUT.with_suffix(".png"), dpi=220, facecolor="white", bbox_inches="tight")
-fig.savefig(OUT.with_suffix(".pdf"), facecolor="white", bbox_inches="tight")
-print(f"wrote {OUT}.png/.pdf")
+import pandas as pd  # noqa: E402
+geom = pd.DataFrame(
+    [dict(element="scintillator", z_mm=z, width_mm=SC_W, z_measured=False) for z in SCINT_Z.values()]
+    + [dict(element="M3", z_mm=z, width_mm=M3_W, z_measured=True) for z in M3_Z]
+    + [dict(element=f"MX17 {k} slot", z_mm=z, width_mm=MX_W, z_measured=True) for k, z in SLOT_Z.items()])
+ps.save(fig, OUT, data=geom)
+print(f"wrote {OUT}.png/.pdf/.csv")

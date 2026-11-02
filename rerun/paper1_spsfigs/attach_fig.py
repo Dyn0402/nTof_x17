@@ -33,14 +33,15 @@ def draw(verdict_path, save=None):
     V = json.load(open(verdict_path))
     B = json.load(open(os.path.join(REPO, 'rerun', 'paper1_gas', 'results', 'summary.json')))['golden_water']
     T = V['table']
-    fig, axs = plt.subplots(1, 2, figsize=(ps.FULL[0], 2.6), gridspec_kw=dict(wspace=0.30))
+    # checklist pass 2026-11-02: full width, no panel titles or band texts (the caption carries them), (a)/(b) labels,
+    # one legend above
+    from matplotlib.patches import Patch
+    fig, axs = ps.fig_for('full', height=2.4, ncols=2)
     nco2 = sum(GASNAME[r['gas']] == 'CO2' for r in T)
     x = np.array([i if i < nco2 else nco2 + 0.5 + 1.4 * (i - nco2) for i in range(len(T))], float)
     bw = [B[d]['water'] for d in ('det2', 'det3', 'det4', 'det6', 'det7')]
     ax = axs[0]
     ax.axhspan(min(bw), max(bw), color=ps.GRID, lw=0, zorder=0)
-    ax.text(x[-1] + 0.4, max(bw) - 0.03, f'bench golden rows\n{min(bw):.2f}–{max(bw):.2f} % (§6)', fontsize=6.5,
-            color=ps.MUTED, ha='right', va='top')
     rows = []
     for xi, r in zip(x, T):
         g = GASNAME[r['gas']]; c = ps.GAS[g]
@@ -52,19 +53,15 @@ def draw(verdict_path, save=None):
     for a in axs:
         a.set_xticks(x); a.set_xticklabels([_tick(r['group']) for r in T], fontsize=7.5)
         a.set_xlabel('SPS run'); a.set_xlim(x[0] - 0.6, x[-1] + 0.6)
-    ax.set_ylabel('water (%)'); ax.set_ylim(0, 2.8)
-    ax.set_title(f"(a) water (gap {V['gap_quoted']} mm)")
+    ax.set_ylabel('H$_2$O fraction (%)'); ax.set_ylim(0, 2.8)
     from matplotlib.lines import Line2D
-    ax.legend([Line2D([], [], marker='s', ls='', color=ps.GAS[g]) for g in ('CO2', 'CF4')],
-              [GASLABEL[g] for g in ('CO2', 'CF4')], loc='lower left', fontsize=6.8, borderaxespad=0.2)
+    ps.legend_above(fig, [Line2D([], [], marker='s', ls='', color=ps.GAS[g]) for g in ('CO2', 'CF4')]
+                    + [Patch(fc=ps.GRID, lw=0)], [GASLABEL[g] for g in ('CO2', 'CF4')] + ['bench (§6)'], ncol=3)
     ax = axs[1]
     ax.axhspan(370, 600, color=ps.GRID, lw=0, zorder=0)
-    ax.text(x[-1] + 0.4, 590, 'bench det6, first ~4 h of 6-26\n(O$_2$-equivalent, ×2 model)', fontsize=6.5,
-            color=ps.MUTED, ha='right', va='top')
     ax.axhline(0, color=ps.MUTED, lw=0.8)
-    ax.text(x[0] - 0.4, 12, 'bench, steady state: no attachment', fontsize=6.5, color=ps.MUTED, va='bottom')
-    ax.set_ylabel('O$_2$ (ppm)'); ax.set_ylim(-20, 640)
-    ax.set_title('(b) O$_2$ (attachment)')
+    ax.set_ylabel('O$_2$ concentration (ppm)'); ax.set_ylim(-20, 640)
+    ps.panel_labels(axs)
     ps.save(fig, os.path.join(HERE, 'figures', 'attachment'), data=pd.DataFrame(rows))
     print('wrote', os.path.join(HERE, 'figures', 'attachment.pdf'))
     return dict(gap_quoted_mm=V['gap_quoted'], bench_band=[min(bw), max(bw)],

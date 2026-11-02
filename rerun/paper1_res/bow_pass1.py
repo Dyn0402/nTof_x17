@@ -113,7 +113,7 @@ def plot(out=None):
         out = {(d, arm): json.load(open(os.path.join(res, f'profiles_{d}_{arm}.json')))
                for d in ORDER for arm in ('pass', 'vt')}
     for arm, suffix in (('vt', ''), ('pass', '_pass')):
-        f1, axs = plt.subplots(1, 2, figsize=ps.WIDE, sharey=True)
+        f1, axs = ps.fig_for('full', height=2.45, nrows=1, ncols=2, sharey=True)
         rows = []
         for ax, p in zip(axs, 'xy'):
             for d in ORDER:
@@ -128,15 +128,20 @@ def plot(out=None):
                 rows += [dict(det=d, arm=arm, view=p.upper(), pos_mm=x, h_minus_centre_mm=y, err_mm=e)
                          for x, y, e in zip(pos[ok], (h - c)[ok], he[ok])]
             ax.axhline(0, color=ps.MUTED, lw=0.6, ls=':')
-            ax.set_xlabel(f'track ${p}$ at mid-gap [mm]'); ax.set_title(f'{p.upper()} strips')
+            ax.set_xlabel(f'track ${p}$ at mid-gap [mm]')
+            ax.set_xlim(0, 400); ax.set_xticks([0, 100, 200, 300, 400])
         axs[0].set_ylabel(r'mesh height $h - h_{\rm centre}$ [mm]')
-        axs[1].legend(ncol=1, loc='center left', bbox_to_anchor=(1.0, 0.5))
-        f1.tight_layout()
+        axs[0].set_ylim(-1.5, 4.5)
+        ps.panel_labels(axs)
+        ps.legend_above(f1, ps.det_handles(ORDER), ncol=5)
         ps.save(f1, os.path.join(figd, f'bow_profiles{suffix}'), data=pd.DataFrame(rows))
-        f2, ax = plt.subplots(figsize=(5.6, 3.6))
+        f2, ax = ps.fig_for('half', height=3.0)
         xs = np.linspace(0, 10, 10)
-        ax.plot(xs, xs, '--', color=ps.MODEL, lw=1, label='cathode follows the mesh ($r_f = 1$)')
-        ax.plot(xs, 0.5 * xs, ':', color=ps.MODEL, lw=1, label='flat cathode ($r_f = 1/2$)')
+        ax.plot(xs, xs, '--', color=ps.MODEL, lw=1)
+        ax.plot(xs, 0.5 * xs, ':', color=ps.MODEL, lw=1)
+        # the two reference lines named on the line (cathode follows the mesh / flat cathode)
+        ax.text(6.3, 6.9, '$r_f = 1$', rotation=0, ha='right', va='bottom', fontsize=ps.BASE_PT * 0.85)
+        ax.text(9.0, 4.1, '$r_f = 1/2$', ha='center', va='top', fontsize=ps.BASE_PT * 0.85)
         rows = []
         for d in ORDER:
             for p in 'xy':
@@ -144,18 +149,18 @@ def plot(out=None):
                 if not P:
                     continue
                 xp, yp = P['b_med'] * P['h_curv'] * 1e3, P['w0_slope'] * 1e3
-                ax.plot(xp, yp, ls='none', ms=6.5 if d == 'det3' else 5.5,
+                ax.plot(xp, yp, ls='none', ms=5.5 if d == 'det3' else 4.5,
                         **ps.det(d, view=p, line=False, label=d if p == 'x' else None))
                 rows.append(dict(det=d, arm=arm, view=p.upper(), predicted=xp, measured=yp, r_f=P['r_f']))
         from matplotlib.lines import Line2D
-        h, l = ax.get_legend_handles_labels()
-        h += [Line2D([], [], ls='none', marker='o', color=ps.MUTED), Line2D([], [], ls='none', marker='o', color=ps.MUTED, mfc='white')]
-        l += ['X strips (filled)', 'Y strips (open)']
-        ax.legend(h, l, loc='center left', bbox_to_anchor=(1.02, 0.5))
+        h = ps.det_handles(ORDER, line=False, ls='none')
+        h += [Line2D([], [], ls='none', marker='o', color=ps.INK, label='X'),
+              Line2D([], [], ls='none', marker='o', color=ps.INK, mfc='white', label='Y')]
+        h = [h[i] for i in (0, 4, 1, 5, 2, 6, 3)]       # rows: det3 det2 det6 det7 / det4 X Y (legend fills by column)
+        ps.legend_above(ax, h, ncol=4, columnspacing=0.8, handletextpad=0.2)
         ax.set_xlim(0, 10); ax.set_ylim(0, 8)
-        ax.set_xlabel('drift-tilt gradient predicted\nfrom the mesh curvature [µm/ns per m]')
-        ax.set_ylabel('measured drift-tilt gradient [µm/ns per m]')
-        f2.tight_layout()
+        ax.set_xlabel(r'predicted gradient [µm ns$^{-1}$ m$^{-1}$]')
+        ax.set_ylabel(r'measured gradient [µm ns$^{-1}$ m$^{-1}$]')
         ps.save(f2, os.path.join(figd, f'bow_closure{suffix}'), data=pd.DataFrame(rows))
 
 
