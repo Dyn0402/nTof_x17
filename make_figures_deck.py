@@ -38,13 +38,7 @@ VTXT = {'keep': 'keep', 'polish': 'polish', 'revise': 'revise', 'redo': 'redo', 
 # the review (2026-11-02): verdict, claim title, issues (on the slide), fix (Details)
 # --------------------------------------------------------------------------- #
 REVIEW = {
-    'microtpc_principle': ('redo', 'The principle figure teaches the method the paper rejects: per-strip hit times',
-        ['Right panel: per-strip fit t = x/(v tanθ) + t0 on hit times (RECONSTRUCTION_BASIS: never)',
-         'Left panel carries an old n_TOF attachment threshold (z ≈ 23.5 mm)',
-         'Redraw: drift column → charge spread to ±1–2 strips → waveforms → forward-model fit'],
-        'Keep the left geometry sketch (track, drift arrows, mesh, strips) without the attachment band; replace the '
-        'right panel by a strip × time waveform display of one det3 muon with the fitted model overlaid (the A1 '
-        'display style), so the reader sees what the fit uses.'),
+    'microtpc_principle': ('polish', 'The principle figure now shows what the fit uses: a drift sketch and a real waveform with its model', ['Redone 11-02; check the sketch labels at print size', 'Time runs up in (b) (the only display that does)'], 'papers/paper1/figs/make_principle.py.'),
     'chamber_stack': ('placeholder', 'Cross-section of the module: still a placeholder, waiting on Stephan',
         ['Needs Stephan’s layer stack-up (spec page: 9 unknown, 31 assumed numbers)',
          'Draw from docs/detector_spec/spec.py so paper, spec page and Geant4 agree'],
@@ -93,35 +87,19 @@ REVIEW = {
          'det3 deserves a large panel; the four others small (det4 stripes, det6/det7 discharges, det7 X fault)',
          'det7’s “X ch 0–255” label unreadable; det4 drawn outside its active area'],
         'rerun/paper1_figs/make_effmap_figure.py: det3 large + 2×2 small; golden-row pools; mask outside-area pixels.'),
-    'eff_vs_hv_discharge': ('placeholder', 'Placeholder: replaced by the top panels of hv_scan',
-        ['Same content exists (see hv_scan): no new analysis needed'],
-        'Delete the manifest entry when hv_scan is split.'),
+    'eff_vs_hv_discharge': ('polish', 'det3 reaches its plateau before discharges cost anything; det6/det7 do not', ['New 11-02 (split from hv_scan)'], 'rerun/paper1_ops/make_report.py.'),
     'xy_pairing': ('polish', 'X/Y pairing by charge: ready; add the production result after the fix',
         ['Annotation should add the production pairing (96.7 % after the fix)',
          'Could show the similar-charge subset separately'],
         'rerun/effbudget/single/make_figures.py.'),
-    'gas_vE': ('redo', 'The drift-scan figure shows one velocity; the story needs both, and the gap',
-        ['Only the angle-scale v; the text and Dylan’s outline want timing v (gap / T) and angle v on one Magboltz curve',
-         'Curve labelled 0.95 % water; the fit says 0.97 % [0.95, 0.99]',
-         'No error bars on the points'],
-        'Use gas_vE_timing (in the manifest, not included) as the base and overlay the angle-scale v; '
-        'their ratio is the gap (29 [28, 30] mm). One water value, χ² 2.5/3.'),
-    'attachment': ('move', 'Water and O₂ across setups: mostly SPS, so it moves with the SPS section',
-        ['Left panel mixes bench water with SPS water; right panel is SPS only',
-         'CO₂ vs CF₄ colour has no legend (only rotated tick labels)',
-         'Bench drying over the night (det6/det7 6-26) is the bench story and has no figure'],
-        'Bench §6: a drying-vs-time figure (paper1_gas). SPS part: legend for the gas colours, larger ticks.'),
+    'gas_vE': ('polish', 'Drift scan: both velocities on one Magboltz curve, one water value', ['Redone 11-02 with timing v + angle-scale v and a ratio panel'], 'rerun/paper1_gas/pg_figs.py.'),
+    'attachment': ('polish', 'SPS gas composition: legend and readable labels', ['Restyled 11-02; bench shown as grey bands; appendix candidate'], 'rerun/paper1_spsfigs.'),
     'tracking_perf': ('revise', 'Angular resolution vs angle: det3 is the headline, det4 sets the scale',
         ['Right panel repeats the efficiency (old interior values) and belongs in §5: drop it',
          'det4 (2–2.9°) stretches the axis; det3 (0.9–1.0°) is a thin line at the bottom',
          'Label “σθ (s68)”: define once, in the caption'],
         'det3 X/Y large with its error band; others light grey; det4 in an inset or the table.'),
-    'sps_resolution': ('redo', 'The SPS resolution figure shows the superseded full-beam fits',
-        ['Decision A+B (11-01): the quoted SPS number is the working region R (138 / 120 µm)',
-         'Shows run63 zone fits incl. the failed X fits (χ²/1 up to 88)',
-         'Bench intrinsic resolution (the headline now) has no figure at all'],
-        'New bench figure: residual width vs M3 χ² quintile, extrapolated to χ² → 0, minus pointing; '
-        'SPS region-R figure to the SPS section / appendix.'),
+    'sps_resolution': ('polish', 'SPS cross-check on the working region R: 138 / 120 µm', ['Redone 11-02; appendix candidate'], 'rerun/paper1_spsfigs.'),
     'bow_profiles': ('polish', 'Mesh bow per chamber: clear; colours and det3 emphasis',
         ['Five chambers, five colours unlike the other figures'],
         'Restyle with the paper palette.'),
@@ -140,6 +118,14 @@ REVIEW = {
     'det4_stripes': ('keep', 'det4 stripes bench vs SPS: clear and convincing',
         ['Legend line colours too thin to match the curves'],
         'Thicker legend handles.'),
+    'loss_budget': ('polish', 'Where det3 single-track inefficiency goes: δ-rays first, then the edge-zone veto', ['New 11-02'], 'rerun/effbudget/single/make_figures.py.'),
+    'two_particle': ('polish', 'With a second particle the muon is found unless the two merge or trip the veto', ['New 11-02; rebuild after the two-track and veto fixes'], 'rerun/effbudget/single/make_figures.py.'),
+    'two_velocities': ('polish', 'Two independent drift velocities; their ratio measures the gap: 28.2 ± 0.5 mm', ['New 11-02'], 'rerun/paper1_gas/pg_twov.py.'),
+    'gas_drying': ('polish', 'The bench gas dried over hours with one time shape', ['New 11-02'], 'rerun/paper1_gas.'),
+    'bench_position_res': ('polish', 'det3 intrinsic resolution ~120 µm once scattering and the M3 pointing are removed', ['New 11-02; the P subtraction dominates the error'], 'rerun/paper1_floor/position_ms_fig.py.'),
+    'display_two_separate': ('polish', 'Two separate particles: both fitted', ['New 11-02'], 'papers/paper1/figs/make_two_particle_displays.py.'),
+    'display_merged_projection': ('polish', 'Two particles merged in one projection: the muon is pulled', ['New 11-02'], 'papers/paper1/figs/make_two_particle_displays.py.'),
+    'display_muon_deposit': ('polish', 'A muon and a separate deposit trip the discharge veto', ['New 11-02'], 'papers/paper1/figs/make_two_particle_displays.py.'),
 }
 A1_REVIEW = ('revise', 'Loss-class displays: real events, readable; titles use code names and one is mislabelled',
              ['Titles show internal codes (“far:DELTA”, “multi:m3_picked”): use the paper’s class names',
@@ -148,14 +134,7 @@ A1_REVIEW = ('revise', 'Loss-class displays: real events, readable; titles use c
               'Add the δ size continuum (12 / 19 / 34 / 67 strips) as one summary panel'],
              'rerun/satstudy/appendix_figs.py; captions in A1_loss_categories.tex.')
 
-MISSING = [
-    ('Bench intrinsic position resolution', 'residual width vs M3 χ² quintile → χ² → 0, minus the pointing; det3 126/116 ± 35 µm', '§8'),
-    ('Two drift velocities and the gap', 'head-on drift-time stack with column start/end + M3 ladder (tan_M3 vs Δt/Δx); ratio = gap', '§6'),
-    ('Bench gas drying over a night', 'water vs time, det6/det7 6-26, one time shape', '§6'),
-    ('det3 single-track loss budget', 'one bar chart: δ (3 sizes), discharges, bands, fit, far-from-M3, edge-other', '§5'),
-    ('Two-particle classes', 'separate / merged in projection / vetoed muon+deposit, with recovery (after the fixes)', '§5'),
-    ('Event displays for the two-particle classes', 'one merged-in-projection and one muon+deposit event (A1 style)', '§5 / A1'),
-]
+MISSING = []   # all six made on 2026-11-02 (bench resolution, two velocities, drying, loss budget, two-particle, displays)
 
 PALETTES = {   # colours the figures use per chamber (read off the figures, 2026-11-02)
     'hv_scan':        {'det2': '#2c7bd6', 'det3': '#e8562a', 'det6': '#f0a30a', 'det7': '#e57ab4'},
@@ -235,6 +214,37 @@ def fig(name, w, h, tip=None):
     return sd.img(b.getvalue(), w=w, h=h, tip=tip or f'figures/{name}')
 
 
+SCOL = {'not ready': sd.RED, 'in work': sd.GOLD, 'for review': sd.BLUE, 'accepted': sd.GREEN}
+
+
+def load_log():
+    p = HERE / 'figure_log.toml'
+    return tomllib.loads(p.read_text()).get('entry', []) if p.exists() else []
+
+
+def status_of(name, log):
+    st = None
+    for e in log:
+        if e.get('status') and e['fig'] in ('*', name):
+            st = e['status']
+    return st or 'not ready'
+
+
+def schip(st, size=22):
+    return (f'<span style="display:inline-block;border:2px solid {SCOL[st]};color:{SCOL[st]};font-size:{size}px;'
+            f'font-weight:600;padding:2px 12px;border-radius:999px">{st}</span>')
+
+
+def log_html(name, log):
+    rows = [e for e in log if e['fig'] in ('*', name)]
+    if not rows:
+        return '<p><b>Log:</b> —</p>'
+    tr = ''.join(f'<tr><td style="white-space:nowrap;padding-right:16px">{e["date"]}</td>'
+                 f'<td style="padding-right:16px">{e.get("status", "")}</td><td>{sd.esc(e["change"])}</td></tr>'
+                 for e in reversed(rows))
+    return f'<p><b>Change log</b> (newest first; <code>papers/paper1/figure_log.toml</code>):</p><table>{tr}</table>'
+
+
 def chip(verdict, size=24):
     c = VCOL[verdict]
     return (f'<span style="display:inline-block;background:{c};color:#fff;font-size:{size}px;font-weight:600;'
@@ -252,25 +262,26 @@ def verdict_of(name, state):
 # --------------------------------------------------------------------------- #
 # slides
 # --------------------------------------------------------------------------- #
-def s_cover(D, F, man):
+def s_cover(D, F, man, log=()):
     body_figs = [f for f in F if not f['name'].startswith('loss_')]
-    v = [verdict_of(f['name'], man.get(f['name'], {}).get('state')) for f in body_figs]
-    n_ok = sum(x in ('keep', 'polish') for x in v)
-    n_work = sum(x in ('revise', 'redo', 'move') for x in v)
-    n_ph = sum(x == 'placeholder' for x in v)
+    st = [status_of(f['name'], log) for f in body_figs]
+    n_rev = sum(x == 'for review' for x in st)
+    n_acc = sum(x == 'accepted' for x in st)
+    n_ph = sum(man.get(f['name'], {}).get('state') == 'placeholder' for f in body_figs)
     body = (sd.kicker('MX17 Paper I · figures · ' + dt.date.today().isoformat())
-            + sd.title(f'{n_ok} of {len(body_figs)} body figures are close; {n_work} need real work, '
-                       f'{len(MISSING)} the story needs do not exist yet')
+            + sd.title(f'{n_rev} of {len(body_figs)} body figures were changed and wait for your review; '
+                       f'{n_acc} accepted so far')
             + sd.row(sd.bignum(str(len(body_figs)), 'body figures', sd.DBLUE, f'plus {len(F) - len(body_figs)} loss-class displays (A1)'),
-                     sd.bignum(str(n_work), 'revise / redo / move', sd.DRED, 'incl. 2 that contradict the text'),
-                     sd.bignum(str(n_ph), 'placeholders', sd.DGREY, 'stack, readout, SPS setup, eff vs HV'),
-                     sd.bignum(str(len(MISSING)), 'missing', sd.GOLD, 'bench resolution, two velocities, …'), gap=48))
-    D.slide('cover', body, '<p>Every figure \\includegraphics’d by main.tex as of today, in paper order. Status from '
-            '<code>papers/paper1/figures.toml</code>; verdicts from one look at each figure (2026-11-02). Rebuild: '
-            '<code>papers/paper1/make_figures_deck.py</code>.</p>', dark=True, short='Cover')
+                     sd.bignum(str(n_rev), 'for review', sd.DBLUE, 'changed since your last look (see the log)'),
+                     sd.bignum(str(n_acc), 'accepted', sd.DGREEN, 'by Dylan'),
+                     sd.bignum(str(n_ph), 'placeholders', sd.DGREY, 'stack, readout board, SPS setup (Stephan / photos)'), gap=48))
+    D.slide('cover', body, '<p>Every figure included by main.tex, in paper order. Status from the change log '
+            '<code>papers/paper1/figure_log.toml</code> (not ready → in work → for review → accepted); the 11-02 review '
+            'verdicts stay on each slide as the second chip. Rebuild: <code>papers/paper1/make_figures_deck.py</code>.</p>',
+            dark=True, short='Cover')
 
 
-def s_board(D, F, man):
+def s_board(D, F, man, log=()):
     rows, cur = [], None
     for f in F:
         if f['name'].startswith('loss_'):
@@ -278,16 +289,18 @@ def s_board(D, F, man):
         v = verdict_of(f['name'], man.get(f['name'], {}).get('state'))
         sec = f['stitle'] if f['stitle'] != cur else ''
         cur = f['stitle']
-        rows.append([sec, f'<code>{f["name"]}</code>', chip(v, 20), REVIEW.get(f['name'], ('', ''))[1][:95]])
+        rows.append([sec, f'<code>{f["name"]}</code>', schip(status_of(f['name'], log), 18), chip(v, 18),
+                     REVIEW.get(f['name'], ('', ''))[1][:80]])
     leg = ' '.join(chip(k, 20) for k in ('keep', 'polish', 'revise', 'redo', 'move', 'placeholder'))
-    half = (len(rows) + 1) // 2
-    for k, part in enumerate((rows[:half], rows[half:])):
-        t = sd.table(['section', 'figure', 'verdict', 'what it needs (one line)'], part, size=20,
-                     widths=[240, 260, 160, 1000], align=['left', 'left', 'left', 'left'])
-        body = (sd.title(f'The board ({k + 1}/2): every body figure, in paper order',
+    per = 13
+    parts = [rows[i:i + per] for i in range(0, len(rows), per)]
+    for k, part in enumerate(parts):
+        t = sd.table(['section', 'figure', 'status', 'review', 'what it needed (11-02 review)'], part, size=19,
+                     widths=[230, 250, 160, 150, 870], align=['left'] * 5)
+        body = (sd.title(f'The board ({k + 1}/{len(parts)}): every body figure, in paper order',
                          'One line per figure; each has its own slide below') + t + (sd.p(leg, 20) if k == 0 else ''))
         D.slide(f'board{k + 1}', body, '<p>A1’s 14 loss displays are one slide at the end. The section column follows '
-                'main.tex (timing now after tracking, edge as its own subsection).</p>', short=f'Board {k + 1}/2')
+                'main.tex (timing now after tracking, edge as its own subsection).</p>', short=f'Board {k + 1}/{len(parts)}')
 
 
 def s_colours(D):
@@ -307,8 +320,8 @@ def s_colours(D):
                              'the others colour-blind-safe and lighter.', sd.GREEN, 24),
                   sd.callout('One module (figstyle-like) imported by every producer, so a rebuild fixes them all.', sd.BLUE, 24),
                   w=560)
-    body = sd.title('Five figures, five palettes: one colour per chamber across the paper',
-                    'Colours read off each figure; bottom row a proposal (Okabe–Ito, det3 dark blue)') + sd.row(t, side, gap=60)
+    body = sd.title('Adopted 11-02: one colour per chamber (before: five figures, five palettes)',
+                    'Colours read off each figure before the restyle; bottom row the palette now in papers/paper_style.py') + sd.row(t, side, gap=60)
     D.slide('colours', body, '<p>Proposal: det3 #0b3d91 (dark blue), det2 #56B4E9 (sky), det6 #E69F00 (orange), det7 #CC79A7 '
             '(pink), det4 #999999 (grey: the defective chamber, background in most figures). Put it in a shared '
             '<code>papers/paper_style.py</code> (rcParams + DET_COLOR + label helpers: mathtext, no raw underscores) and '
@@ -325,19 +338,24 @@ def s_missing(D):
             'efficiency work (<code>rerun/effbudget/single/README.md</code>).</p>', short='Missing')
 
 
-def s_figure(D, f, man):
+def s_figure(D, f, man, log):
     name = f['name']
     e = man.get(name, {})
     v, claim, issues, fix = REVIEW.get(name, (verdict_of(name, e.get('state')), name, [], ''))
+    st = status_of(name, log)
+    last = next((x for x in reversed(log) if x['fig'] == name), None)
+    if last:
+        issues = [f'{last["date"]}: ' + last['change'][:150] + ('…' if len(last['change']) > 150 else '')] + \
+                 [i for i in issues][:2]
     figbox = fig(name, 1040, 640, tip=f'figures/{name} · state {e.get("state", "?")}')
-    side = sd.col(sd.p(chip(v) + f'&nbsp;&nbsp;<span style="color:{sd.MUT};font-size:22px">{f["stitle"]}</span>', 22),
+    side = sd.col(sd.p(schip(st) + '&nbsp;' + chip(v, 20) + f'&nbsp;&nbsp;<span style="color:{sd.MUT};font-size:20px">{f["stitle"]}</span>', 22),
                   *[sd.callout(i, VCOL[v], 23) for i in issues], w=560, gap=20)
     body = sd.title(claim, f'{name} · figures.toml: {e.get("state", "not in manifest")}') + sd.row(figbox, side, gap=48)
     notes = (f'<p><b>Caption (draft):</b> {sd.esc(f["caption"]) or "—"}</p>'
              f'<p><b>Fix:</b> {sd.esc(fix)}</p>'
              f'<p><b>Source:</b> <code>{sd.esc(e.get("source", "—"))}</code><br><b>Producer:</b> '
              f'<code>{sd.esc(e.get("producer", "—"))}</code></p>'
-             f'<p><b>Manifest note:</b> {sd.esc(e.get("note", "—"))}</p>')
+             f'<p><b>Manifest note:</b> {sd.esc(e.get("note", "—"))}</p>' + log_html(name, log))
     D.slide(f'f_{name}', body, notes, short=name)
 
 
@@ -371,6 +389,36 @@ def s_unused(D, F, man):
     D.slide('unused', body, '<p>gas_vE_timing is the one to bring back (the drift-scan figure the story wants).</p>', short='Unused')
 
 
+CHECKLIST = [
+    ('Size', 'drawn at the width it is printed (full width 6.1 in, half 3.0 in); no rescaling in LaTeX; type 7–9 pt in print'),
+    ('No titles inside', 'the caption carries the title; panels labelled (a), (b), … in a corner'),
+    ('Axes', 'every axis labelled with quantity and unit in mathtext; sensible ticks; ranges that show the data, shared where compared'),
+    ('Chambers', 'paper palette only (det3 dark blue on top); X solid, Y dashed open; det4 grey'),
+    ('Data vs model', 'data as markers with error bars; models/fits as lines; the claim visible without reading the caption'),
+    ('Legend', 'only what the reader needs; off the data; one per figure if panels share it'),
+    ('Ink', 'no gridline clutter, no boxes, no superfluous annotations; text in the plot only for the one point it makes'),
+    ('Numbers', 'every plotted number traceable: the figure ships its CSV; caption and text quote the same values'),
+    ('Vector', 'PDF, embedded fonts; rasters only for maps/displays, at ≥ 300 dpi'),
+]
+
+
+def s_checklist(D):
+    t = sd.table(['', 'standard'], [[f'<b>{a}</b>', b] for a, b in CHECKLIST], size=24, widths=[260, 1400], align=['left', 'left'])
+    body = sd.title('What “publication-ready” means here: the checklist every figure has to pass',
+                    'JINST, full text width ≈ 15.5 cm; applied one figure at a time with Dylan') + t
+    D.slide('checklist', body, '<p>Proposed 2026-11-02 after Dylan judged the figures not publication-ready. Edit the list '
+            'in make_figures_deck.py (CHECKLIST) as standards are agreed.</p>', short='Checklist')
+
+
+def s_log(D, log):
+    rows = [[e['date'], f'<code>{e["fig"]}</code>', e.get('status', ''), sd.esc(e['change'])[:150]] for e in reversed(log)]
+    t = sd.table(['date', 'figure', 'status', 'change'], rows[:12], size=18, widths=[150, 260, 150, 1100], align=['left'] * 4)
+    body = sd.title(f'Change log: {len(log)} entries', 'Newest first (latest 12 shown; all in Details and in figure_log.toml)') + t
+    full = ''.join(f'<tr><td>{e["date"]}</td><td><code>{e["fig"]}</code></td><td>{e.get("status", "")}</td><td>{sd.esc(e["change"])}</td></tr>'
+                   for e in reversed(log))
+    D.slide('log', body, f'<table>{full}</table>', short='Change log')
+
+
 def s_close(D):
     order = [('1', 'One palette + style module', 'every figure inherits it; do first, it touches all producers'),
              ('2', 'Redo the principle figure', 'it shows the hit-time method the paper rejects'),
@@ -395,11 +443,14 @@ def main():
     a = ap.parse_args()
     man = tomllib.loads((HERE / 'figures.toml').read_text())['fig']
     F = paper_figures()
+    log = load_log()
     D = sd.Deck('MX17 Paper I: figure review', 'Every Paper I figure in paper order, with its status and what it needs')
-    s_cover(D, F, man); s_board(D, F, man); s_colours(D); s_missing(D)
+    s_cover(D, F, man, log); s_checklist(D); s_board(D, F, man, log); s_log(D, log); s_colours(D)
+    if MISSING:
+        s_missing(D)
     for f in F:
         if not f['name'].startswith('loss_'):
-            s_figure(D, f, man)
+            s_figure(D, f, man, log)
     s_a1(D, F, man); s_unused(D, F, man); s_close(D)
     D.write(a.out, note_meta=dict(title='MX17 Paper I: figure review',
                                   summary='Every Paper I figure in paper order: status, verdict and what to fix; one palette, '
