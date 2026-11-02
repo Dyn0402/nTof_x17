@@ -572,8 +572,13 @@ def reconstruct_subrun(cfg: BeamConfig, bundle_path: str, out_path: str,
             if not payloads:
                 continue
             for r in pool.map(wreco._worker_fit, payloads, chunksize=8):
-                cand_rows.extend(r.pop('_cand', []))
-                split_rows.extend(r.pop('_splits', []))
+                # the acquisition file of every row (pass-1 rule GC: join key with run, subrun, event id)
+                cands = r.pop('_cand', [])
+                for c in cands:
+                    c['acq_tag'] = tag
+                cand_rows.extend(cands)
+                split_rows.extend(dict(s_, acq_tag=tag) for s_ in r.pop('_splits', []))
+                r['acq_tag'] = tag
                 rows.append(r)
             done.append(tag)
             if verbose:

@@ -56,6 +56,8 @@ def main():
     ap.add_argument('--tag', nargs='*', default=None, help='these acquisitions only')
     ap.add_argument('--limit-per-tag', type=int, default=None)
     ap.add_argument('--jobs', type=int, default=8)
+    ap.add_argument('--events', default=None, help='text file of event ids: fit only these (studies; seeding still '
+                                                   'runs over every tag, so the seeded-but-not-listed count is kept)')
     a = ap.parse_args()
 
     from ntof_tracking import wft_beam as wb
@@ -82,8 +84,14 @@ def main():
                  registry={k: r0[k] for k in r0 if k not in ('tag', 't_local', 'n_dec', 'n_fdf', 'n_hits', 'dec_gb',
                                                               'fdf_gb', 'dec_min_bytes')},
                  tags=tags, base=base, diag=dict(diag.ACTIVE) if hasattr(diag, 'ACTIVE') else {})
+    allow = None
+    if a.events:
+        ids = {int(x) for x in open(a.events).read().split()}
+        allow = {t_: ids for t_ in tags}          # event ids run on across a sub-run's acquisitions: no collision
+        extra['events_file'] = os.path.abspath(a.events)
     t = time.time()
     df = wb.reconstruct_subrun(cfg, a.bundle, a.out, jobs=a.jobs, limit_per_tag=a.limit_per_tag,
+                               allow_events=allow, allow_meta=dict(source=a.events) if allow else None,
                                allow_bow=True, min_strips=MIN_STRIPS, extra_meta=extra)
     dt = time.time() - t
     print(f'[ntof] {len(df):,} events in {dt:.0f} s wall ({a.jobs} workers): '
