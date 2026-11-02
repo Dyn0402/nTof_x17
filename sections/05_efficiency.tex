@@ -12,7 +12,7 @@ fault); flat in position and angle. Equivalently the X/Y charge ratio of one tra
 \begin{figure}[t]
   \centering
   \includegraphics[width=0.6\linewidth]{charge_balance}
-  \caption{\tbw{X/Y charge balance.}}
+  \caption{\tbw{X/Y charge balance of unsaturated single tracks on the golden rows: $\ln(Q_X/Q_Y)$, with the median and core width per chamber. det3: median $-0.060$, core $\sigma$ 0.058 ($f=Q_X/(Q_X+Q_Y)=0.485$).}}
   \label{fig:balance}
 \end{figure}
 
@@ -61,13 +61,13 @@ discharges before they reach it.}
 \begin{figure}[t]
   \centering
   \includegraphics[width=0.7\linewidth]{efficiency_map}
-  \caption{\tbw{Efficiency maps of the five chambers.}}
+  \caption{\tbw{Detection-efficiency maps (8\,mm disk on a 2\,mm grid; plateau pools of rows) with det3 large and the four other chambers small. Percentages: the golden-row interior efficiency (det7: X channels 256--511). Solid box: active area; dashed box: interior (30\,mm from the $x$ sides, 8\,mm from the $y$ sides). Blank: outside the active area or fewer than 15 rays. det4: non-amplifying stripes; det6/det7: discharges; det7: X readout fault.}}
   \label{fig:effmap}
 \end{figure}
 \begin{figure}[t]
   \centering
   \includegraphics[width=0.6\linewidth]{eff_vs_hv_discharge}
-  \caption{\tbw{Efficiency and discharge loss against the resist HV (det3, det6, det7).}}
+  \caption{\tbw{Interior detection efficiency (filled) and the fraction of M3 tracks lost to discharges (dashed, open) against the resist HV, for det3 (1000\,V drift) and det6, det7 (700\,V drift). Shaded: the efficiency plateau (within 1\,pt of the maximum). det3 holds 91--94\,\% from 425 to 500\,V while its discharge loss stays below 1\,\% up to 490\,V; det6 and det7 already lose 1.5--2.4\,\% to discharges at their efficiency maximum and fall from there.}}
   \label{fig:effhv}
 \end{figure}
 \analysis{EFFHV}{build eff\_vs\_hv\_discharge from the hv\_scan rows (rerun/paper1\_ops + effbudget)}
