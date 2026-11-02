@@ -131,5 +131,8 @@ are similar). This is the feasibility demonstration for pairs at n\_TOF.}
   against single tracks.}}
   \label{fig:pairing}
 \end{figure}
-\analysis{PAIRFIX}{bench production pairs wrongly when a candidate fails the beam-tuned \texttt{plausible} gate (80\,\%
-correct vs 98\,\% for the rule); being fixed (Dylan 2026-11-02), then re-quote production pairing here}
+\tbw{The production reconstruction makes the same choice: it selects the X/Y matching with the lowest summed pairing
+cost, then applies the usual coincidence gate to each pair. On the same 552 events it pairs $96.7\pm0.8$\,\% correctly
+(re-reconstructed from the waveforms; \texttt{rerun/effbudget/single/PAIRING\_FIX\_2026-11-02.md}). An earlier selection,
+which let a beam-tuned plausibility flag decide which pairs survived, managed 80\,\%.}
+\analysis{PAIRFIX}{pairing fix on main (743d6d31, bundle switch xy\_pairing.select = cost); the pass-1 bench candidate tables still carry the old track\_id until refreshed (pairing\_replay.py or the next bench pass)}
