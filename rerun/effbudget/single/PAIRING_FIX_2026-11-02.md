@@ -213,6 +213,7 @@ All in `results/`:
 - `pairing_eff_check.json`
 - `pairing_ntof_check.json`
 - `pairing_downstream.json`
+- `pairing_rereco_det67_m3.json` (det6/det7: the replay on their gate re-reconstruction)
 
 Tools: `pairing_replay.py`, `pairing_m3_all.py`, `pairing_rereco.py`, `pairing_rereco_tree.py`,
 `pairing_rereco_compare.py`, `pairing_eff_check.py`, `pairing_downstream.py`, `pairing_ntof_check.py`,
@@ -220,6 +221,65 @@ Tools: `pairing_replay.py`, `pairing_m3_all.py`, `pairing_rereco.py`, `pairing_r
 
 The working tree is `$WORK_DATA/claude-jobs/pairfix/`. The refreshed tables are in `refresh/` (also on EOS); the
 staged waveform inputs were deleted after use (they are on EOS).
+
+## 7 · All five bench chambers (follow-up, 2026-11-02)
+
+### 7.1 The M3 test on every pass-1 row
+
+`pairing_replay.py --all-rows` was run on all 157 tables, each with its own bundle; `pairing_m3_all.py` then scored
+both modes. The events are those where M3 marks exactly one X and one Y candidate (interior, budget rays). The
+two-particle subset is the events with ≥ 2 candidates in both views. Results are in `results/pairing_m3_all.json`.
+
+| chamber | rows | M3 events | all: correct `gate` → `cost` | two-particle n | `gate` correct / wrong / unpaired | `cost` correct / wrong / unpaired | net |
+|---|---|---|---|---|---|---|---|
+| det2 | 29 | 32 800 | 99.30 → 99.69 % | 634 | 485 / 108 / 41 (76.5 %) | 614 / 14 / 6 (**96.8 %**) | +129 |
+| det3 | 63 | 80 230 | 99.46 → 99.73 % | 1 509 | 1 231 / 217 / 61 (81.6 %) | 1 447 / 47 / 15 (**95.9 %**) | +216 |
+| det4 | 17 | 10 341 | 99.66 → 99.72 % | 116 | 103 / 9 / 4 (88.8 %) | 109 / 5 / 2 (**94.0 %**) | +6 |
+| det6 | 24 | 19 343 | 99.44 → 99.58 % | 296 | 246 / 46 / 4 (83.1 %) | 273 / 18 / 5 (**92.2 %**) | +27 |
+| det7 | 24 | 9 243 | 99.02 → 99.32 % | 162 | 118 / 32 / 12 (72.8 %) | 146 / 16 / 0 (**90.1 %**) | +28 |
+
+- In every chamber, no event with ≤ 1 candidate in a view changes: 1×1, 147 015 events; one candidate in one view,
+  2 225 events.
+- Correct → wrong transitions: det2 5, det3 14, det4 3 (+1 correct → unpaired), det6 5, det7 4. Against them:
+  wrong/unpaired → correct of 134, 230, 10, 32 and 32.
+- Every pass-1 table: pairing changes on 0.8–1.5 % of events.
+  - `n_tracks` changes on 186 of 215 831 events: 1→0 ×94, 1→2 ×40, 2→1 ×50.
+  - `n_tracks == 1` goes from 155 114 to 155 030 (−0.05 %).
+- **No chamber is worse.** Five rows lose one two-particle event each, all small HV-scan rows or the det4 golden row
+  (66 → 65 of 72).
+- **det4 is the weakest gain** (+6 of 116). Its golden row loses one (66 → 65 of 72). It also has the most `n_tracks` 1→0
+  transitions per event: 27 of 17 809, where a gated ghost becomes ungated pairs. The pairing calibration does not explain
+  it. Charge-balance widths (rsig of ln qx/qy: all / clean / saturated): det2 0.074 / 0.064 / 0.079, det3 0.065 / 0.058 / 0.076,
+  det4 0.116 / 0.087 / 0.163, det6 0.174 / 0.094 / 0.178, det7 0.308 / 0.075 / 0.346. det6 and det7 are wider and gain more.
+  det4 already paired best under `gate` (88.8 %), and its M3-tagged two-particle sample is the smallest (116).
+
+### 7.2 Waveform re-reconstruction per chamber (golden rows)
+
+`pairing_rereco.py`, rr1 inputs staged from EOS. The events were: those the replay changes, the two-particle events,
+and 200 random others (det7: 40). Results are in `results/pairing_rereco_compare.json`.
+
+| row | events | `gate` re-reco vs pass 1 | `cost` vs `gate` | M3 two-particle: pass 1 → `cost` |
+|---|---|---|---|---|
+| sat_det3 | 753 | track_id, n_tracks identical; fits to 1e-6 mm | fits, events table, splits identical | 101 → 122 / 124 |
+| p2_det3 | 1 147 | bit-identical | fits, events table, splits identical | 341 → 412 / 428 |
+| o22_long_det2 | 284 | bit-identical | fits, events table, splits identical | 53 → **76 / 77** |
+| g_det4 | 351 | identical (1 events-table float) | **1 split reverted differently** (event 124486: Y winner 89.6 → 90.5 mm); otherwise identical | 66 → 65 / 72 (replay: same) |
+| g_det6_long | 324 | bit-identical | (replay on the re-reco tables) | 80 → 89 / 93 |
+| g_det7_long | 204 | bit-identical | (replay on the re-reco tables) | 28 → 36 / 39 |
+
+**The det4 split** is the one path the table replay cannot follow, and it showed up once. The split-revert guard
+("a split may not cost the event a track", `_worker_fit`) counts gated tracks through `select_tracks`, so under `cost`
+the count can differ.
+
+**Fixed in `wft/reco.py`:** `_n_gated` now always counts with mode `gate`. That makes every fit, split and winner
+independent of the pairing mode by construction. `cost` then changes only `track_id`, `track_gated`, `n_tracks` and
+non-winner tangents, which is exactly what the pass-1 table refresh (§5) assumes.
+
+From there:
+- det6 and det7 were re-reconstructed once, in `gate`.
+- Their `cost` answer is the replay on those re-reco tables. After this fix that is the `cost` re-reco by construction.
+
+The det4 `cost` run predates the fix. On the 351 events, the fixed code gives the `gate` fits, which matched pass 1.
 
 ## What this does not rule out
 
