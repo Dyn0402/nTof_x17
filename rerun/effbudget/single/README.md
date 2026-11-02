@@ -68,6 +68,24 @@ vetoed 0.7–0.9), discharges 0.5, noise bands 0.2, fit off 0.3, non-particle se
 production 92.31 vs 92.29 %, credit 95.01 vs 94.98 %, single-track 95.83 vs 95.96 %, −9 % tracks. Whole active area
 91.50 / 94.13 %. Efficiency is insensitive to the y cut.
 
+## 1c. Full active area, and the two-particle breakdown (`single_track_area.py`, Dylan 2026-11-02 evening)
+
+Headline over the **full active area** (the edge cut moves efficiency ≤ 0.9 pt): production 91.81 ± 0.16 %, credit
+94.45 ± 0.13 %, **single-track 95.14 ± 0.13 %** (interior 96.10, reproducing single_track_v2's 95.96 to 0.14 pt with a
+candidate-only classification that is defined everywhere). Near the edges unclassified losses stay losses.
+Two-particle events (3.2 %): separate in both views 95.5 % (620); merged in one projection 44 % (232); clean muon +
+separate deposit tripping the discharge veto 1 % (93); all 73.7 %. Dylan: these are fair two-particle events and
+count as losses when the muon is not recovered; anything we cannot classify counts as a loss.
+
+**δ-rays are one population by size** (median strips over the 10 % floor): detected 12, saturated blob 19,
+δ on track 34, vetoed 'shower' 67 (all > 50 by definition); same muon |tan| 0.17 in all; no M3 activity.
+Discharges: 113 strips, 220–230 at SNR > 6.
+
+**Overlap in one projection:** the joint two-track fit (cross-plane corroboration, F 120) is aware of it, but its
+trigger and its acceptance both require beam-tuned `plausible` candidates/children: 65 % of the 195 interior merged
+events never attempt a split, all 68 attempts refused (`guards_ok` False: both_plausible 44, column_shared 27,
+distinguishable 20). Being fixed in a separate session: `MERGED_PROJECTION_2026-11-02.md` (pending).
+
 ## 2. X/Y pairing on real two-particle cosmics
 
 552 events (both rows) with ≥ 2 candidates in each view where M3 marks exactly one X and one Y candidate (< 5 mm,
