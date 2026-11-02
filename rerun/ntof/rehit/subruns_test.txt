@@ -1,0 +1,15 @@
+145 stat090_0000
+145 stat090_0001
+145 stat090_0002
+149 cosbounce_cos_0000
+149 cosbounce_cos_0001
+149 cosbounce_cos_0002
+149 cosbounce_cos_0003
+149 cosbounce_cos_0004
+149 cosbounce_cos_0005
+149 cosbounce_cos_0006
+149 cosbounce_cos_0007
+149 cosbounce_cos_0008
+149 cosbounce_cos_0009
+149 cosbounce_cos_0010
+149 cosbounce_cos_0011

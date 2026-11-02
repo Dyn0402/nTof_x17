@@ -56,6 +56,8 @@ def main():
     ap.add_argument('--tag', nargs='*', default=None, help='these acquisitions only')
     ap.add_argument('--limit-per-tag', type=int, default=None)
     ap.add_argument('--jobs', type=int, default=8)
+    ap.add_argument('--seed', choices=('hits', 'waveform'), default='hits', help='Q4: seeding source')
+    ap.add_argument('--hits-dir', default='combined_hits_root', help='hits generation dir name under the sub-run')
     ap.add_argument('--events', default=None, help='text file of event ids: fit only these (studies; seeding still '
                                                    'runs over every tag, so the seeded-but-not-listed count is kept)')
     a = ap.parse_args()
@@ -71,7 +73,7 @@ def main():
     r0 = rows[0]
     cfg = wb.BeamConfig(KEY=f'run_{a.run}_{a.subrun}_mx17_{a.arm}', RUN=f'run_{a.run}', SUB_RUN=a.subrun,
                         DET_NAME=f'mx17_{a.arm}', MX17_FEU_X=fx, MX17_FEU_Y=fy, BASE_PATH=base,
-                        OUT_BASE=os.path.dirname(os.path.abspath(a.out)),
+                        OUT_BASE=os.path.dirname(os.path.abspath(a.out)), HITS_DIR=a.hits_dir,
                         conditions=dict(gas=r0['gas'], sample_ns=float(r0['sample_period_ns']),
                                         n_samples=int(float(r0['n_samples']))))
     tags = sorted(r['tag'] for r in rows)
@@ -92,7 +94,7 @@ def main():
     t = time.time()
     df = wb.reconstruct_subrun(cfg, a.bundle, a.out, jobs=a.jobs, limit_per_tag=a.limit_per_tag,
                                allow_events=allow, allow_meta=dict(source=a.events) if allow else None,
-                               allow_bow=True, min_strips=MIN_STRIPS, extra_meta=extra)
+                               allow_bow=True, min_strips=MIN_STRIPS, extra_meta=extra, seed_source=a.seed)
     dt = time.time() - t
     print(f'[ntof] {len(df):,} events in {dt:.0f} s wall ({a.jobs} workers): '
           f'{dt * a.jobs / max(len(df), 1):.3f} cpu-s/event')
