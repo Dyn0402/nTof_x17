@@ -438,3 +438,21 @@ A failing arm is held, as on the bench.
     chosen on a beam truth test: overlay pairs (`sept26_prelim_analysis/intra_bench.py`, real single beam tracks
     superimposed), plus capsule pointing. `plausible` contains tan_max, so the tan_max scan and Q7 are one study and
     are scored together.
+- **Q4 seeding result (11-02, `/media/ucla/work/ntof_pass1/q4/`; same triggers for every arm: run_145 `_000` ids
+  1–2000, run_149 cos_0000 ids 1–5000; tm0.6 v0 bundles).**
+  - **The old n_TOF hits ARE the rr1 recipe:** run_145 `_000` old vs regenerated hits are identical field by field
+    (1,908,783 hits), and so are the reconstructions. So "old vs rr1" only differs on the truncated/fused acquisitions.
+    The pass uses `combined_hits_root_rr1_cm0` from the fa80c06 decodes for one provenance.
+  - **Waveform-native seeding** (5σ peak or 3-sample sum) vs hits, on beam:
+    - A: 491 vs 335 paired tracks, but 132 vs 124 pointing to the capsule (27 % vs 37 % pointing).
+    - C: 353 vs 326 paired tracks, 101 vs 104 pointing (29 % vs 32 %).
+    The extra tracks are almost all non-pointing. CPU is 2–3× (C 22 vs 8 CPU-s per event).
+  - On cosmics there are too few A–C lines in 5,000 triggers (30–34) to separate the two.
+  - **Decision: seed from hits** (the analyzer's matched filter). A waveform threshold scan (6–7σ) could narrow the
+    gap, but nothing here suggests it would beat hits; not pursued unless the hits fail somewhere.
+  - Timing noise: identical work (old vs rr1) ran 3.1–3.9 and 7.6–9.1 CPU-s per event, so only differences > ~25 %
+    mean anything.
+- **kw in situ (11-02).** v1 bundles (timing v) on the cos_0000 A–C line: the ratio fitted/true tan is A 0.947 ± 0.021
+  (x) / 0.958 ± 0.010 (y), C 0.942 ± 0.021 / 0.934 ± 0.014. So **in-situ kw = A 0.982 / 0.973, C 1.013 / 1.008**:
+  with the column-timing v, kw ≈ 1 at n_TOF, and the bench kw (1.02–1.08) does not carry. Held-out check on
+  cos_0001, and the pinned-t0 retest on these bundles (`v1k`, `v1kpin`), running.
