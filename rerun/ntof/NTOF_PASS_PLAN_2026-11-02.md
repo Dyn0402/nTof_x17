@@ -456,3 +456,17 @@ A failing arm is held, as on the bench.
   (x) / 0.958 ± 0.010 (y), C 0.942 ± 0.021 / 0.934 ± 0.014. So **in-situ kw = A 0.982 / 0.973, C 1.013 / 1.008**:
   with the column-timing v, kw ≈ 1 at n_TOF, and the bench kw (1.02–1.08) does not carry. Held-out check on
   cos_0001, and the pinned-t0 retest on these bundles (`v1k`, `v1kpin`), running.
+- **Held-out check on run_149 cos_0001 (11-02; kw measured on cos_0000; 3,455 / 2,990 events, 161–169 A–C lines).**
+  - **kw closes:** the fitted/true scale on the line is A 1.003 ± 0.020 (x) / 0.994 ± 0.011 (y), C 1.000 ± 0.014 /
+    1.007 ± 0.014. The angle scale at n_TOF is set by the timing v with kw ≈ 1 (A 0.98/0.97, C 1.01/1.01).
+  - **Pinned t0 (σ 15 ns, cos_0000 latency) vs free, same bundles:**
+    - 169 vs 161 line events.
+    - On the 158 common events: A residual-angle 68 % 3.26° vs 3.56° (A x tan 0.0367 vs 0.0429, −14 %; A y 0.0349
+      vs 0.0335), C 2.93° vs 2.94° (unchanged).
+    - Under the pin the scale moves by −1…−2 % (A 0.984/0.977), so a pinned pass needs its kw measured under the pin.
+    - **Mildly in favour of pinning (A), neutral for C;** with ~160 lines that is not yet significant.
+    - **Next:** all 12 staged run_149 sub-runs (~2,000 lines), kw re-measured under the pin, then a beam-side check
+      (beam trigger, capsule pointing) before deciding.
+- **Remaining before the bundles freeze:** the pin decision (above); the tan_max scan with Q7 (pairing select +
+  two-track guards) on beam overlay pairs and capsule pointing; D's beam events (column start at the grid edge); B and
+  D v/kw routes (D wall, cosmics without a line); Dp for 90/10; the template residual check; sat 3550 vs 3700.
