@@ -282,27 +282,37 @@ def fig_drift(scans, figdir):
 
 
 def fig_balance(golden, ev, figdir, paper_out=None):
-    fig, ax = plt.subplots(figsize=(6.4, 4.2))
+    """The Paper I charge_balance figure, in the paper style (papers/paper_style.py): det3 first and on top."""
+    import sys
+    import pandas as pd
+    sys.path.insert(0, os.path.join(REPO, 'papers'))
+    import paper_style as ps
+    order = ['mx17_3', 'mx17_2', 'mx17_4', 'mx17_6', 'mx17_7']
     bins = np.linspace(-0.6, 0.6, 61)
-    for r in golden:
-        z = ev[r['key']]
-        u = ~(z['sat_x'] | z['sat_y'])
-        lr = np.log(z['qx'][u] / z['qy'][u])
-        lr = lr[np.isfinite(lr)]
-        e = r['est']
-        ax.hist(lr, bins=bins, histtype='step', lw=1.6, color=COL[r['det']], density=True,
-                label=f"{NAME[r['det']]}: median {e['xy_ln_median']:+.3f}, core σ {e['xy_ln_core_sigma']:.3f}"
-                      f" (n={len(lr)})")
-    ax.axvline(0, color=MUTED, lw=1)
-    ax.set_xlabel('ln(Q_x / Q_y), unsaturated events, golden rows', color=INK)
-    ax.set_ylabel('events (normalised)', color=INK)
-    ax.set_title('X/Y charge balance (pass 1, waveform fit)', color=INK, fontsize=11, loc='left')
-    ax.legend(frameon=False, fontsize=8)
-    style(ax)
-    fig.tight_layout()
-    for ext in ('png', 'pdf'):
-        fig.savefig(os.path.join(figdir, f'charge_balance.{ext}'), dpi=150)
-    plt.close(fig)
+    tab = dict(bin_lo=bins[:-1], bin_hi=bins[1:])
+    with matplotlib.rc_context():
+        ps.use()
+        fig, ax = plt.subplots(figsize=ps.FULL)
+        for r in sorted(golden, key=lambda r: order.index(r['det'])):
+            z = ev[r['key']]
+            u = ~(z['sat_x'] | z['sat_y'])
+            lr = np.log(z['qx'][u] / z['qy'][u])
+            lr = lr[np.isfinite(lr)]
+            e = r['est']
+            d = NAME[r['det']]
+            st = ps.det(d)
+            h, _ = np.histogram(lr, bins=bins, density=True)
+            tab[d] = h
+            ax.stairs(h, bins, color=st['color'], lw=st['lw'] + 0.3, zorder=st['zorder'],
+                      label=(f"{d}:  {e['xy_ln_median']:+.3f},  {e['xy_ln_core_sigma']:.3f},  ".replace('-', '\u2212')
+                             + f"{len(lr):,}".replace(',', '\u2009')))
+        ax.axvline(0, color=ps.MUTED, lw=0.8, zorder=0)
+        ax.set_xlim(bins[0], bins[-1])
+        ax.set_xlabel(r'$\ln(Q_{x}/Q_{y})$, unsaturated events, golden rows')
+        ax.set_ylabel('events (normalised)')
+        ax.legend(loc='upper right', handlelength=1.6, alignment='left',
+                  title=r'chamber: median, core $\sigma$, $n$', title_fontsize=ps.BASE_PT * 0.85)
+        ps.save(fig, os.path.join(figdir, 'charge_balance'), data=pd.DataFrame(tab))
 
 
 def fig_spectra(golden, ev, figdir):
