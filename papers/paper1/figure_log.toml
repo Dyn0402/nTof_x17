@@ -347,3 +347,8 @@ change = "Checklist pass on 24 figures (printed widths, no in-figure titles, pan
 date = "2026-11-02"
 fig = "two_particle"
 change = "Merged-projection fix landed (28ac36a0, bench switch split_corrob = charge): on the 195 interior merged events the muon is credited 53.8 % (was 41.0 %). Needs waveforms, so the figure keeps the pass-1 44 % until the next bench re-pass; text says so."
+
+[[entry]]
+date = "2026-11-02"
+fig = "two_particle"
+change = "Discharge-veto rescue studied (4858cf31, switch seed.SPARK_RESCUE, off): recovered tracks right 57-75 % on det2/det3, 11-26 % on det4/6/7 vs 95 % ordinary, so it ships off; the muon+separate-deposit bar (1 %) and the edge-zone veto loss stay. Text in §5 says why."

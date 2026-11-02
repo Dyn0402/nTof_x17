@@ -167,7 +167,13 @@ events (from 41.0\,\%), with correct X/Y pairing in 36.4\,\% (from 20.5\,\%), an
 five chambers (\texttt{rerun/effbudget/single/MERGED\_PROJECTION\_2026-11-02.md}). The rest fail the geometric guards:
 the two children share almost no depth (one track cut in half) or lie within the floor.}
 \analysis{MERGED}{charge-corroborated split on main (28ac36a0), bench switch xy\_pairing.split\_corrob = charge; needs waveforms, so the 44\,\% in \cref{fig:twoparticle} stays until the next bench re-pass}
-\analysis{VETO}{(iii) is the discharge veto counting a separate particle: a reconstruction choice, recoverable in principle (A1: veto off + competing-cluster cut relaxed)}
+\tbw{\textbf{The discharge veto.} Configuration (iii), the large $\delta$-rays and the edge-zone losses all come from
+dropping every event with more than 50 strips over threshold. A rescue that re-seeds such events from their clean
+clusters (track-sized clusters only, rail samples censored, a one-particle gate on the result) recovers muons, but they
+are right far less often than ordinary tracks: 57--75\,\% on det2/det3 (ordinary 95\,\%), 11--26\,\% on det4/det6/det7, where a
+discharge rings every chip within a sample of the muon's own signal. It therefore stays off, and vetoed muons count as
+losses (\texttt{rerun/effbudget/single/DISCHARGE\_VETO\_2026-11-02.md}). The clean case, a muon plus a separate deposit,
+would be worth rescuing alone (29 right, 4 wrong on det2/det3) if it could be told from a shower without the reference.}
 \tbw{\textbf{Pairing the views.} Two particles give two segments per view and two possible X/Y pairings; the wrong
 one makes two ghost tracks. The views share no coordinate, but they read the same avalanche charge at the same drift
 times, so the reconstruction pairs them by the charge balance and the charge-arrival time (Paper~II). On 552 real
