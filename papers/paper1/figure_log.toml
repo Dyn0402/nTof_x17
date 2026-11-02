@@ -126,3 +126,69 @@ date = "2026-11-02"
 fig = "two_particle"
 status = "for review"
 change = "New: muon recovery per two-particle configuration (pass 1, before the two-track and veto fixes; rebuild after). Commit f4bca616."
+
+[[entry]]
+date = "2026-11-02"
+fig = "microtpc_principle"
+status = "for review"
+change = "Redone (was the per-strip hit-time fit the paper rejects): (a) geometry sketch (drift, avalanche, resistive strips, pads, X/Y strips, sharing inset 29 % / 5 %), (b) real det3 event 7884 X view, data next to the forward model at the pass-1 fit. Producer papers/paper1/figs/make_principle.py. Commit 3645ed15."
+
+[[entry]]
+date = "2026-11-02"
+fig = "loss_band"
+status = "for review"
+change = "All 14 A1 displays: readable class names + event number in the titles (no fractions), shared display palette (figs/evd_style.py: white to det3 navy, M3 black dashed, fit vermillion); loss_headon is now the fit-failed example (no head-on loss on pass 1). Commit 3645ed15."
+
+[[entry]]
+date = "2026-11-02"
+fig = "display_two_separate"
+status = "for review"
+change = "New §5 display: two particles separate in both views, each fitted (event 1063). Commit 3645ed15."
+
+[[entry]]
+date = "2026-11-02"
+fig = "display_merged_projection"
+status = "for review"
+change = "New §5 display: separate in X, merged in projection in Y (event 17907). Commit 3645ed15."
+
+[[entry]]
+date = "2026-11-02"
+fig = "display_muon_deposit"
+status = "for review"
+change = "New §5 display: clean muon plus a separate deposit ~150 mm away, vetoed (> 50 strips) (event 36603). Commit 3645ed15."
+
+[[entry]]
+date = "2026-11-02"
+fig = "gas_vE"
+status = "for review"
+change = "Redone: timing v (g/T, 4 fields) and angle-scale v (M3 ladder, 7 fields, new stat errors) on one Magboltz curve at 0.97 % [0.95, 0.99] water (chi2 2.5/3), ratio panel; old angle-only figure retired. Producer rerun/paper1_gas/pg_figs.py. Commit a957faab."
+
+[[entry]]
+date = "2026-11-02"
+fig = "two_velocities"
+status = "for review"
+change = "New: (a) head-on stacks with column start/end, (b) M3 ladder w vs tan_M3 (slope v, no gap), (c) gap = v_ladder x T per field: 28.2 +- 0.5 mm (chi2 4.1/3) vs strip extent 28.19 +- 0.19 (the story's 29 [28, 30] was the gap/water profile, a different estimate). Producer rerun/paper1_gas/pg_twov.py. Commit a957faab."
+
+[[entry]]
+date = "2026-11-02"
+fig = "gas_drying"
+status = "for review"
+change = "New: (a) det6/det7 water through 6-26 (1.47 -> 0.76, 0.68 -> 0.35 %), (b) one time shape (r = 0.975), (c) det3 one water at every field. From gas.json only. Commit a957faab."
+
+[[entry]]
+date = "2026-11-02"
+fig = "attachment"
+status = "for review"
+change = "Restyled: CO2 / CF4 legend (ps.GAS), unrotated run labels, bench points replaced by grey bands. Commit a957faab."
+
+[[entry]]
+date = "2026-11-02"
+fig = "bench_position_res"
+status = "for review"
+change = "New: (a) det3 near-normal core width vs M3 chi2 quintile, extrapolated to chi2 -> 0 (274 / 237 um) with the pointing P drawn; (b) chamber term sqrt(sigma0^2 - P^2) vs assumed P: det3 126 +- 34 / 116 +- 36 um, det2 163 / 176; +-10 % on P band. Producer rerun/paper1_floor/position_ms_fig.py. Commit a957faab."
+
+[[entry]]
+date = "2026-11-02"
+fig = "sps_resolution"
+status = "for review"
+change = "Redone on region R (decision A+B): X/Y residual histograms with cores, det4 sigma vs telescope f with upper-bound bands: 138 / 120 um, bounds 153 / 145. Old zone fits kept as sps_resolution_zones. Commit a957faab."
