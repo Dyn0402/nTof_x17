@@ -137,27 +137,64 @@ stays on `gate`**:
 - `ntof_bundle.py` now writes `'gate'` explicitly;
 - existing stage-3 products are made from stored candidate tables, so this commit does not touch them.
 
-## 5 · What changes for which products, and what needs re-running
+## 5 · What changed for which products (done 2026-11-02, follow-up)
 
-- **Nothing changes until a bundle carries `select='cost'`.** The pass-1 bench tables on EOS (`Analysis_pass1`) were
-  made with `gate` and stay as they are.
-- **Bench products that read pairing** (`track_id`, `track_gated`, `n_tracks`):
-  - `rerun/calib/saturation/satgate_pairs.py`, `rerun/satstudy/multitrack.py`;
-  - `n_tracks == 1` selections in `rerun/paper1_timing/{angle,matched_rows}.py` and `rerun/paper1_floor/analyze.py`
-    (−0.06 % of their sample on det3);
-  - the "production 80.1 %" statement in `README.md` §2 and Paper I.
-- **Bench products that do not change:** efficiency (A1, budget, single-track, radius: §3), angles, alignment, maps.
-  These read only the events table and candidate p0/tan of winners.
-- **Re-pass needed?** Not for efficiency, angles or single-track results. For the pairing products, the cheap route is a
-  table-level refresh: `select_tracks` and the bow re-map are pure functions of the stored candidates.
-  `pairing_replay.py --tables` writes the refreshed candidates table, but today only for the two det3 rows. It would
-  need generalising to every bench row and the result pushed to EOS.
-  - Caveat: the refresh skips the split-revert path. The re-reco subset showed it does not move, but that is not proven
-    for every row.
-  - The alternative is to wait for the next bench re-pass, whose `set_w0kw` bundles will carry `select='cost'`. A
-    re-pass reusing the existing pass-1 bundles would need `"select": "cost"` added to each bench
-    `calib_bundle/bundle.json`.
-- **n_TOF / SPS:** nothing to re-run.
+- **Refreshed tables on EOS, next to the originals.** Every bench row of pass 1 (157 tables: 156 registry rows plus
+  `mx17_det3_quick_6-26-26/resist_530V_drift_1200V`) has:
+  - `Analysis_pass1/<rel>/wft/pairing_cost/events.candidates.parquet`
+  - `Analysis_pass1/<rel>/wft/pairing_cost/events.parquet`
+  - `Analysis_pass1/<rel>/wft/pairing_cost/PAIRING_COST.json` (provenance: tool, code commit, the row's bundle, sha1 of
+    the source tables, rows changed)
+
+  `../events*.parquet` are untouched. Only `track_id`, `track_gated`, `tan_theta` and `theta_deg` (candidates) and
+  `n_tracks` (events) differ.
+  - Made with `pairing_replay.py --all-rows --tables`, each row with the bundle its `events.meta.json` names.
+  - The replay reproduces pass-1 `track_id` on **215 831 / 215 831** events. A changed candidate's tangent is the
+    file's value plus the shift the re-pairing makes in the replay's bow re-map, so the 0.4 % of events whose bow replay
+    does not reproduce the file keep the file's values wherever the pairing does not move them.
+  - No winner (rank-0) tangent moves.
+  - Recorded in `rerun/PASS1_STATUS_2026-10-30.md` and `rerun/PASS1_LEDGER.md` (addendum).
+  - To read them, swap `wft/` for `wft/pairing_cost/` in the two table paths. Everything else (alignment, bundles, 02–04
+    outputs) stays in `wft/`.
+- **Downstream products that cut on pairing or `n_tracks`** (`pairing_downstream.py`, `results/pairing_downstream.json`):
+  - `rerun/paper1_timing/matched_rows.py` (the M3-matched single-track widths of all 112 rows with timing):
+    - 4 rows change their sample by one event (3 lost, 1 gained, of 53 017).
+    - Largest width shift: 0.25 ns in σ_evt and 0.33 ns in σ_xy, on non-golden det6/det7 rows. All are ≤ 0.2 % and well
+      inside the bootstrap errors.
+    - Golden rows: g_det4 2 109 → 2 110 events, σ_evt 110.92 → 110.86 ns; g_det7_long 433 → 432, σ_evt 45.58 → 45.50 ns.
+      The other golden rows do not move.
+  - `rerun/paper1_timing/angle.py`: the same two golden rows, ≤ 0.1 ns per bin, plus one event in g_det7_long's
+    highest-|tan| bin (n 2 → 1).
+  - `rerun/paper1_floor/analyze.py`: its 'topo' sample cuts `n_candidates <= 1` in the view, and `cost` equals `gate`
+    there, so it cannot move. Checked: 0 events with `n_tracks` changed and ≤ 1 candidate in a view. The other ladder
+    steps do not read pairing.
+  - Efficiency (`pairing_eff_check.py --all-rows`, every row with budget rays):
+    - The budget trigger-track rule changes its pick in 36 of 416 074 views, and its 5 mm detection in **4 events of
+      the whole bench**: 1 on o22_long_det2, 1 on det3 475 V, 2 on the det3 p2 golden row.
+    - The single-track second-particle verdict changes in 0 of 13 953 events.
+    - A1 and radius read neither pairing nor non-winner tangents in a way that moves.
+  - `rerun/calib/saturation/satgate_pairs.py` reads the error-model gate's own A/B arm tables (`<gate tree>/<row>/wft/<arm>`),
+    not pass 1. Both arms were made with `gate`, so its comparison is internally consistent. Re-running it in `cost`
+    needs those arm tables re-replayed, by pointing `pairing_replay.py`'s `--root` at the gate tree. Not done: it is a
+    10-29 gate study, not a pass-1 or Paper I product.
+  - `rerun/satstudy/multitrack.py` reads a pre-pass-1 table (`~/x17/cosmic_bench/outliers/final/.../final_phys`). Its
+    `paired` metric (gated track_id within R) is "shown but not used for the credit". Its pass-1 equivalent is
+    `pairing_m3_all.py`, which is what this report quotes (det3 99.46 → 99.73 %). Recipe if wanted: set `CAND` to
+    `Analysis_pass1/<sat_det3 rel>/wft/pairing_cost/events.candidates.parquet` and run `multitrack.py count`.
+    `feat` needs the waveforms.
+- **Paper I numbers.**
+  - Nothing quoted moves at the precision it is quoted (efficiencies to 0.1 pt, timing widths to ~1 ns).
+  - The one statement that changes is the pairing claim: production pairs two-particle events correctly in **96 %**
+    (det3 95.9 %, 1 509 events over all det3 rows; 96.7 % on the 552 golden-row events), not 80 %.
+- **Bundles.** The pass-1 bench bundles on EOS were **not** edited. They describe how the pass-1 tables were made, and
+  their absent `select` reads as `gate`.
+  - The next bench pass gets `cost` with no action: `rerun/w12/set_w0kw.py --table` (the W0KW node of every
+    `make_pass_dag.py` phase) now writes `xy_pairing['select'] = 'cost'` (`--xy-select`).
+  - A reconstruction that reuses a pass-1 bundle stamps a copy:
+    `rerun/effbudget/single/stamp_select.py <bundle> --out <copy>`, or `--in-place` on a working copy, never on
+    `Analysis_pass1`.
+  - `rerun/ntof/ntof_bundle.py` forces `gate` for n_TOF.
+- **n_TOF / SPS:** nothing to re-run; see `rerun/ntof/NOTE_PAIRING_FIX_2026-11-02.md`.
 
 ## 6 · Numbers files
 
