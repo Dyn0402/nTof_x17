@@ -140,26 +140,50 @@ def main():
               f"{v['I_med_near_490V_uA']:.3f} uA  R_eff {v['R_eff_near_490V_GOhm']:.2f} GOhm  "
               f"slope {v['slope_uA_per_100V']:.3f} uA/100V  I0 {v['intercept_uA']:.3f}  spikes/h {v['spikes_per_h_median']:.1f}")
     try:
+        import sys
         import matplotlib; matplotlib.use('Agg'); import matplotlib.pyplot as plt
-        col = {'det2': '#E69F00', 'det3': '#0072B2', 'det4': '#009E73', 'det6': '#D55E00', 'det7': '#CC79A7'}
-        fig, ax = plt.subplots(figsize=(6.2, 4.1))
+        from matplotlib.lines import Line2D
+        sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..', 'papers'))
+        import paper_style as ps
+        ps.use()
+        fig, ax = plt.subplots(figsize=ps.FULL)
         scan = U[U.subrun.str.contains('resist_') & ~U.subrun.str.startswith('drift_scan')]
-        for (b, r), g in scan.groupby(['board', 'run']):
+        nights = sorted({r for (b, r), g in scan.groupby(['board', 'run']) if len(g) >= 4}, key=run_day)
+        # one colour per board (the paper palette), one marker per night
+        mk = dict(zip(nights, ['o', 's', '^', 'D', 'v', 'P', 'X']))
+        night_lab = {r: r.split('_')[-1][:-3] + (' (overnight)' if 'overnight' in r else
+                                                  ' (scan)' if 'scan' in r else ' (day)') for r in nights}
+        order = ['det3', 'det2', 'det6', 'det7', 'det4']
+        for (b, r), g in sorted(scan.groupby(['board', 'run']), key=lambda x: order.index(x[0][0])):
             g = g.sort_values('V')
             if len(g) < 4:
                 continue
-            ax.plot(g.V, g.I_med, 'o-', ms=3, lw=0.8, color=col[b], alpha=0.85,
-                    label=f"{b}, {r.split('_')[-1]}")
+            kw = ps.det(b, label=None, marker=mk[r], ms=3.6, alpha=1.0 if b == 'det3' else 0.85)
+            kw['lw'] = kw['lw'] * 0.8
+            ax.plot(g.V, g.I_med, mec='white', mew=0.4, **kw)
         fit = summ.get('det3_6-27_fit')
         if fit:
             V = np.linspace(440, 528, 100)
-            ax.plot(V, fit['b_uA'] + fit['A_uA_at_490'] * 2 ** ((V - 490) / fit['V2_doubling_V']), 'k--', lw=1.0,
-                    label=f"det3 6-27 fit: doubles every {fit['V2_doubling_V']:.1f} V")
+            ax.plot(V, fit['b_uA'] + fit['A_uA_at_490'] * 2 ** ((V - 490) / fit['V2_doubling_V']), '--',
+                    color=ps.MODEL, lw=1.0, zorder=6)
+            # reference slope: the gas gain doubles every 16.7 V; drawn through the det3 fit's excess at 500 V x 2
+            Vr = np.linspace(470, 525, 50)
+            I500 = 2 * fit['A_uA_at_490'] * 2 ** (10 / fit['V2_doubling_V'])
+            ax.plot(Vr, I500 * 2 ** ((Vr - 500) / 16.7), ':', color=ps.MUTED, lw=1.4, zorder=6)
         ax.set_xlabel('resistive-electrode HV [V]'); ax.set_ylabel('median resist current [µA]')
-        ax.set_yscale('log'); ax.legend(fontsize=6.5, frameon=False, ncol=2); ax.grid(alpha=0.3)
-        fig.tight_layout(); fig.savefig(os.path.join(a.out, 'figures', 'currents_vs_hv.png'), dpi=150)
-        fig.savefig(os.path.join(a.out, 'figures', 'currents_vs_hv.pdf'))
-        U.to_csv(os.path.join(a.out, 'figures', 'currents_vs_hv.csv'), index=False)
+        ax.set_yscale('log')
+        hb = [Line2D([], [], **{k: v for k, v in ps.det(b).items() if k not in ('zorder', 'label', 'marker', 'lw')},
+                      lw=2.0, label=b)
+              for b in order if b in set(scan.board)]
+        hb += [Line2D([], [], ls='--', color=ps.MODEL, lw=1.0,
+                      label=f"det3 6-27 fit: ×2 per {fit['V2_doubling_V']:.1f} V" if fit else 'fit'),
+               Line2D([], [], ls=':', color=ps.MUTED, lw=1.4, label='gain ×2 per 16.7 V (slope reference)')]
+        l1 = ax.legend(handles=hb, loc='upper left', fontsize=ps.BASE_PT * 0.8)
+        ax.add_artist(l1)
+        hn = [Line2D([], [], ls='none', marker=mk[r], color=ps.MUTED, ms=4, label=night_lab[r]) for r in nights]
+        ax.legend(handles=hn, loc='lower right', fontsize=ps.BASE_PT * 0.75, title='night (marker)',
+                  title_fontsize=ps.BASE_PT * 0.75)
+        ps.save(fig, os.path.join(a.out, 'figures', 'currents_vs_hv'), data=U)
     except Exception as e:
         print('figure skipped:', e)
 

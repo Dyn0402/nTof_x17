@@ -54,6 +54,26 @@ two different species. This matches the early-night gain ×25 recovery seen befo
   the det3+det4 → det4-alone change.
 - **det2:** 0.73 → 0.57 % on 6-22. Its water is weakly determined: 321 V/cm is near the velocity maximum.
 
+## Two velocities and the gap (2026-11-02, `pg_twov.py`, figure `two_velocities`)
+
+The angle uses only v (w = dx/dt = v tan θ); the gap enters only through T = g / v. So the M3 ladder (v_drift × kw, no gap)
+and the head-on column duration T are independent, and **g = v_ladder × T** measures the gap. On det3's 6-27 drift scan:
+
+| E (V/cm) | timing v (g = 28.19) | angle-scale v (ladder) | g = v_ladder T (mm) |
+|---|---|---|---|
+| 177 | 17.71 ± 2.09 | 15.65 ± 0.07 | 24.9 ± 2.9 |
+| 248 | 25.16 ± 0.58 | 24.93 ± 0.11 | 27.9 ± 0.5 |
+| 319 | 34.39 ± 1.36 | 33.45 ± 0.17 | 27.4 ± 1.1 |
+| 390 | 37.22 ± 1.03 | 38.85 ± 0.18 | 29.4 ± 0.8 |
+
+**Mean 28.2 ± 0.5 mm (χ² 4.1/3)**, against the strip-extent gap 28.19 ± 0.19 (S4 re-check). The "29 [28, 30] mm" quoted
+earlier is a different estimate: the gap profile of the timing-v Magboltz fit (`summary.json` `scan.profile`), which trades
+gap against water. The ladder error is the set_w0kw estimator's (stat only); T's is bootstrap ⊕ 1.5 %. The angle-scale v lies
+within −1.7 … +1.5 % of Magboltz at 0.97 % from 106 to 390 V/cm (`gas_vE_timing`); the "~5 % above" in older notes was the
+pre-pass v. Inputs (copied from EOS with xrootd): the stacks and `fit_v1` of this package, and the drift-scan rows'
+`Analysis_pass1/.../wft/{angles,calib_bundle,events.*}`; `pg_twov.py extract <dir>` → `results/twov.json`, then `pg_twov.py fig`.
+`pg_figs.py drying` draws `gas_drying` from `gas.json` alone.
+
 ## Method
 - **Stacks:** `condor/pg_stack.sh` (60 rows, S4 `s4_stacks.py`, code `code_75287c0`). Rows without their own stage-1 products take
   the align_key row's alignment and the calib_key row's bundle (`condor/make_jobs.py`).

@@ -5,19 +5,19 @@
    "lq_rsig": 0.0641059496477219
   },
   "active area | all rays: production pick": {
-   "n": 7117,
+   "n": 7140,
    "k": 6563,
-   "eff": 92.21582127300829
+   "eff": 91.9187675070028
   },
   "active area | all rays: credit": {
-   "n": 7117,
+   "n": 7140,
    "k": 6744,
-   "eff": 94.75902768020234
+   "eff": 94.45378151260505
   },
   "active area | single-track": {
-   "n": 6893,
+   "n": 6916,
    "k": 6586,
-   "eff": 95.54620629624256
+   "eff": 95.22845575477155
   },
   "active area | two: merged in one projection": {
    "n": 59,
@@ -40,19 +40,19 @@
    "eff": 70.53571428571429
   },
   "interior 30x/8y | all rays: production pick": {
-   "n": 6431,
+   "n": 6454,
    "k": 5979,
-   "eff": 92.97154408334629
+   "eff": 92.64022311744654
   },
   "interior 30x/8y | all rays: credit": {
-   "n": 6431,
+   "n": 6454,
    "k": 6144,
-   "eff": 95.53724148654952
+   "eff": 95.1967771924388
   },
   "interior 30x/8y | single-track": {
-   "n": 6224,
+   "n": 6247,
    "k": 5999,
-   "eff": 96.3849614395887
+   "eff": 96.03009444533376
   },
   "interior 30x/8y | two: merged in one projection": {
    "n": 52,
@@ -81,19 +81,19 @@
    "lq_rsig": 0.06560462813405951
   },
   "active area | all rays: production pick": {
-   "n": 22181,
+   "n": 22258,
    "k": 20335,
-   "eff": 91.67756187728236
+   "eff": 91.36040974031809
   },
   "active area | all rays: credit": {
-   "n": 22181,
+   "n": 22258,
    "k": 20928,
-   "eff": 94.35102114422253
+   "eff": 94.02462036121844
   },
   "active area | single-track": {
-   "n": 21460,
+   "n": 21537,
    "k": 20390,
-   "eff": 95.01397949673812
+   "eff": 94.67428146909968
   },
   "active area | two: merged in one projection": {
    "n": 173,
@@ -116,19 +116,19 @@
    "eff": 74.61858529819695
   },
   "interior 30x/8y | all rays: production pick": {
-   "n": 20011,
+   "n": 20088,
    "k": 18516,
-   "eff": 92.52910899005546
+   "eff": 92.17443249701314
   },
   "interior 30x/8y | all rays: credit": {
-   "n": 20011,
+   "n": 20088,
    "k": 19065,
-   "eff": 95.27260006996153
+   "eff": 94.9074074074074
   },
   "interior 30x/8y | single-track": {
-   "n": 19333,
+   "n": 19410,
    "k": 18561,
-   "eff": 96.00682770392594
+   "eff": 95.6259659969088
   },
   "interior 30x/8y | two: merged in one projection": {
    "n": 161,
@@ -153,19 +153,19 @@
  },
  "pooled": {
   "active area | all rays: production pick": {
-   "n": 29298,
-   "eff": 91.80831456072087,
-   "err": 0.16021702139504346
+   "n": 29398,
+   "eff": 91.49602013742431,
+   "err": 0.16268717602971233
   },
   "active area | all rays: credit": {
-   "n": 29298,
-   "eff": 94.45013311488839,
-   "err": 0.13375917551414657
+   "n": 29398,
+   "eff": 94.12885230287775,
+   "err": 0.13710837759093897
   },
   "active area | single-track": {
-   "n": 28353,
-   "eff": 95.14337107184424,
-   "err": 0.12766069950374
+   "n": 28453,
+   "eff": 94.80898323551119,
+   "err": 0.13151852463059827
   },
   "active area | two: merged in one projection": {
    "n": 232,
@@ -188,19 +188,19 @@
    "err": 1.4330342839334496
   },
   "interior 30x/8y | all rays: production pick": {
-   "n": 26442,
-   "eff": 92.63671431813025,
-   "err": 0.1606128343920403
+   "n": 26542,
+   "eff": 92.28769497400347,
+   "err": 0.16375598285081047
   },
   "interior 30x/8y | all rays: credit": {
-   "n": 26442,
-   "eff": 95.33696392103472,
-   "err": 0.12966354650864712
+   "n": 26542,
+   "eff": 94.97777107979806,
+   "err": 0.1340579014320887
   },
   "interior 30x/8y | single-track": {
-   "n": 25557,
-   "eff": 96.09891614821771,
-   "err": 0.12111472598392856
+   "n": 25657,
+   "eff": 95.72436372140157,
+   "err": 0.1263015509868984
   },
   "interior 30x/8y | two: merged in one projection": {
    "n": 213,

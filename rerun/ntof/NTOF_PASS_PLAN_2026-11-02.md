@@ -425,3 +425,48 @@ A failing arm is held, as on the bench.
     (no angle).
   - Gaps are the bench timing-free gaps (`physics_inputs.json`), so v carries their errors: A ± 0.7 %, D ± 3.8 %, C has
     no error (adopted 28 mm).
+- **X/Y pairing fix on main (743d6d31, Paper I session, 11-02).** `wft.reco.select_tracks` now has
+  `xy_pairing['select'] = 'cost'`: pair by the lowest summed `xy_pair_cost`, then gate. The old `'gate'` mode let the
+  beam-tuned `plausible` flag decide which pairs survive (80 % correct on bench two-particle cosmics, `cost` 96.7 %).
+  - `ntof_bundle.py` writes `'gate'` explicitly, so n_TOF output is unchanged for now.
+  - On run_145, `cost` would change 12–23 % of events and lose the gated track in 2–3 %.
+  - The same `plausible` flag also gates the joint two-track fit (`_cross_plane_mismatch`, the `both_plausible` split
+    guard). On the bench it blocks nearly every recovery of two particles merged in one projection
+    (`rerun/effbudget/single/MERGED_PROJECTION_2026-11-02.md`, in progress).
+  - Notes: `rerun/effbudget/single/PAIRING_FIX_2026-11-02.md`, `rerun/ntof/NOTE_PAIRING_FIX_2026-11-02.md` (coming).
+  - **Decision before the n_TOF bundles freeze (Q7):** `select` gate vs cost, and the two-track plausibility guards,
+    chosen on a beam truth test: overlay pairs (`sept26_prelim_analysis/intra_bench.py`, real single beam tracks
+    superimposed), plus capsule pointing. `plausible` contains tan_max, so the tan_max scan and Q7 are one study and
+    are scored together.
+- **Q4 seeding result (11-02, `/media/ucla/work/ntof_pass1/q4/`; same triggers for every arm: run_145 `_000` ids
+  1–2000, run_149 cos_0000 ids 1–5000; tm0.6 v0 bundles).**
+  - **The old n_TOF hits ARE the rr1 recipe:** run_145 `_000` old vs regenerated hits are identical field by field
+    (1,908,783 hits), and so are the reconstructions. So "old vs rr1" only differs on the truncated/fused acquisitions.
+    The pass uses `combined_hits_root_rr1_cm0` from the fa80c06 decodes for one provenance.
+  - **Waveform-native seeding** (5σ peak or 3-sample sum) vs hits, on beam:
+    - A: 491 vs 335 paired tracks, but 132 vs 124 pointing to the capsule (27 % vs 37 % pointing).
+    - C: 353 vs 326 paired tracks, 101 vs 104 pointing (29 % vs 32 %).
+    The extra tracks are almost all non-pointing. CPU is 2–3× (C 22 vs 8 CPU-s per event).
+  - On cosmics there are too few A–C lines in 5,000 triggers (30–34) to separate the two.
+  - **Decision: seed from hits** (the analyzer's matched filter). A waveform threshold scan (6–7σ) could narrow the
+    gap, but nothing here suggests it would beat hits; not pursued unless the hits fail somewhere.
+  - Timing noise: identical work (old vs rr1) ran 3.1–3.9 and 7.6–9.1 CPU-s per event, so only differences > ~25 %
+    mean anything.
+- **kw in situ (11-02).** v1 bundles (timing v) on the cos_0000 A–C line: the ratio fitted/true tan is A 0.947 ± 0.021
+  (x) / 0.958 ± 0.010 (y), C 0.942 ± 0.021 / 0.934 ± 0.014. So **in-situ kw = A 0.982 / 0.973, C 1.013 / 1.008**:
+  with the column-timing v, kw ≈ 1 at n_TOF, and the bench kw (1.02–1.08) does not carry. Held-out check on
+  cos_0001, and the pinned-t0 retest on these bundles (`v1k`, `v1kpin`), running.
+- **Held-out check on run_149 cos_0001 (11-02; kw measured on cos_0000; 3,455 / 2,990 events, 161–169 A–C lines).**
+  - **kw closes:** the fitted/true scale on the line is A 1.003 ± 0.020 (x) / 0.994 ± 0.011 (y), C 1.000 ± 0.014 /
+    1.007 ± 0.014. The angle scale at n_TOF is set by the timing v with kw ≈ 1 (A 0.98/0.97, C 1.01/1.01).
+  - **Pinned t0 (σ 15 ns, cos_0000 latency) vs free, same bundles:**
+    - 169 vs 161 line events.
+    - On the 158 common events: A residual-angle 68 % 3.26° vs 3.56° (A x tan 0.0367 vs 0.0429, −14 %; A y 0.0349
+      vs 0.0335), C 2.93° vs 2.94° (unchanged).
+    - Under the pin the scale moves by −1…−2 % (A 0.984/0.977), so a pinned pass needs its kw measured under the pin.
+    - **Mildly in favour of pinning (A), neutral for C;** with ~160 lines that is not yet significant.
+    - **Next:** all 12 staged run_149 sub-runs (~2,000 lines), kw re-measured under the pin, then a beam-side check
+      (beam trigger, capsule pointing) before deciding.
+- **Remaining before the bundles freeze:** the pin decision (above); the tan_max scan with Q7 (pairing select +
+  two-track guards) on beam overlay pairs and capsule pointing; D's beam events (column start at the grid edge); B and
+  D v/kw routes (D wall, cosmics without a line); Dp for 90/10; the template residual check; sat 3550 vs 3700.

@@ -7,8 +7,11 @@ gas_vE_timing.pdf.
   water626.png   the water each chamber carried through the night (anchored ladder through Magboltz)
   attach626.png  the visible fraction of the drift column T / T_true and its O2-equivalent attachment
   nights.png     water against time from the timing stacks on det4 6-23 -> 6-24 and det2 6-22
-  gas_vE_timing  det3's 6-27 drift scan: timing v (gap / T) and angle-scale v (v_drift x mean kw) against field,
-                 Magboltz bench gas at the fitted water, the other chambers' golden timing v at their own field
+  gas_vE_timing  (Paper I §6) det3's 6-27 drift scan: timing v (gap / T) and angle-scale v (v_drift x mean kw, errors
+                 from results/twov.json, pg_twov.py) on the Magboltz curve of the fitted water, with v / Magboltz
+  gas_drying     (Paper I §6) 6-26 water against time for det6/det7 (anchored ladder), the shared time shape, and
+                 det3's one water across the 6-27 fields
+The two Paper I figures use papers/paper_style.py.  Run: pg_figs.py [name ...] (default: all).
 """
 import csv
 import json
@@ -99,40 +102,128 @@ def nights():
     fig.tight_layout(); fig.savefig(os.path.join(OUT, 'nights.png'), dpi=150); plt.close(fig)
 
 
+def r2(x):
+    """two decimals, half up, after removing the grid's float noise (0.94499999 -> 0.95, as the README quotes it)."""
+    from decimal import Decimal, ROUND_HALF_UP
+    return str(Decimal(str(round(float(x), 4))).quantize(Decimal('0.01'), ROUND_HALF_UP))
+
+
+def _ps():
+    sys.path.insert(0, os.path.join(REPO, 'papers'))
+    import paper_style as ps
+    ps.use()
+    return ps
+
+
 def vE():
+    """Paper I §6 drift scan (2026-11-02): det3's two velocities on one Magboltz curve.
+    Timing v = gap / T (head-on stack, 4 fields); angle-scale v = v_drift x mean kw (the M3 ladder, 7 fields; its error
+    is the ladder estimator's, from pg_twov.py -> results/twov.json).  The curve is the timing-v fit (one water)."""
+    import pandas as pd
+    ps = _ps()
     sc = D['scan']
-    gap = sc['fixed']['gap'] if sc else 28.19
-    fig, ax = plt.subplots(figsize=(6.4, 4.4))
-    E = np.linspace(30, 400, 120)
-    w0 = sc['fixed']['water'] if sc else 0.95
-    for w, ls, lab in ((w0, '-', f'Magboltz {w0:.2f} % water (fit)'), (0.0, ':', 'Magboltz dry'),
-                       (w0 - 0.3, '--', f'{w0 - 0.3:.2f} %'), (w0 + 0.3, '--', f'{w0 + 0.3:.2f} %')):
-        ax.plot(E, [GI.v_of(max(w, 0), e) for e in E], ls, color='k' if ls == '-' else 'grey', lw=1.2 if ls == '-' else 0.8,
-                label=lab)
-    # angle-scale v: v_drift x mean kw per drift-scan row (paper1_res rows.csv), E = V / gap
-    R = [r for r in csv.DictReader(open(os.path.join(REPO, 'rerun', 'paper1_res', 'results', 'rows.csv')))
-         if 'saturday_scan' in r['key'] and 'drift_scan' in r['key']]
-    ang = {}
-    for r in R:
-        ang.setdefault(r['key'], []).append((float(r['drift_V']), float(r['v_drift']), float(r['kw_pass'])))
-    xa = [v[0][0] / (gap / 10) for v in ang.values()]; ya = [v[0][1] * np.mean([x[2] for x in v]) for v in ang.values()]
-    ax.plot(xa, ya, 's', color=COL['det3'], mfc='white', label='det3 angle-scale v (v x kw, M3)')
-    P = [p for p in D['points'] if p['det'] == 'det3' and p['arm'] == 'in30']
-    ax.errorbar([p['E'] for p in P], [p['v'] for p in P], yerr=[p['v_err'] for p in P], fmt='o', color=COL['det3'],
-                label='det3 timing v (gap / T)')
-    for det, key in (('det2', 'o22_long_det2'), ('det4', 'g_det4'), ('det6', 'g_det6_long'), ('det7', 'g_det7_long')):
-        q = [p for p in D['points'] if p['key'] == key and p['arm'] == 'in30']
-        if q:
-            ax.errorbar([q[0]['E']], [q[0]['v']], yerr=[q[0]['v_err']], fmt='D', ms=5, color=COL[det],
-                        label=f'{det} golden timing v')
-    ax.set_xlabel('drift field E = V / gap (V/cm)'); ax.set_ylabel('drift velocity (µm/ns)')
-    ax.set_title('Bench Ar/iso 95/5: timing v vs angle-scale v, Magboltz (fine grid)', fontsize=9)
-    ax.grid(alpha=0.3); ax.legend(fontsize=7, loc='lower right')
-    fig.tight_layout()
-    fig.savefig(os.path.join(OUT, 'gas_vE_timing.png'), dpi=150); fig.savefig(os.path.join(OUT, 'gas_vE_timing.pdf'))
-    plt.close(fig)
+    gap = sc['fixed']['gap']
+    w0, (wlo, whi) = sc['fixed']['water'], sc['fixed']['water_68']
+    TW = json.load(open(os.path.join(HERE, 'results', 'twov.json')))
+    c3 = ps.DET_COLOR['det3']
+    fig, (ax, ar) = plt.subplots(2, 1, figsize=(ps.FULL[0] * 0.62, 3.9), sharex=True,
+                                 gridspec_kw=dict(height_ratios=[2.3, 1], hspace=0.08))
+    E = np.linspace(25, 410, 160)
+    vm = np.array([GI.v_of(w0, e) for e in E])
+    lo = np.array([GI.v_of(wlo, e) for e in E]); hi = np.array([GI.v_of(whi, e) for e in E])
+    ax.fill_between(E, np.minimum(lo, hi), np.maximum(lo, hi), color=ps.MODEL, alpha=0.12, lw=0, zorder=1)
+    ax.plot(E, vm, '-', color=ps.MODEL, lw=1.1, zorder=2,
+            label=f'Magboltz, {r2(w0)} % water [{r2(wlo)}, {r2(whi)}]\n(fit to the timing v, χ² {sc["fixed"]["chi2"]:.1f}/{sc["fixed"]["ndf"]})')
+    ax.plot(E, [GI.v_of(0.0, e) for e in E], ':', color=ps.MUTED, lw=0.9, zorder=2, label='Magboltz, dry')
+    rows = []
+    La = sorted(TW['ladder'].values(), key=lambda L: L['drift_V'])
+    xa = np.array([L['drift_V'] / (gap / 10) for L in La]); ya = np.array([L['v_ang'] for L in La])
+    ea = np.array([L['v_ang_err'] for L in La])
+    ax.errorbar(xa, ya, yerr=ea, fmt='s', ms=4, color=c3, mfc='white', mec=c3, zorder=4,
+                label=r'angle-scale v (M3 ladder, no gap)')
+    P = sorted((p for p in sc['points']), key=lambda p: p['E'])
+    xt = np.array([p['E'] for p in P]); yt = np.array([p['v'] for p in P]); et = np.array([p['v_err'] for p in P])
+    ax.errorbar(xt, yt, yerr=et, fmt='o', ms=4.5, color=c3, zorder=5, label=f'timing v = g / T  (g = {gap:.2f} mm)')
+    for x, y, e in zip(xa, ya, ea):
+        rows.append(dict(kind='angle_scale_v', E=x, v=y, v_err=e, magboltz=GI.v_of(w0, x)))
+    for x, y, e in zip(xt, yt, et):
+        rows.append(dict(kind='timing_v', E=x, v=y, v_err=e, magboltz=GI.v_of(w0, x)))
+    ax.set_ylabel('drift velocity (µm/ns)'); ax.set_ylim(0, 44)
+    ax.legend(loc='upper left', fontsize=6.6, borderaxespad=0.2)
+    ax.set_title('det3, 6-27 drift scan, Ar/iC$_4$H$_{10}$ 95/5 + water')
+    mz = lambda x: np.array([GI.v_of(w0, e) for e in x])
+    ar.axhline(1.0, color=ps.MODEL, lw=1.0)
+    ar.fill_between(E, np.minimum(lo, hi) / vm, np.maximum(lo, hi) / vm, color=ps.MODEL, alpha=0.12, lw=0)
+    ar.errorbar(xa, ya / mz(xa), yerr=ea / mz(xa), fmt='s', ms=4, color=c3, mfc='white', mec=c3, zorder=4)
+    ar.errorbar(xt, yt / mz(xt), yerr=et / mz(xt), fmt='o', ms=4.5, color=c3, zorder=5)
+    ar.set_ylim(0.88, 1.14); ar.set_xlim(20, 415)
+    ar.set_xlabel('drift field E = V / g (V/cm)'); ar.set_ylabel('v / Magboltz')
+    ps.save(fig, os.path.join(OUT, 'gas_vE_timing'), data=pd.DataFrame(rows))
+
+
+def drying():
+    """Paper I §6 (2026-11-02): the bench gas dries over a night.  Water on 6-26 from the anchored M3 ladder of det6 and
+    det7 (attachment-blind; k from the attachment-free rows) through Magboltz; (b) the excess over each chamber's
+    afternoon plateau, det6's scaled by the fitted ratio, to show the one time shape; (c) det3 on 6-27: the same water
+    at every field of the drift scan (timing v)."""
+    import pandas as pd
+    ps = _ps()
+    A, S = D['att_626'], D['att_626']['shared']
+    fig, axs = plt.subplots(1, 3, figsize=(ps.FULL[0], 2.6), gridspec_kw=dict(width_ratios=[1.35, 1.1, 0.75], wspace=0.48))
+    rows = []
+    ax = axs[0]
+    for a in axs[:2]:
+        a.axvspan(6.0, 10.33, color=ps.GRID, lw=0, zorder=0)
+    ax.text(8.17, 1.58, 'golden\nrows', ha='center', va='top', fontsize=6.3, color=ps.MUTED)
+    for det in ('det6', 'det7'):
+        W = A[det]['water']
+        t = np.array([w['t'] - T626 for w in W]); y = np.array([w['water'] for w in W])
+        el = y - np.array([w['water_lo'] for w in W]); eh = np.array([w['water_hi'] for w in W]) - y
+        ax.errorbar(t, y, yerr=[el, eh], fmt=ps.DET_MARKER[det], ms=2.8, lw=0.6, color=ps.color(det), label=det)
+        ax.axhline(S['plateau_water'][det], color=ps.color(det), lw=0.7, ls='--', zorder=1)
+        for i in range(len(t)):
+            rows.append(dict(panel='a', det=det, hours_626=t[i], water=y[i], lo=y[i] - el[i], hi=y[i] + eh[i]))
+    ax.set_xlabel('hours on 6-26'); ax.set_ylabel('water (%)'); ax.set_ylim(0, 1.62); ax.set_xlim(0.5, 15.5)
+    ax.legend(loc='upper right', fontsize=7, borderaxespad=0.2)
+    ax.set_title('(a) water, from the M3 ladder')
+    ax = axs[1]
+    r = S['excess_ratio_det6_over_det7']
+    for det, sc_ in (('det6', 1.0 / r), ('det7', 1.0)):
+        W = A[det]['water']
+        t = np.array([w['t'] - T626 for w in W])
+        y = (np.array([w['water'] for w in W]) - S['plateau_water'][det]) * sc_
+        e = 0.5 * (np.array([w['water_hi'] for w in W]) - np.array([w['water_lo'] for w in W])) * sc_
+        ax.errorbar(t, y, yerr=e, fmt=ps.DET_MARKER[det], ms=2.8, lw=0.6, color=ps.color(det),
+                    label=det + (f' ÷ {r:.2f}' if det == 'det6' else ''))
+        for i in range(len(t)):
+            rows.append(dict(panel='b', det=det, hours_626=t[i], excess_scaled=y[i], err=e[i]))
+    ax.axhline(0, color=ps.MODEL, lw=0.8)
+    ax.set_xlabel('hours on 6-26'); ax.set_ylabel('water above plateau (%)'); ax.set_xlim(0.5, 15.5)
+    ax.text(0.97, 0.62, f'r = {S["corr"]:.3f}', transform=ax.transAxes, ha='right', fontsize=7, color=ps.INK)
+    ax.legend(loc='upper right', fontsize=7, borderaxespad=0.2)
+    ax.set_title('(b) one time shape')
+    ax = axs[2]
+    sc = D['scan']
+    w0, (wlo, whi) = sc['fixed']['water'], sc['fixed']['water_68']
+    ax.axhspan(wlo, whi, color=ps.MODEL, alpha=0.12, lw=0)
+    ax.axhline(w0, color=ps.MODEL, lw=1.0)
+    P = sorted((p for p in D['points'] if p['det'] == 'det3' and p['arm'] == 'in30' and 'saturday_scan' in p['key']
+                and 'water' in p), key=lambda p: p['E'])
+    x = np.array([p['E'] for p in P]); y = np.array([p['water'] for p in P])
+    lo_ = np.array([p['water_lo'] if np.isfinite(p['water_lo']) else p['water'] for p in P])
+    hi_ = np.array([p['water_hi'] if np.isfinite(p['water_hi']) else p['water'] for p in P])
+    ax.errorbar(x, y, yerr=[y - lo_, hi_ - y], fmt='o', ms=4, color=ps.color('det3'), zorder=5)
+    for i in range(len(x)):
+        rows.append(dict(panel='c', det='det3', E=x[i], water=y[i], lo=lo_[i], hi=hi_[i]))
+    ax.set_ylim(0, 1.62); ax.set_xlim(150, 420)
+    ax.text(0.5, 0.93, f'det3, 6-27: {r2(w0)} %', transform=ax.transAxes, ha='center', fontsize=7, color=ps.color('det3'))
+    ax.set_xlabel('drift field (V/cm)'); ax.set_ylabel('water (%)')
+    ax.set_title('(c) one water at all fields')
+    ps.save(fig, os.path.join(OUT, 'gas_drying'), data=pd.DataFrame(rows))
 
 
 if __name__ == '__main__':
-    for f in (v626, water626, attach626, nights, vE):
-        f(); print(f.__name__)
+    only = sys.argv[1:]
+    for f in (v626, water626, attach626, nights, vE, drying):
+        if not only or f.__name__ in only:
+            f(); print(f.__name__)
