@@ -1,10 +1,14 @@
 \section{Charge balance and efficiency}\label{sec:efficiency}
-\sectionstate{partial}{PLAN\_38 (\texttt{38\_xy\_charge\_balance.py}); efficiency maps (\texttt{08}, \texttt{09}); edge study \texttt{32\_edge\_fringe\_field.py} (hits angle, D4)}
-\intent{How the charge divides between the two views, and where each chamber is efficient. Hits are the right input
-here (detection, amplitude); positions come from the M3 reference, not from the chamber.}
+\sectionstate{partial}{pass 1: \texttt{rerun/effbudget/PASS1\_RESULT\_2026-10-31.md} (fleet, A1), \texttt{rerun/effbudget/single/README.md}
+(single-track, pairing, radius; 2026-11-02), \texttt{rerun/paper1\_figs} (maps, edge), PLAN\_38 (charge balance)}
+\intent{How the charge divides between the views, what ``detected'' means, where each chamber is efficient, and then
+det3 in detail: its single-track efficiency with a selection the chamber cannot bias, and what it does with two
+particles. The other chambers appear only in the maps, to show their production defects (Dylan 2026-11-02).}
 
 \subsection{X/Y charge balance}
-\tbw{$f=q_X/(q_X+q_Y)$: median 0.487 (det3) and 0.531 (det2), $\sigma_{68}=0.07$, flat in position and angle; three charge proxies agree.}
+\tbw{$f=q_X/(q_X+q_Y)$: 0.485 (det3) and 0.513 (det2), event-to-event spread 0.014--0.032 (det7 0.116, its X readout
+fault); flat in position and angle. Equivalently the X/Y charge ratio of one track is known to 6\,\% per event
+($\sigma$ of $\ln q_X/q_Y$ on single tracks, det3), which is what makes X/Y pairing work (\cref{sec:pairing}).}
 \begin{figure}[t]
   \centering
   \includegraphics[width=0.6\linewidth]{charge_balance}
@@ -12,20 +16,96 @@ here (detection, amplitude); positions come from the M3 reference, not from the 
   \label{fig:balance}
 \end{figure}
 
-\subsection{Efficiency and maps}
-\tbw{Detection efficiency per chamber; maps; the edge turn-on. Efficiency within 5\,mm:
-\requote{93/92/42/75/57\,\%} (det3/2/4/6/7). det4's low value is its non-amplifying area (\cref{sec:det4}).}
-\analysis{D1}{re-quote from the reproduced r06 products}
-\analysis{D4}{edge angle tilt with wft angles}
+\subsection{What ``detected'' means}\label{sec:detected}
+\tbw{Denominator: one clean M3 ray ($\chi^2<1$, four clusters) crossing the interior (${\ge}30$\,mm from the $x$ sides,
+${\ge}8$\,mm from the passivated $y$ sides). Detected: both views fitted, ${\le}2$ competing strips per view, and the
+reconstructed track within $R$ of the M3 ray at the mesh. When the chamber reconstructs several tracks, the event is
+detected if one of them is the M3 track (multi-track credit; this is the default number). Removed from the denominator:
+tracks the reference itself got wrong (bent between the M3 doublets, 0.20\,\%) and tracks leaving through the edge
+of the other coordinate (0.15\,\%).}
+\tbw{\textbf{The radius.} $\varepsilon(R)$ has two regimes (\cref{fig:effradius}): the resolution core (core
+$\sigma=0.55$\,mm per view at the mesh, dominated by the M3 pointing and scattering), steep up to ${\sim}4$\,mm; then a
+slow rise of 0.1--0.2\,pt per mm out to 40\,mm, made of mis-measured tracks ($\delta$-pulled fits, saturated
+blobs, bent reference tracks) and accidentals. We use $R=5$\,mm, the knee: 9 core $\sigma$, where the Gaussian core
+is exhausted and the accidental rate (event mixing) is 0.07\,\%, below the statistical error and 70$\times$ below
+the inefficiency. $R\in[4,8]$\,mm moves the efficiency by $-0.5/{+0.6}$\,pt (systematic).}
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.6\linewidth]{eff_vs_radius}
+  \caption{\tbw{det3 efficiency against the matching radius (production pick and multi-track credit), with the
+  accidental rate from event mixing.}}
+  \label{fig:effradius}
+\end{figure}
+
+\subsection{Efficiency maps of the five chambers}
+\tbw{Maps (8\,mm disk) of all five chambers on their golden rows. Interior efficiency: det2 90.3, det3 92.6, det4 40.9
+(71.3 in its live bands), det6 74.4, det7 68.0\,\% (production pick). det2 and det3 lose no more than 1.7\,\% to any one
+class. The other three show production defects, named here and not studied further: det4's non-amplifying
+stripes (\cref{sec:det4}), whole-plane discharges on det6 and det7 (17 and 24\,\% of tracks at 495\,V, 10--65\,V above
+their scan optima), and det7's X readout fault.}
+\tbw{\textbf{Discharges limit only a chamber that is not built well.} Efficiency against HV with the discharge loss
+overlaid (\cref{fig:effhv}): det3 reaches its plateau before discharges cost anything; det6 and det7 lose to
+discharges before they reach it.}
 \begin{figure}[t]
   \centering
   \includegraphics[width=0.7\linewidth]{efficiency_map}
-  \caption{\tbw{Efficiency map (det3).}}
+  \caption{\tbw{Efficiency maps of the five chambers.}}
   \label{fig:effmap}
 \end{figure}
 \begin{figure}[t]
   \centering
-  \includegraphics[width=0.7\linewidth]{edge_turnon}
-  \caption{\tbw{Efficiency turn-on at the chamber edge.}}
-  \label{fig:edge}
+  \includegraphics[width=0.6\linewidth]{eff_vs_hv_discharge}
+  \caption{\tbw{Efficiency and discharge loss against the resist HV (det3, det6, det7).}}
+  \label{fig:effhv}
 \end{figure}
+\analysis{EFFHV}{build eff\_vs\_hv\_discharge from the hv\_scan rows (rerun/paper1\_ops + effbudget)}
+
+\subsection{det3: single-track efficiency}\label{sec:single}
+\tbw{A ``single-track'' sample selected by det3 itself is biased: a failure that looks like two tracks would leave
+the sample. On the bench an external tag does not help: M3 sees a second straight track in 2 of the 276 events where
+det3 sees two particles, because those particles are local (soft electrons and secondaries from the material above,
+at large angles). Instead we use the two views: a real second particle is ionisation in the gas, seen in both
+views with the same charge. Only events with such a particle (both views, charge-paired, not attached to the muon)
+leave the sample; everything else stays and counts against the chamber, including second deposits seen in one
+view only and showers vetoed by the spark rule.}
+\tbw{Result (two golden rows, 25\,875 tracks): $\varepsilon_\mathrm{single}=95.2\pm0.1$\,(stat)$^{+0.6}_{-0.5}$\,($R$)\,\%.
+If every one-view second deposit and every vetoed shower were an outside particle, it would be 97.0\,\%; that is
+the upper end of the selection systematic. The losses, in \% of single tracks: $\delta$-rays 1.7 (\cref{app:losses}),
+vetoed showers and unrelated deposits 1.1, one-view second deposits 0.5, discharges 0.5, noise bands 0.2, fits off
+with no flag 0.2.}
+\begin{table}[h]
+  \centering\small
+  \caption{\tbw{det3 interior efficiency, $R=5$\,mm, by selection (\texttt{rerun/effbudget/single}).}}
+  \label{tab:single}
+  \begin{tabular}{lrr}
+    \hline
+    selection & sat\_det3 & 6-27 long \\
+    \hline
+    all tracks, multi-track credit & $95.43\pm0.26$ & $95.15\pm0.15$ \\
+    det3-flagged single (biased) & $97.14\pm0.21$ & $96.97\pm0.12$ \\
+    single, two-view rule & $95.45\pm0.26$ & $95.13\pm0.15$ \\
+    with an independent second particle & $94.5\pm2.0$ & $96.1\pm0.9$ \\
+    \hline
+  \end{tabular}
+\end{table}
+
+\subsection{det3: two particles in the chamber}\label{sec:pairing}
+\tbw{\textbf{Efficiency.} With an independent second particle in the chamber (2.0\,\% of triggers), the muon is still
+among the reconstructed tracks in 94.5--96.1\,\%: as efficient as with one particle.}
+\tbw{\textbf{Pairing the views.} Two particles give two segments per view and two possible X/Y pairings; the wrong
+one makes two ghost tracks. The views share no coordinate, but they read the same avalanche charge at the same drift
+times, so the reconstruction pairs them by the charge balance and the charge-arrival time (Paper~II). On 552 real
+two-particle cosmic events where M3 marks one particle in both views, the pairing is right in
+$98.0\pm0.6$\,\% (charge alone: 95.7\,\%; 100\,\% when the two charges differ by more than a factor 1.65, 96\,\% when they
+are similar). This is the feasibility demonstration for pairs at n\_TOF.}
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.6\linewidth]{xy_pairing}
+  \caption{\tbw{X/Y charge ratio $\ln(q_X/q_Y)$ for correctly and wrongly paired segments of real two-particle events,
+  against single tracks.}}
+  \label{fig:pairing}
+\end{figure}
+\askDylan{Bench chain finding: production's track selection drops the second track when a candidate fails the
+beam-tuned \texttt{plausible} gate (16\,\% of bench candidates), and then often pairs the wrong segments (production
+80\,\% correct, 95\,\% when every candidate is plausible). The pairing cost itself is right. Quote the pairing rule
+(98\,\%) and state this, or fix the bench gate first? Single-track efficiency and angles are unaffected.}

@@ -18,18 +18,26 @@ the drift-time ladder when strip times are used, and is the reason the reconstru
 charge-spreading model (Paper~II). For a micro-TPC alone we might not choose it again. In a high-rate or harsh
 environment, however, it quenches discharges and keeps the chamber alive and live (no measurable dead time per discharge
 on the bench, \cref{sec:operation}), so on balance it may still be the right choice.}
-\tbw{\textbf{(3) Resistive strips rather than a uniform resistive layer.} The strips were what could be made to work; a
-continuous resistive layer (which would spread the charge isotropically) was tried and had problems. \emph{Stephan: what
-were they?} The strip direction was a deliberate choice: the strips run along $y$, so the charge spreads along $y$ and
-stays narrow across $x$, which was meant to give the best resolution in the plane joining the n\_TOF chambers, where most
-of the pair opening angle is measured. \emph{(Dylan, for the text: on cosmics the two views reach similar angles, det3
-X/Y 0.98/0.90\textdegree, det2 1.03/1.08\textdegree, so the intended X advantage is not visible in the bench numbers;
-the Y view's broadening is the RC spread, which the model absorbs.)}}
-\tbw{\textbf{(4) Passivation and the active area.} The two $y$ ends of the strip plane are passivated (covered) over
-18.0 and 18.7\,mm, which removes ${\sim}10\,\%$ of the area (efficient area $399.4\times359.9$\,mm$^2$). \emph{Stephan:
-why it was needed (the strip termination / HV bus at the strip ends, and discharges there?).} The two $x$ sides are not
-passivated, and there the drift field fringes over 20--30\,mm, which biases the X angle and sets our 30\,mm fiducial
-(\cref{sec:efficiency}); the passivated sides are sharp.}
+\tbw{\textbf{(3) Resistive strips rather than a uniform resistive layer.} A continuous resistive layer was tried
+first: it came out with too low a resistance, and current flowed through ``hot spots''. Resistive strips with the
+strip ends passivated allowed a higher resistance and far less current. \emph{Stephan: the measured resistances and
+currents of the uniform-layer boards, if they exist.} What the bench logs show for the strip chambers
+(\texttt{rerun/paper1\_ops/currents}): det3 draws ${\sim}1$\,\textmu A at its 490\,V working point, and the current is
+not ohmic: $I=1.05\,\text{\textmu A}\times2^{(V-490\,\text{V})/13.3\,\text{V}}$, i.e.\ it grows as gain$^{1.25}$ and does
+not depend on the drift field. That is ${\sim}10^5$ times the cosmic signal current, so it is a gain-driven dark current in
+the amplification stage, the same family as the noise bands (\cref{app:losses}). The other strip chambers draw
+0.45--6\,\textmu A at ${\sim}490$\,V. No uniform-layer chamber has a current log on the bench (the one January board
+with a plain layer over its strips drew 0.49\,\textmu A at 530\,V), so the comparison with the uniform layer rests on
+the production tests.}
+\tbw{\textbf{(4) Strip direction and passivation.} The strips run along $y$ and end at the two $y$ edges, where their
+terminations are passivated (covered) over 18.0 and 18.7\,mm. \emph{Stephan: why the passivation is needed (the
+termination / HV connection at the strip ends, and discharges there?).} This removes ${\sim}10\,\%$ of the area
+(efficient area $399.4\times359.9$\,mm$^2$). The orientation was chosen mainly for where that loss falls: at the top and
+bottom of the chamber, not on the sides that face the neighbouring chambers at n\_TOF. We also expected better
+resolution across the strips (the charge spreads along them). The data show no significant difference, and on det3
+the opposite: angle $s_{68}$ X/Y $0.98/0.90$\textdegree{} (det3), $1.03/1.08$\textdegree{} (det2); bench position residuals X/Y within
+12\,\textmu m of each other. The two $x$ sides are not passivated, and there the drift field fringes over 20--30\,mm,
+which biases the X angle and sets our 30\,mm fiducial (\cref{sec:edge}); the passivated sides are sharp.}
 
 \subsection{Chamber layout}
 \tbw{Entrance window and flange, 30\,mm drift gap, cathode, field cage. Active area; measured efficient area

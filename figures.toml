@@ -71,6 +71,34 @@ source = "rerun/paper1_charge/figures/charge_balance.pdf"
 producer = "python3 rerun/paper1_charge/charge_rows.py (lxplus, Analysis_pass1) && .venv/bin/python rerun/paper1_charge/make_report.py --in <charge_rows out-dir>"
 note = "Rebuilt 2026-10-31 on pass 1 (was the 07-12 hits figure 61). Interior >= 30 mm, det7 X ch 256-511, single track, M3-matched; numbers in rerun/paper1_charge/report.html."
 
+[fig.eff_vs_radius]
+title = "det3 efficiency against the matching radius, production pick and multi-track credit, with the accidental rate"
+state = "current"
+source = "rerun/effbudget/single/figures/eff_vs_radius.pdf"
+producer = ".venv/bin/python rerun/effbudget/single/radius.py --root <cosmic_bench mirror> && .venv/bin/python rerun/effbudget/single/make_figures.py"
+note = "2026-11-02, pass 1, both det3 golden rows; R = 5 mm is the knee (9 core sigma, accidentals 0.07 %). rerun/effbudget/single/README.md section 3."
+
+[fig.eff_vs_hv_discharge]
+title = "Efficiency and discharge loss against the resist HV (det3, det6, det7)"
+state = "placeholder"
+section_state = "partial"
+note = "Dylan 2026-11-02: show that a well-built chamber reaches its plateau before discharges limit it. Inputs: hv_scan rows of the pass (effbudget budgets) and the discharge rates of rerun/paper1_ops."
+producer = "(to write)"
+
+[fig.xy_pairing]
+title = "X/Y pairing of two particles by charge: ln(qX/qY) of true and swapped pairings, 552 real cosmic events"
+state = "current"
+source = "rerun/effbudget/single/figures/xy_pairing.pdf"
+producer = ".venv/bin/python rerun/effbudget/single/xy_pairing.py --root <cosmic_bench mirror> && .venv/bin/python rerun/effbudget/single/make_figures.py"
+note = "2026-11-02, pass 1, both det3 golden rows; truth from M3 marking one particle in both views. README section 2."
+
+[fig.currents_vs_hv]
+title = "Resistive-electrode current against HV, every chamber and prototype on the bench"
+state = "current"
+source = "rerun/paper1_ops/currents/results/figures/currents_vs_hv.pdf"
+producer = "WORK_DATA=... .venv/bin/python rerun/paper1_ops/currents/hv_currents.py"
+note = "2026-11-02 OVERVIEW ONLY (every chamber and prototype, per run-config name; 6-20/6-22 names carry the slot remap). Paper version to make: det3 6-27 scan with the fit I = 1.05 uA x 2^((V-490)/13.3 V), plus the other chambers at their golden HV. Not yet included in the text."
+
 [fig.efficiency_map]
 title = "Detection efficiency maps, all five chambers (pass 1, plateau pools, 8 mm disk)"
 state = "current"
