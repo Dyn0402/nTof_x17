@@ -19,7 +19,7 @@ numbers in `../paper1` and `rerun/model_audit/FINDINGS.md`. **Not submitted.**
 
 - v1 (10-27) was adapted from the MPGD2026 abstract (four chambers, 1.15–2.51° per view, the n_TOF γ flash); in git.
 - v2 (10-28) rewritten with Dylan: detector design first, det3 numbers from the `fe` reconstruction, capsule imaging
-  instead of the flash. `abstract.tex`/`abstract.pdf` and `abstract.txt` (for email) carry the same text.
+  instead of the flash. `abstract.tex`/`Neff_Abstract.pdf` (renamed from `abstract.pdf` 11-02) and `abstract.txt` (for email) carry the same text.
 
 ## Draft v2 (2026-10-28, ~140 words)
 
