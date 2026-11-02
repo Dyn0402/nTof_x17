@@ -157,11 +157,16 @@ These are fair two-particle events and count as losses where the muon is not rec
   \label{fig:disp_deposit}
 \end{figure}
 \tbw{\textbf{Overlap in one projection.} The reconstruction is built for it: a joint two-track fit offers a merged
-candidate a second track, with a lowered threshold when the other view resolves more candidates. On the bench it
-rarely fires: both its trigger and its acceptance require the candidates to pass a plausibility test tuned on beam
-tracks (full drift column, raw $|\tan|<0.6$) that short, steep secondaries fail; 65\,\% of the merged events never
-attempt a split and the 68 attempts were all refused.}
-\analysis{MERGED}{merged-projection recovery being studied/fixed (rerun/effbudget/single/MERGED\_PROJECTION\_2026-11-02.md, pending); re-quote (ii) after}
+candidate a second track, with a lowered threshold when the other view resolves more candidates. In its first version
+it rarely fired on the bench: both its trigger and its acceptance required candidates to pass a plausibility test tuned
+on beam tracks (full drift column, raw $|\tan|<0.6$) that short, steep secondaries fail, and a short secondary drifts from
+only part of the gap, so its column time misses the coincidence. A charge-corroborated trigger and acceptance (the
+merged view's charge must match the sum of the other view's two segments, and each child its partner; only the muon
+child need be plausible; the 4-pitch separation floor kept) recovers the muon in 53.8\,\% of the 195 interior merged
+events (from 41.0\,\%), with correct X/Y pairing in 36.4\,\% (from 20.5\,\%), and splits no clean single muon on any of the
+five chambers (\texttt{rerun/effbudget/single/MERGED\_PROJECTION\_2026-11-02.md}). The rest fail the geometric guards:
+the two children share almost no depth (one track cut in half) or lie within the floor.}
+\analysis{MERGED}{charge-corroborated split on main (28ac36a0), bench switch xy\_pairing.split\_corrob = charge; needs waveforms, so the 44\,\% in \cref{fig:twoparticle} stays until the next bench re-pass}
 \analysis{VETO}{(iii) is the discharge veto counting a separate particle: a reconstruction choice, recoverable in principle (A1: veto off + competing-cluster cut relaxed)}
 \tbw{\textbf{Pairing the views.} Two particles give two segments per view and two possible X/Y pairings; the wrong
 one makes two ghost tracks. The views share no coordinate, but they read the same avalanche charge at the same drift
