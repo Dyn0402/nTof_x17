@@ -353,3 +353,11 @@ A failing arm is held, as on the bench.
   - **Verdict (tentative): 0.6, no two-sided.** Statistics are one sub-run (~170 line events). Re-check on the full
     staged run_149 (12 sub-runs) once v is measured in situ, and look at what the beam's steep winners are (25 % of
     beam planes: real steep electrons, flash-tail junk, or mis-fits).
+- **Full re-decode done (11-02, condor 4612805).**
+  - 31,496 / 31,496 FEU files, 0 errors, in `<subrun>/decoded_root_fa80c06/`; 246.2 M FEU-events (~30.8 M triggers).
+  - In 79 acquisitions the eight FEUs differ by ±1 event. That is the last trigger at the file boundary; the reco
+    pairs FEUs by eventId.
+  - The decoder reports 0 missing eventIDs on every file whose log tail carries the count. 1,067 records' 12-line
+    tails cut that line, so for those the count is not recorded rather than zero.
+  - **Next:** point `ntof_reco.py` / `wft.io` at `decoded_root_fa80c06`, and decide hits (Q4) before any production
+    node.
