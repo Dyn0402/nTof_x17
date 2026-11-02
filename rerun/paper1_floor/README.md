@@ -124,6 +124,10 @@ reproduce `budget_pass1.json`'s tilt_2d40 to the printed digit. Report: `report.
 - `figures/floor_budget.png`: the variance split.
 - `figures/angle_form.png`: data, all and clean events, against the toy floor and the full toy, per angle.
 - `figures/position_ms.png`: the position residual against M3 χ², with the SPS band.
+- `figures/bench_position_res.pdf` (Paper I `fig.bench_position_res`, 2026-11-02, `position_ms_fig.py`): det3 near-normal
+  core σ against the M3-χ² quintile with the χ² → 0 extrapolation, and the chamber term against the assumed pointing
+  (±10 % band). The near-normal quintile bins are recomputed (`position_ms_fig.py bins` → `results/position_ms_bins.json`)
+  and reproduce position_ms.json's intercepts.
 - `figures/fleet.pdf`: H0 against W. Installed as Paper II `fig.fleet` (`papers/paper2/figures.toml`, `papers/paper2/figures/fleet.pdf`).
 - `tiers_benchmark` stays a placeholder: H1/H2a/H2b/H2c are not pass products, and H2c (forward fit on hit lists, R3) is
   new work. `papers/FIGURE_PROVENANCE_2026-10-31.md` is updated.
