@@ -412,3 +412,16 @@ A failing arm is held, as on the bench.
 - **Order of the remaining calibration studies:** v in situ (column duration on full-gap tracks, A/C; B/D
     limitations), then kw from the A–C line, then t0 pin vs free, then the tan_max scan, then seeding (Q4 runs
     meanwhile: its conclusion does not depend on the angle scale).
+- **v in situ from the column duration (11-02).** Box fit (`colsum.GridFit`, the pass-1 X template) to the median
+  stacked strip sum, stacked on the trigger (jitter ~13 ns); bootstrap errors.
+  - **A–C line muons (true full-gap through-goers, run_149 cos_0000):** A 38.4 ± 0.7 (x) / 38.9 ± 0.8 (y); C 27.7 ± 0.7
+    / 28.6 ± 0.7 µm/ns. This agrees with is2's geometric in-situ v (A 38.0, C 28.7) by an independent, timing-only
+    route.
+  - **All clean single-cluster events (two cosmic sub-runs, and run_145 beam):** A 39.4–40.0, C 27.3–28.5, D 29.9–32.0
+    (cosmics). B is not measurable (its column is not a box). D on beam fails again (box start at the grid edge), so D's
+    beam events need their own look.
+  - **Adopted for the v1 bundles:** A 38.6 (line muons; the all-cluster selection reads 3 % faster, a selection
+    systematic), C 28.1, D 31.0 (± gap 29.44 ± 1.12 mm, i.e. ± 4 %; the old D-wall estimate was ~28), B 42.6 prior
+    (no angle).
+  - Gaps are the bench timing-free gaps (`physics_inputs.json`), so v carries their errors: A ± 0.7 %, D ± 3.8 %, C has
+    no error (adopted 28 mm).
