@@ -79,6 +79,28 @@ def score(a_path, c_path, run_config, sep_max=60.0, label=''):
                              res_68=float(np.percentile(r, 68)) if len(r) else np.nan,
                              tail_gt5=float((r > 5).mean()) if len(r) else np.nan))
     out['bins'] = rows
+    # the line's tan in each chamber's local frame (build_tracks.local_and_global: d_local ~ (tanx, tany, 1)), and the
+    # angle-scale ratio fitted/true per view on |true tan| in [0.15, 0.45] (insitu_calib's kwmed window): kw_new =
+    # kw x ratio.  The sign of a view is the reconstruction's own (corr > 0 required), as in insitu_calib.truth.
+    from sept26_prelim_analysis import build_tracks as BT
+    for s_, arm in (('a', 'A'), ('c', 'C')):
+        R = trs[f'mx17_{arm}'].R
+        Ll = L @ R                                            # global -> local (R orthonormal: R^T applied per row)
+        for k_, ax in ((0, 'x'), (1, 'y')):
+            tt = Ll[:, k_] / Ll[:, 2]
+            fit = M[f'tan{ax}_{s_}'].to_numpy(float)
+            if ax == 'y':
+                tt = tt * 1.0
+            r = np.corrcoef(fit[keep], tt[keep])[0, 1] if keep.sum() > 5 else np.nan
+            tt = tt * np.sign(r) if np.isfinite(r) else tt
+            M[f'true_tan{ax}_{s_}'] = tt
+            w = keep & (np.abs(tt) > 0.15) & (np.abs(tt) < 0.45) & np.isfinite(fit)
+            ratio = float(np.median(fit[w] / tt[w])) if w.sum() >= 10 else np.nan
+            res = fit[keep] - tt[keep]
+            out[f'{arm}{ax}'] = dict(corr=float(r), n_kw=int(w.sum()), ratio=ratio,
+                                     ratio_err=float(1.2533 * 1.4826 * np.median(np.abs(fit[w] / tt[w] - ratio)) /
+                                                     np.sqrt(max(w.sum(), 1))) if w.sum() else np.nan,
+                                     res_tan_68=float(np.percentile(np.abs(res), 68)) if keep.any() else np.nan)
     return out, M[keep]
 
 
@@ -92,7 +114,7 @@ def main():
     ap.add_argument('--out', default=None)
     a = ap.parse_args()
     s, _ = score(a.a, a.c, a.run_config, a.sep_max, a.label)
-    print(json.dumps({k: v for k, v in s.items() if k != 'bins'}))
+    print(json.dumps({k: v for k, v in s.items() if k != 'bins'}, default=str))
     print(pd.DataFrame(s['bins']).to_string(index=False, float_format=lambda x: f'{x:.2f}'))
     if a.out:
         json.dump(s, open(a.out, 'w'), indent=1)
