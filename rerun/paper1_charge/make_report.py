@@ -282,7 +282,9 @@ def fig_drift(scans, figdir):
 
 
 def fig_balance(golden, ev, figdir, paper_out=None):
-    """The Paper I charge_balance figure, in the paper style (papers/paper_style.py): det3 first and on top."""
+    """The Paper I charge_balance figure, in the paper style (papers/paper_style.py): det3 first and on top.
+    Checklist pass 2026-11-02: drawn at its printed width (4.3 in), no selection text on the axis (the caption has it),
+    capital view letters as in the text, legend = chamber with its median / core sigma / n (the numbers the text quotes)."""
     import sys
     import pandas as pd
     sys.path.insert(0, os.path.join(REPO, 'papers'))
@@ -292,7 +294,7 @@ def fig_balance(golden, ev, figdir, paper_out=None):
     tab = dict(bin_lo=bins[:-1], bin_hi=bins[1:])
     with matplotlib.rc_context():
         ps.use()
-        fig, ax = plt.subplots(figsize=ps.FULL)
+        fig, ax = ps.fig_for(4.3, aspect=0.66)
         for r in sorted(golden, key=lambda r: order.index(r['det'])):
             z = ev[r['key']]
             u = ~(z['sat_x'] | z['sat_y'])
@@ -303,15 +305,14 @@ def fig_balance(golden, ev, figdir, paper_out=None):
             st = ps.det(d)
             h, _ = np.histogram(lr, bins=bins, density=True)
             tab[d] = h
-            ax.stairs(h, bins, color=st['color'], lw=st['lw'] + 0.3, zorder=st['zorder'],
-                      label=(f"{d}:  {e['xy_ln_median']:+.3f},  {e['xy_ln_core_sigma']:.3f},  ".replace('-', '\u2212')
-                             + f"{len(lr):,}".replace(',', '\u2009')))
+            ax.stairs(h, bins, color=st['color'], lw=st['lw'], zorder=st['zorder'],
+                      label=d)   # median / core sigma / n per chamber: results/summary.json golden[], quoted in the caption
         ax.axvline(0, color=ps.MUTED, lw=0.8, zorder=0)
         ax.set_xlim(bins[0], bins[-1])
-        ax.set_xlabel(r'$\ln(Q_{x}/Q_{y})$, unsaturated events, golden rows')
-        ax.set_ylabel('events (normalised)')
-        ax.legend(loc='upper right', handlelength=1.6, alignment='left',
-                  title=r'chamber: median, core $\sigma$, $n$', title_fontsize=ps.BASE_PT * 0.85)
+        ax.set_xlabel(r'$\ln(Q_X/Q_Y)$')
+        ax.set_ylabel('probability density')
+        ax.set_ylim(0, h_max * 1.02 if (h_max := max(np.max(tab[NAME[r['det']]]) for r in golden)) else None)
+        ax.legend(loc='upper right', handlelength=1.4)
         ps.save(fig, os.path.join(figdir, 'charge_balance'), data=pd.DataFrame(tab))
 
 

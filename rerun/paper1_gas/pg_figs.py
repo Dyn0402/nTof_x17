@@ -118,7 +118,8 @@ def _ps():
 def vE():
     """Paper I §6 drift scan (2026-11-02): det3's two velocities on one Magboltz curve.
     Timing v = gap / T (head-on stack, 4 fields); angle-scale v = v_drift x mean kw (the M3 ladder, 7 fields; its error
-    is the ladder estimator's, from pg_twov.py -> results/twov.json).  The curve is the timing-v fit (one water)."""
+    is the ladder estimator's, from pg_twov.py -> results/twov.json).  The curve is the timing-v fit (one water).
+    Checklist pass 2026-11-02: drawn at 4.3 in, no title, (a)/(b) labels, the fit interval / chi2 / gap in the caption."""
     import pandas as pd
     ps = _ps()
     sc = D['scan']
@@ -126,38 +127,38 @@ def vE():
     w0, (wlo, whi) = sc['fixed']['water'], sc['fixed']['water_68']
     TW = json.load(open(os.path.join(HERE, 'results', 'twov.json')))
     c3 = ps.DET_COLOR['det3']
-    fig, (ax, ar) = plt.subplots(2, 1, figsize=(ps.FULL[0] * 0.62, 3.9), sharex=True,
-                                 gridspec_kw=dict(height_ratios=[2.3, 1], hspace=0.08))
+    fig, (ax, ar) = ps.fig_for(4.3, height=3.5, nrows=2, sharex=True, gridspec_kw=dict(height_ratios=[2.3, 1]))
     E = np.linspace(25, 410, 160)
     vm = np.array([GI.v_of(w0, e) for e in E])
     lo = np.array([GI.v_of(wlo, e) for e in E]); hi = np.array([GI.v_of(whi, e) for e in E])
     ax.fill_between(E, np.minimum(lo, hi), np.maximum(lo, hi), color=ps.MODEL, alpha=0.12, lw=0, zorder=1)
-    ax.plot(E, vm, '-', color=ps.MODEL, lw=1.1, zorder=2,
-            label=f'Magboltz, {r2(w0)} % water [{r2(wlo)}, {r2(whi)}]\n(fit to the timing v, χ² {sc["fixed"]["chi2"]:.1f}/{sc["fixed"]["ndf"]})')
+    ax.plot(E, vm, '-', color=ps.MODEL, lw=1.1, zorder=2, label=f'Magboltz, {r2(w0)} % H$_2$O (fit)')
     ax.plot(E, [GI.v_of(0.0, e) for e in E], ':', color=ps.MUTED, lw=0.9, zorder=2, label='Magboltz, dry')
     rows = []
     La = sorted(TW['ladder'].values(), key=lambda L: L['drift_V'])
     xa = np.array([L['drift_V'] / (gap / 10) for L in La]); ya = np.array([L['v_ang'] for L in La])
     ea = np.array([L['v_ang_err'] for L in La])
     ax.errorbar(xa, ya, yerr=ea, fmt='s', ms=4, color=c3, mfc='white', mec=c3, zorder=4,
-                label=r'angle-scale v (M3 ladder, no gap)')
+                label=r'angle-scale $v$ (M3 ladder)')
     P = sorted((p for p in sc['points']), key=lambda p: p['E'])
     xt = np.array([p['E'] for p in P]); yt = np.array([p['v'] for p in P]); et = np.array([p['v_err'] for p in P])
-    ax.errorbar(xt, yt, yerr=et, fmt='o', ms=4.5, color=c3, zorder=5, label=f'timing v = g / T  (g = {gap:.2f} mm)')
+    ax.errorbar(xt, yt, yerr=et, fmt='o', ms=4.5, color=c3, zorder=5, label=r'timing $v = g/T$')
     for x, y, e in zip(xa, ya, ea):
         rows.append(dict(kind='angle_scale_v', E=x, v=y, v_err=e, magboltz=GI.v_of(w0, x)))
     for x, y, e in zip(xt, yt, et):
         rows.append(dict(kind='timing_v', E=x, v=y, v_err=e, magboltz=GI.v_of(w0, x)))
-    ax.set_ylabel('drift velocity (µm/ns)'); ax.set_ylim(0, 44)
-    ax.legend(loc='upper left', fontsize=6.6, borderaxespad=0.2)
-    ax.set_title('det3, 6-27 drift scan, Ar/iC$_4$H$_{10}$ 95/5 + water')
+    ax.set_ylabel(r'drift velocity $v$ (µm/ns)'); ax.set_ylim(0, 44)
+    h, l = ax.get_legend_handles_labels()
+    order = [3, 2, 0, 1]
+    ax.legend([h[i] for i in order], [l[i] for i in order], loc='lower right')
     mz = lambda x: np.array([GI.v_of(w0, e) for e in x])
     ar.axhline(1.0, color=ps.MODEL, lw=1.0)
     ar.fill_between(E, np.minimum(lo, hi) / vm, np.maximum(lo, hi) / vm, color=ps.MODEL, alpha=0.12, lw=0)
     ar.errorbar(xa, ya / mz(xa), yerr=ea / mz(xa), fmt='s', ms=4, color=c3, mfc='white', mec=c3, zorder=4)
     ar.errorbar(xt, yt / mz(xt), yerr=et / mz(xt), fmt='o', ms=4.5, color=c3, zorder=5)
-    ar.set_ylim(0.88, 1.14); ar.set_xlim(20, 415)
-    ar.set_xlabel('drift field E = V / g (V/cm)'); ar.set_ylabel('v / Magboltz')
+    ar.set_ylim(0.9, 1.26); ar.set_xlim(20, 415)
+    ar.set_xlabel(r'drift field $E = V/g$ (V/cm)'); ar.set_ylabel(r'$v\,/\,v_{\mathrm{Magboltz}}$')
+    ps.panel_labels([ax, ar])
     ps.save(fig, os.path.join(OUT, 'gas_vE_timing'), data=pd.DataFrame(rows))
 
 
@@ -165,16 +166,18 @@ def drying():
     """Paper I §6 (2026-11-02): the bench gas dries over a night.  Water on 6-26 from the anchored M3 ladder of det6 and
     det7 (attachment-blind; k from the attachment-free rows) through Magboltz; (b) the excess over each chamber's
     afternoon plateau, det6's scaled by the fitted ratio, to show the one time shape; (c) det3 on 6-27: the same water
-    at every field of the drift scan (timing v)."""
+    at every field of the drift scan (timing v).
+    Checklist pass 2026-11-02: full width, no titles, (a)-(c) labels, one legend above; the grey band (golden rows),
+    r and det3's 0.97 % are in the caption."""
     import pandas as pd
+    from matplotlib.lines import Line2D
     ps = _ps()
     A, S = D['att_626'], D['att_626']['shared']
-    fig, axs = plt.subplots(1, 3, figsize=(ps.FULL[0], 2.6), gridspec_kw=dict(width_ratios=[1.35, 1.1, 0.75], wspace=0.48))
+    fig, axs = ps.fig_for('full', height=2.45, ncols=3, gridspec_kw=dict(width_ratios=[1.35, 1.1, 0.75]))
     rows = []
     ax = axs[0]
     for a in axs[:2]:
         a.axvspan(6.0, 10.33, color=ps.GRID, lw=0, zorder=0)
-    ax.text(8.17, 1.58, 'golden\nrows', ha='center', va='top', fontsize=6.3, color=ps.MUTED)
     for det in ('det6', 'det7'):
         W = A[det]['water']
         t = np.array([w['t'] - T626 for w in W]); y = np.array([w['water'] for w in W])
@@ -183,9 +186,7 @@ def drying():
         ax.axhline(S['plateau_water'][det], color=ps.color(det), lw=0.7, ls='--', zorder=1)
         for i in range(len(t)):
             rows.append(dict(panel='a', det=det, hours_626=t[i], water=y[i], lo=y[i] - el[i], hi=y[i] + eh[i]))
-    ax.set_xlabel('hours on 6-26'); ax.set_ylabel('water (%)'); ax.set_ylim(0, 1.62); ax.set_xlim(0.5, 15.5)
-    ax.legend(loc='upper right', fontsize=7, borderaxespad=0.2)
-    ax.set_title('(a) water, from the M3 ladder')
+    ax.set_xlabel('time on 6-26 (h)'); ax.set_ylabel('H$_2$O fraction (%)'); ax.set_ylim(0, 1.62); ax.set_xlim(0.5, 15.5)
     ax = axs[1]
     r = S['excess_ratio_det6_over_det7']
     for det, sc_ in (('det6', 1.0 / r), ('det7', 1.0)):
@@ -193,15 +194,12 @@ def drying():
         t = np.array([w['t'] - T626 for w in W])
         y = (np.array([w['water'] for w in W]) - S['plateau_water'][det]) * sc_
         e = 0.5 * (np.array([w['water_hi'] for w in W]) - np.array([w['water_lo'] for w in W])) * sc_
-        ax.errorbar(t, y, yerr=e, fmt=ps.DET_MARKER[det], ms=2.8, lw=0.6, color=ps.color(det),
-                    label=det + (f' ÷ {r:.2f}' if det == 'det6' else ''))
+        ax.errorbar(t, y, yerr=e, fmt=ps.DET_MARKER[det], ms=2.8, lw=0.6, color=ps.color(det))
         for i in range(len(t)):
             rows.append(dict(panel='b', det=det, hours_626=t[i], excess_scaled=y[i], err=e[i]))
+    ax.text(0.95, 0.93, f'det6 ÷ {r:.2f}', transform=ax.transAxes, ha='right', va='top', color=ps.color('det6'))
     ax.axhline(0, color=ps.MODEL, lw=0.8)
-    ax.set_xlabel('hours on 6-26'); ax.set_ylabel('water above plateau (%)'); ax.set_xlim(0.5, 15.5)
-    ax.text(0.97, 0.62, f'r = {S["corr"]:.3f}', transform=ax.transAxes, ha='right', fontsize=7, color=ps.INK)
-    ax.legend(loc='upper right', fontsize=7, borderaxespad=0.2)
-    ax.set_title('(b) one time shape')
+    ax.set_xlabel('time on 6-26 (h)'); ax.set_ylabel('H$_2$O above plateau (%)'); ax.set_xlim(0.5, 15.5)
     ax = axs[2]
     sc = D['scan']
     w0, (wlo, whi) = sc['fixed']['water'], sc['fixed']['water_68']
@@ -216,9 +214,13 @@ def drying():
     for i in range(len(x)):
         rows.append(dict(panel='c', det='det3', E=x[i], water=y[i], lo=lo_[i], hi=hi_[i]))
     ax.set_ylim(0, 1.62); ax.set_xlim(150, 420)
-    ax.text(0.5, 0.93, f'det3, 6-27: {r2(w0)} %', transform=ax.transAxes, ha='center', fontsize=7, color=ps.color('det3'))
-    ax.set_xlabel('drift field (V/cm)'); ax.set_ylabel('water (%)')
-    ax.set_title('(c) one water at all fields')
+    ax.set_xlabel(r'drift field $E$ (V/cm)'); ax.set_ylabel('H$_2$O fraction (%)')
+    hs = [Line2D([], [], ls='', marker=ps.DET_MARKER[d], color=ps.color(d), label=lab)
+          for d, lab in (('det6', 'det6, 6-26'), ('det7', 'det7, 6-26'), ('det3', 'det3, 6-27'))]
+    hs += [Line2D([], [], color=ps.MUTED, ls='--', lw=0.7, label='afternoon plateau'),
+           Line2D([], [], color=ps.MODEL, lw=1.0, label='one-water fit')]
+    ps.legend_above(fig, hs, ncol=5)
+    ps.panel_labels(axs)
     ps.save(fig, os.path.join(OUT, 'gas_drying'), data=pd.DataFrame(rows))
 
 

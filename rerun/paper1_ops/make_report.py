@@ -302,18 +302,28 @@ def scan_label(det, run, drift):
     return f"{NAME[det]} ({run.split('_')[-1][:-3]}, drift {drift:.0f} V)"
 
 
+def _guide(kw, lw=0.7):
+    """A data series' keywords with a thin guide-to-the-eye line (data are markers; lines are for models)."""
+    kw = dict(kw)
+    kw['lw'] = lw
+    return kw
+
+
 def fig_hv_scan(T, figdir):
     """Paper I §4: the HV scans: interior efficiency and discharges per trigger (det3 first, on top). The discharge
-    loss against efficiency is the §5 figure eff_vs_hv_discharge."""
-    fig, axes = plt.subplots(2, 1, figsize=(ps.FULL[0], 5.4), sharex=True)
+    loss against efficiency is the §5 figure eff_vs_hv_discharge. Drawn at 4.3 in (the printed width): the scan
+    descriptions (run, drift) and the discharge definition are in the caption."""
+    from matplotlib.lines import Line2D
+    fig, axes = ps.fig_for(4.3, height=4.3, nrows=2, sharex=True)
     order = sorted(SCANS, key=lambda r: ORDER.index(r[0]))
     data = []
     for det, run, drift in order:
         s = scan_rows(T, det, run, drift)
         if not len(s):
             continue
-        kw = ps.det(det, label=scan_label(det, run, drift), ms=4.5 if det == 'mx17_3' else 3.8, mec='white', mew=0.5)
-        axes[0].errorbar(s.resist_V, s.eff_ig, yerr=s.err_ig, **kw)
+        kw = _guide(ps.det(det, label=NAME[det], ms=4.0 if det == 'mx17_3' else 3.4, mec='white', mew=0.4),
+                    lw=0.9 if det == 'mx17_3' else 0.7)
+        axes[0].errorbar(s.resist_V, s.eff_ig, yerr=s.err_ig, elinewidth=0.8, **kw)
         r = (s.epoch_rate_hz / s.trig_rate_hz).where(lambda v: v > 0)
         axes[1].plot(s.resist_V, r, **{k: v for k, v in kw.items() if k != 'label'})
         data.append(s.assign(discharge_per_trig=s.epoch_rate_hz / s.trig_rate_hz)[
@@ -323,34 +333,31 @@ def fig_hv_scan(T, figdir):
         g = T[(T.det == det) & T.cls.isin(['golden_calib', 'golden_quoted'])]
         if not len(g):
             continue
-        axes[0].plot(g.resist_V, g.eff_ig, '*', ms=10 if det != 'mx17_4' else 8, color=COL[det], mec=INK, mew=0.5,
-                     zorder=6, label='det4 golden row (no HV scan)' if det == 'mx17_4' else None)
+        axes[0].plot(g.resist_V, g.eff_ig, '*', ms=9 if det != 'mx17_4' else 8, color=COL[det], mec=INK, mew=0.5,
+                     zorder=6, ls='none')
         data.append(g.assign(golden=True)[['det', 'run', 'resist_V', 'drift_V', 'n_ig', 'eff_ig', 'err_ig', 'golden']])
-    axes[0].plot([], [], '*', ms=9, color='white', mec=INK, mew=0.6, label='golden long runs')
-    axes[0].set_ylabel('efficiency, interior [%]')
-    axes[0].set_ylim(0, 100)
-    h, l = axes[0].get_legend_handles_labels()
-    first = [i for i, t in enumerate(l) if t.startswith('det') and 'golden' not in t]
-    rest = [i for i in range(len(l)) if i not in first]
-    axes[0].legend([h[i] for i in first + rest], [l[i] for i in first + rest], ncol=2, loc='lower left',
-                   fontsize=ps.BASE_PT * 0.8)
-    axes[0].set_title('(a) interior efficiency', loc='left')
+    h = ps.det_handles([d.replace('mx17_', 'det') for d, _, _ in order], lw=0.7)
+    h += [Line2D([], [], ls='none', marker='*', ms=8, color=COL['mx17_4'], mec=INK, mew=0.5, label='det4 (golden row)'),
+          Line2D([], [], ls='none', marker='*', ms=8, color='white', mec=INK, mew=0.6, label='golden long runs')]
+    ps.legend_above(axes[0], handles=h, ncol=3)
+    axes[0].set_ylabel('interior efficiency [%]')
+    axes[0].set_ylim(30, 100)
     axes[1].set_ylabel('discharges per trigger')
     axes[1].set_yscale('log')
     axes[1].set_ylim(2e-4, 1)
     axes[1].set_xlabel('resistive-strip HV [V]')
-    axes[1].set_title('(b) discharge rate (a chip with $\\geq$8 strips over 3000 ADC)', loc='left')
-    for ax in axes:
-        style(ax)
-    fig.tight_layout()
+    ps.panel_labels(axes)
     ps.save(fig, os.path.join(figdir, 'hv_scan'), data=pd.concat(data, ignore_index=True))
 
 
 def fig_eff_vs_hv(T, O, figdir):
     """Paper I §5 (eff_vs_hv_discharge): per chamber, the interior efficiency and the fraction of M3 tracks lost to a
-    discharge against the resist HV. det3 reaches its plateau before discharges cost anything; det6/det7 do not."""
+    discharge against the resist HV. det3 reaches its plateau before discharges cost anything; det6/det7 do not.
+    Full width (6.1 in); run/drift of each scan in the caption."""
+    from matplotlib.lines import Line2D
+    from matplotlib.patches import Patch
     order = [r for d in ('mx17_3', 'mx17_6', 'mx17_7') for r in SCANS if r[0] == d]
-    fig, axes = plt.subplots(1, 3, figsize=(ps.FULL[0], 2.7), sharey=True)
+    fig, axes = ps.fig_for('full', height=2.35, ncols=3, sharey=True)
     data = []
     for ax, (det, run, drift) in zip(axes, order):
         s = scan_rows(T, det, run, drift)
@@ -358,30 +365,33 @@ def fig_eff_vs_hv(T, O, figdir):
         o = O[(O.det == det) & (O.run == run)]
         if len(o):
             o = o.iloc[0]
-            ax.axvspan(o.plateau_lo - 2, o.plateau_hi + 2, color=c, alpha=0.10, lw=0)
-        ax.errorbar(s.resist_V, s.eff_ig, yerr=s.err_ig, **ps.det(det, label='efficiency, interior', ms=3.8,
-                                                                   mec='white', mew=0.4))
-        ax.plot(s.resist_V, 100 * s.f_in_discharge, **ps.det(det, view='y', label='lost to a discharge', ms=3.8))
-        ax.set_title(f"{NAME[det]}  ({run.split('_')[-1][:-3]}, drift {drift:.0f} V)", loc='left', color=c)
+            ax.axvspan(o.plateau_lo - 2, o.plateau_hi + 2, color=c, alpha=0.12, lw=0)
+        ax.errorbar(s.resist_V, s.eff_ig, yerr=s.err_ig, elinewidth=0.8,
+                    **_guide(ps.det(det, label='interior efficiency', ms=3.6, mec='white', mew=0.4)))
+        ax.plot(s.resist_V, 100 * s.f_in_discharge, **_guide(ps.det(det, view='y', label='lost to a discharge',
+                                                                     ms=3.6)))
+        ax.text(0.04, 0.45, NAME[det], transform=ax.transAxes, color=c, fontsize=ps.BASE_PT, ha='left', va='center',
+                fontweight='bold' if det == 'mx17_3' else 'normal')
         ax.set_xlabel('resistive-strip HV [V]')
         ax.set_ylim(0, 100)
-        style(ax)
         data.append(s[['det', 'run', 'resist_V', 'drift_V', 'n_ig', 'eff_ig', 'err_ig', 'f_in_discharge']]
                     .assign(loss_discharge_pct=100 * s.f_in_discharge))
-    axes[0].set_ylabel('M3 tracks [%]')
-    h, l = axes[0].get_legend_handles_labels()
-    axes[0].legend(h[::-1], l[::-1], loc='center left', bbox_to_anchor=(0.0, 0.58), fontsize=ps.BASE_PT * 0.8)
-    axes[0].text(0.04, 0.36, 'shaded: plateau (within\n1 point of the maximum)', transform=axes[0].transAxes,
-                 ha='left', va='top', fontsize=ps.BASE_PT * 0.75, color=MUTED)
-    fig.tight_layout(w_pad=0.6)
+    axes[0].set_ylabel('fraction of M3 tracks [%]')
+    h = [Line2D([], [], color=INK, marker='o', ms=3.6, lw=0.7, label='interior efficiency'),
+         Line2D([], [], color=INK, marker='o', ms=3.6, lw=0.7, ls='--', mfc='white', label='lost to a discharge'),
+         Patch(color=INK, alpha=0.12, lw=0, label='plateau (within 1 point of the maximum)')]
+    ps.legend_above(fig, handles=h, ncol=3)
+    ps.panel_labels(axes)
     ps.save(fig, os.path.join(figdir, 'eff_vs_hv_discharge'), data=pd.concat(data, ignore_index=True))
 
 
 def fig_deadtime(DT, figdir):
     """Efficiency and charge against the time since the previous discharge. det3 (45 500 discharges) leads; det4's
-    4 300 discharges are noisy and sit in their own small panel at their own scale."""
-    fig = plt.figure(figsize=(ps.FULL[0], 2.8))
-    gs = fig.add_gridspec(1, 3, width_ratios=[1, 1, 0.62], wspace=0.6)
+    4 300 discharges are noisy and sit in their own small panel at their own scale (said in the caption, with the
+    discharge counts, which are in the CSV and report.html)."""
+    from matplotlib.lines import Line2D
+    fig = plt.figure(figsize=(ps.WIDTH['full'], 2.45), layout='constrained')
+    gs = fig.add_gridspec(1, 3, width_ratios=[1, 1, 0.7])
     ax0, ax1, ax2 = fig.add_subplot(gs[0]), fig.add_subplot(gs[1]), fig.add_subplot(gs[2])
     rows = []
     for det in ORDER:
@@ -395,14 +405,16 @@ def fig_deadtime(DT, figdir):
         q = np.array([np.nan if v is None else v for v in d['q_ratio']], float)
         qe = np.array([np.nan if v is None else v for v in d.get('q_err', [None] * len(q))], float)
         kq = np.isfinite(q)
-        lab = f"{NAME[det]}: {d['epochs']:,} discharges".replace(',', ' ')
         if det == 'mx17_4':
-            ax2.errorbar(x[k], r[k], yerr=e[k], **ps.det(det, label='efficiency', ms=3.5))
-            ax2.errorbar(x[kq], q[kq], yerr=qe[kq], **ps.det(det, view='y', label='charge', ms=3.5))
+            ax2.errorbar(x[k], r[k], yerr=e[k], elinewidth=0.8, **_guide(ps.det(det, label='efficiency', ms=3.4)))
+            ax2.errorbar(x[kq], q[kq], yerr=qe[kq], elinewidth=0.8,
+                         **_guide(ps.det(det, view='y', label='charge', ms=3.4)))
         else:
-            a = 1.0 if det == 'mx17_3' else 0.8
-            ax0.errorbar(x[k], r[k], yerr=e[k], **ps.det(det, label=lab, ms=3.8, alpha=a))
-            ax1.errorbar(x[kq], q[kq], yerr=qe[kq], **ps.det(det, ms=3.8, alpha=a))
+            a = 1.0 if det == 'mx17_3' else 0.85
+            kw = _guide(ps.det(det, label=NAME[det], ms=3.8 if det == 'mx17_3' else 3.3, alpha=a),
+                        lw=0.9 if det == 'mx17_3' else 0.7)
+            ax0.errorbar(x[k], r[k], yerr=e[k], elinewidth=0.8, **kw)
+            ax1.errorbar(x[kq], q[kq], yerr=qe[kq], elinewidth=0.8, **kw)
         for i in range(len(x)):
             rows.append(dict(det=NAME[det], t_lo_s=ed[i], t_hi_s=ed[i + 1], t_mid_s=x[i], n=d['n'][i], eff_ratio=r[i],
                              eff_ratio_err=e[i], q_ratio=q[i], q_ratio_err=qe[i], q_n=d['q_n'][i],
@@ -410,18 +422,19 @@ def fig_deadtime(DT, figdir):
     for ax in (ax0, ax1, ax2):
         ax.axhline(1, color=MUTED, lw=0.8, zorder=0)
         ax.set_xscale('log')
-        ax.set_xlabel('time since discharge [s]')
-        style(ax)
-    ax0.set_ylabel('efficiency / efficiency after 1 s')
-    ax1.set_ylabel('median charge / after 1 s')
-    ax0.set_ylim(0.7, 1.2)
+        ax.set_xlim(1.2e-3, 6)
+        ax.set_xlabel(r'$\Delta t$ since discharge [s]')
+    ax0.set_ylabel(r'$\varepsilon(\Delta t)\,/\,\varepsilon(\Delta t > 1\,\mathrm{s})$')
+    ax1.set_ylabel(r'$Q_{50}(\Delta t)\,/\,Q_{50}(\Delta t > 1\,\mathrm{s})$')
+    ax2.set_ylabel('det4: ratio to $\\Delta t > 1$ s')
+    ax0.set_ylim(0.8, 1.2)
     ax1.set_ylim(0.8, 1.2)
     ax2.set_ylim(0.4, 1.6)
-    ax0.set_title('(a) efficiency', loc='left')
-    ax1.set_title('(b) charge (gain)', loc='left')
-    ax2.set_title('(c) det4, own scale', loc='left')
-    ax0.legend(loc='lower right', fontsize=ps.BASE_PT * 0.72, handlelength=1.4)
-    ax2.legend(loc='lower right', fontsize=ps.BASE_PT * 0.72, handlelength=1.4)
+    h = ps.det_handles(['det3', 'det2', 'det6', 'det7'], lw=0.7)
+    h += [Line2D([], [], color=COL['mx17_4'], marker='v', lw=0.7, label='det4 efficiency'),
+          Line2D([], [], color=COL['mx17_4'], marker='v', lw=0.7, ls='--', mfc='white', label='det4 charge')]
+    ps.legend_above(fig, handles=h, ncol=6)
+    ps.panel_labels([ax0, ax1, ax2])
     ps.save(fig, os.path.join(figdir, 'spark_deadtime'), data=pd.DataFrame(rows))
 
 

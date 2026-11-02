@@ -76,8 +76,12 @@ def sps_resolution():
     for v, (o, _, _) in V.items():
         assert abs(pointing_mm(fc) - o['pointing']) < 1e-4, 'pointing model does not reproduce region.json'
     edges = np.arange(-1.5, 1.5001, 0.05); xc = 0.5 * (edges[1:] + edges[:-1])
-    c4 = ps.color('det4'); ink = '#4d4d4d'
-    fig, axs = plt.subplots(1, 3, figsize=(ps.FULL[0], 2.55), gridspec_kw=dict(width_ratios=[1, 1, 1.15], wspace=0.38))
+    c4 = ps.color('det4'); ink = ps.INK
+    # checklist pass 2026-11-02: full width, no panel titles, (a)-(c) labels, one legend above for (a)/(b); the sigma
+    # values, the estimators (X at mid-gap, Y at the mesh), f and the upper-bound numbers are in the caption
+    from matplotlib.lines import Line2D
+    from matplotlib.patches import Patch
+    fig, axs = ps.fig_for('full', height=2.45, ncols=3, gridspec_kw=dict(width_ratios=[1, 1, 1.15]))
     rows, summ = [], {}
     g = lambda x, a, m, s: a * np.exp(-0.5 * ((x - m) / s) ** 2)
     for ax, v in zip(axs[:2], 'XY'):
@@ -90,16 +94,19 @@ def sps_resolution():
             full = key == 'hist'
             col = ink if full else ps.ACCENT
             ax.errorbar(xc, hn, yerr=np.sqrt(np.maximum(h, 1)) / h.sum() / 0.05, fmt=mk, ms=2.4, lw=0.5, color=col,
-                        mfc=col if full else 'white', mec=col, zorder=4 if full else 3,
-                        label=f'{lab}: σ {s * 1e3:.0f} µm')
+                        mfc=col if full else 'white', mec=col, zorder=4 if full else 3)
             xx = np.linspace(-1.2, 1.2, 200)
             ax.plot(xx, g(xx, a, m, s), '-' if full else '--', color=ps.MODEL, lw=0.9, zorder=5)
             for xi, yi, hi in zip(xc, hn, h):
                 rows.append(dict(panel='a' if v == 'X' else 'b', view=v, sample=key, residual_mm=xi, density=yi, count=hi))
-        ax.set_xlim(-1.5, 1.5); ax.set_ylim(0, ax.get_ylim()[1] * 1.3)
-        ax.set_xlabel(f'det4 {v} residual (mm)'); ax.set_ylabel('density (1/mm)')
-        ax.legend(loc='upper left', fontsize=6.0, borderaxespad=0.1, handlelength=1.0)
-        ax.set_title(f"({'a' if v == 'X' else 'b'}) {v}: {est}", fontsize=8)
+        ax.set_xlim(-1.5, 1.5); ax.set_ylim(0, 3.25)
+        ax.set_xlabel(f'{v} residual $\\Delta {v.lower()}$ (mm)')
+    axs[0].set_ylabel('density (mm$^{-1}$)')
+    ps.legend_above(fig, [Line2D([], [], ls='', marker='o', ms=3, color=ink),
+                          Line2D([], [], ls='', marker='o', ms=3, color=ps.ACCENT, mfc='white'),
+                          Line2D([], [], color=ps.MODEL, lw=0.9), Patch(fc=ps.ACCENT, alpha=0.18, lw=0)],
+                    ['all tracks', '2-strip back-plane cluster', 'Gaussian core', 'upper bound (2-strip)'],
+                    ncol=4, handlelength=1.6)
     ax = axs[2]
     ff = np.linspace(0.20, 0.34, 141)
     ax.axvspan(frng[0], frng[1], color=ps.GRID, lw=0, zorder=0)
@@ -111,13 +118,10 @@ def sps_resolution():
         kw = ps.det('det4', view=v.lower())
         ax.plot(ff, d4, ls=kw['ls'], color=ink, lw=1.2, zorder=3)
         ax.errorbar([fc], [o['sigma_det4'] * 1e3], yerr=[o['stat'] * 1e3], fmt='o', ms=4.5, color=ink,
-                    mfc=ink if v == 'X' else 'white', mec=ink, zorder=5,
-                    label=f"{v}: {o['sigma_det4'] * 1e3:.0f} ({o['sys_range'][0] * 1e3:.0f}–{o['sys_range'][1] * 1e3:.0f}) ± {o['stat'] * 1e3:.0f}")
+                    mfc=ink if v == 'X' else 'white', mec=ink, zorder=5)
         b, be = o[ub][0] * 1e3, o[ub][1] * 1e3
         ax.axhspan(b - be, b + be, color=ps.ACCENT, alpha=0.18 if v == 'X' else 0.10, lw=0, zorder=1)
         ax.axhline(b, color=ps.ACCENT, lw=0.9, ls=kw['ls'], zorder=2)
-        ax.text(0.338, b + (be + 2 if v == 'X' else -be - 2), f'{v} ≤ {b:.0f} ± {be:.0f}', fontsize=6.3, color=ps.ACCENT,
-                va='bottom' if v == 'X' else 'top', ha='right')
         for fi, di in zip(ff[::10], d4[::10]):
             rows.append(dict(panel='c', view=v, f=fi, sigma_det4_um=di, upper_bound_um=b, upper_bound_err_um=be))
         summ[v] = dict(estimator=est, sigma_res_um=round(s * 1e3, 1), pointing_um=round(o['pointing'] * 1e3, 1),
@@ -125,9 +129,9 @@ def sps_resolution():
                        f_range_um=[round(x * 1e3, 1) for x in o['sys_range']], upper_bound_um=[round(b, 1), round(be, 1)],
                        upper_bound_sample=ub, n_core=o['n_core'])
     ax.set_xlim(0.20, 0.34); ax.set_ylim(0, 300)
-    ax.set_xlabel('back-plane f (σ / pitch)'); ax.set_ylabel('det4 σ (µm)')
-    ax.legend(loc='upper right', fontsize=6.0, borderaxespad=0.1, title='at f = %.3f (f range) ± stat' % fc, title_fontsize=6.0)
-    ax.set_title('(c) telescope subtracted', fontsize=8)
+    ax.set_xlabel(r"back-plane $f$ ($\sigma$ / pitch)"); ax.set_ylabel('det4 resolution $\\sigma$ (µm)')
+    ax.legend(ps.view_handles(color=ink), ['X', 'Y'], loc='upper right')
+    ps.panel_labels(axs)
     ps.save(fig, os.path.join(FIG, 'sps_resolution'), data=pd.DataFrame(rows))
     print('wrote', os.path.join(FIG, 'sps_resolution.pdf'))
     summ['f'] = dict(f=round(fc, 4), range=[round(x, 4) for x in frng])

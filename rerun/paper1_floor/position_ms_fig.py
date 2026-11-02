@@ -75,7 +75,7 @@ def fig():
     D = json.load(open(BINS))
     S = json.load(open(SPS_R))['resolution']['run63']
     sps = dict(x=S['R|p_mid']['X'], y=S['R|p0']['Y'])
-    fig, (a1, a2) = plt.subplots(1, 2, figsize=(ps.FULL[0], 2.9), gridspec_kw=dict(width_ratios=[1.05, 1], wspace=0.32))
+    fig, (a1, a2) = ps.fig_for('full', height=2.6, nrows=1, ncols=2)
     rows = []
     c3 = ps.color('det3')
 
@@ -92,19 +92,16 @@ def fig():
         a1.errorbar([0], [d['sigma0_um']], yerr=[d['sigma0_err_um']], fmt='*', ms=8, color=c3,
                     mfc=c3 if p == 'x' else 'white', mec=c3, zorder=6, clip_on=False)
         a1.axhline(d['P_um'], color=ps.MUTED, lw=0.9, ls=ps.VIEW_LS[p], zorder=2)
-        a1.text(0.735, d['P_um'] + (5 if p == 'x' else -5), f'M3 pointing P$_{p.upper()}$ = {d["P_um"]:.0f} µm',
-                fontsize=6.5, color=ps.MUTED, va='bottom' if p == 'x' else 'top', ha='right')
+        a1.text(0.74, d['P_um'] + (6 if p == 'x' else -6), f'M3 pointing $P_{p.upper()}$',
+                fontsize=ps.BASE_PT * 0.8, color=ps.MUTED, va='bottom' if p == 'x' else 'top', ha='right')
         for b in d['bins']:
             rows.append(dict(panel='a', det='det3', view=p, chi2_m3=b['chi2'], sigma_core_um=b['sigma_um'],
                              err_um=b['err_um'], n=b['n']))
         rows.append(dict(panel='a', det='det3', view=p, chi2_m3=0.0, sigma_core_um=d['sigma0_um'],
                          err_um=d['sigma0_err_um'], n=d['n']))
     a1.set_xlim(-0.015, 0.75); a1.set_ylim(0, 900)
-    a1.set_xlabel(r'M3 $\chi^2$ of the matching coordinate (quintile mean)')
-    a1.set_ylabel('residual core σ (µm)')
-    a1.legend(loc='upper left', fontsize=7, borderaxespad=0.2)
-    a1.text(0.03, 0.72, '★ χ² → 0 (σ² linear in χ²)', transform=a1.transAxes, fontsize=6.8, color=ps.INK)
-    a1.set_title(r'(a) det3, $|\theta| < 5°$: remove M3 scattering')
+    a1.set_xlabel(r'M3 $\chi^2$ of the matching coordinate')
+    a1.set_ylabel(r'residual core $\sigma$ [µm]')
 
     # (b) the subtraction: chamber = sqrt(sigma_0^2 - (s P)^2) against the scale s of the pointing; +-10 % shaded
     s = np.linspace(0.8, 1.2, 161)
@@ -131,13 +128,16 @@ def fig():
     sx, sy = sps['x'], sps['y']
     a2.axhspan(min(sy['sigma_det4'], sx['sigma_det4']) * 1e3, max(sy['sigma_det4'], sx['sigma_det4']) * 1e3,
                color=ps.color('det4'), alpha=0.25, lw=0, zorder=0)
-    a2.text(0.81, sy['sigma_det4'] * 1e3 - 3, f"det4 at SPS, region R\n({sy['sigma_det4'] * 1e3:.0f}–{sx['sigma_det4'] * 1e3:.0f} µm)",
-            fontsize=6.3, color='#555555', va='top')
+    a2.text(0.81, sy['sigma_det4'] * 1e3 - 3, 'det4 at SPS', fontsize=ps.BASE_PT * 0.8, color=ps.MUTED, va='top')
     a2.set_xlim(0.8, 1.2); a2.set_ylim(0, 330)
-    a2.set_xlabel('assumed M3 pointing / nominal P')
-    a2.set_ylabel(r'chamber σ = $\sqrt{\sigma_0^2 - P^2}$ (µm)')
-    a2.legend(loc='upper right', fontsize=6.5, borderaxespad=0.2, title='at nominal P (µm, stat)', title_fontsize=6.5)
-    a2.set_title('(b) subtract the pointing')
+    a2.set_xlabel(r'assumed M3 pointing $P\,/\,P_{\rm nominal}$')
+    a2.set_ylabel(r'chamber $\sqrt{\sigma_0^2 - P^2}$ [µm]')
+    a2.set_xticks([0.8, 0.9, 1.0, 1.1, 1.2])
+    ps.panel_labels([a1, a2])
+    from matplotlib.lines import Line2D
+    hl = ps.det_handles(('det3', 'det2')) + ps.view_handles() + [
+        Line2D([], [], ls='none', marker='*', ms=8, color=ps.INK, label=r'$\sigma_0$ ($\chi^2 \to 0$)')]
+    ps.legend_above(fig, hl, ncol=5)
     ps.save(fig, os.path.join(HERE, 'figures', 'bench_position_res'), data=pd.DataFrame(rows))
     print('det3 +-10 % P:', {k: [round(v, 0) for v in D[k].get('p10', [])] for k in ('det3|x', 'det3|y')})
     print('wrote', os.path.join(HERE, 'figures', 'bench_position_res.pdf'))
