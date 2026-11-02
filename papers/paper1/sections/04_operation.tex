@@ -7,6 +7,22 @@ and the evidence that the resistive layer does its job (sparks stay local and co
 muon-induced (4--6$\times$), concentrated at the edges; no post-spark dead time.}
 \askStephan{Expected gain curve and spark behaviour for this resistivity: does what we see match production tests?}
 
+\paragraph{Dark current.}
+\tbw{The resistive electrode draws a steady current far above the signal current. On det3 (alone on the bench,
+6-27): $I=(1.05\pm0.05)\,\text{\textmu A}\times2^{(V-490\,\text{V})/(13.3\pm0.3)\,\text{V}}$ (\cref{fig:currents}): it
+doubles every 13.3\,V while the gain doubles every 16.7\,V, so $I\propto G^{1.25}$, with no measurable ohmic part, and it
+does not depend on the drift field (100--1100\,V on the cathode: 1.03--1.11\,\textmu A). At the working point this is
+${\sim}1$\,\textmu A, ${\sim}10^5$ times the cosmic signal current (${\sim}4$\,pA). It is therefore a gain-driven dark
+current of the amplification stage, with the same scaling as the noise bands ($G^{1.4-1.6}$, \cref{app:losses}) and the
+discharges. Across boards at 490\,V: det6 0.45, det4 0.58, det3 0.29--1.14 (night to night), det2 1.0--2.4, det7
+6.0--6.4\,\textmu A (the chamber with the most discharges). The mechanism is not identified.}
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.7\linewidth]{currents_vs_hv}
+  \caption{\tbw{Resistive-electrode current against HV for the five chambers (one curve per night), and the det3 fit.}}
+  \label{fig:currents}
+\end{figure}
+
 \begin{figure}[t]
   \centering
   \includegraphics[width=0.75\linewidth]{hv_scan}

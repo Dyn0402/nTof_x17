@@ -361,3 +361,67 @@ A failing arm is held, as on the bench.
     tails cut that line, so for those the count is not recorded rather than zero.
   - **Next:** point `ntof_reco.py` / `wft.io` at `decoded_root_fa80c06`, and decide hits (Q4) before any production
     node.
+- **Capsule pointing as the beam truth (11-02, `rerun/ntof/capsule_point.py`).** Distance of each paired track's line
+  to the capsule axis (vertical, x −9.5, z −3.7 mm). On run_145 (1,500 events per arm, v0 bundles), tracks shallower
+  than 0.6 point (< 15 mm) 30–45 % of the time; steeper-than-0.6 tracks 5–8 %. limit 1.0 vs 0.6: A 223 vs 208 pointing
+  tracks out of 794 vs 548, C 186 vs 165 out of 856 vs 521. So 1.0 gains 7–13 % pointing tracks at ~250–330
+  non-pointing ones.
+  - Caveat: a steep track's pointing is very sensitive to the v scale. **The limit scan (0.5…1.0 in 0.1) is to be run
+    after v is measured in situ**, scored on both truths (A–C line purity/efficiency; capsule-pointing yield vs
+    non-pointing).
+- **The bench pairing problem (Paper I session, 11-02).** The production chain pairs two-particle bench events
+  correctly only ~80 % of the time (98 % for the bare charge-ratio pairing), because a plausibility check tuned on
+  beam data drops one track. A separate session is fixing it. **Every n_TOF pair/multi-track number here is
+  provisional until that fix lands**, and the n_TOF scans must be redone on it.
+- **Q4 seeding study set up.** Three arms, all feeding the same clustering and candidate logic:
+  - old `combined_hits_root`;
+  - rr1-recipe hits regenerated on the fa80c06 decodes (`rerun/ntof/rehit/`, condor 4613963, `--tps 60 --mf 5`,
+    plain-median CM, the bench job with scratch binaries);
+  - waveform-native hits (`wft_beam.hits_from_waveforms`: per-channel peak or 3-sample running sum above 5σ of its
+    own measured noise). On run_145 A tag `_000` it gives 362 k hits vs the old 235 k (211 k shared); the old
+    analyzer's non-robust pedestal RMS makes its threshold stricter. Threshold to be scanned, judged downstream.
+- **Column duration and t0 at n_TOF, first look** (`gc_gas_time/ntof_colsum.py` on run_145 stat090_0000, two
+  acquisitions per FEU, the pass-1 X templates):
+  - **A and C:** columns where expected. A: T peaks ~720–780 ns (v ≈ 33–37 for gap 28.08). C: broad T 840–1140 ns
+    (v ≈ 28), with a tail at the window/grid end.
+  - **B:** mostly T at the grid minimum. No field-shaping ring: its column is not a box.
+  - **D: the box start sits ~200 ns earlier than A/C** (median −210 ns vs ≈ 0, at the grid edge) and T piles at the
+    grid maximum. Either D's window cuts the mesh-side start of its columns, or the estimator fails on D. Check on
+    cosmics before believing it.
+  - **t0 scatter ~80 ns (robust) in every arm, and it does not step with ftst** (−6…+5 ns per class against −10 on the
+    bench). If this is trigger-to-particle jitter, a pinned t0 is wrong at n_TOF.
+  - **Test:** t0_A − t0_C on run_149 A–C cosmics (the same particle, ~2 ns apart, so trigger jitter cancels) measures
+    the chambers' own t0 resolution against the common jitter.
+- **t0 at n_TOF, cosmics (11-02, run_149 cosbounce_cos_0000/0001).**
+  - **The column-sum box start is a coarse t0 estimator.** Within one chamber t0x − t0y has a robust σ of 75–110 ns
+    (≈ 55 ns per view), so the 80 ns scatter seen on beam is mostly the estimator.
+  - **D's −210 ns beam offset is not a window offset.** On cosmics D's box starts with the others (median −45 ns vs
+    A −35, C −30). What differs on beam is D's beam events (hot cells / flash), to be looked at; the earlier D finding
+    is withdrawn.
+  - **Fitted t0 on the same muon** (165 A–C line events, v0 bundles, free t0): t0_A robust σ 49 ns, t0_C 73 ns,
+    t0_A − t0_C 86 ns. That gives a common (trigger) jitter of only ~13 ns, against a free-fit t0 resolution of
+    47 (A) / 72 (C) ns, so the trigger knows t0 3–5× better than the free fit. Offsets differ per chamber (A − C −53 ns),
+    so latency is per (arm, view).
+  - **Latency** (median of t0 + 10·ftst over ~600–700 single cosmic tracks, `bundles/latency_<arm>_r149.json`):
+    A x −5 / y +1 ns, C x +35 / y +27 ns. The ftst slope is −5…−7 ns per class against the bench's −10 (diluted by the
+    free fit's lattice?). Open.
+  - **Pinned (σ 15 ns) vs free on the A–C line** (474 candidate events): no measurable change. 171 vs 165 line events;
+    common 158: A 68 % residual 2.75 vs 2.70°, C 3.64 vs 3.67°; median line separation 8.3 vs 7.9 mm.
+  - **Not conclusive yet:** the line residuals are dominated by the uncalibrated angle scale (v, kw), which pinning
+    cannot fix. Decide t0 after v and kw are measured in situ; the beam trigger (PS + singles) also needs its own check.
+- **Order of the remaining calibration studies:** v in situ (column duration on full-gap tracks, A/C; B/D
+    limitations), then kw from the A–C line, then t0 pin vs free, then the tan_max scan, then seeding (Q4 runs
+    meanwhile: its conclusion does not depend on the angle scale).
+- **v in situ from the column duration (11-02).** Box fit (`colsum.GridFit`, the pass-1 X template) to the median
+  stacked strip sum, stacked on the trigger (jitter ~13 ns); bootstrap errors.
+  - **A–C line muons (true full-gap through-goers, run_149 cos_0000):** A 38.4 ± 0.7 (x) / 38.9 ± 0.8 (y); C 27.7 ± 0.7
+    / 28.6 ± 0.7 µm/ns. This agrees with is2's geometric in-situ v (A 38.0, C 28.7) by an independent, timing-only
+    route.
+  - **All clean single-cluster events (two cosmic sub-runs, and run_145 beam):** A 39.4–40.0, C 27.3–28.5, D 29.9–32.0
+    (cosmics). B is not measurable (its column is not a box). D on beam fails again (box start at the grid edge), so D's
+    beam events need their own look.
+  - **Adopted for the v1 bundles:** A 38.6 (line muons; the all-cluster selection reads 3 % faster, a selection
+    systematic), C 28.1, D 31.0 (± gap 29.44 ± 1.12 mm, i.e. ± 4 %; the old D-wall estimate was ~28), B 42.6 prior
+    (no angle).
+  - Gaps are the bench timing-free gaps (`physics_inputs.json`), so v carries their errors: A ± 0.7 %, D ± 3.8 %, C has
+    no error (adopted 28 mm).

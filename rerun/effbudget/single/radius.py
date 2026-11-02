@@ -56,8 +56,15 @@ def main():
         rx, ry = B.res_x.to_numpy()[d], B.res_y.to_numpy()[d]
         core = {v: float(1.4826 * np.median(np.abs(u - np.median(u)))) for v, u in (('x', rx), ('y', ry))}
         tails = {f'>{t:g} mm': 100 * float((r[d] > t).mean()) for t in (2, 3, 5, 8, 10)}
+        # full distributions (figure 'residuals'): per-view residual of the production fit (both views fitted,
+        # n_dropped ok, no radius cut), radial |r|, and the event-mixed |r| scaled to the same number of fits
+        be = np.linspace(-40, 40, 321); br = np.r_[0, np.geomspace(0.05, 200, 120)]
+        hx = np.histogram(B.res_x.to_numpy()[ok], be)[0]; hy = np.histogram(B.res_y.to_numpy()[ok], be)[0]
+        hr = np.histogram(r[ok], br)[0]; hm = np.histogram(rmix, br)[0] * ok.sum() / len(rmix)
         res[key] = dict(n=int(len(B)), radii=RADII, eff=eff, credit=cred, accidental=acc, core_sigma_mm=core,
-                        tail_pct_of_matched_within_40=tails)
+                        tail_pct_of_matched_within_40=tails, n_fitted=int(ok.sum()),
+                        hist=dict(edges_view=be.tolist(), res_x=hx.tolist(), res_y=hy.tolist(), edges_r=br.tolist(),
+                                  r=hr.tolist(), r_mixed=hm.tolist()))
         print(f'== {key} n={len(B)} core sigma x/y {core["x"]:.2f}/{core["y"]:.2f} mm, tails {tails}')
         for R, e, c, f in zip(RADII, eff, cred, acc):
             print(f'  R={R:5.2f}  eff {e:6.2f}  credit {c:6.2f}  accidental {f:7.4f}')

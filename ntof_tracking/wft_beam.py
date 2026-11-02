@@ -122,6 +122,7 @@ class BeamConfig:
     MAP_CSV_PATH: str = os.path.join(REPO, 'mx17_m1_map.csv')
     OUT_BASE: str = ''
     file_tags: Optional[List[str]] = None      # None = all tags in the sub-run
+    HITS_DIR: str = 'combined_hits_root'       # hits generation (rerun/inputs.py convention: staged under this name)
     conditions: Dict[str, object] = field(default_factory=dict)
 
     def __post_init__(self):
@@ -136,7 +137,7 @@ class BeamConfig:
 
     @property
     def combined_hits_dir(self):
-        return f'{self.BASE_PATH}{self.RUN}/{self.SUB_RUN}/combined_hits_root/'
+        return f'{self.BASE_PATH}{self.RUN}/{self.SUB_RUN}/{self.HITS_DIR}/'
 
     def out_dir(self, *parts):
         d = os.path.join(self.OUT_BASE, *parts)
@@ -347,6 +348,53 @@ def read_hits_tag(path: str, feus) -> 'pd.DataFrame':
     return df
 
 
+#: waveform-native hits (Q4, rerun/ntof NTOF_PASS_PLAN 2026-11-02): a channel is a hit when its pedestal- and CM-
+#: subtracted waveform (wft.io.FeuReader, the same the fit sees) peaks above WAVE_SIG x its noise, on the single sample
+#: or on a 3-sample running sum against that sum's own measured noise (a cheap matched filter for slow columns).  The analyzer's hit threshold is 5 sigma.
+WAVE_SIG = 5.0
+WAVE_RUN = 3
+
+
+def hits_from_waveforms(cfg: 'BeamConfig', tag: str, feus, nsig: float = WAVE_SIG) -> 'pd.DataFrame':
+    """The hits table of one acquisition built from the decoded waveforms instead of the C++ analyzer's hits: same
+    columns as read_hits_tag (eventId, feu, channel, amplitude, significance, max_sample), largest pulse per channel.
+    Only 'which channels' leaves this function as geometry input to the fit, as with the analyzer's hits."""
+    import pandas as pd
+    from wft import io as wio
+    out = []
+    for feu in feus:
+        fs = [f for f in wio.subrun_files(cfg.BASE_PATH, cfg.RUN, cfg.SUB_RUN, feu) if wio.file_tag(f) == tag]
+        if not fs:
+            continue
+        rdr = wio.FeuReader(fs[0])
+        nz = np.maximum(rdr.noise.astype(np.float64), 1e-3)
+
+        def runsum(W):
+            c = np.cumsum(np.pad(W, ((0, 0), (1, 0))), axis=1)
+            return c[:, WAVE_RUN:] - c[:, :-WAVE_RUN]        # (512, n_sample - WAVE_RUN + 1)
+
+        # the running sum's own noise per channel (adjacent samples are correlated by the shaping, so it is not
+        # sqrt(WAVE_RUN) x the sample noise): robust sigma over the first N_PED_EVENTS events' samples, like rdr.noise
+        evs = [np.asarray(W, np.float64) for _, (_, _, W) in zip(range(wio.N_PED_EVENTS), rdr.iter_events())]
+        if evs:
+            R = np.concatenate([runsum(W) for W in evs], axis=1)
+            nz_run = np.maximum(1.4826 * np.median(np.abs(R - np.median(R, axis=1, keepdims=True)), axis=1), 1e-3)
+        else:
+            nz_run = nz * np.sqrt(WAVE_RUN)
+        for eid, ftst, W in rdr.iter_events():
+            W = np.asarray(W, np.float64)                       # (512, n_sample)
+            amp = W.max(axis=1)
+            sig = np.maximum(amp / nz, runsum(W).max(axis=1) / nz_run)
+            ch = np.flatnonzero(sig >= nsig)
+            if not len(ch):
+                continue
+            out.append(pd.DataFrame(dict(eventId=eid, feu=feu, channel=ch, amplitude=amp[ch],
+                                         significance=sig[ch], max_sample=W[ch].argmax(axis=1))))
+    if not out:
+        return pd.DataFrame(columns=['eventId', 'feu', 'channel', 'amplitude', 'significance', 'max_sample'])
+    return pd.concat(out, ignore_index=True)
+
+
 def seeds_from_hits_beam(df, pos_maps, feu_x, feu_y,
                          busy=BUSY_PLANE_HITS,
                          n_candidates=N_CANDIDATES_BEAM,
@@ -445,7 +493,8 @@ def reconstruct_subrun(cfg: BeamConfig, bundle_path: str, out_path: str,
                        allow_meta: Optional[dict] = None,
                        allow_bow: bool = False,
                        min_strips: Optional[int] = None,
-                       extra_meta: Optional[dict] = None):
+                       extra_meta: Optional[dict] = None,
+                       seed_source: str = 'hits'):
     """Reconstruct a beam sub-run tag by tag into one parquet table.
 
     Mirrors `wft.reco.reconstruct_run` (and reuses its worker), but streams the
@@ -531,18 +580,21 @@ def reconstruct_subrun(cfg: BeamConfig, bundle_path: str, out_path: str,
         _write_meta(d, path, cal, cfg, bundle_path, feu_x, feu_y, tags_done,
                     n_seeded, pad_strips, partial=len(tags_done) < len(tags),
                     allow_acct=allow_acct, allow_meta=allow_meta, min_strips=min_strips,
-                    extra_meta=extra_meta)
+                    extra_meta=dict(extra_meta or {}, seed_source=seed_source, hits_dir=cfg.HITS_DIR))
         return d
 
     rows, cand_rows, split_rows, n_seeded, done = [], [], [], 0, []
     with ProcessPoolExecutor(max_workers=jobs, initializer=wreco._worker_init,
                              initargs=(bundle_path,)) as pool:
         for tag in tags:
-            hp = hits_file_for_tag(cfg, tag)
-            if hp is None:
-                print(f'[wft-beam]   {tag}: no hits file, skipped')
-                continue
-            hits = read_hits_tag(hp, (feu_x, feu_y))
+            if seed_source == 'waveform':
+                hits = hits_from_waveforms(cfg, tag, (feu_x, feu_y))
+            else:
+                hp = hits_file_for_tag(cfg, tag)
+                if hp is None:
+                    print(f'[wft-beam]   {tag}: no hits file, skipped')
+                    continue
+                hits = read_hits_tag(hp, (feu_x, feu_y))
             seeds = seeds_from_hits_beam(hits, pos_maps, feu_x, feu_y, hot=cal.hot,
                                          min_strips=min_strips, dead=cal.dead)
             del hits

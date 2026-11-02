@@ -43,6 +43,33 @@ def eff_vs_radius():
     fig.savefig(os.path.join(OUT, 'eff_vs_radius.pdf'))
 
 
+def residuals():
+    d = json.load(open(os.path.join(RES, 'radius.json')))
+    fig, (a1, a2) = plt.subplots(1, 2, figsize=(9.0, 3.8))
+    rows = []
+    for key, ls in (('p2_det3', '-'), ('sat_det3', '--')):
+        h = d[key]['hist']; be = np.array(h['edges_view']); c = 0.5 * (be[1:] + be[:-1])
+        for v, col in (('x', '#0072B2'), ('y', '#009E73')):
+            a1.step(c, h[f'res_{v}'], ls, where='mid', color=col, lw=1.1,
+                    label=f'{v} view' + (' (6-27 long)' if key == 'p2_det3' else ' (sat_det3)'))
+        br = np.array(h['edges_r']); w = np.diff(br); cr = np.sqrt(br[1:] * np.maximum(br[:-1], 1e-3))
+        a2.step(cr, np.array(h['r']) / w, ls, where='mid', color='#0072B2', lw=1.2,
+                label='det3 fit vs its M3 ray' if key == 'p2_det3' else None)
+        a2.step(cr, np.array(h['r_mixed']) / w, ls, where='mid', color='#999999', lw=1.0,
+                label='vs another event\'s M3 ray (accidental)' if key == 'p2_det3' else None)
+        rows += [dict(row=key, kind='view', lo=lo, hi=hi, x=nx, y=ny) for lo, hi, nx, ny in zip(be[:-1], be[1:], h['res_x'], h['res_y'])]
+        rows += [dict(row=key, kind='radial', lo=lo, hi=hi, x=n, y=m) for lo, hi, n, m in zip(br[:-1], br[1:], h['r'], h['r_mixed'])]
+    a1.set_yscale('log'); a1.set_xlim(-20, 20); a1.set_xlabel('residual at the mesh, det3 − M3 [mm]'); a1.set_ylabel('tracks / 0.25 mm')
+    for x in (-5, 5):
+        a1.axvline(x, color='#D55E00', lw=0.8, ls=':')
+    a1.legend(fontsize=7.5, frameon=False); a1.grid(alpha=0.25)
+    a2.set_xscale('log'); a2.set_yscale('log'); a2.set_xlim(0.05, 200); a2.axvline(5, color='#D55E00', lw=0.8, ls=':')
+    a2.set_xlabel('radial distance |r| [mm]'); a2.set_ylabel('tracks / mm'); a2.legend(fontsize=7.5, frameon=False); a2.grid(alpha=0.25)
+    fig.tight_layout()
+    fs.save(fig, os.path.join(OUT, 'residuals'), data=pd.DataFrame(rows))
+    fig.savefig(os.path.join(OUT, 'residuals.pdf'))
+
+
 def xy_pairing():
     E = pd.read_parquet(os.path.join(RES, 'xy_pairing_events.parquet'))
     ref = json.load(open(os.path.join(RES, 'xy_pairing.json')))
@@ -68,5 +95,5 @@ def xy_pairing():
 if __name__ == '__main__':
     os.makedirs(OUT, exist_ok=True)
     fs.use()
-    eff_vs_radius(); xy_pairing()
+    eff_vs_radius(); residuals(); xy_pairing()
     print('wrote', OUT)

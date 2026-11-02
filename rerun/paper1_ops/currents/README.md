@@ -5,6 +5,14 @@ per chamber, against the resist HV. Logs copied from EOS `cosmic_bench/{june_tes
 `$WORK_DATA/claude-jobs/17c92c46/hv/` (13 runs, Jan–June 2026). Output `results/currents.{csv,json}`,
 `results/figures/currents_vs_hv.png`.
 
+## Scope (Dylan 2026-11-02)
+
+Only the n_TOF batch of boards, from det2 (the first, bulked 12 June) on: runs from 6-17. Boards are identified by the
+run-config **description**, not the chamber name: the names were renumbered between nights (on 6-17 `mx17_1` is the
+Arnaud board = det2 and `mx17_2` the Stephan 15 June board = det3). The 6-19/6-20 weekend is excluded: its "det3"
+curve is the 6-22 det2 curve point for point (same 1.9 µA floor), and that weekend has the known slot confusion.
+The Jan–May prototypes remain in `currents.csv` (`use = False`) and are not quoted.
+
 ## Result
 
 - **det3 (6-27 Saturday scan, one chamber on the bench):** I = 1.05 ± 0.05 µA × 2^((V − 490 V)/13.3 ± 0.3 V).
@@ -14,21 +22,25 @@ per chamber, against the resist HV. Logs copied from EOS `cosmic_bench/{june_tes
   So the steady current is a **gain-driven dark current in the amplification stage**, the same family as the
   fixed-patch noise bands (rate ∝ gain^1.4–1.6, flat in drift field: `rerun/bands/README.md`) and the discharges.
   Mechanism not identified (stated limitation).
-- det3 at 490 V differs from night to night: 0.29 µA (6-23), 0.71 (6-22), 1.13–1.14 (6-27).
-- Other strip chambers at ~490 V: det4 0.54, det6 0.45, det2 2.2, det7 6.0 µA (det7 is the chamber with the X
-  readout fault and the most discharges).
-- Prototypes: the January board with a **plain resistive layer on top of the strips** (`strip_resit_with_plein_on_top`,
-  the only one with a log) drew 0.49 µA at 530 V over 14.5 h, lower than the June strip chambers at 490 V; the
-  April "strip with silver paste" board drew 2.5–5.0 µA, nearly linear in V (a leakage path, R ≈ 0.1–0.2 GΩ);
-  the May strip board without silver paste 0.03–0.28 µA.
+- **Per board and night, at 490 V** (`currents.json: per_board_night_near_490V`):
+
+| board | 6-17 | 6-22 | 6-23 | 6-24 | 6-26 | 6-27 |
+|---|---|---|---|---|---|---|
+| det2 | 1.03 | 2.39 (flat 1.9 µA floor below 480 V: an ohmic leak appeared) | | | | |
+| det3 | 0.48 | 0.71 | 0.29 | | | 1.07–1.14 |
+| det4 | | | 0.58 | 0.12 (495 V) | | |
+| det6 | | | | | 0.45 (0.78 at 495 V overnight) | |
+| det7 | | | | | 6.0–6.4 | |
+
+  The same board varies ×4 from night to night (det3 0.29–1.14 µA). The lowest, 6-23, is the night the chambers
+  were still below working gain (PAPER1_NUMBERS: charge rose ×4 through that night), as a gain-driven current
+  predicts; the other nights are not explained individually. det7, the chamber with the X readout fault and the most discharges, draws ~10× the others.
 
 ## What this does not settle
 
-- **The uniform-layer "hot spot" argument cannot be tested from the bench logs:** no uniform-layer chamber has a
-  current log, and the one plain-on-strips prototype does not show a higher current. That comparison is Stephan's,
-  from production tests.
-- Run-config chamber names on 6-19/6-20 and 6-22 carry the known slot remap (MEMORY: overnight 6-22), so per-name
-  currents from those nights (det2, and the 6-20 "det3") may belong to the other chamber. The det3 statements above
-  use the 6-27 runs, where det3 was alone.
+- **The uniform-layer "hot spot" argument cannot be tested from the bench logs** (no uniform-layer board in the
+  n_TOF batch); that comparison is Stephan's, from production tests.
+- The board-from-description mapping is the run configs' own record; it is consistent across 6-17 → 6-27 except
+  the excluded weekend.
 - Spike counting (`spikes_per_h`) is limited by the ~3–6 s monitor sampling; discharges are counted from the
   waveforms instead (`rerun/paper1_ops`).
