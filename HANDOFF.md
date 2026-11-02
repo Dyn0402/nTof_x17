@@ -70,38 +70,50 @@ n_TOF lesson in code or registry. The plan, the decisions and every result are i
 - lxplus jobs: `~/x17rerun/ntof/{decode_spot,redecode,rehit}`; records in
   `/eos/experiment/ntof/data/x17/july_beam/Analysis_pass1/checks/`.
 
-## Paper journals decided; next: the flow of Paper I for JINST — updated 2026-11-01 (dylan-Yoga)
+## Paper I: det3 efficiency, two-particle reco, figures — updated 2026-11-02 (dylan-MS-7C84)
 
-**Resume:** journals set (I → JINST, II → NIM A). Next: outline Paper I's body vs appendices for JINST.
+**Resume:** Paper I figures one by one with Dylan from the deck; first archive the discharge-veto rescue code out of wft/.
 
-**Goal:** settle where each MX17 paper goes, then restructure Paper I. Results go in the body and the gory details
-in appendices.
+**Goal:** Paper I (JINST) with det3 as the chamber: efficiency and resolution from cosmics, SPS as a cross-check,
+publication-ready figures. Full record of the day: `rerun/PAPER1_WORK_2026-11-02.md` (decisions, numbers, sources).
 
-**Done:**
-- Decided (Dylan, 2026-11-01): **Paper I → JINST** (long, appendix-heavy), **Paper II → NIM A** (short, one general
-  claim). Both still go to arXiv the same day as companions. Reasoning, career argument and appendix guidelines:
-  `papers/JOURNAL_STRATEGY.md`.
-- Recorded in `mx_june_cosmic_qa/PAPER_PLAN.md` (header and C4, now "partial"), `papers/README.md` and the comment
-  headers of `papers/paper1/main.tex` and `papers/paper2/main.tex`.
+**Done (11-02):**
+- §5 rebuilt: full-area headline (det3 single-track 94.8 %, interior 95.7 %; nothing leaves the denominator),
+  two-view single-track rule, R = 5 mm (knee), loss budget, δ-rays as one population, two-particle classes,
+  X/Y pairing (98 % rule; production 90–97 % after the fix), displays, veto, **§5.7 avenues for improvement**
+  (δ ≤ 2.4 pt, edges ≤ 1.5, veto ~0.1–0.2, merged projection; hardware floor 0.6 pt).
+- §2 design notes for Stephan, §3 det4-at-SPS + SPS cross-check, §4 dark current, §6 and §8 rewritten
+  (gap 28.2 ± 0.5 mm from two velocities; bench intrinsic resolution det3 ~120 ± 60 µm), edge section, AI acknowledgement.
+- Reco (on main): pairing `select=cost` (bench), charge-corroborated split `split_corrob=charge` (bench, needs re-pass),
+  discharge-veto rescue `seed.SPARK_RESCUE` (OFF; negative result).
+- Figures: `papers/paper_style.py` palette; restyle + checklist pass; new/redone figures (list in the work doc);
+  deck https://dylan-neff.web.cern.ch/notes/mx17-paper1-figures.html with per-figure log `papers/paper1/figure_log.toml`.
+
+**In progress / where it stopped:** every figure is "for review"; Dylan judged the earlier versions not publication-ready.
 
 **Next steps:**
-1. Draft Paper I's flow: map each section (01–10, `08b_bow`, `A1_loss_categories`) and decisions A–R (see the
-   "Paper I weekend" section below) to body or appendix X. Give each appendix the one referee question it answers and
-   the one-sentence body summary that points to it. Target a body of ~12–15 pages and 4–6 short appendices.
-2. Split `papers/paper1/sections/08b_bow.tex` (~1,060 words, the largest body section): tilt and mesh depth plus one
-   figure stay in the body, while the fit, the transfer gate and the skeptic checks move to an appendix.
-3. Switch the LaTeX classes (`jinst` for I, `elsarticle` for II) and check that both still build. Not done yet.
-4. Still open under C4: author list, collaboration sign-off and journal expectations, and CERN open-access coverage
-   for IOP and Elsevier.
-5. Rebuild the paper-plan deck after the C4 edit (`python mx_june_cosmic_qa/make_paper_plan_deck.py`, then
-   republish, see the PAPER_PLAN header). Not done this session.
+1. Archive the discharge-veto rescue (Dylan 11-02: off, out of the code base): move `seed.SPARK_RESCUE` path,
+   `wft/tests/test_spark_rescue.py`, `rerun/effbudget/single/dveto_*.py` to an archive (keep the report + results).
+2. Figure review with Dylan, one figure at a time; log each change in `figure_log.toml`, set status, rebuild the deck
+   (`python3 papers/paper1/make_figures_deck.py` then add-note.py --slug mx17-paper1-figures --force --deploy).
+3. Open style points: histogram steps vs points; joining lines (paper1_ops); unit brackets; edge (b) error estimate.
+4. A1: check the "merged in projection" example (looks like a shower) and event 17907's label; remove the pre-pass
+   head-on row from the A1 table.
+5. Before the next bench re-pass: add `"select": "cost"` and `"split_corrob": "charge"` to the pass-1 bundles;
+   then rebuild two_particle / loss_budget.
 
 **Gotchas / decisions:**
-- This decision replaces the 10-08 plan to send both papers to the same journal.
-- Ruled out: a short NIM A paper plus a long JINST paper with the same headline (duplicate publication). The I/II
-  split already makes the claims distinct.
-- EPJ C is a stretch option for Paper II, only if R3/R4 (the forward fit on hits, and the readout requirements) come
-  out strong.
+- M3 cannot tag second particles on the bench (2 of 276); use the two-view rule (`single_track_v2.py`, `single_track_area.py`).
+- POS_TAIL is only ~half bent M3 tracks: counted as loss. The story's gap "29 [28, 30]" is the gap/water profile, not the ratio.
+- EOS works from the desktop via `root://eospublic.cern.ch` + Kerberos (xrootd venv was in the job tmp; `pip install xrootd`).
+- `papers/make_figures.py` no longer deletes figures whose source is the output itself.
+- Overleaf push: subtree split under bash (README recipe), fast-forward only.
+
+**Key files & commands:**
+- `rerun/PAPER1_WORK_2026-11-02.md` — the day's record
+- `rerun/effbudget/single/` — README, single_track*.py, radius.py, xy_pairing.py, make_figures.py, the three reports
+- `papers/paper_style.py`, `papers/paper1/make_figures_deck.py`, `papers/paper1/figure_log.toml`
+- `rerun/paper1_ops/currents/` — dark current
 
 ## SPS det4 on one working region — updated 2026-11-01 (dylan-Yoga)
 
