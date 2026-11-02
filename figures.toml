@@ -78,6 +78,13 @@ source = "rerun/effbudget/single/figures/eff_vs_radius.pdf"
 producer = ".venv/bin/python rerun/effbudget/single/radius.py --root <cosmic_bench mirror> && .venv/bin/python rerun/effbudget/single/make_figures.py"
 note = "2026-11-02, pass 1, both det3 golden rows; R = 5 mm is the knee (9 core sigma, accidentals 0.07 %). rerun/effbudget/single/README.md section 3."
 
+[fig.residuals]
+title = "det3 residual distributions at the mesh: per view and radial, with the event-mixed accidentals"
+state = "current"
+source = "rerun/effbudget/single/figures/residuals.pdf"
+producer = ".venv/bin/python rerun/effbudget/single/radius.py --root <cosmic_bench mirror> && .venv/bin/python rerun/effbudget/single/make_figures.py"
+note = "2026-11-02; Dylan: show the full distribution behind the R = 5 mm choice."
+
 [fig.eff_vs_hv_discharge]
 title = "Efficiency and discharge loss against the resist HV (det3, det6, det7)"
 state = "placeholder"
@@ -97,7 +104,7 @@ title = "Resistive-electrode current against HV, every chamber and prototype on 
 state = "current"
 source = "rerun/paper1_ops/currents/results/figures/currents_vs_hv.pdf"
 producer = "WORK_DATA=... .venv/bin/python rerun/paper1_ops/currents/hv_currents.py"
-note = "2026-11-02 OVERVIEW ONLY (every chamber and prototype, per run-config name; 6-20/6-22 names carry the slot remap). Paper version to make: det3 6-27 scan with the fit I = 1.05 uA x 2^((V-490)/13.3 V), plus the other chambers at their golden HV. Not yet included in the text."
+note = "2026-11-02; n_TOF-batch boards only (from 6-17; boards by run-config description; 6-20 weekend excluded); one curve per night, det3 6-27 fit I = 1.05 uA x 2^((V-490)/13.3 V). rerun/paper1_ops/currents/README.md"
 
 [fig.efficiency_map]
 title = "Detection efficiency maps, all five chambers (pass 1, plateau pools, 8 mm disk)"

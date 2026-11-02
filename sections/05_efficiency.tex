@@ -36,6 +36,19 @@ the inefficiency. $R\in[4,8]$\,mm moves the efficiency by $-0.5/{+0.6}$\,pt (sys
   accidental rate from event mixing.}}
   \label{fig:effradius}
 \end{figure}
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{residuals}
+  \caption{\tbw{The full det3 residual distributions behind \cref{fig:effradius}: per view at the mesh (left, both
+  golden rows) and radial (right), with the accidental distribution from event mixing. A steep core to ${\sim}5$\,mm, a
+  shoulder of mis-measured tracks from 5 to 20\,mm, and accidentals taking over at ${\sim}15$\,mm.}}
+  \label{fig:residuals}
+\end{figure}
+\askDylan{Fiducial (decision I), det3 both golden rows, $R=5$\,mm. 30\,mm from every side against the current interior
+(30\,mm $x$ / 8\,mm $y$): production pick 92.31 vs 92.29\,\%; multi-track credit 95.01 vs 94.98\,\%; single-track 95.83
+vs 95.96\,\%; tracks 24\,145 vs 26\,542 ($-9$\,\%). The whole active area: 91.50 / 94.13\,\%. Efficiency does not care;
+angles do (Y-angle $s_{68}$ 1.3--1.9$\times$ in the 10--30\,mm $y$ band, \cref{sec:edge}), so ``30\,mm from every side for
+every number'' is the clean choice at no cost in efficiency. Choose.}
 
 \subsection{Efficiency maps of the five chambers}
 \tbw{Maps (8\,mm disk) of all five chambers on their golden rows. Interior efficiency: det2 90.3, det3 92.6, det4 40.9
@@ -61,18 +74,29 @@ discharges before they reach it.}
 \analysis{EFFHV}{build eff\_vs\_hv\_discharge from the hv\_scan rows (rerun/paper1\_ops + effbudget)}
 
 \subsection{det3: single-track efficiency}\label{sec:single}
-\tbw{A ``single-track'' sample selected by det3 itself is biased: a failure that looks like two tracks would leave
-the sample. On the bench an external tag does not help: M3 sees a second straight track in 2 of the 276 events where
-det3 sees two particles, because those particles are local (soft electrons and secondaries from the material above,
-at large angles). Instead we use the two views: a real second particle is ionisation in the gas, seen in both
-views with the same charge. Only events with such a particle (both views, charge-paired, not attached to the muon)
-leave the sample; everything else stays and counts against the chamber, including second deposits seen in one
-view only and showers vetoed by the spark rule.}
-\tbw{Result (two golden rows, 25\,875 tracks): $\varepsilon_\mathrm{single}=95.2\pm0.1$\,(stat)$^{+0.6}_{-0.5}$\,($R$)\,\%.
-If every one-view second deposit and every vetoed shower were an outside particle, it would be 97.0\,\%; that is
-the upper end of the selection systematic. The losses, in \% of single tracks: $\delta$-rays 1.7 (\cref{app:losses}),
-vetoed showers and unrelated deposits 1.1, one-view second deposits 0.5, discharges 0.5, noise bands 0.2, fits off
-with no flag 0.2.}
+\tbw{\textbf{The selection.} A ``single-track'' sample selected by det3 itself is biased: a failure that looks like two
+tracks would leave the sample by its own failure. An external tag does not help on the bench: M3 sees a second straight
+track in 2 of the 276 events where det3 sees two particles, because those particles are local (soft electrons and
+secondaries at large angles). We use the two views instead: a real second particle is ionisation in the gas, seen in both
+views with the same charge (the X/Y charge ratio of one particle is known to 6\,\%). An event leaves the single-track
+sample only if it carries such a second particle, in one of three forms: (i) a separate, charge-matched segment in each
+view, not attached to the muon; (ii) two segments in one view and, in the other, a single segment that is the two merged
+in projection: wider than a single track (median 15--25 strips against 12), carrying the charge of both, or placed
+between them within the 12\,mm seed gap; (iii) a clean single-track muon in both views plus a separate deposit, which
+together trip the discharge veto (${>}50$ strips). Everything else stays in the sample and counts against the chamber.}
+\tbw{\textbf{Result} (two golden rows, 25\,588 tracks): $\varepsilon_\mathrm{single}=96.0\pm0.1$\,(stat)$^{+0.6}_{-0.5}$\,($R$)\,\%.
+The 4.0\,\% lost: $\delta$-rays 2.5 (on the track 0.9, saturated blob 0.9, a large branching deposit that trips the
+discharge veto 0.7--0.9; \cref{app:losses}), discharges 0.5, noise bands 0.2, fits off with no flag 0.3, second
+deposits not particle-like 0.2. The chamber hardware itself (discharges, noise bands) accounts for 0.7\,\%; the
+rest is the reconstruction of a muon accompanied by its own $\delta$-ray.}
+\tbw{\textbf{The large deposits are $\delta$-rays, not showers from outside.} They show no extra M3 activity above or
+below det3 (0.49/0.47 extra clusters per event, against 0.56/0.72 for detected muons and 1.55/1.46 for events with an
+independent second particle), so nothing accompanies the muon through the telescope: the deposit is produced in det3's
+own gas, cathode or window. Their size (54--80 strips over threshold, a few cm) and rate (0.7--0.9\,\%) are consistent in order of
+magnitude with knock-on electrons of ${\gtrsim}0.1$\,MeV (${\sim}1$--1.5\,\% of muons from 3\,cm of argon, the cathode and
+the entrance window), and they sit at the muon crossing by
+definition of the class. We count them as losses, as all $\delta$-rays: a micro-TPC that has to measure a straight track
+has to cope with the $\delta$-rays it makes. Excluding them as well gives 96.8\,\%.}
 \begin{table}[h]
   \centering\small
   \caption{\tbw{det3 interior efficiency, $R=5$\,mm, by selection (\texttt{rerun/effbudget/single}).}}
@@ -83,7 +107,9 @@ with no flag 0.2.}
     \hline
     all tracks, multi-track credit & $95.43\pm0.26$ & $95.15\pm0.15$ \\
     det3-flagged single (biased) & $97.14\pm0.21$ & $96.97\pm0.12$ \\
-    single, two-view rule & $95.45\pm0.26$ & $95.13\pm0.15$ \\
+    single, (i) removed only & $95.45\pm0.26$ & $95.13\pm0.15$ \\
+    \textbf{single, (i)--(iii) removed} & $\mathbf{96.24\pm0.24}$ & $\mathbf{95.87\pm0.14}$ \\
+    single, $\delta$-ray deposits also removed & $96.91\pm0.22$ & $96.74\pm0.13$ \\
     with an independent second particle & $94.5\pm2.0$ & $96.1\pm0.9$ \\
     \hline
   \end{tabular}
@@ -105,7 +131,5 @@ are similar). This is the feasibility demonstration for pairs at n\_TOF.}
   against single tracks.}}
   \label{fig:pairing}
 \end{figure}
-\askDylan{Bench chain finding: production's track selection drops the second track when a candidate fails the
-beam-tuned \texttt{plausible} gate (16\,\% of bench candidates), and then often pairs the wrong segments (production
-80\,\% correct, 95\,\% when every candidate is plausible). The pairing cost itself is right. Quote the pairing rule
-(98\,\%) and state this, or fix the bench gate first? Single-track efficiency and angles are unaffected.}
+\analysis{PAIRFIX}{bench production pairs wrongly when a candidate fails the beam-tuned \texttt{plausible} gate (80\,\%
+correct vs 98\,\% for the rule); being fixed (Dylan 2026-11-02), then re-quote production pairing here}
