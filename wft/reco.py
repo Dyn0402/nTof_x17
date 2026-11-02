@@ -1187,10 +1187,16 @@ def fit_plane_two(P, plane: str, cal: CalibrationBundle, parent: PlaneFit,
 
 
 def _n_gated(all_fits: Dict[str, list], ftst_diff, cal=None) -> int:
-    """How many gated tracks the selector would report for these candidates."""
+    """How many gated tracks the selector would report for these candidates.
+
+    Always counted with select_tracks mode 'gate', whatever the bundle's xy_pairing['select']: this count only decides
+    whether a two-track split is reverted, and holding it to 'gate' keeps every fit, split and winner independent of
+    the pairing mode (the 'cost' mode then changes track_id / track_gated / n_tracks only, as the pass-1 table refresh
+    assumes; PAIRING_FIX_2026-11-02.md §7: with the bundle's mode, 1 det4 split of 2 251 re-reconstructed events
+    reverted differently)."""
     try:
         pairs = select_tracks(all_fits, ftst_diff, cal or _CAL,
-                              max_tracks=MAX_TRACKS, pairing=_PAIRING)
+                              max_tracks=MAX_TRACKS, pairing=_PAIRING, mode='gate')
     except Exception:
         return 0
     return int(sum(1 for _i, _j, g in pairs if g))
@@ -1665,7 +1671,7 @@ def select_tracks(cand_fits: Dict[str, list], ftst_diff: Optional[int],
     mode = mode or pair_select_mode(pairing)
     if mode not in PAIR_SELECT_MODES:
         raise ValueError(f'select_tracks mode must be one of {PAIR_SELECT_MODES}: {mode!r}')
-    if mode == 'cost':
+    if mode == 'cost' and (pairing or {}).get('features'):      # no pairing calibration: nothing to cost -> 'gate'
         return _select_tracks_cost(cand_fits, ftst_diff, pairing, dt, max_tracks)
     return _select_tracks_gate(cand_fits, ftst_diff, pairing, dt, max_tracks)
 

@@ -1,0 +1,189 @@
+{
+ "timing_rows": {
+  "n_rows": 112,
+  "rows_with_change": 4,
+  "events_lost": 3,
+  "events_gained": 1,
+  "events_total": 53017,
+  "max_abs_d_sigma_evt_ns": 0.24821807861329148,
+  "max_abs_d_sigma_xy_ns": 0.3347436769430985,
+  "changed": [
+   {
+    "key": "g_det4",
+    "det": "mx17_4",
+    "n_orig": 2109,
+    "n_new": 2110,
+    "n_lost": 0,
+    "n_gained": 1,
+    "sigma_xy_orig": 38.71327021870664,
+    "sigma_xy_new": 38.68189062895657,
+    "d_sigma_xy": -0.03137958975006683,
+    "sigma_evt_orig": 110.92470367431642,
+    "sigma_evt_new": 110.85773834228513,
+    "d_sigma_evt": -0.06696533203128752,
+    "sigma_common_orig": 107.49386605626205,
+    "sigma_common_new": 107.43041384566698,
+    "d_sigma_common": -0.06345221059507367
+   },
+   {
+    "key": "g_det7_long",
+    "det": "mx17_7",
+    "n_orig": 433,
+    "n_new": 432,
+    "n_lost": 1,
+    "n_gained": 0,
+    "sigma_xy_orig": 25.497023036818945,
+    "sigma_xy_new": 25.33425792306807,
+    "d_sigma_xy": -0.16276511375087566,
+    "sigma_evt_orig": 45.57848571777345,
+    "sigma_evt_new": 45.49587127685547,
+    "d_sigma_evt": -0.08261444091797898,
+    "sigma_common_orig": 41.861071038080716,
+    "sigma_common_new": 41.8205929056958,
+    "d_sigma_common": -0.04047813238491926
+   },
+   {
+    "key": "c26__mx17_det6_det7_overnight_6-26-26__longer_run__mx17_7",
+    "det": "mx17_7",
+    "n_orig": 267,
+    "n_new": 266,
+    "n_lost": 1,
+    "n_gained": 0,
+    "sigma_xy_orig": 28.353745222405816,
+    "sigma_xy_new": 28.019001545462718,
+    "d_sigma_xy": -0.3347436769430985,
+    "sigma_evt_orig": 51.62285461425782,
+    "sigma_evt_new": 51.46392211914065,
+    "d_sigma_evt": -0.15893249511717045,
+    "sigma_common_orig": 47.57049174074459,
+    "sigma_common_new": 47.49740051921424,
+    "d_sigma_common": -0.07309122153035474
+   },
+   {
+    "key": "c26__mx17_det6_det7_overnight_6-26-26__short_run__mx17_6",
+    "det": "mx17_6",
+    "n_orig": 216,
+    "n_new": 215,
+    "n_lost": 1,
+    "n_gained": 0,
+    "sigma_xy_orig": 89.8423424408892,
+    "sigma_xy_new": 89.53355938839796,
+    "d_sigma_xy": -0.3087830524912363,
+    "sigma_evt_orig": 85.73303833007813,
+    "sigma_evt_new": 85.48482025146484,
+    "d_sigma_evt": -0.24821807861329148,
+    "sigma_common_orig": 57.57022332485471,
+    "sigma_common_new": 57.44149514982493,
+    "d_sigma_common": -0.12872817502977796
+   }
+  ]
+ },
+ "angle_changes": [
+  {
+   "path": "/g_det4/n_joined",
+   "orig": 2109,
+   "new": 2110
+  },
+  {
+   "path": "/g_det4/all/n",
+   "orig": 2109,
+   "new": 2110
+  },
+  {
+   "path": "/g_det4/all/sigma_xy",
+   "orig": 38.71327021870664,
+   "new": 38.68189062895657
+  },
+  {
+   "path": "/g_det4/all/sigma_evt",
+   "orig": 110.92470703125,
+   "new": 110.85773925781248
+  },
+  {
+   "path": "/g_det4/all/sigma_x",
+   "orig": 119.87254638671877,
+   "new": 119.83699951171877
+  },
+  {
+   "path": "/g_det4/all/sigma_y",
+   "orig": 118.82682800292969,
+   "new": 118.79582214355472
+  },
+  {
+   "path": "/g_det4/all/sigma_common",
+   "orig": 107.4938695203375,
+   "new": 107.43041479040215
+  },
+  {
+   "path": "/g_det4/all/trig_cov_ns2",
+   "orig": 1740.9998971842992,
+   "new": 1739.7685099518678
+  },
+  {
+   "path": "/g_det4/bins[2]/n",
+   "orig": 1090,
+   "new": 1091
+  },
+  {
+   "path": "/g_det4/bins[2]/median",
+   "orig": 350.027587890625,
+   "new": 350.2301025390625
+  },
+  {
+   "path": "/g_det4/bins[2]/sigma_evt",
+   "orig": 112.04500366210937,
+   "new": 112.01513061523437
+  },
+  {
+   "path": "/g_det4/bins[2]/sigma_xy",
+   "orig": 40.106479248377,
+   "new": 40.083462888122675
+  },
+  {
+   "path": "/g_det7_long/n_joined",
+   "orig": 433,
+   "new": 432
+  },
+  {
+   "path": "/g_det7_long/all/n",
+   "orig": 433,
+   "new": 432
+  },
+  {
+   "path": "/g_det7_long/all/sigma_xy",
+   "orig": 25.497023036818945,
+   "new": 25.33425792306807
+  },
+  {
+   "path": "/g_det7_long/all/sigma_evt",
+   "orig": 45.57847229003906,
+   "new": 45.495863647460936
+  },
+  {
+   "path": "/g_det7_long/all/sigma_x",
+   "orig": 48.39016235351565,
+   "new": 48.3822930908203
+  },
+  {
+   "path": "/g_det7_long/all/sigma_y",
+   "orig": 50.27914489746095,
+   "new": 50.32366943359375
+  },
+  {
+   "path": "/g_det7_long/all/sigma_common",
+   "orig": 41.8610564179145,
+   "new": 41.820584605814496
+  },
+  {
+   "path": "/g_det7_long/bins[4]/n",
+   "orig": 2,
+   "new": 1
+  },
+  {
+   "path": "/g_det7_long/bins[4]/median",
+   "orig": 48.80595779418945,
+   "new": 38.31920623779297
+  }
+ ],
+ "floor_topo_events_moved": 0
+}
