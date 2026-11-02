@@ -291,15 +291,38 @@ A failing arm is held, as on the bench.
   90/10, HV 540/540/525/520 + drift 700 V, and the noisy era. Excluded: run_148 (no data), and three 0-byte
   acquisitions (run_104 stat090_0004 and 0009 tag _012, run_124 stat090_0007 tag _012). 255 acquisitions (run_79 +
   run_81 start) are pre-access with A connector 8 dead.
-- **Decoder (P1, running).** The first finished file (run_126 FEU 1) is not identical to the EOS decode. The fresh
-  fa80c06 decode has 6,974 events against 6,966: the eventID split of fused triggers, as on the June nights.
-  The first submission failed on AFS timeouts (decoder executed from AFS by 72 jobs); the job now copies its tools
-  to scratch.
+- **Decoder (P1, spot check `rerun/ntof/decode_spot/`, condor 4612778).** The first acquisition of every run was
+  re-decoded with fa80c06 and compared with EOS: 320 of the first 334 FEU files are identical. The rest:
+  - **Truncated EOS decodes.** run_130 stat090_0000 `_000` holds 654 of 8,387 events. A campaign-wide size check
+    (decoded/raw ratio, 0.572–0.616 on 99 % of acquisitions) finds four such acquisitions: run_81 stat090_0001 `_001`,
+    run_124 stat090_0006 `_005` and stat090_0010 `_011`, run_130 stat090_0000 `_000`. They are the registry's
+    `redecode` column. is2_v2 and every older pass saw only that fraction of them.
+  - **Fused triggers.** The fresh decode splits a few fused events (run_126 +8, run_147 +1 per file). It is the same
+    eventID-split fix the June nights needed.
+  - **The independent audit does not fit the n_TOF frame format.** It reports 12 % (FEU 01) and 7 % (FEU 03) of
+    events "incomplete" (< 20 samples), but the C++ decode of those events has 20 distinct samples per event with
+    normal noise (5.5 vs 6.0 ADC, no duplicated sample). The audit counts ~56 k "orphan" 64-word data runs outside a
+    DREAM block header and ignores them. Before the audit can certify n_TOF it has to learn that layout: open item,
+    the C++ decode stands meanwhile.
+  - **Recommendation:** re-decode the whole campaign with fa80c06 into `decoded_root_fa80c06/` next to the old files,
+    as the bench did, so the pass has one decoder provenance (3.4 TB). Needs Dylan's go-ahead (EOS space).
+- **Channel maps.** Bench and n_TOF channel → strip positions are identical on all four chambers, both views, all 512
+  channels (only the FEU numbers differ). Dead lists and the bow block carry by channel number and strip frame, so
+  N9's remap is not needed. The n_TOF census (P2) still checks the masks.
+- **First n_TOF reconstruction on the pass-1 algorithm** (`rerun/ntof/ntof_reco.py`, run_145 stat090_0000 tag `_000`,
+  arm A, 300 events, bundle `ntof_bundle.py` v0: pass-1 det3 + bow, v 38.0, K 20, t0 free).
+  - It runs end to end.
+  - The NNLS charge runaway (q_sum > 1e5) falls from 84 to 1 of 300 events.
+  - Per-view ok is the same as is2_v2 (seeding unchanged).
+  - t0 is far narrower: 16–84 % −71…+329 ns, against is2 −172…+450.
+  - The bow mesh height reaches 5 mm at the plate corners (quadratic extrapolation beyond the bench fit: check).
+  - Cost: 2.6 CPU-s per event.
 - **t0 in is2_v2, run_145 stat090_0000** (x–y consistent tracks, |t0x − t0y| < 60 ns):
   - A prompt peak at −60…0 ns holds most tracks. Its width (~150 ns FWHM) is several times the bench's.
   - A second peak at +420–480 ns holds ~15 % (A) / ~12 % (C).
   - A flat pedestal runs −600…+700 ns.
   - The prompt median does not step with ftst by 10 ns as on the bench.
-  - **Pinning cannot be blind:** the pin applies to the trigger track only, and the +450 ns population must be
-    understood first (is it another particle, a mirror/lattice basin of the free fit, or the flash tail?).
+  - **The +450 ns population is the NNLS charge runaway, not physics:** tan exactly 0, q_sum ~1e7 (prompt 1.5e3),
+    q_u50 at the grid edge. `COL_GUARD` (built in since) removes it. The real distribution is the prompt peak.
+  - The pin still applies to the trigger track only; the second track of a pair keeps a free t0 (Q2 test).
 

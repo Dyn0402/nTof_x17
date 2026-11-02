@@ -442,7 +442,10 @@ def reconstruct_subrun(cfg: BeamConfig, bundle_path: str, out_path: str,
                        jobs: int = 6, limit_per_tag: Optional[int] = None,
                        pad_strips: int = 3, verbose: bool = True,
                        allow_events: Optional[Dict[str, set]] = None,
-                       allow_meta: Optional[dict] = None):
+                       allow_meta: Optional[dict] = None,
+                       allow_bow: bool = False,
+                       min_strips: Optional[int] = None,
+                       extra_meta: Optional[dict] = None):
     """Reconstruct a beam sub-run tag by tag into one parquet table.
 
     Mirrors `wft.reco.reconstruct_run` (and reuses its worker), but streams the
@@ -469,9 +472,12 @@ def reconstruct_subrun(cfg: BeamConfig, bundle_path: str, out_path: str,
     if cal.t0_abs and float(cal.t0_prior_sigma or 0.0) > 0 and not cal.provenance.get('kept_t0_prior'):
         raise ValueError(f'{bundle_path}: carries an active t0 pin/prior (t0_prior_sigma {cal.t0_prior_sigma}); a beam '
                          f'run is not triggered by the particle -- rebuild it with make_bundle (drops t0_abs)')
-    if getattr(cal, 'bow', None) or getattr(cal, 'v_map', None):
+    # ``allow_bow``: the n_TOF pass-1 bundles (rerun/ntof/ntof_bundle.py) carry the chamber's bow block on purpose
+    # (Dylan 2026-11-02, under test); the v map never transfers
+    if getattr(cal, 'v_map', None) or (getattr(cal, 'bow', None) and not allow_bow):
         raise ValueError(f'{bundle_path}: carries the bench bow block / v map; they never transfer to n_TOF '
-                         f'(rebuild with make_bundle)')
+                         f'(rebuild with make_bundle, or rerun/ntof/ntof_bundle.py with allow_bow for the bow)')
+    min_strips = MIN_STRIPS_BEAM if min_strips is None else int(min_strips)
     bad = cal.check_conditions(cfg.conditions)
     if bad and verbose:
         print('[wft-beam] bundle/run condition mismatches: ' + '; '.join(bad))
@@ -524,7 +530,8 @@ def reconstruct_subrun(cfg: BeamConfig, bundle_path: str, out_path: str,
         # angle scale), and a half-finished run is exactly when that bites
         _write_meta(d, path, cal, cfg, bundle_path, feu_x, feu_y, tags_done,
                     n_seeded, pad_strips, partial=len(tags_done) < len(tags),
-                    allow_acct=allow_acct, allow_meta=allow_meta)
+                    allow_acct=allow_acct, allow_meta=allow_meta, min_strips=min_strips,
+                    extra_meta=extra_meta)
         return d
 
     rows, cand_rows, split_rows, n_seeded, done = [], [], [], 0, []
@@ -537,7 +544,7 @@ def reconstruct_subrun(cfg: BeamConfig, bundle_path: str, out_path: str,
                 continue
             hits = read_hits_tag(hp, (feu_x, feu_y))
             seeds = seeds_from_hits_beam(hits, pos_maps, feu_x, feu_y, hot=cal.hot,
-                                         min_strips=MIN_STRIPS_BEAM, dead=cal.dead)
+                                         min_strips=min_strips, dead=cal.dead)
             del hits
             wanted = set(seeds)
             if allow_events is not None:
@@ -585,7 +592,7 @@ def reconstruct_subrun(cfg: BeamConfig, bundle_path: str, out_path: str,
 
 def _write_meta(df, out_path, cal, cfg, bundle_path, feu_x, feu_y, tags_done,
                 n_seeded, pad_strips, partial=False, allow_acct=None,
-                allow_meta=None):
+                allow_meta=None, min_strips=None, extra_meta=None):
     from wft import reco as wreco
     from wft import seed as wseed
     meta = dict(n_events=int(len(df)), n_seeded=int(n_seeded),
@@ -612,7 +619,7 @@ def _write_meta(df, out_path, cal, cfg, bundle_path, feu_x, feu_y, tags_done,
                                dead_seed={p: len(c) for p, c in (cal.dead or {}).items()}
                                if wseed.DEAD_SEED else {},
                                busy_plane_hits=BUSY_PLANE_HITS,
-                               min_strips=MIN_STRIPS_BEAM,
+                               min_strips=MIN_STRIPS_BEAM if min_strips is None else min_strips,
                                n_candidates=N_CANDIDATES_BEAM,
                                wide_strips=WIDE_STRIPS,
                                isochronous_span=ISOCHRONOUS_SPAN,
@@ -664,6 +671,8 @@ def _write_meta(df, out_path, cal, cfg, bundle_path, feu_x, feu_y, tags_done,
         meta['allowlist'] = dict(
             applied=False,
             note='no allowlist -- every seeded trigger of every tag was fitted')
+    if extra_meta:
+        meta['ntof_pass'] = extra_meta
     with open(out_path.replace('.parquet', '.meta.json'), 'w') as f:
         json.dump(meta, f, indent=1, default=str)
 

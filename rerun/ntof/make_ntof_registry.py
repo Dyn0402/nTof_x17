@@ -154,6 +154,14 @@ def main():
                 reasons.append('empty decoded_root file(s)')
             if conf.get('zero_suppress'):
                 reasons.append('zero-suppressed (not the production readout)')
+            # decoded/raw size ratio is 0.572-0.616 on 99 % of acquisitions; far below = a truncated EOS decode
+            # (run_130 stat090_0000 _000: 654 of 8,387 events, spot check 2026-11-02) -> re-decode from the fdf
+            ratio = row['dec_gb'] / row['fdf_gb'] if row['fdf_gb'] else float('nan')
+            row['dec_fdf_ratio'] = round(ratio, 4)
+            # and per FEU: one FEU file far smaller than the acquisition's others (run_104 stat090_0016: A/C empty)
+            feu_min_rel = float(dec.bytes.min() / dec.bytes.median()) if len(dec) else float('nan')
+            row['dec_feu_min_rel'] = round(feu_min_rel, 4)
+            row['redecode'] = bool((ratio < 0.5 or feu_min_rel < 0.5) and row['fdf_gb'] > 0.01)
             row['excluded'] = bool(reasons)
             row['exclude_reason'] = '; '.join(reasons)
             rows.append(row)
@@ -167,6 +175,7 @@ def main():
     print(ok.groupby('rclass').agg(runs=('run', 'nunique'), subruns=('subrun', 'nunique'),
                                     acq=('tag', 'size'), dec_TB=('dec_gb', lambda x: round(x.sum() / 1e3, 2))))
     print(reg[reg.excluded][['run', 'subrun', 'tag', 'exclude_reason']].to_string(index=False))
+    print('truncated EOS decodes (redecode):', ok[ok.redecode][['run', 'subrun', 'tag', 'dec_fdf_ratio']].to_string(index=False))
     for col in ('latency', 'n_samples', 'gas', 'noise_era', 'access_epoch', 'a_x_conn8_dead'):
         print(col, ok[col].value_counts(dropna=False).to_dict())
     print('HV sets:', ok.groupby(['resist_A', 'resist_B', 'resist_C', 'resist_D',
