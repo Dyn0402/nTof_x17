@@ -1,0 +1,9 @@
+executable = job.sh
+arguments  = $(run) $(subrun) $(tag)
+output     = logs/$(run)_$(tag).out
+error      = logs/$(run)_$(tag).err
+log        = logs/spot.log
+request_memory = 4 GB
++JobFlavour = "workday"
+should_transfer_files = NO
+queue run, subrun, tag from jobs.txt

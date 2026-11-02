@@ -95,7 +95,7 @@ Each item names where it must live in the new chain. ✱ = not in any chain toda
 | R9 | Unregularised NNLS ran away on 30 % of n_TOF tracks | `COL_GUARD` (built in) |
 | R10 | Saturation: `SAT_ADC_BEAM` 3700 vs locked bench clip 3550 | **one rule** (§3, P3; decision Q5) |
 | R11 | Bands absent at n_TOF (window 1.2 µs < `BAND_MIN_WINDOW_NS`); `DROP_FLAT_HITS` bench only | inert by construction; state it in the meta |
-| R12 | Bench bow, v_map, w0, t0_abs never at n_TOF; `reconstruct_subrun` refuses a bundle that carries them | keep the refusal; the n_TOF bundle is built without them |
+| R12 | Bench v_map and w0 never at n_TOF (per bench mounting); bench t0_abs never (an n_TOF latency is measured instead, Q2). **The bow block now transfers** (Dylan 11-02, §5) | the n_TOF bundle keeps the bow with provenance; the driver refuses v_map / bench w0 / bench t0_abs |
 | R13 | LM with free t0 relabels t0/p0 by one 60 ns bin on 13–33 % of planes (same angle); x–y pairing on run_145 unchecked | P5 gate; goes away if t0 is pinned (Q2) |
 | R14 | χ²/dof flag purity at n_TOF unmeasured (~10 % flagged) | P5: measure with x–y charge balance / A–C pointing |
 | R15 | Two-track thresholds F = 1200 (A) / 2400 (C) were set on old bundles; two-track was off in is2_v2 | refit F on the new bundles (P5) |
@@ -262,15 +262,44 @@ A failing arm is held, as on the bench.
 
 ---
 
-## 5. Decisions needed (Q1–Q6)
-- **Q1, scope:** production 36 runs + 41 beam-off cosmic runs? Include pre-production (run_55 HV scan, drift scans,
-  run_75/76)?
-- **Q2, t0:** pin it to the trigger latency, as on the bench, or leave it free, as at SPS? The n_TOF trigger is the
-  scintillator stack, like the bench, so the latency should be fixed up to the ftst phase. But a non-trigger second
-  track (pairs, pile-up, late tracks) has its own t0. Proposal: pin the trigger track and leave the second track of a
-  two-track fit free. Decide on P5 numbers.
-- **Q3, output location:** `/eos/experiment/ntof/data/x17/july_beam/Analysis_pass1/` (next to the data, like the bench).
-- **Q4, hits:** regenerate n_TOF hits with the rr1 recipe, or seed from waveforms as SPS does?
-- **Q5, saturation:** one clip rule (bench 3550) or keep 3700 at n_TOF? The ADC is the same DREAM. 3550 is a
-  model-mismodelling rule, not the rail, so it should transfer.
-- **Q6, scale of the A/B:** the full is2_v2 comparison (P5 test 3) on all 5 test samples, or run_145 + run_149 only?
+## 5. Decisions (Dylan, 2026-11-02)
+- **Q1, scope.** The minimum now: the 36 production runs and the beam-off cosmics at the production point
+  (`make_ntof_registry.py --scope pass1`). Pre-production goes in a last pass at the end (`--scope all`).
+- **Q2, t0.** Pin it, but test before the algorithm is locked: pinned against free on run_145/run_149 (P5 test 6).
+  The first look at is2_v2 is below (§6). It shows the prompt peak, and also structure the pin has to deal with.
+- **Q3, output location.** Yes: `/eos/experiment/ntof/data/x17/july_beam/Analysis_pass1/`.
+- **Q4, hits.** Hits only decide which strips and windows to fit. Choose on run_145 numbers: rr1-style regenerated
+  hits vs waveform seeding (the SPS seeder is single-track, so it needs extending for pairs).
+- **Q5, saturation.** Probably 3550, but check it on n_TOF (P5).
+- **Q6, A/B sequence.** run_145 + run_149 first; expand to all five samples when those pass. Compare CPU time per
+  event too (is2_v2's two-sided search cost ~20×).
+- **Bow (new).** Carry each chamber's pass-1 bow block to n_TOF instead of dropping it. Then check bow-on against
+  bow-off on the run_149 A–C cosmic line and on the capsule focus.
+  - The block is in the chamber's own strip-map frame (U, W from the plate centre; `wft.reco.tan_bow`/`bow_h`), and
+    that frame is shared by bench, SPS and n_TOF.
+  - The bench review found the dish static and mostly fabrication/mesh tension (pressure ≤ 1/3), so it should be a
+    chamber property. The open part is orientation: on the bench the chambers lie flat; at n_TOF they stand vertical
+    around the capsule.
+  - `wft_beam.make_bundle`, `reconstruct_subrun` and `sps_reco._init` drop or refuse the block today. The n_TOF driver
+    has to keep it, as an explicit bundle field with provenance.
+  - B has no field-shaping ring, so its drift field (and its bow-induced tilt) is not the bench's: B carries no angle
+    either way.
+
+## 6. Findings so far
+- **Registry (P0, 11-02).** 3,941 acquisitions in scope; 3,937 kept: production 36 runs / 3,233 acquisitions / 2.83 TB
+  decoded, cosmics 40 runs / 704 acquisitions / 0.58 TB. Every kept acquisition has latency 27, 20 samples, Ar/iso
+  90/10, HV 540/540/525/520 + drift 700 V, and the noisy era. Excluded: run_148 (no data), and three 0-byte
+  acquisitions (run_104 stat090_0004 and 0009 tag _012, run_124 stat090_0007 tag _012). 255 acquisitions (run_79 +
+  run_81 start) are pre-access with A connector 8 dead.
+- **Decoder (P1, running).** The first finished file (run_126 FEU 1) is not identical to the EOS decode. The fresh
+  fa80c06 decode has 6,974 events against 6,966: the eventID split of fused triggers, as on the June nights.
+  The first submission failed on AFS timeouts (decoder executed from AFS by 72 jobs); the job now copies its tools
+  to scratch.
+- **t0 in is2_v2, run_145 stat090_0000** (x–y consistent tracks, |t0x − t0y| < 60 ns):
+  - A prompt peak at −60…0 ns holds most tracks. Its width (~150 ns FWHM) is several times the bench's.
+  - A second peak at +420–480 ns holds ~15 % (A) / ~12 % (C).
+  - A flat pedestal runs −600…+700 ns.
+  - The prompt median does not step with ftst by 10 ns as on the bench.
+  - **Pinning cannot be blind:** the pin applies to the trigger track only, and the +450 ns population must be
+    understood first (is it another particle, a mirror/lattice basin of the free fit, or the flash tail?).
+
