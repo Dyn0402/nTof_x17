@@ -194,3 +194,35 @@ cost, then applies the usual coincidence gate to each pair. On the same 552 even
 (re-reconstructed from the waveforms; \texttt{rerun/effbudget/single/PAIRING\_FIX\_2026-11-02.md}). An earlier selection,
 which let a beam-tuned plausibility flag decide which pairs survived, managed 80\,\%.}
 \analysis{PAIRFIX}{pairing fix on main (743d6d31, b5ae07c8); refreshed cost-mode tables for all 157 bench rows in Analysis\_pass1/<rel>/wft/pairing\_cost/}
+
+\subsection{Avenues for improvement}\label{sec:improve}
+\intent{Dylan 2026-11-02: name what better reconstruction could still recover, with the size of each, under one
+umbrella; the losses the chamber hardware causes are separated from those the reconstruction causes.}
+\tbw{Of the 5.2\,\% of det3 single tracks lost over the full active area (\cref{fig:lossbudget}), only the discharges
+(0.47\,\%) and the noise bands (0.10\,\%) are the chamber's own: about 0.6\,pt is a hardware floor. The rest is the
+reconstruction of real ionisation, and each part has a named route to recovery:}
+\tbw{\textbf{$\delta$-rays, up to 2.4\,pt.} The three $\delta$ classes (along the track 0.81, saturated blob 0.87, large
+branching deposit tripping the veto 0.76\,\%) are a muon with its own knock-on electron. A straight-line fit cannot
+separate them, and the one model tested here (track plus a compact deposit) recovers only ${\sim}3$\,\% of the saturated
+views (\cref{app:losses}): the deposit is a short curling track, not a point. A topological or image-recognition
+algorithm that identifies the $\delta$ and fits the muon on the remaining charge could recover up to 2.4\,pt; how much
+of that is reachable is not measured.}
+\tbw{\textbf{The edges, up to 1.5\,pt over the full area.} Near the unpassivated $x$ sides the drift field fringes
+(\cref{sec:edge}): tracks there spread over more strips (1.01\,\% exceed the discharge veto) or are fitted off (0.32\,\%), and
+0.19\,\% leave through the other coordinate's edge. An edge-aware drift model and a veto that counts strips per cluster
+rather than per plane could recover these; the interior is unaffected.}
+\tbw{\textbf{A smarter discharge veto, ${\sim}0.1$--0.2\,pt.} Re-seeding vetoed events from their clean clusters recovers a
+muon accompanied by a separate deposit correctly (29 right, 4 wrong on det2/det3), but in discharges and large
+$\delta$-rays it mostly finds the wrong track (overall 57--75\,\% right on det2/det3, 11--26\,\% on det4/det6/det7, against
+95\,\% for ordinary tracks), so it is not used. Telling a separate deposit from a shower without the reference would
+make the clean part usable (\texttt{rerun/effbudget/single/DISCHARGE\_VETO\_2026-11-02.md}).}
+\tbw{\textbf{Two particles merged in one projection, 0.8\,\% of tracks.} The charge-corroborated split recovers the muon
+in 54\,\% of them (from 41\,\%) without splitting any clean single muon; most of the rest fail geometric guards that
+protect single tracks (relaxing the column-sharing guard would add ${\sim}6$\,\% of them at the price of
+one-track-cut-in-half splits). A joint fit of both views at once, using the charge and time correspondence directly,
+is the route beyond that.}
+\tbw{Together these bound what the named improvements could add at ${\approx}4$\,pt (det3 single-track efficiency over the
+full area from 94.8 towards ${\approx}98.8\,\%$); the remaining 0.7\,pt of reconstruction losses (fits off with nothing
+flagged, non-particle second deposits, right-angle tracks far from M3) have no identified cause. The hardware alone
+would allow 99.4\,\%.}
+
