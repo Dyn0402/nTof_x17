@@ -425,3 +425,16 @@ A failing arm is held, as on the bench.
     (no angle).
   - Gaps are the bench timing-free gaps (`physics_inputs.json`), so v carries their errors: A ± 0.7 %, D ± 3.8 %, C has
     no error (adopted 28 mm).
+- **X/Y pairing fix on main (743d6d31, Paper I session, 11-02).** `wft.reco.select_tracks` now has
+  `xy_pairing['select'] = 'cost'`: pair by the lowest summed `xy_pair_cost`, then gate. The old `'gate'` mode let the
+  beam-tuned `plausible` flag decide which pairs survive (80 % correct on bench two-particle cosmics, `cost` 96.7 %).
+  - `ntof_bundle.py` writes `'gate'` explicitly, so n_TOF output is unchanged for now.
+  - On run_145, `cost` would change 12–23 % of events and lose the gated track in 2–3 %.
+  - The same `plausible` flag also gates the joint two-track fit (`_cross_plane_mismatch`, the `both_plausible` split
+    guard). On the bench it blocks nearly every recovery of two particles merged in one projection
+    (`rerun/effbudget/single/MERGED_PROJECTION_2026-11-02.md`, in progress).
+  - Notes: `rerun/effbudget/single/PAIRING_FIX_2026-11-02.md`, `rerun/ntof/NOTE_PAIRING_FIX_2026-11-02.md` (coming).
+  - **Decision before the n_TOF bundles freeze (Q7):** `select` gate vs cost, and the two-track plausibility guards,
+    chosen on a beam truth test: overlay pairs (`sept26_prelim_analysis/intra_bench.py`, real single beam tracks
+    superimposed), plus capsule pointing. `plausible` contains tan_max, so the tan_max scan and Q7 are one study and
+    are scored together.
