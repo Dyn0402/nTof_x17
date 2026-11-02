@@ -98,6 +98,14 @@ made in det3's own gas, cathode or window, by the muon. Their rate is consistent
 electrons ${\gtrsim}0.1$\,MeV (${\sim}1$--1.5\,\% of muons). They are counted as losses: a micro-TPC that measures a
 straight track has to cope with the $\delta$-rays it makes. Real discharges are different: 113 strips over threshold
 and 220--230 at SNR\,$>$\,6, with chip-wide ringing.}
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.85\linewidth]{loss_budget}
+  \caption{\tbw{Where the det3 single-track inefficiency goes, over the full active area (two golden rows, 28\,453
+  tracks, 5.2\,\% lost): $\delta$-rays in three sizes, the chamber itself (discharges, noise bands), the reconstruction, and
+  the edges. The largest single class is the edge zone, where tracks exceed the 50-strip discharge veto.}}
+  \label{fig:lossbudget}
+\end{figure}
 \begin{table}[h]
   \centering\small
   \caption{\tbw{det3 efficiency in the interior, $R=5$\,mm, by selection (\texttt{rerun/effbudget/single}); full-area values in the text.}}
@@ -124,6 +132,14 @@ reconstructed in 73.7\,\% of them, and the losses are all in the two harder conf
 (ii) two segments in one view, merged into one in the other projection (232): 44\,\%;
 (iii) a clean muon plus a separate deposit elsewhere in the plane, which together exceed the discharge veto (93): 1\,\%.
 These are fair two-particle events and count as losses where the muon is not recovered.}
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.7\linewidth]{two_particle}
+  \caption{\tbw{det3 events with a second particle in the chamber, by configuration, and the fraction in which the muon
+  is reconstructed within 5\,mm of M3 (full active area, both golden rows; pass 1, before the two-track and veto
+  changes).}}
+  \label{fig:twoparticle}
+\end{figure}
 \tbw{\textbf{Overlap in one projection.} The reconstruction is built for it: a joint two-track fit offers a merged
 candidate a second track, with a lowered threshold when the other view resolves more candidates. On the bench it
 rarely fires: both its trigger and its acceptance require the candidates to pass a plausibility test tuned on beam
