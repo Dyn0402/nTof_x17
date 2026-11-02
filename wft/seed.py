@@ -59,6 +59,33 @@ DEAD_SEED = True
 #: det4/det7 the most, no cost to the existing tracks); the cut is a significance, i.e. in units of each strip's own
 #: noise, so it means the same on every chamber.
 HEADON_SIG = 20.0
+#: Discharge-aware veto (rerun/effbudget/single/DISCHARGE_VETO_2026-11-02.md).  An event over SPARK_VETO_HITS is no
+#: longer dropped outright: it is re-seeded from what is clean in it, and a track found there is kept only if it
+#: passes the rescue gate (wft.reco.spark_rescue_gate).  The re-seed (``spark_rescue_seeds``):
+#:   * chips (64-channel DREAM blocks) whose RAW common mode swings by more than SPARK_CHIP_CM_SIG x their median
+#:     strip noise (``ringing_chips``: the coherent baseline swing of a discharge) lose their hits, and their strips
+#:     are censored in the fit like dead strips (unknown charge, not zero);  0 = no chip mask;
+#:   * the 10 % relative floor is re-applied to the hits that remain (the discharge no longer sets the scale);
+#:   * a cluster wider than SPARK_CLUSTER_MAX strips is not a single track and is not offered to the fit; the
+#:     multiplicity that matters is the footprint cluster's, not the plane's;
+#:   * an event with no candidate left in either view keeps the hard veto.
+#: Bench driver only (wft.reco.reconstruct_run): the n_TOF seeder (ntof_tracking.wft_beam, per-plane busy veto) and
+#: the SPS driver never call it.  SPARK_RESCUE = False is the historical all-or-nothing veto, bit-identical.
+#: OFF (2026-11-02): measured on the six bench golden rows, the rescued tracks that pass the gate are 11-75 % right
+#: against M3 (det3 75 / 59 %, det2 57 %, det6 26 %, det7 17 %, det4 11 %) where ordinary events are 84-96 %; a
+#: study switch (``WFT_DIAG=seed.SPARK_RESCUE=1``) until a gate reaches the ordinary purity.  Ordinary events are
+#: bit-identical either way.
+SPARK_RESCUE = False
+SPARK_CHIP_CM_SIG = 0.0
+SPARK_CLUSTER_MAX = 40
+#: In a rescued event, every sample whose raw ADC sits on a rail (>= SPARK_RAIL_HI or <= SPARK_RAIL_LO) is censored in
+#: the fit (unknown value).  The fit's own saturation test reads the pedestal- and common-mode-subtracted sample
+#: (>= the bundle's sat_adc), which a chip-wide swing pulls below the threshold while the ADC is clipped; in events over
+#: the veto 30 % of chips have a strip on the high rail and 42 % on the low one (det3, against 5 % / 6 % in ordinary
+#: events).  Ordinary events are untouched.
+SPARK_RAIL_CENSOR = True
+SPARK_RAIL_HI = 4000
+SPARK_RAIL_LO = 5
 #: sentinel: 'use the module constant as it stands when called' (see seeds_from_hits)
 _MODULE_DEFAULT = object()
 
@@ -472,6 +499,69 @@ def seeds_from_hits(df_hits: pd.DataFrame, pos_maps: Dict[int, np.ndarray],
                                               n_raw=len(gp))[:max(1, n_candidates)]
         out[int(eid)] = rec
     return out
+
+
+CHIP = 64                  # channels per DREAM chip (= wft.io.CNS_BLOCK, the common-mode block)
+
+
+def ringing_chips(raw: np.ndarray, ped: np.ndarray, noise: np.ndarray, sig: float = None) -> np.ndarray:
+    """Chips of one view whose raw common mode swings coherently in this event (a discharge), as chip indices.
+
+    ``raw``: (512, n_sample) undecoded ADC samples, ``ped``: (512,) pedestal, ``noise``: (512,) strip noise.  The
+    common mode of a chip is the per-sample median over its 64 channels of raw - ped; it ringing means
+    max |CM| > ``sig`` x the chip's median noise (noise floored at 3 ADC as in the fit).  A particle, even a steep
+    one, puts its charge on a minority of a chip's strips at any one sample, so the median stays near zero; a
+    discharge moves the whole chip at once.  ``sig`` None = SPARK_CHIP_CM_SIG; 0 = no chip ever rings."""
+    sig = SPARK_CHIP_CM_SIG if sig is None else sig
+    if not sig:
+        return np.zeros(0, dtype=int)
+    raw = np.asarray(raw, dtype=np.float32)
+    n_chip = raw.shape[0] // CHIP
+    cm = np.median((raw - np.asarray(ped, np.float32)[:, None])[:n_chip * CHIP].reshape(n_chip, CHIP, -1), axis=1)
+    cn = np.median(np.maximum(np.asarray(noise, np.float32), 3.0)[:n_chip * CHIP].reshape(n_chip, CHIP), axis=1)
+    return np.flatnonzero(np.abs(cm).max(axis=1) > sig * cn)
+
+
+def spark_rescue_seeds(hits_ev: pd.DataFrame, pos_maps: Dict[int, np.ndarray], feu_x: int, feu_y: int,
+                       hot: Optional[Dict[str, object]] = None, dead: Optional[Dict[str, object]] = None,
+                       ringing: Optional[Dict[str, np.ndarray]] = None, n_hits: int = 0) -> dict:
+    """The seed record of one event that is over the spark veto, re-seeded from what is clean in it (SPARK_RESCUE).
+
+    ``hits_ev``: the event's seeding hits (after DROP_FLAT_HITS and the band re-seed, before the floor).
+    ``ringing``: {plane: chip indices} from :func:`ringing_chips`; their hits are dropped.  Returns
+    {'x', 'y', 'n_hits', 'spark', 'spark_rescue': {'ringing_x', 'ringing_y', 'n_wide_x', 'n_wide_y'}} where 'spark'
+    stays True (the hard veto) when no candidate survives in either view.  ``n_hits`` is the original count."""
+    ringing = ringing or {}
+    feu_of = {'x': feu_x, 'y': feu_y}
+    keep = np.ones(len(hits_ev), dtype=bool)
+    feu = hits_ev['feu'].to_numpy()
+    chip = hits_ev['channel'].to_numpy().astype(int) // CHIP
+    for plane, f in feu_of.items():
+        r = ringing.get(plane)
+        if r is not None and len(r):
+            keep &= ~((feu == f) & np.isin(chip, r))
+    df = apply_significance_floor(hits_ev[keep], SIG_REL_FLOOR)
+    hot = hot or {}
+    dead_pos = dead_positions(dead, pos_maps, feu_x, feu_y)
+    info = {f'ringing_{p}': [int(c) for c in ringing.get(p, [])] for p in 'xy'}
+    rec = {'x': [], 'y': [], 'n_hits': int(n_hits), 'spark': True, 'spark_rescue': info}
+    for plane, f in feu_of.items():
+        gp = df[df['feu'] == f]
+        info[f'n_wide_{plane}'] = 0
+        if len(gp) == 0:
+            continue
+        ch = gp['channel'].to_numpy().astype(int)
+        cands = seed_candidates(pos_maps[f][ch], ch, gp['amplitude'].to_numpy(), n_candidates=len(ch),
+                                hot=hot.get(plane), dead_pos=dead_pos[plane])
+        ok = [s for s in cands if s.n_strips <= SPARK_CLUSTER_MAX]
+        info[f'n_wide_{plane}'] = len(cands) - len(ok)
+        # n_dropped counts the strips of competing clusters a track could be confused with: the wide (non-track)
+        # deposits and the ringing chips are not among them (the footprint cluster's multiplicity, not the plane's)
+        n_wide = sum(s.n_strips for s in cands if s.n_strips > SPARK_CLUSTER_MAX)
+        info[f'n_wide_strips_{plane}'] = int(n_wide)
+        rec[plane] = [replace(s, n_dropped=int(s.n_dropped - n_wide)) for s in ok[:N_CANDIDATES]]
+    rec['spark'] = not (rec['x'] or rec['y'])
+    return rec
 
 
 # the one place a study may move a constant of this module (wft.diag); production runs none

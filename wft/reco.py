@@ -2068,8 +2068,9 @@ def reconstruct_run(cfg, cal: CalibrationBundle, out_path: str,
         sparks = {e for e in sparks if wanted and e <= max(wanted)}
     # noise bands (FE item 13): spark-vetoed events are read too and fitted if, without the hits on their band
     # strips, they are not sparks (band_reseed); the selection of ordinary events (and --limit) is unchanged
-    n_spark_checked = len(sparks) if wm.BAND_NSIG > 0 else 0
-    if wm.BAND_NSIG > 0:
+    # the discharge-aware veto (wft.seed.SPARK_RESCUE) reads them too, and re-seeds the ones still over the veto
+    n_spark_checked = len(sparks) if (wm.BAND_NSIG > 0 or wseed.SPARK_RESCUE) else 0
+    if wm.BAND_NSIG > 0 or wseed.SPARK_RESCUE:
         wanted |= sparks
         hits = hits.set_index('eventId')
         hits = hits[hits.index.isin(wanted)]
@@ -2101,7 +2102,37 @@ def reconstruct_run(cfg, cal: CalibrationBundle, out_path: str,
                 print(f'[wft]   {len(rows):,} events reconstructed', flush=True)
 
     df = pd.DataFrame(rows).sort_values('event_id').reset_index(drop=True)
-    df, q_med = quality_flags(df)
+    resc = set(e for e, s in seeds.items() if s.get('spark_rescue') and not s['spark'])
+    n_rescue = dict(attempted=int(sum(1 for s in seeds.values() if s.get('spark_rescue'))), seeded=len(resc),
+                    fitted=0, accepted=0)
+    if wseed.SPARK_RESCUE and len(df):
+        # the quality medians come from the ordinary events alone, so their flags do not move (bit-identical)
+        is_r = df['event_id'].isin(resc).to_numpy()
+        d_ord, q_med = quality_flags(df[~is_r].copy())
+        d_res = quality_flags(df[is_r].copy(), q_med)[0] if is_r.any() else df[is_r].copy()
+        d_ord['spark_rescued'] = False
+        if len(d_res):
+            g = spark_rescue_gate(d_res, cal.xy_pairing, tc_tol(cal.xy_pairing))
+            d_res['spark'] = True
+            d_res['spark_rescued'] = g['rg_ok'].to_numpy()
+            att = pd.concat([d_res, g], axis=1)
+            for p in 'xy':
+                att[f'ringing_{p}'] = att['event_id'].map(
+                    lambda e: len(seeds[int(e)]['spark_rescue'][f'ringing_{p}'])).astype(int)
+                for k in ('n_wide', 'n_wide_strips'):
+                    att[f'{k}_{p}'] = att['event_id'].map(
+                        lambda e: seeds[int(e)]['spark_rescue'].get(f'{k}_{p}', 0)).astype(int)
+            os.makedirs(os.path.dirname(out_path), exist_ok=True)
+            att.to_parquet(out_path.replace('.parquet', '.spark_rescue.parquet'), index=False)
+            n_rescue.update(fitted=int(len(d_res)), accepted=int(g['rg_ok'].sum()))
+            rejected = set(d_res['event_id'][~g['rg_ok'].to_numpy()].astype(int))
+            d_res = d_res[g['rg_ok'].to_numpy()]
+            cand_rows = [c for c in cand_rows if int(c['event_id']) not in rejected]
+            split_rows = [c for c in split_rows if int(c['event_id']) not in rejected]
+        df = (pd.concat([d_ord, d_res]).sort_values('event_id', kind='stable') if len(d_res) else d_ord
+              ).reset_index(drop=True)
+    else:
+        df, q_med = quality_flags(df)
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
     df.to_parquet(out_path, index=False)
     if split_rows:
@@ -2156,6 +2187,10 @@ def reconstruct_run(cfg, cal: CalibrationBundle, out_path: str,
                                band=dict(nsig=wm.BAND_NSIG, edge=wm.BAND_EDGE, spark_events_checked=n_spark_checked,
                                          n_reseeded=int(sum(1 for r in seeds.values() if r.get('band_reseeded')))),
                                headon_rescue=dict(on=HEADON_RESCUE, z=HEADON_RESCUE_Z, qtol=HEADON_RESCUE_QTOL),
+                               spark_rescue=dict(on=bool(wseed.SPARK_RESCUE), chip_cm_sig=wseed.SPARK_CHIP_CM_SIG,
+                                                 rail_censor=bool(wseed.SPARK_RAIL_CENSOR),
+                                                 cluster_max=wseed.SPARK_CLUSTER_MAX,
+                                                 lq_nsig=SPARK_RESCUE_LQ_NSIG, **n_rescue),
                                event_filter=bool(event_filter)),
                 multi_track=dict(emit_candidates=EMIT_CANDIDATES,
                                  xy_pairing=(cal.xy_pairing or {}).get('features'),
@@ -2296,6 +2331,80 @@ def band_reseed(eid, hits_ev, band_ch: dict, pos_maps, feu_x, feu_y, hot, dead, 
     return rec
 
 
+def spark_rescue(eid, hits, band, raw_ev, ped, noise, pos_maps, feu_of, hot, dead, n_hits):
+    """The discharge-aware veto for one event still over the spark veto (wft.seed.SPARK_RESCUE): its ringing chips
+    (wft.seed.ringing_chips on the raw samples) and its re-seed without them (wft.seed.spark_rescue_seeds), on the
+    seeding hits less any band strips (``band``: {feu: channels}, as band_reseed).  None if the event has no hits."""
+    from . import seed as wseed
+    if hits is None or eid not in hits.index:
+        return None
+    hev = hits.loc[[eid]].reset_index()
+    if band:
+        on_band = np.zeros(len(hev), dtype=bool)
+        for feu, chs in band.items():
+            if chs:
+                on_band |= (hev['feu'].to_numpy() == feu) & np.isin(hev['channel'].to_numpy(), list(chs))
+        hev = hev[~on_band]
+    ring = {p: wseed.ringing_chips(raw_ev[p], ped[p], noise[p]) for p in ('x', 'y') if p in raw_ev}
+    return wseed.spark_rescue_seeds(hev, pos_maps, feu_of['x'], feu_of['y'], hot=hot, dead=dead, ringing=ring,
+                                    n_hits=n_hits)
+
+
+def spark_censor(win, ringing, raw_all):
+    """The censored samples of one fit window of a rescued event (None if none): every sample of the strips of a
+    ringing chip (wft.seed.ringing_chips, censored like dead strips) and, with wft.seed.SPARK_RAIL_CENSOR, every
+    sample on a raw ADC rail.  Passed as the window's 'missing' mask (wft.model.prep_plane censors it)."""
+    from . import seed as wseed
+    ch = np.asarray(win.ch, dtype=int)
+    miss = np.zeros(np.asarray(win.W).shape, dtype=bool)
+    if ringing is not None and len(ringing):
+        miss |= np.isin(ch // wseed.CHIP, ringing)[:, None]
+    if wseed.SPARK_RAIL_CENSOR and raw_all is not None:
+        r = np.asarray(raw_all)[ch]
+        if r.shape == miss.shape:
+            miss |= (r >= wseed.SPARK_RAIL_HI) | (r <= wseed.SPARK_RAIL_LO)
+    return miss if miss.any() else None
+
+
+#: The rescue gate (DISCHARGE_VETO_2026-11-02.md): a track found in an event over the spark veto is kept only if it is
+#: one particle seen by both views -- both views fitted, quality_ok (the table's own chi2/dof rule, with the medians of
+#: the ordinary events), neither view isochronous (charge in <= 2 depth bins: a discharge, F32), the x-y column times
+#: coincident (|tc| <= the bundle's tc_tol) and the x-y charges balanced (|ln qx/qy - median| <= SPARK_RESCUE_LQ_NSIG x
+#: the robust width of the pair's class, ``xy_pairing['lq_class']``; skipped on a bundle without one).  Otherwise the
+#: event keeps the hard veto: it leaves the events and candidates tables (it is written to the .spark_rescue sidecar).
+SPARK_RESCUE_LQ_NSIG = 5.0
+
+
+def spark_rescue_gate(df, pairing: Optional[dict], tol_ns: float) -> 'pd.DataFrame':
+    """Gate columns for event rows (a DataFrame of the events table): rg_tc, rg_lq_z and rg_ok."""
+    import pandas as pd
+    out = pd.DataFrame(index=df.index)
+    u = {p: df[f'{p}_q_u50'].to_numpy(float) for p in 'xy'}
+    t0 = {p: df[f'{p}_t0'].to_numpy(float) for p in 'xy'}
+    both_u = np.isfinite(u['x']) & np.isfinite(u['y'])
+    tc = np.where(both_u, (t0['x'] + np.nan_to_num(u['x'])) - (t0['y'] + np.nan_to_num(u['y'])), t0['x'] - t0['y'])
+    fx, fy = df['x_ftst'].to_numpy(), df['y_ftst'].to_numpy()
+    tc = tc + np.where((fx >= 0) & (fy >= 0), FTST_NS * (fx - fy).astype(float), 0.0)
+    lq = np.log(np.maximum(df['x_q_sum'].to_numpy(float), 1.0) / np.maximum(df['y_q_sum'].to_numpy(float), 1.0))
+    z = np.full(len(df), np.nan)
+    for i, (_, r) in enumerate(df.iterrows()):
+        cls = max(('sat' if r[f'{p}_n_sat_strips'] else
+                   ('cens' if (r[f'{p}_n_flagged_strips'] or r[f'{p}_n_band_strips']) else 'clean') for p in 'xy'),
+                  key=PAIR_CLASSES.index)
+        med, rs = lq_balance(pairing, cls)
+        if med is not None and rs:
+            z[i] = (lq[i] - med) / rs
+    ok = (df['x_ok'].to_numpy(bool) & df['y_ok'].to_numpy(bool)
+          & df['x_quality_ok'].to_numpy(bool) & df['y_quality_ok'].to_numpy(bool)
+          & ~df['x_isochronous'].to_numpy(bool) & ~df['y_isochronous'].to_numpy(bool)
+          & (np.abs(tc) <= tol_ns)
+          & (~np.isfinite(z) | (np.abs(z) <= SPARK_RESCUE_LQ_NSIG)))
+    out['rg_tc'] = tc
+    out['rg_lq_z'] = z
+    out['rg_ok'] = ok
+    return out
+
+
 def _stream_windows(cfg, pos_maps, seeds, wanted, pad_strips, verbose=True, dead=None, hits=None, hot=None,
                     evtime=None):
     """Yield lists of (eid, windows, seedinfo, n_hits, spark) per file pair.
@@ -2306,6 +2415,7 @@ def _stream_windows(cfg, pos_maps, seeds, wanted, pad_strips, verbose=True, dead
     full waveforms and re-seeded without them (band_reseed); spark-vetoed events in ``wanted`` are fitted only if the
     re-seed clears the veto."""
     from . import io as wio
+    from . import seed as wseed
     fx = wio.subrun_files(cfg.BASE_PATH, cfg.RUN, cfg.SUB_RUN, cfg.MX17_FEU_X)
     fy = wio.subrun_files(cfg.BASE_PATH, cfg.RUN, cfg.SUB_RUN, cfg.MX17_FEU_Y)
     feu_of = {'x': cfg.MX17_FEU_X, 'y': cfg.MX17_FEU_Y}
@@ -2335,16 +2445,22 @@ def _stream_windows(cfg, pos_maps, seeds, wanted, pad_strips, verbose=True, dead
         raw = {}
         adc = {}                                   # undecoded samples, only when the windows carry rails (wft.io)
         carry = wio.rails_wanted()
+        rescue = bool(wseed.SPARK_RESCUE) and hits is not None
+        sraw = {}                                  # undecoded samples of the events over the spark veto (rescue)
         noise = {'x': rx.noise, 'y': ry.noise}
+        ped = {'x': rx.ped, 'y': ry.ped}
         for plane, rdr in (('x', rx), ('y', ry)):
-            for item in rdr.iter_events(want, with_raw=carry):
+            for item in rdr.iter_events(want, with_raw=carry or rescue):
                 eid, ftst, wfm = item[:3]
                 raw.setdefault(eid, {})[plane] = (ftst, wfm)
                 if carry:
                     adc.setdefault(eid, {})[plane] = item[3]
+                if rescue and seeds[eid]['spark']:
+                    sraw.setdefault(eid, {})[plane] = item[3]
         buf, n_reseed = {}, 0
         for eid, pl in raw.items():
             sd = seeds[eid]
+            band = None
             if hits is not None and wm.BAND_NSIG > 0:
                 band = {feu_of[p]: set(np.flatnonzero(wm.band_rows(w, noise[p])).tolist())
                         for p, (_f, w) in pl.items()}
@@ -2357,6 +2473,15 @@ def _stream_windows(cfg, pos_maps, seeds, wanted, pad_strips, verbose=True, dead
                 if r is not None:
                     sd, n_reseed = r, n_reseed + 1
                     seeds[eid] = sd
+            ring = {}
+            if rescue and sd['spark'] and eid in sraw:
+                r = spark_rescue(eid, hits, band, sraw[eid], ped, noise, pos_maps, feu_of, hot, dead,
+                                 int(seeds[eid]['n_hits']))
+                if r is not None:
+                    seeds[eid] = r
+                    if not r['spark']:
+                        sd = r
+                        ring = {p: np.asarray(r['spark_rescue'][f'ringing_{p}'], dtype=int) for p in 'xy'}
             if sd['spark'] or not (sd['x'] or sd['y']):
                 continue
             for plane, (ftst, wfm) in pl.items():
@@ -2364,7 +2489,7 @@ def _stream_windows(cfg, pos_maps, seeds, wanted, pad_strips, verbose=True, dead
                 cl = sd[plane]
                 ra = adc.get(eid, {}).get(plane)
                 if not cl:
-                    if HEADON_RESCUE:
+                    if HEADON_RESCUE and not sd.get('spark_rescue'):
                         rec = buf.setdefault(eid, {'w': {}, 's': {}})
                         rec['w'][f'_rescue_{plane}'] = dict(W=wfm, noise=noise[plane], pos=pos_maps[feu])
                         if ra is not None:
@@ -2381,6 +2506,10 @@ def _stream_windows(cfg, pos_maps, seeds, wanted, pad_strips, verbose=True, dead
                     wd = dict(W=win.W, pos=win.pos, noise=win.noise, ch=win.ch)
                     if win.rail_hi is not None:
                         wd.update(rail_hi=win.rail_hi, rail_lo=win.rail_lo)
+                    if sd.get('spark_rescue'):
+                        wd_miss = spark_censor(win, ring.get(plane), sraw.get(eid, {}).get(plane))
+                        if wd_miss is not None:
+                            wd['missing'] = wd_miss
                     wins.append(wd)
                     used.append(s_)
                 if not wins:
@@ -2389,7 +2518,7 @@ def _stream_windows(cfg, pos_maps, seeds, wanted, pad_strips, verbose=True, dead
                 rec['w'][plane] = wins
                 rec['s'][plane] = used
                 rec['ftst_' + plane] = ftst
-        del raw, adc
+        del raw, adc, sraw
         payloads = []
         for eid, rec in buf.items():
             if not any(k in rec['w'] for k in ('x', 'y')):

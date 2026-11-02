@@ -1,0 +1,63 @@
+{
+ "run": "run_145",
+ "subrun": "stat090_0000",
+ "files": 7,
+ "arms": {
+  "A": {
+   "triggers": 34149,
+   "bench_veto": 5922,
+   "busy_x": 551,
+   "busy_y": 637,
+   "busy_any": 642,
+   "over50_plane": 4242,
+   "over50_contig": 740,
+   "over50_multi": 3502,
+   "both_busy": 546,
+   "bench_veto_pct": 17.34,
+   "busy_any_pct": 1.88,
+   "both_busy_pct": 1.6
+  },
+  "B": {
+   "triggers": 36836,
+   "bench_veto": 10518,
+   "busy_x": 1345,
+   "busy_y": 660,
+   "busy_any": 1552,
+   "over50_plane": 11699,
+   "over50_contig": 1039,
+   "over50_multi": 10660,
+   "both_busy": 453,
+   "bench_veto_pct": 28.55,
+   "busy_any_pct": 4.21,
+   "both_busy_pct": 1.23
+  },
+  "C": {
+   "triggers": 32807,
+   "bench_veto": 10548,
+   "busy_x": 807,
+   "busy_y": 744,
+   "busy_any": 895,
+   "over50_plane": 11130,
+   "over50_contig": 933,
+   "over50_multi": 10197,
+   "both_busy": 656,
+   "bench_veto_pct": 32.15,
+   "busy_any_pct": 2.73,
+   "both_busy_pct": 2.0
+  },
+  "D": {
+   "triggers": 57734,
+   "bench_veto": 22689,
+   "busy_x": 639,
+   "busy_y": 639,
+   "busy_any": 639,
+   "over50_plane": 8672,
+   "over50_contig": 677,
+   "over50_multi": 7995,
+   "both_busy": 639,
+   "bench_veto_pct": 39.3,
+   "busy_any_pct": 1.11,
+   "both_busy_pct": 1.11
+  }
+ }
+}
