@@ -192,3 +192,153 @@ date = "2026-11-02"
 fig = "sps_resolution"
 status = "for review"
 change = "Redone on region R (decision A+B): X/Y residual histograms with cores, det4 sigma vs telescope f with upper-bound bands: 138 / 120 um, bounds 153 / 145. Old zone fits kept as sps_resolution_zones. Commit a957faab."
+
+
+[[entry]]
+date = "2026-11-02"
+fig = "bench_setup"
+status = "for review"
+change = "Checklist pass: 4.3 in; labels shortened, footer note removed (into the caption); z to scale, vertical axis compressed; ships a geometry CSV. Captions updated with what left the figure; include width set to the drawn size. Commit 57633160."
+
+[[entry]]
+date = "2026-11-02"
+fig = "currents_vs_hv"
+status = "for review"
+change = "Checklist pass: 4.3 in; one legend above (board colour, night marker); fixed a bug where night markers depended on set ordering (the two 6-26 nights could swap). Captions updated with what left the figure; include width set to the drawn size. Commit 57633160."
+
+[[entry]]
+date = "2026-11-02"
+fig = "hv_scan"
+status = "for review"
+change = "Checklist pass: 4.3 in; titles -> (a)/(b), legend above, efficiency axis 30-100 %. Captions updated with what left the figure; include width set to the drawn size. Commit 57633160."
+
+[[entry]]
+date = "2026-11-02"
+fig = "spark_deadtime"
+status = "for review"
+change = "Checklist pass: Full width; (a)-(c), legend above, counts out of the legend (into the caption); (a)/(b) share 0.8-1.2, det3 first bin no longer clipped. Captions updated with what left the figure; include width set to the drawn size. Commit 57633160."
+
+[[entry]]
+date = "2026-11-02"
+fig = "eff_vs_hv_discharge"
+status = "for review"
+change = "Checklist pass: Full width; (a)-(c) with the chamber inside, legend above, plateau note out. Captions updated with what left the figure; include width set to the drawn size. Commit 57633160."
+
+[[entry]]
+date = "2026-11-02"
+fig = "charge_balance"
+status = "for review"
+change = "Checklist pass: 4.3 in; x label ln(Q_X/Q_Y); legend chamber names only (medians into the caption). Captions updated with what left the figure; include width set to the drawn size. Commit 57633160."
+
+[[entry]]
+date = "2026-11-02"
+fig = "eff_vs_radius"
+status = "for review"
+change = "Checklist pass: 4.3 in; det3 colour only: filled credit / open production, solid/dashed the two rows; binomial errors; one legend. Captions updated with what left the figure; include width set to the drawn size. Commit 57633160."
+
+[[entry]]
+date = "2026-11-02"
+fig = "residuals"
+status = "for review"
+change = "Checklist pass: Full width; (a)/(b); the two golden rows summed per view; legend off the data. Captions updated with what left the figure; include width set to the drawn size. Commit 57633160."
+
+[[entry]]
+date = "2026-11-02"
+fig = "efficiency_map"
+status = "for review"
+change = "Checklist pass: Full width; titles -> (a) det3 ... (e) det7; det7 X ch 0-255 veiled instead of boxed; maps rasterized at 300 dpi inside the vector PDF. Captions updated with what left the figure; include width set to the drawn size. Commit 57633160."
+
+[[entry]]
+date = "2026-11-02"
+fig = "loss_budget"
+status = "for review"
+change = "Checklist pass: Full width; det3 dot plot with Poisson errors; groups as y-axis headings instead of borrowed chamber colours. Captions updated with what left the figure; include width set to the drawn size. Commit 57633160."
+
+[[entry]]
+date = "2026-11-02"
+fig = "two_particle"
+status = "for review"
+change = "Checklist pass: 4.3 in; bars -> det3 markers with binomial errors; in-axes title removed. Captions updated with what left the figure; include width set to the drawn size. Commit 57633160."
+
+[[entry]]
+date = "2026-11-02"
+fig = "xy_pairing"
+status = "for review"
+change = "Checklist pass: 4.3 in; single-track band grey (was det6 orange); bin width in the y label; in-plot text reduced to the one claim. Captions updated with what left the figure; include width set to the drawn size. Commit 57633160."
+
+[[entry]]
+date = "2026-11-02"
+fig = "gas_vE"
+status = "for review"
+change = "Checklist pass: 4.3 in; title removed; (a)/(b); 4-entry legend lower right; ratio range 0.90-1.26 so the 177 V/cm error bar is not clipped. Captions updated with what left the figure; include width set to the drawn size. Commit 57633160."
+
+[[entry]]
+date = "2026-11-02"
+fig = "two_velocities"
+status = "for review"
+change = "Checklist pass: Full width; (a)-(c); field legend above, field shades from det3 tints; (b) y label w - w0. Captions updated with what left the figure; include width set to the drawn size. Commit 57633160."
+
+[[entry]]
+date = "2026-11-02"
+fig = "gas_drying"
+status = "for review"
+change = "Checklist pass: Full width; (a)-(c), legend above; in-plot labels removed except det6 / 2.17. Captions updated with what left the figure; include width set to the drawn size. Commit 57633160."
+
+[[entry]]
+date = "2026-11-02"
+fig = "attachment"
+status = "for review"
+change = "Checklist pass: Full width; titles and band labels removed; (a)/(b), legend above. Captions updated with what left the figure; include width set to the drawn size. Commit 57633160."
+
+[[entry]]
+date = "2026-11-02"
+fig = "tracking_perf"
+status = "for review"
+change = "Checklist pass: Full width; det4 panel title -> (a)/(b); one-row legend above. Captions updated with what left the figure; include width set to the drawn size. Commit 57633160."
+
+[[entry]]
+date = "2026-11-02"
+fig = "bench_position_res"
+status = "for review"
+change = "Checklist pass: Full width; (a)/(b); values out of the figure (into the caption); legend above. Captions updated with what left the figure; include width set to the drawn size. Commit 57633160."
+
+[[entry]]
+date = "2026-11-02"
+fig = "sps_resolution"
+status = "for review"
+change = "Checklist pass: Full width; titles and sigma values out of the legends; legend above (a)/(b); shared y; data in house ink. Captions updated with what left the figure; include width set to the drawn size. Commit 57633160."
+
+[[entry]]
+date = "2026-11-02"
+fig = "bow_profiles"
+status = "for review"
+change = "Checklist pass: Full width; (a) X / (b) Y, legend above; axes 0-400 mm and -1.5 to 4.5 mm. Captions updated with what left the figure; include width set to the drawn size. Commit 57633160."
+
+[[entry]]
+date = "2026-11-02"
+fig = "bow_closure"
+status = "for review"
+change = "Checklist pass: Half width (was 5.5 in); r_f lines labelled on the plot; compact legend above. Captions updated with what left the figure; include width set to the drawn size. Commit 57633160."
+
+[[entry]]
+date = "2026-11-02"
+fig = "edge_turnon"
+status = "for review"
+change = "Checklist pass: Full width; (a)-(c); x label on every panel; error bars on (a) binomial and (b) 1.25 s68/sqrt(n) (estimate, not validated); legend above. Captions updated with what left the figure; include width set to the drawn size. Commit 57633160."
+
+[[entry]]
+date = "2026-11-02"
+fig = "timing"
+status = "for review"
+change = "Checklist pass: Full width; (a)-(c), legend above; (b) y range to 700 ns so the det4 SPS points are not clipped. Captions updated with what left the figure; include width set to the drawn size. Commit 57633160."
+
+[[entry]]
+date = "2026-11-02"
+fig = "det4_stripes"
+status = "for review"
+change = "Checklist pass: Full width; (a) bench over the whole chamber with the SPS range shaded, new (b) zoom with bench and both SPS runs overlaid. Captions updated with what left the figure; include width set to the drawn size. Commit 57633160."
+
+[[entry]]
+date = "2026-11-02"
+fig = "*"
+change = "Checklist pass on 24 figures (printed widths, no in-figure titles, panel labels, one legend above, palette only, embedded TrueType fonts, 300 dpi rasters in PDFs); paper_style gains fig_for / panel_label(s) / legend_above / det_handles / view_handles. Numbers unchanged. Open: histograms stay step outlines; paper1_ops figures keep thin joining lines; unit brackets mixed ([ns] vs (um/ns)). Commit 57633160."
