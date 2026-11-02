@@ -361,3 +361,34 @@ A failing arm is held, as on the bench.
     tails cut that line, so for those the count is not recorded rather than zero.
   - **Next:** point `ntof_reco.py` / `wft.io` at `decoded_root_fa80c06`, and decide hits (Q4) before any production
     node.
+- **Capsule pointing as the beam truth (11-02, `rerun/ntof/capsule_point.py`).** Distance of each paired track's line
+  to the capsule axis (vertical, x −9.5, z −3.7 mm). On run_145 (1,500 events per arm, v0 bundles), tracks shallower
+  than 0.6 point (< 15 mm) 30–45 % of the time; steeper-than-0.6 tracks 5–8 %. limit 1.0 vs 0.6: A 223 vs 208 pointing
+  tracks out of 794 vs 548, C 186 vs 165 out of 856 vs 521. So 1.0 gains 7–13 % pointing tracks at ~250–330
+  non-pointing ones.
+  - Caveat: a steep track's pointing is very sensitive to the v scale. **The limit scan (0.5…1.0 in 0.1) is to be run
+    after v is measured in situ**, scored on both truths (A–C line purity/efficiency; capsule-pointing yield vs
+    non-pointing).
+- **The bench pairing problem (Paper I session, 11-02).** The production chain pairs two-particle bench events
+  correctly only ~80 % of the time (98 % for the bare charge-ratio pairing), because a plausibility check tuned on
+  beam data drops one track. A separate session is fixing it. **Every n_TOF pair/multi-track number here is
+  provisional until that fix lands**, and the n_TOF scans must be redone on it.
+- **Q4 seeding study set up.** Three arms, all feeding the same clustering and candidate logic:
+  - old `combined_hits_root`;
+  - rr1-recipe hits regenerated on the fa80c06 decodes (`rerun/ntof/rehit/`, condor 4613963, `--tps 60 --mf 5`,
+    plain-median CM, the bench job with scratch binaries);
+  - waveform-native hits (`wft_beam.hits_from_waveforms`: per-channel peak or 3-sample running sum above 5σ of its
+    own measured noise). On run_145 A tag `_000` it gives 362 k hits vs the old 235 k (211 k shared); the old
+    analyzer's non-robust pedestal RMS makes its threshold stricter. Threshold to be scanned, judged downstream.
+- **Column duration and t0 at n_TOF, first look** (`gc_gas_time/ntof_colsum.py` on run_145 stat090_0000, two
+  acquisitions per FEU, the pass-1 X templates):
+  - **A and C:** columns where expected. A: T peaks ~720–780 ns (v ≈ 33–37 for gap 28.08). C: broad T 840–1140 ns
+    (v ≈ 28), with a tail at the window/grid end.
+  - **B:** mostly T at the grid minimum. No field-shaping ring: its column is not a box.
+  - **D: the box start sits ~200 ns earlier than A/C** (median −210 ns vs ≈ 0, at the grid edge) and T piles at the
+    grid maximum. Either D's window cuts the mesh-side start of its columns, or the estimator fails on D. Check on
+    cosmics before believing it.
+  - **t0 scatter ~80 ns (robust) in every arm, and it does not step with ftst** (−6…+5 ns per class against −10 on the
+    bench). If this is trigger-to-particle jitter, a pinned t0 is wrong at n_TOF.
+  - **Test:** t0_A − t0_C on run_149 A–C cosmics (the same particle, ~2 ns apart, so trigger jitter cancels) measures
+    the chambers' own t0 resolution against the common jitter.
