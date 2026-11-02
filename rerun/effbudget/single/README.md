@@ -51,6 +51,12 @@ carries the charge of both particles, or sits 5–15 mm off the muon (between th
 195 events (84 %) are "merged in projection": a two-particle event at the two-track separation limit of one projection,
 not a chamber malfunction; 41 % of them are still credited. 14 are a faint (⅓ of the muon), short deposit seen in one
 view only: all 14 credited, so not losses. 24 unclear (kept in the sample).
+**Joint two-track fit on these (2026-11-02, `MERGED_PROJECTION_2026-11-02.md`):** pass 1 refused every one, through
+the beam-tuned `plausible` flag in its trigger and acceptance and a column-time coincidence that short secondaries fail.
+The bench mode `xy_pairing['split_corrob'] = 'charge'` (corroboration by the other view's charge; one plausible child)
+raises the credit on the 195 from 41.0 to 53.8 % and the correctly paired muon from 20.5 to 36.4 %. It adds no split on
+clean single muons on any of the five chambers, and the single-track efficiency does not move. It takes effect at the
+next bench re-pass, and n_TOF stays on `count`.
 
 **Spark-vetoed deposits: local, i.e. δ-rays, not outside showers.** Extra M3 clusters per event, upper / lower doublet
 (sat_det3): detected muons 0.56 / 0.72; independent second particle 1.55 / 1.46; **'shower' 0.49 / 0.47**;
@@ -86,6 +92,11 @@ trigger and its acceptance both require beam-tuned `plausible` candidates/childr
 events never attempt a split, all 68 attempts refused (`guards_ok` False: both_plausible 44, column_shared 27,
 distinguishable 20). Being fixed in a separate session: `MERGED_PROJECTION_2026-11-02.md` (pending).
 
+**Update, same evening: nothing leaves the denominator.** POS_TAIL is only about half bent M3 tracks (kinkvtx 53 %
+within 2 mm of the doublet vertex; sixpt puts the rest on the chamber) and EDGE is edge response, so both count as
+losses (`DROP_CLASSES` restores the old exclusion). Full area: production 91.50, credit 94.13, **single-track
+94.81 ± 0.13 %**; interior single-track 95.72 %.
+
 ## 2. X/Y pairing on real two-particle cosmics
 
 552 events (both rows) with ≥ 2 candidates in each view where M3 marks exactly one X and one Y candidate (< 5 mm,
@@ -104,7 +115,7 @@ drops the second track when a candidate fails the beam-tuned `plausible` gate (F
 PASS1_RESULT bug 4), and the single surviving pair then often joins the M3 segment of one view to the other
 particle's segment in the other. The pairing cost is right; the plausibility gate should not apply on the bench.
 **Fixed 2026-11-02** (`wft.reco.select_tracks` mode `cost`, bundle `xy_pairing['select']`): 96.7 % on these 552,
-no change on single-candidate events, n_TOF unchanged. Mechanism, validation and what needs re-running:
+no change on single-candidate events, n_TOF unchanged. Every pass-1 bench row re-selected in `cost`: `Analysis_pass1/<rel>/wft/pairing_cost/` on EOS (all five chambers improve, §7 of the report). Mechanism, validation and what needs re-running:
 `PAIRING_FIX_2026-11-02.md` (scripts `pairing_replay.py`, `pairing_m3_all.py`, `pairing_rereco.py`,
 `pairing_rereco_compare.py`, `pairing_ntof_check.py`).
 

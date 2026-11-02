@@ -25,6 +25,8 @@ import pandas as pd
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(HERE, '..', 'sps_audit'))
 from analyze import Z_BACK, Z_DET4  # noqa: E402
+sys.path.insert(0, os.path.join(HERE, '..', '..', 'papers'))
+import paper_style as pst  # noqa: E402  (pst: `ps` is a profile array below)
 
 BIN = 1.0
 XMAX = 398.6
@@ -150,18 +152,35 @@ def main():
     os.makedirs(os.path.dirname(a.out), exist_ok=True)
     json.dump(res, open(a.out, 'w'), indent=1, default=float)
 
-    fig, axs = plt.subplots(2, 1, figsize=(10, 5.6), sharex=True, gridspec_kw=dict(height_ratios=[1, 1]))
-    axs[0].step(cb, 100 * pb, where='mid', color='k', lw=0.8, label=f'bench g_det4 (pass 1), X view vs M3')
+    pst.use()
+    gas_col = {'run63 flat700 (CF4)': pst.GAS['CF4'], 'run53 (Ar/CO2/iso)': pst.GAS['CO2']}
+    gas_lbl = {'run63 flat700 (CF4)': r'run 63 (CF$_4$ mixture)', 'run53 (Ar/CO2/iso)': r'run 53 (Ar/CO$_2$/iC$_4$H$_{10}$)'}
+    prof = [pd.DataFrame(dict(set='bench g_det4', x_mm=cb, eff=pb, n=nb))]
+    from matplotlib.lines import Line2D
+    lo, hi = min(r['x_range'][0] for r in res['sps'].values()), max(r['x_range'][1] for r in res['sps'].values())
+    # (a) the bench over the whole chamber; (b) the SPS beam spot (shaded in (a)), bench and both SPS runs overlaid
+    fig, axs = pst.fig_for('full', height=4.0, nrows=2, ncols=1)
+    bstyle = dict(where='mid', color=pst.color('det4'), lw=1.0)
+    axs[0].step(cb, 100 * pb, **bstyle)
+    axs[0].axvspan(lo, hi, color=pst.GRID, zorder=0, lw=0)
+    axs[0].set_xlim(0, XMAX); axs[0].set_xticks(np.arange(0, 401, 50))
+    zb = (cb >= lo - 3) & (cb <= hi + 3)
+    axs[1].step(cb[zb], 100 * pb[zb], **dict(bstyle, lw=1.6, alpha=0.7))
     for nm, s in S.items():
-        cs, ps, _ = s['x']; win = (cs >= s['x_range'][0]) & (cs <= s['x_range'][1])
-        axs[1].step(cs[win], 100 * ps[win], where='mid', lw=0.9, label=f'SPS {nm}, X view vs telescope')
+        cs, ps, ns = s['x']; win = (cs >= s['x_range'][0]) & (cs <= s['x_range'][1])
+        axs[1].step(cs[win], 100 * ps[win], where='mid', lw=1.0, color=gas_col[nm])
+        prof.append(pd.DataFrame(dict(set=nm, x_mm=cs[win], eff=ps[win], n=ns[win])))
+    axs[1].set_xlim(lo - 3, hi + 3)
     for ax in axs:
-        lo, hi = min(r['x_range'][0] for r in res['sps'].values()), max(r['x_range'][1] for r in res['sps'].values())
-        ax.axvspan(lo, hi, color='0.92', zorder=0)
-        ax.set_ylabel('X-view efficiency [%]'); ax.set_ylim(0, 105); ax.grid(alpha=0.3); ax.legend(fontsize=8, loc='upper right')
-    axs[1].set_xlabel('x, det4 strip frame [mm] (1 mm bins; grey: the SPS beam spot)')
-    axs[0].set_title('det4: non-amplifying stripes, bench (cosmic, M3) and SPS H4 (beam, uRWELL telescope)', fontsize=10)
-    fig.tight_layout(); fig.savefig(a.fig); fig.savefig(os.path.join(HERE, 'figures', 'det4_stripes.png'), dpi=120); plt.close(fig)
+        ax.set_ylabel('X-view efficiency [%]'); ax.set_ylim(0, 105); ax.set_yticks([0, 50, 100])
+    for ax in axs:
+        ax.set_xlabel(r'$x$ in the det4 strip frame [mm]')
+    pst.panel_labels(axs)
+    h = [Line2D([], [], color=pst.color('det4'), lw=2.5, label='bench (cosmic muons, M3)')]
+    h += [Line2D([], [], color=gas_col[nm], lw=2.5, label='SPS ' + gas_lbl[nm]) for nm in S]
+    pst.legend_above(fig, h, ncol=3, handlelength=1.6)
+    fig.savefig(a.fig, dpi=300)                              # the paper copy (pdf)
+    pst.save(fig, os.path.join(HERE, 'figures', 'det4_stripes'), data=pd.concat(prof, ignore_index=True))
 
 
 if __name__ == '__main__':

@@ -1,49 +1,69 @@
-"""attach_fig.py -- the Paper I §6 'attachment' figure: what gas each setup had (make_figs.py attachment).
+"""attach_fig.py -- the Paper I 'attachment' figure: what gas det4 had at SPS (make_figs.py attachment).
 
-(a) water: the bench chambers' golden rows (rerun/paper1_gas/results/summary.json, timing v on Magboltz 'air_merged')
-    next to the SPS groups (rerun/sps_gasfit/results/verdict.json, stacks fitted for water and O2 on the same grid);
-(b) O2: the SPS groups; the bench is attachment-free at steady state (no O2 term needed) except det6's first ~4 h of
-    6-26 (paper1_gas att_626, ~600 -> 370 ppm O2-equivalent, x2 model factor), drawn as a band.
+Restyled 2026-11-02 (review deck: legend for the gas colours, readable unrotated ticks, bench kept apart):
+(a) water of every SPS group (rerun/sps_gasfit/results/verdict.json: head-on stacks fitted for water and O2 on the
+    Magboltz grid, at the gas fit's gap 27.9 mm), CO2 and CF4 mixtures in ps.GAS colours.  The bench is not plotted
+    point by point (its water is §6's gas_vE_timing / gas_drying); its golden-row range is a grey band for scale
+    (rerun/paper1_gas/results/summary.json, det4 there at the old 30.48 mm gap).
+(b) O2 of the same groups; the bench is attachment-free at steady state, except det6's first ~4 h of 6-26
+    (paper1_gas att_626, ~600 -> 370 ppm O2-equivalent, x2 model factor), drawn as a band.
 """
-import json, os
+import json, os, sys
 import numpy as np
 import matplotlib.pyplot as plt
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.abspath(os.path.join(HERE, '..', '..'))
-BENCH_C, CO2_C, CF4_C = '#4a4a4a', '#b0341d', '#2a78d6'
+sys.path.insert(0, os.path.join(REPO, 'papers'))
+import paper_style as ps  # noqa: E402
+
+GASNAME = {'co2': 'CO2', 'beam': 'CF4'}
+GASLABEL = {'CO2': 'Ar/CO$_2$ (run 55–59)', 'CF4': 'Ar/CF$_4$/iC$_4$H$_{10}$ 88/10/2'}
 
 
-def draw(verdict_path, save):
+def _tick(group):
+    run = group.split('_run')[1].split('_')[0]
+    tag = group.split('_run')[1][len(run):].strip('_')
+    return run + ({'ladder': '\nscan', 'flat': '\nflat', 'raw': '\nraw'}.get(tag, ''))
+
+
+def draw(verdict_path, save=None):
+    import pandas as pd
+    ps.use()
     V = json.load(open(verdict_path))
     B = json.load(open(os.path.join(REPO, 'rerun', 'paper1_gas', 'results', 'summary.json')))['golden_water']
-    fig, axs = plt.subplots(1, 2, figsize=(10.0, 3.6), gridspec_kw=dict(wspace=0.28, width_ratios=[1.35, 1]))
-    ax = axs[0]; labels = []; x = 0
-    for det in ('det2', 'det3', 'det4', 'det6', 'det7'):
-        b = B[det]
-        ax.errorbar(x, b['water'], yerr=[[b['water'] - b['water_lo']], [b['water_hi'] - b['water']]], fmt='o', color=BENCH_C, capsize=2)
-        labels.append(f'bench\n{det}'); x += 1
-    x += 0.5
-    summ = dict(gap_quoted_mm=V['gap_quoted'], groups={})
-    for r in V['table']:
-        c = CF4_C if r['gas'] == 'beam' else CO2_C
-        ax.errorbar(x, r['water'], yerr=r['err_w'], fmt='s', color=c, capsize=2, mfc='white' if r['edge'] else c)
-        axs[1].errorbar(x - 5.5, r['o2_ppm'], yerr=r['err_o2'], fmt='s', color=c, capsize=2, mfc='white' if r['edge'] else c)
-        g = r['group'].replace('cf4_', '').replace('co2_', '').replace('_ladder', ' ldr').replace('_', ' ')
-        labels.append(('CF₄\n' if r['gas'] == 'beam' else 'CO₂\n') + g)
-        summ['groups'][r['group']] = dict(water=round(r['water'], 3), err_w=round(r['err_w'], 3), o2_ppm=round(r['o2_ppm']),
-                                          err_o2=round(r['err_o2']), edge=r['edge'])
-        x += 1
-    xs = list(range(5)) + list(np.arange(5.5, 5.5 + len(V['table'])))
-    ax.set_xticks(xs); ax.set_xticklabels(labels, fontsize=6.5, rotation=45, ha='right')
-    ax.set_ylabel('water [%]'); ax.set_ylim(0, None)
-    ax.set_title(f"water: bench golden rows vs SPS (gap {V['gap_quoted']} mm)", fontsize=9)
+    T = V['table']
+    # checklist pass 2026-11-02: full width, no panel titles or band texts (the caption carries them), (a)/(b) labels,
+    # one legend above
+    from matplotlib.patches import Patch
+    fig, axs = ps.fig_for('full', height=2.4, ncols=2)
+    nco2 = sum(GASNAME[r['gas']] == 'CO2' for r in T)
+    x = np.array([i if i < nco2 else nco2 + 0.5 + 1.4 * (i - nco2) for i in range(len(T))], float)
+    bw = [B[d]['water'] for d in ('det2', 'det3', 'det4', 'det6', 'det7')]
+    ax = axs[0]
+    ax.axhspan(min(bw), max(bw), color=ps.GRID, lw=0, zorder=0)
+    rows = []
+    for xi, r in zip(x, T):
+        g = GASNAME[r['gas']]; c = ps.GAS[g]
+        mk = dict(fmt='s', ms=4.5, color=c, mec=c, mfc='white' if r['edge'] else c, lw=0.9)
+        axs[0].errorbar(xi, r['water'], yerr=r['err_w'], **mk)
+        axs[1].errorbar(xi, r['o2_ppm'], yerr=r['err_o2'], **mk)
+        rows.append(dict(group=r['group'], gas=g, water=r['water'], err_w=r['err_w'], o2_ppm=r['o2_ppm'],
+                         err_o2=r['err_o2'], gap_mm=r['gap'], edge=r['edge']))
+    for a in axs:
+        a.set_xticks(x); a.set_xticklabels([_tick(r['group']) for r in T], fontsize=7.5)
+        a.set_xlabel('SPS run'); a.set_xlim(x[0] - 0.6, x[-1] + 0.6)
+    ax.set_ylabel('H$_2$O fraction (%)'); ax.set_ylim(0, 2.8)
+    from matplotlib.lines import Line2D
+    ps.legend_above(fig, [Line2D([], [], marker='s', ls='', color=ps.GAS[g]) for g in ('CO2', 'CF4')]
+                    + [Patch(fc=ps.GRID, lw=0)], [GASLABEL[g] for g in ('CO2', 'CF4')] + ['bench (§6)'], ncol=3)
     ax = axs[1]
-    ax.axhspan(370, 600, color='#cccccc', alpha=0.5, lw=0)
-    ax.text(len(V['table']) - 0.6, 590, 'bench det6, first ~4 h of 6-26\n(O₂-equivalent, ×2 model)', fontsize=6.5, ha='right', va='top')
-    ax.axhline(0, color=BENCH_C, lw=1); ax.text(-0.3, 15, 'bench, steady state: attachment-free', fontsize=6.5, color=BENCH_C)
-    ax.set_xticks(range(len(V['table']))); ax.set_xticklabels(labels[5:], fontsize=6.5, rotation=45, ha='right')
-    ax.set_ylabel('O₂ [ppm]'); ax.set_ylim(-20, None)
-    ax.set_title('O₂ (attachment) at SPS', fontsize=9)
-    save(fig, 'attachment')
-    return summ
+    ax.axhspan(370, 600, color=ps.GRID, lw=0, zorder=0)
+    ax.axhline(0, color=ps.MUTED, lw=0.8)
+    ax.set_ylabel('O$_2$ concentration (ppm)'); ax.set_ylim(-20, 640)
+    ps.panel_labels(axs)
+    ps.save(fig, os.path.join(HERE, 'figures', 'attachment'), data=pd.DataFrame(rows))
+    print('wrote', os.path.join(HERE, 'figures', 'attachment.pdf'))
+    return dict(gap_quoted_mm=V['gap_quoted'], bench_band=[min(bw), max(bw)],
+                groups={r['group']: dict(water=round(r['water'], 3), err_w=round(r['err_w'], 3), o2_ppm=round(r['o2_ppm']),
+                                         err_o2=round(r['err_o2']), edge=r['edge']) for r in T})

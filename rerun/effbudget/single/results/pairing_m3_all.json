@@ -1,66 +1,1989 @@
 {
- "all": {
-  "n": 25197,
-  "gate": {
-   "correct": 25039,
-   "wrong": 137,
-   "unpaired": 21
+ "modes": [
+  "gate",
+  "cost"
+ ],
+ "rows_without_rays": [
+  "mx17_det3_quick_6-26-26/resist_530V_drift_1200V/mx17_3"
+ ],
+ "pooled": {
+  "all": {
+   "n": 151957,
+   "gate": {
+    "correct": 151062,
+    "wrong": 773,
+    "unpaired": 122
+   },
+   "cost": {
+    "correct": 151468,
+    "wrong": 461,
+    "unpaired": 28
+   },
+   "changed": 492,
+   "transitions": {
+    "correct->unpaired": 1,
+    "correct->wrong": 31,
+    "unpaired->correct": 103,
+    "unpaired->wrong": 7,
+    "wrong->correct": 335,
+    "wrong->unpaired": 15
+   }
   },
-  "cost": {
-   "correct": 25131,
-   "wrong": 61,
-   "unpaired": 5
+  "1 in one view": {
+   "n": 2225,
+   "gate": {
+    "correct": 1864,
+    "wrong": 361,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 1864,
+    "wrong": 361,
+    "unpaired": 0
+   },
+   "changed": 0,
+   "transitions": {}
   },
-  "changed": 104,
-  "transitions": {
-   "correct->wrong": 4,
-   "unpaired->correct": 20,
-   "wrong->correct": 76,
-   "wrong->unpaired": 4
+  "1x1": {
+   "n": 147015,
+   "gate": {
+    "correct": 147015,
+    "wrong": 0,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 147015,
+    "wrong": 0,
+    "unpaired": 0
+   },
+   "changed": 0,
+   "transitions": {}
+  },
+  ">=2 both": {
+   "n": 2717,
+   "gate": {
+    "correct": 2183,
+    "wrong": 412,
+    "unpaired": 122
+   },
+   "cost": {
+    "correct": 2589,
+    "wrong": 100,
+    "unpaired": 28
+   },
+   "changed": 492,
+   "transitions": {
+    "correct->unpaired": 1,
+    "correct->wrong": 31,
+    "unpaired->correct": 103,
+    "unpaired->wrong": 7,
+    "wrong->correct": 335,
+    "wrong->unpaired": 15
+   }
   }
  },
- "1 in one view": {
-  "n": 135,
-  "gate": {
-   "correct": 87,
-   "wrong": 48
+ "chambers": {
+  "mx17_2": {
+   "all": {
+    "n": 32800,
+    "gate": {
+     "correct": 32570,
+     "wrong": 189,
+     "unpaired": 41
+    },
+    "cost": {
+     "correct": 32699,
+     "wrong": 95,
+     "unpaired": 6
+    },
+    "changed": 144,
+    "transitions": {
+     "correct->wrong": 5,
+     "unpaired->correct": 36,
+     "unpaired->wrong": 2,
+     "wrong->correct": 98,
+     "wrong->unpaired": 3
+    }
+   },
+   "1 in one view": {
+    "n": 384,
+    "gate": {
+     "correct": 303,
+     "wrong": 81,
+     "unpaired": 0
+    },
+    "cost": {
+     "correct": 303,
+     "wrong": 81,
+     "unpaired": 0
+    },
+    "changed": 0,
+    "transitions": {}
+   },
+   "1x1": {
+    "n": 31782,
+    "gate": {
+     "correct": 31782,
+     "wrong": 0,
+     "unpaired": 0
+    },
+    "cost": {
+     "correct": 31782,
+     "wrong": 0,
+     "unpaired": 0
+    },
+    "changed": 0,
+    "transitions": {}
+   },
+   ">=2 both": {
+    "n": 634,
+    "gate": {
+     "correct": 485,
+     "wrong": 108,
+     "unpaired": 41
+    },
+    "cost": {
+     "correct": 614,
+     "wrong": 14,
+     "unpaired": 6
+    },
+    "changed": 144,
+    "transitions": {
+     "correct->wrong": 5,
+     "unpaired->correct": 36,
+     "unpaired->wrong": 2,
+     "wrong->correct": 98,
+     "wrong->unpaired": 3
+    }
+   }
   },
-  "cost": {
-   "correct": 87,
-   "wrong": 48
+  "mx17_3": {
+   "all": {
+    "n": 80230,
+    "gate": {
+     "correct": 79799,
+     "wrong": 370,
+     "unpaired": 61
+    },
+    "cost": {
+     "correct": 80015,
+     "wrong": 200,
+     "unpaired": 15
+    },
+    "changed": 257,
+    "transitions": {
+     "correct->wrong": 14,
+     "unpaired->correct": 53,
+     "unpaired->wrong": 3,
+     "wrong->correct": 177,
+     "wrong->unpaired": 10
+    }
+   },
+   "1 in one view": {
+    "n": 662,
+    "gate": {
+     "correct": 509,
+     "wrong": 153,
+     "unpaired": 0
+    },
+    "cost": {
+     "correct": 509,
+     "wrong": 153,
+     "unpaired": 0
+    },
+    "changed": 0,
+    "transitions": {}
+   },
+   "1x1": {
+    "n": 78059,
+    "gate": {
+     "correct": 78059,
+     "wrong": 0,
+     "unpaired": 0
+    },
+    "cost": {
+     "correct": 78059,
+     "wrong": 0,
+     "unpaired": 0
+    },
+    "changed": 0,
+    "transitions": {}
+   },
+   ">=2 both": {
+    "n": 1509,
+    "gate": {
+     "correct": 1231,
+     "wrong": 217,
+     "unpaired": 61
+    },
+    "cost": {
+     "correct": 1447,
+     "wrong": 47,
+     "unpaired": 15
+    },
+    "changed": 257,
+    "transitions": {
+     "correct->wrong": 14,
+     "unpaired->correct": 53,
+     "unpaired->wrong": 3,
+     "wrong->correct": 177,
+     "wrong->unpaired": 10
+    }
+   }
   },
-  "changed": 0,
-  "transitions": {}
+  "mx17_4": {
+   "all": {
+    "n": 10341,
+    "gate": {
+     "correct": 10306,
+     "wrong": 31,
+     "unpaired": 4
+    },
+    "cost": {
+     "correct": 10312,
+     "wrong": 27,
+     "unpaired": 2
+    },
+    "changed": 14,
+    "transitions": {
+     "correct->unpaired": 1,
+     "correct->wrong": 3,
+     "unpaired->correct": 3,
+     "wrong->correct": 7
+    }
+   },
+   "1 in one view": {
+    "n": 417,
+    "gate": {
+     "correct": 395,
+     "wrong": 22,
+     "unpaired": 0
+    },
+    "cost": {
+     "correct": 395,
+     "wrong": 22,
+     "unpaired": 0
+    },
+    "changed": 0,
+    "transitions": {}
+   },
+   "1x1": {
+    "n": 9808,
+    "gate": {
+     "correct": 9808,
+     "wrong": 0,
+     "unpaired": 0
+    },
+    "cost": {
+     "correct": 9808,
+     "wrong": 0,
+     "unpaired": 0
+    },
+    "changed": 0,
+    "transitions": {}
+   },
+   ">=2 both": {
+    "n": 116,
+    "gate": {
+     "correct": 103,
+     "wrong": 9,
+     "unpaired": 4
+    },
+    "cost": {
+     "correct": 109,
+     "wrong": 5,
+     "unpaired": 2
+    },
+    "changed": 14,
+    "transitions": {
+     "correct->unpaired": 1,
+     "correct->wrong": 3,
+     "unpaired->correct": 3,
+     "wrong->correct": 7
+    }
+   }
+  },
+  "mx17_6": {
+   "all": {
+    "n": 19343,
+    "gate": {
+     "correct": 19235,
+     "wrong": 104,
+     "unpaired": 4
+    },
+    "cost": {
+     "correct": 19262,
+     "wrong": 76,
+     "unpaired": 5
+    },
+    "changed": 39,
+    "transitions": {
+     "correct->wrong": 5,
+     "unpaired->correct": 1,
+     "wrong->correct": 31,
+     "wrong->unpaired": 2
+    }
+   },
+   "1 in one view": {
+    "n": 482,
+    "gate": {
+     "correct": 424,
+     "wrong": 58,
+     "unpaired": 0
+    },
+    "cost": {
+     "correct": 424,
+     "wrong": 58,
+     "unpaired": 0
+    },
+    "changed": 0,
+    "transitions": {}
+   },
+   "1x1": {
+    "n": 18565,
+    "gate": {
+     "correct": 18565,
+     "wrong": 0,
+     "unpaired": 0
+    },
+    "cost": {
+     "correct": 18565,
+     "wrong": 0,
+     "unpaired": 0
+    },
+    "changed": 0,
+    "transitions": {}
+   },
+   ">=2 both": {
+    "n": 296,
+    "gate": {
+     "correct": 246,
+     "wrong": 46,
+     "unpaired": 4
+    },
+    "cost": {
+     "correct": 273,
+     "wrong": 18,
+     "unpaired": 5
+    },
+    "changed": 39,
+    "transitions": {
+     "correct->wrong": 5,
+     "unpaired->correct": 1,
+     "wrong->correct": 31,
+     "wrong->unpaired": 2
+    }
+   }
+  },
+  "mx17_7": {
+   "all": {
+    "n": 9243,
+    "gate": {
+     "correct": 9152,
+     "wrong": 79,
+     "unpaired": 12
+    },
+    "cost": {
+     "correct": 9180,
+     "wrong": 63,
+     "unpaired": 0
+    },
+    "changed": 38,
+    "transitions": {
+     "correct->wrong": 4,
+     "unpaired->correct": 10,
+     "unpaired->wrong": 2,
+     "wrong->correct": 22
+    }
+   },
+   "1 in one view": {
+    "n": 280,
+    "gate": {
+     "correct": 233,
+     "wrong": 47,
+     "unpaired": 0
+    },
+    "cost": {
+     "correct": 233,
+     "wrong": 47,
+     "unpaired": 0
+    },
+    "changed": 0,
+    "transitions": {}
+   },
+   "1x1": {
+    "n": 8801,
+    "gate": {
+     "correct": 8801,
+     "wrong": 0,
+     "unpaired": 0
+    },
+    "cost": {
+     "correct": 8801,
+     "wrong": 0,
+     "unpaired": 0
+    },
+    "changed": 0,
+    "transitions": {}
+   },
+   ">=2 both": {
+    "n": 162,
+    "gate": {
+     "correct": 118,
+     "wrong": 32,
+     "unpaired": 12
+    },
+    "cost": {
+     "correct": 146,
+     "wrong": 16,
+     "unpaired": 0
+    },
+    "changed": 38,
+    "transitions": {
+     "correct->wrong": 4,
+     "unpaired->correct": 10,
+     "unpaired->wrong": 2,
+     "wrong->correct": 22
+    }
+   }
+  }
  },
- "1x1": {
-  "n": 24510,
-  "gate": {
-   "correct": 24510
+ "rows_two_particle": {
+  "mx17_det1_det2_overnight_6-17-26/resist_510V_drift_1000V/mx17_2": {
+   "gate": {
+    "correct": 1,
+    "wrong": 0,
+    "unpaired": 1
+   },
+   "cost": {
+    "correct": 2,
+    "wrong": 0,
+    "unpaired": 0
+   }
   },
-  "cost": {
-   "correct": 24510
+  "mx17_det2_det3_overnight_6-22-26/long_run/mx17_2": {
+   "gate": {
+    "correct": 247,
+    "wrong": 53,
+    "unpaired": 24
+   },
+   "cost": {
+    "correct": 312,
+    "wrong": 7,
+    "unpaired": 5
+   }
   },
-  "changed": 0,
-  "transitions": {}
- },
- ">=2 both": {
-  "n": 552,
-  "gate": {
-   "correct": 442,
-   "wrong": 89,
-   "unpaired": 21
+  "mx17_det2_det3_overnight_6-22-26/long_run/mx17_3": {
+   "gate": {
+    "correct": 232,
+    "wrong": 36,
+    "unpaired": 5
+   },
+   "cost": {
+    "correct": 265,
+    "wrong": 6,
+    "unpaired": 2
+   }
   },
-  "cost": {
-   "correct": 534,
-   "wrong": 13,
-   "unpaired": 5
+  "mx17_det2_det3_overnight_6-22-26/longer_run/mx17_2": {
+   "gate": {
+    "correct": 53,
+    "wrong": 18,
+    "unpaired": 6
+   },
+   "cost": {
+    "correct": 76,
+    "wrong": 0,
+    "unpaired": 1
+   }
   },
-  "changed": 104,
-  "transitions": {
-   "correct->wrong": 4,
-   "unpaired->correct": 20,
-   "wrong->correct": 76,
-   "wrong->unpaired": 4
+  "mx17_det2_det3_overnight_6-22-26/resist_450V_drift_1000V/mx17_2": {
+   "gate": {
+    "correct": 7,
+    "wrong": 3,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 10,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det2_det3_overnight_6-22-26/resist_450V_drift_1000V/mx17_3": {
+   "gate": {
+    "correct": 17,
+    "wrong": 3,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 18,
+    "wrong": 1,
+    "unpaired": 1
+   }
+  },
+  "mx17_det2_det3_overnight_6-22-26/resist_455V_drift_1000V/mx17_2": {
+   "gate": {
+    "correct": 12,
+    "wrong": 0,
+    "unpaired": 2
+   },
+   "cost": {
+    "correct": 13,
+    "wrong": 1,
+    "unpaired": 0
+   }
+  },
+  "mx17_det2_det3_overnight_6-22-26/resist_455V_drift_1000V/mx17_3": {
+   "gate": {
+    "correct": 11,
+    "wrong": 1,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 12,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det2_det3_overnight_6-22-26/resist_460V_drift_1000V/mx17_2": {
+   "gate": {
+    "correct": 18,
+    "wrong": 2,
+    "unpaired": 1
+   },
+   "cost": {
+    "correct": 20,
+    "wrong": 1,
+    "unpaired": 0
+   }
+  },
+  "mx17_det2_det3_overnight_6-22-26/resist_460V_drift_1000V/mx17_3": {
+   "gate": {
+    "correct": 7,
+    "wrong": 1,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 8,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det2_det3_overnight_6-22-26/resist_465V_drift_1000V/mx17_2": {
+   "gate": {
+    "correct": 9,
+    "wrong": 1,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 10,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det2_det3_overnight_6-22-26/resist_465V_drift_1000V/mx17_3": {
+   "gate": {
+    "correct": 11,
+    "wrong": 1,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 11,
+    "wrong": 1,
+    "unpaired": 0
+   }
+  },
+  "mx17_det2_det3_overnight_6-22-26/resist_470V_drift_1000V/mx17_2": {
+   "gate": {
+    "correct": 15,
+    "wrong": 1,
+    "unpaired": 1
+   },
+   "cost": {
+    "correct": 17,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det2_det3_overnight_6-22-26/resist_470V_drift_1000V/mx17_3": {
+   "gate": {
+    "correct": 8,
+    "wrong": 2,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 9,
+    "wrong": 1,
+    "unpaired": 0
+   }
+  },
+  "mx17_det2_det3_overnight_6-22-26/resist_475V_drift_1000V/mx17_2": {
+   "gate": {
+    "correct": 10,
+    "wrong": 3,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 13,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det2_det3_overnight_6-22-26/resist_475V_drift_1000V/mx17_3": {
+   "gate": {
+    "correct": 14,
+    "wrong": 1,
+    "unpaired": 2
+   },
+   "cost": {
+    "correct": 17,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det2_det3_overnight_6-22-26/resist_480V_drift_1000V/mx17_2": {
+   "gate": {
+    "correct": 9,
+    "wrong": 2,
+    "unpaired": 1
+   },
+   "cost": {
+    "correct": 12,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det2_det3_overnight_6-22-26/resist_480V_drift_1000V/mx17_3": {
+   "gate": {
+    "correct": 8,
+    "wrong": 1,
+    "unpaired": 1
+   },
+   "cost": {
+    "correct": 9,
+    "wrong": 0,
+    "unpaired": 1
+   }
+  },
+  "mx17_det2_det3_overnight_6-22-26/resist_485V_drift_1000V/mx17_2": {
+   "gate": {
+    "correct": 16,
+    "wrong": 0,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 16,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det2_det3_overnight_6-22-26/resist_485V_drift_1000V/mx17_3": {
+   "gate": {
+    "correct": 10,
+    "wrong": 0,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 10,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det2_det3_overnight_6-22-26/resist_490V_drift_1000V/mx17_2": {
+   "gate": {
+    "correct": 5,
+    "wrong": 1,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 6,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det2_det3_overnight_6-22-26/resist_490V_drift_1000V/mx17_3": {
+   "gate": {
+    "correct": 14,
+    "wrong": 3,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 17,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det2_det3_overnight_6-22-26/resist_495V_drift_1000V/mx17_2": {
+   "gate": {
+    "correct": 9,
+    "wrong": 1,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 10,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det2_det3_overnight_6-22-26/resist_495V_drift_1000V/mx17_3": {
+   "gate": {
+    "correct": 11,
+    "wrong": 4,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 14,
+    "wrong": 1,
+    "unpaired": 0
+   }
+  },
+  "mx17_det2_det3_overnight_6-22-26/resist_500V_drift_1000V/mx17_2": {
+   "gate": {
+    "correct": 12,
+    "wrong": 3,
+    "unpaired": 1
+   },
+   "cost": {
+    "correct": 16,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det2_det3_overnight_6-22-26/resist_500V_drift_1000V/mx17_3": {
+   "gate": {
+    "correct": 10,
+    "wrong": 2,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 12,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det2_det3_overnight_6-22-26/resist_505V_drift_1000V/mx17_2": {
+   "gate": {
+    "correct": 15,
+    "wrong": 2,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 16,
+    "wrong": 1,
+    "unpaired": 0
+   }
+  },
+  "mx17_det2_det3_overnight_6-22-26/resist_505V_drift_1000V/mx17_3": {
+   "gate": {
+    "correct": 5,
+    "wrong": 1,
+    "unpaired": 1
+   },
+   "cost": {
+    "correct": 6,
+    "wrong": 1,
+    "unpaired": 0
+   }
+  },
+  "mx17_det2_det3_overnight_6-22-26/resist_510V_drift_1000V/mx17_2": {
+   "gate": {
+    "correct": 5,
+    "wrong": 4,
+    "unpaired": 2
+   },
+   "cost": {
+    "correct": 10,
+    "wrong": 1,
+    "unpaired": 0
+   }
+  },
+  "mx17_det2_det3_overnight_6-22-26/resist_510V_drift_1000V/mx17_3": {
+   "gate": {
+    "correct": 6,
+    "wrong": 0,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 6,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det2_det3_overnight_6-22-26/resist_515V_drift_1000V/mx17_2": {
+   "gate": {
+    "correct": 5,
+    "wrong": 4,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 8,
+    "wrong": 1,
+    "unpaired": 0
+   }
+  },
+  "mx17_det2_det3_overnight_6-22-26/resist_515V_drift_1000V/mx17_3": {
+   "gate": {
+    "correct": 2,
+    "wrong": 1,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 3,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det2_det3_overnight_6-22-26/resist_520V_drift_1000V/mx17_2": {
+   "gate": {
+    "correct": 3,
+    "wrong": 0,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 3,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det2_det3_overnight_6-22-26/resist_525V_drift_1000V/mx17_2": {
+   "gate": {
+    "correct": 1,
+    "wrong": 2,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 3,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det2_det3_overnight_6-22-26/resist_525V_drift_1000V/mx17_3": {
+   "gate": {
+    "correct": 2,
+    "wrong": 0,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 2,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det2_det3_overnight_6-22-26/short_run/mx17_2": {
+   "gate": {
+    "correct": 33,
+    "wrong": 8,
+    "unpaired": 2
+   },
+   "cost": {
+    "correct": 41,
+    "wrong": 2,
+    "unpaired": 0
+   }
+  },
+  "mx17_det2_det3_overnight_6-22-26/short_run/mx17_3": {
+   "gate": {
+    "correct": 14,
+    "wrong": 0,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 14,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det3_day_6-25-26/long_run/mx17_3": {
+   "gate": {
+    "correct": 113,
+    "wrong": 12,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 121,
+    "wrong": 4,
+    "unpaired": 0
+   }
+  },
+  "mx17_det3_det4_overnight_6-23-26/long_run/mx17_3": {
+   "gate": {
+    "correct": 17,
+    "wrong": 5,
+    "unpaired": 9
+   },
+   "cost": {
+    "correct": 24,
+    "wrong": 5,
+    "unpaired": 2
+   }
+  },
+  "mx17_det3_det4_overnight_6-23-26/long_run/mx17_4": {
+   "gate": {
+    "correct": 28,
+    "wrong": 3,
+    "unpaired": 3
+   },
+   "cost": {
+    "correct": 34,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det3_det4_overnight_6-23-26/longer_run/mx17_4": {
+   "gate": {
+    "correct": 2,
+    "wrong": 1,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 3,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det3_det4_overnight_6-23-26/resist_465V_drift_600V/mx17_4": {
+   "gate": {
+    "correct": 1,
+    "wrong": 0,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 1,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det3_det4_overnight_6-23-26/resist_470V_drift_600V/mx17_4": {
+   "gate": {
+    "correct": 1,
+    "wrong": 0,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 1,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det3_det4_overnight_6-23-26/resist_475V_drift_600V/mx17_4": {
+   "gate": {
+    "correct": 1,
+    "wrong": 0,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 1,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det3_det4_overnight_6-23-26/resist_490V_drift_600V/mx17_3": {
+   "gate": {
+    "correct": 2,
+    "wrong": 1,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 3,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det3_det4_overnight_6-23-26/resist_490V_drift_600V/mx17_4": {
+   "gate": {
+    "correct": 1,
+    "wrong": 0,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 1,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det3_det4_overnight_6-23-26/resist_500V_drift_600V/mx17_3": {
+   "gate": {
+    "correct": 1,
+    "wrong": 0,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 1,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det3_det4_overnight_6-23-26/resist_500V_drift_600V/mx17_4": {
+   "gate": {
+    "correct": 2,
+    "wrong": 0,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 2,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det3_det4_overnight_6-23-26/resist_505V_drift_600V/mx17_4": {
+   "gate": {
+    "correct": 1,
+    "wrong": 0,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 1,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det3_det4_overnight_6-23-26/resist_510V_drift_600V/mx17_3": {
+   "gate": {
+    "correct": 2,
+    "wrong": 0,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 2,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det3_det4_overnight_6-23-26/resist_515V_drift_600V/mx17_3": {
+   "gate": {
+    "correct": 2,
+    "wrong": 0,
+    "unpaired": 1
+   },
+   "cost": {
+    "correct": 2,
+    "wrong": 1,
+    "unpaired": 0
+   }
+  },
+  "mx17_det3_det4_overnight_6-23-26/resist_520V_drift_600V/mx17_3": {
+   "gate": {
+    "correct": 1,
+    "wrong": 0,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 1,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det3_p2_det1_overnight_6-27-26/long_run_p2_det1_sanity_check/mx17_3": {
+   "gate": {
+    "correct": 341,
+    "wrong": 68,
+    "unpaired": 19
+   },
+   "cost": {
+    "correct": 412,
+    "wrong": 11,
+    "unpaired": 5
+   }
+  },
+  "mx17_det3_saturday_scan_6-27-26/drift_scan_resist_490V_drift_100V/mx17_3": {
+   "gate": {
+    "correct": 5,
+    "wrong": 1,
+    "unpaired": 3
+   },
+   "cost": {
+    "correct": 7,
+    "wrong": 2,
+    "unpaired": 0
+   }
+  },
+  "mx17_det3_saturday_scan_6-27-26/drift_scan_resist_490V_drift_1100V/mx17_3": {
+   "gate": {
+    "correct": 12,
+    "wrong": 3,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 15,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det3_saturday_scan_6-27-26/drift_scan_resist_490V_drift_300V/mx17_3": {
+   "gate": {
+    "correct": 13,
+    "wrong": 0,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 13,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det3_saturday_scan_6-27-26/drift_scan_resist_490V_drift_500V/mx17_3": {
+   "gate": {
+    "correct": 14,
+    "wrong": 2,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 15,
+    "wrong": 0,
+    "unpaired": 1
+   }
+  },
+  "mx17_det3_saturday_scan_6-27-26/drift_scan_resist_490V_drift_700V/mx17_3": {
+   "gate": {
+    "correct": 18,
+    "wrong": 1,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 19,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det3_saturday_scan_6-27-26/drift_scan_resist_490V_drift_900V/mx17_3": {
+   "gate": {
+    "correct": 14,
+    "wrong": 0,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 14,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det3_saturday_scan_6-27-26/hv_scan2_resist_460V_drift_1000V/mx17_3": {
+   "gate": {
+    "correct": 10,
+    "wrong": 2,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 11,
+    "wrong": 1,
+    "unpaired": 0
+   }
+  },
+  "mx17_det3_saturday_scan_6-27-26/hv_scan2_resist_470V_drift_1000V/mx17_3": {
+   "gate": {
+    "correct": 14,
+    "wrong": 1,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 14,
+    "wrong": 1,
+    "unpaired": 0
+   }
+  },
+  "mx17_det3_saturday_scan_6-27-26/hv_scan2_resist_480V_drift_1000V/mx17_3": {
+   "gate": {
+    "correct": 10,
+    "wrong": 3,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 13,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det3_saturday_scan_6-27-26/hv_scan2_resist_490V_drift_1000V/mx17_3": {
+   "gate": {
+    "correct": 12,
+    "wrong": 3,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 15,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det3_saturday_scan_6-27-26/hv_scan2_resist_500V_drift_1000V/mx17_3": {
+   "gate": {
+    "correct": 7,
+    "wrong": 1,
+    "unpaired": 1
+   },
+   "cost": {
+    "correct": 8,
+    "wrong": 1,
+    "unpaired": 0
+   }
+  },
+  "mx17_det3_saturday_scan_6-27-26/hv_scan2_resist_510V_drift_1000V/mx17_3": {
+   "gate": {
+    "correct": 7,
+    "wrong": 2,
+    "unpaired": 1
+   },
+   "cost": {
+    "correct": 10,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det3_saturday_scan_6-27-26/hv_scan2_resist_520V_drift_1000V/mx17_3": {
+   "gate": {
+    "correct": 2,
+    "wrong": 2,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 3,
+    "wrong": 0,
+    "unpaired": 1
+   }
+  },
+  "mx17_det3_saturday_scan_6-27-26/hv_scan_resist_425V_drift_1000V/mx17_3": {
+   "gate": {
+    "correct": 9,
+    "wrong": 7,
+    "unpaired": 4
+   },
+   "cost": {
+    "correct": 18,
+    "wrong": 2,
+    "unpaired": 0
+   }
+  },
+  "mx17_det3_saturday_scan_6-27-26/hv_scan_resist_435V_drift_1000V/mx17_3": {
+   "gate": {
+    "correct": 8,
+    "wrong": 6,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 13,
+    "wrong": 1,
+    "unpaired": 0
+   }
+  },
+  "mx17_det3_saturday_scan_6-27-26/hv_scan_resist_445V_drift_1000V/mx17_3": {
+   "gate": {
+    "correct": 16,
+    "wrong": 1,
+    "unpaired": 4
+   },
+   "cost": {
+    "correct": 21,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det3_saturday_scan_6-27-26/hv_scan_resist_455V_drift_1000V/mx17_3": {
+   "gate": {
+    "correct": 11,
+    "wrong": 1,
+    "unpaired": 3
+   },
+   "cost": {
+    "correct": 14,
+    "wrong": 1,
+    "unpaired": 0
+   }
+  },
+  "mx17_det3_saturday_scan_6-27-26/hv_scan_resist_465V_drift_1000V/mx17_3": {
+   "gate": {
+    "correct": 9,
+    "wrong": 4,
+    "unpaired": 2
+   },
+   "cost": {
+    "correct": 15,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det3_saturday_scan_6-27-26/hv_scan_resist_475V_drift_1000V/mx17_3": {
+   "gate": {
+    "correct": 15,
+    "wrong": 2,
+    "unpaired": 1
+   },
+   "cost": {
+    "correct": 14,
+    "wrong": 2,
+    "unpaired": 2
+   }
+  },
+  "mx17_det3_saturday_scan_6-27-26/hv_scan_resist_485V_drift_1000V/mx17_3": {
+   "gate": {
+    "correct": 12,
+    "wrong": 3,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 15,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det3_saturday_scan_6-27-26/hv_scan_resist_495V_drift_1000V/mx17_3": {
+   "gate": {
+    "correct": 7,
+    "wrong": 0,
+    "unpaired": 1
+   },
+   "cost": {
+    "correct": 8,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det3_saturday_scan_6-27-26/hv_scan_resist_505V_drift_1000V/mx17_3": {
+   "gate": {
+    "correct": 9,
+    "wrong": 2,
+    "unpaired": 1
+   },
+   "cost": {
+    "correct": 12,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det3_saturday_scan_6-27-26/hv_scan_resist_515V_drift_1000V/mx17_3": {
+   "gate": {
+    "correct": 8,
+    "wrong": 1,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 8,
+    "wrong": 1,
+    "unpaired": 0
+   }
+  },
+  "mx17_det3_saturday_scan_6-27-26/hv_scan_resist_525V_drift_1000V/mx17_3": {
+   "gate": {
+    "correct": 3,
+    "wrong": 3,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 5,
+    "wrong": 1,
+    "unpaired": 0
+   }
+  },
+  "mx17_det3_saturday_scan_6-27-26/long_run_resist_490V_drift_1000V/mx17_3": {
+   "gate": {
+    "correct": 101,
+    "wrong": 21,
+    "unpaired": 2
+   },
+   "cost": {
+    "correct": 122,
+    "wrong": 2,
+    "unpaired": 0
+   }
+  },
+  "mx17_det3_test_6-22-26/short_run/mx17_3": {
+   "gate": {
+    "correct": 24,
+    "wrong": 2,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 26,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det4_day_6-24-26/long_run/mx17_4": {
+   "gate": {
+    "correct": 66,
+    "wrong": 5,
+    "unpaired": 1
+   },
+   "cost": {
+    "correct": 65,
+    "wrong": 5,
+    "unpaired": 2
+   }
+  },
+  "mx17_det6_det7_hv_scan_6-26-26/resist_det6_400V_det7_400V_drift_700V/mx17_6": {
+   "gate": {
+    "correct": 1,
+    "wrong": 0,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 1,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det6_det7_hv_scan_6-26-26/resist_det6_400V_det7_400V_drift_700V/mx17_7": {
+   "gate": {
+    "correct": 3,
+    "wrong": 0,
+    "unpaired": 2
+   },
+   "cost": {
+    "correct": 5,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det6_det7_hv_scan_6-26-26/resist_det6_405V_det7_405V_drift_700V/mx17_6": {
+   "gate": {
+    "correct": 7,
+    "wrong": 1,
+    "unpaired": 1
+   },
+   "cost": {
+    "correct": 6,
+    "wrong": 2,
+    "unpaired": 1
+   }
+  },
+  "mx17_det6_det7_hv_scan_6-26-26/resist_det6_405V_det7_405V_drift_700V/mx17_7": {
+   "gate": {
+    "correct": 7,
+    "wrong": 2,
+    "unpaired": 1
+   },
+   "cost": {
+    "correct": 9,
+    "wrong": 1,
+    "unpaired": 0
+   }
+  },
+  "mx17_det6_det7_hv_scan_6-26-26/resist_det6_410V_det7_410V_drift_700V/mx17_6": {
+   "gate": {
+    "correct": 4,
+    "wrong": 2,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 5,
+    "wrong": 1,
+    "unpaired": 0
+   }
+  },
+  "mx17_det6_det7_hv_scan_6-26-26/resist_det6_410V_det7_410V_drift_700V/mx17_7": {
+   "gate": {
+    "correct": 1,
+    "wrong": 1,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 2,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det6_det7_hv_scan_6-26-26/resist_det6_415V_det7_415V_drift_700V/mx17_6": {
+   "gate": {
+    "correct": 7,
+    "wrong": 0,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 7,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det6_det7_hv_scan_6-26-26/resist_det6_415V_det7_415V_drift_700V/mx17_7": {
+   "gate": {
+    "correct": 4,
+    "wrong": 3,
+    "unpaired": 1
+   },
+   "cost": {
+    "correct": 8,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det6_det7_hv_scan_6-26-26/resist_det6_420V_det7_420V_drift_700V/mx17_6": {
+   "gate": {
+    "correct": 7,
+    "wrong": 1,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 7,
+    "wrong": 1,
+    "unpaired": 0
+   }
+  },
+  "mx17_det6_det7_hv_scan_6-26-26/resist_det6_420V_det7_420V_drift_700V/mx17_7": {
+   "gate": {
+    "correct": 0,
+    "wrong": 0,
+    "unpaired": 1
+   },
+   "cost": {
+    "correct": 1,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det6_det7_hv_scan_6-26-26/resist_det6_425V_det7_425V_drift_700V/mx17_6": {
+   "gate": {
+    "correct": 8,
+    "wrong": 3,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 10,
+    "wrong": 1,
+    "unpaired": 0
+   }
+  },
+  "mx17_det6_det7_hv_scan_6-26-26/resist_det6_425V_det7_425V_drift_700V/mx17_7": {
+   "gate": {
+    "correct": 6,
+    "wrong": 0,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 5,
+    "wrong": 1,
+    "unpaired": 0
+   }
+  },
+  "mx17_det6_det7_hv_scan_6-26-26/resist_det6_430V_det7_430V_drift_700V/mx17_6": {
+   "gate": {
+    "correct": 4,
+    "wrong": 0,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 4,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det6_det7_hv_scan_6-26-26/resist_det6_430V_det7_430V_drift_700V/mx17_7": {
+   "gate": {
+    "correct": 3,
+    "wrong": 0,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 3,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det6_det7_hv_scan_6-26-26/resist_det6_435V_det7_435V_drift_700V/mx17_6": {
+   "gate": {
+    "correct": 16,
+    "wrong": 0,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 16,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det6_det7_hv_scan_6-26-26/resist_det6_435V_det7_435V_drift_700V/mx17_7": {
+   "gate": {
+    "correct": 5,
+    "wrong": 1,
+    "unpaired": 1
+   },
+   "cost": {
+    "correct": 6,
+    "wrong": 1,
+    "unpaired": 0
+   }
+  },
+  "mx17_det6_det7_hv_scan_6-26-26/resist_det6_440V_det7_440V_drift_700V/mx17_6": {
+   "gate": {
+    "correct": 5,
+    "wrong": 1,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 6,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det6_det7_hv_scan_6-26-26/resist_det6_440V_det7_440V_drift_700V/mx17_7": {
+   "gate": {
+    "correct": 1,
+    "wrong": 0,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 1,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det6_det7_hv_scan_6-26-26/resist_det6_445V_det7_445V_drift_700V/mx17_6": {
+   "gate": {
+    "correct": 8,
+    "wrong": 3,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 11,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det6_det7_hv_scan_6-26-26/resist_det6_445V_det7_445V_drift_700V/mx17_7": {
+   "gate": {
+    "correct": 5,
+    "wrong": 0,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 5,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det6_det7_hv_scan_6-26-26/resist_det6_465V_det7_465V_drift_700V/mx17_6": {
+   "gate": {
+    "correct": 11,
+    "wrong": 4,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 13,
+    "wrong": 2,
+    "unpaired": 0
+   }
+  },
+  "mx17_det6_det7_hv_scan_6-26-26/resist_det6_465V_det7_465V_drift_700V/mx17_7": {
+   "gate": {
+    "correct": 5,
+    "wrong": 3,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 6,
+    "wrong": 2,
+    "unpaired": 0
+   }
+  },
+  "mx17_det6_det7_hv_scan_6-26-26/resist_det6_480V_det7_480V_drift_700V/mx17_6": {
+   "gate": {
+    "correct": 3,
+    "wrong": 0,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 3,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det6_det7_hv_scan_6-26-26/resist_det6_480V_det7_480V_drift_700V/mx17_7": {
+   "gate": {
+    "correct": 0,
+    "wrong": 1,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 1,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det6_det7_hv_scan_6-26-26/resist_det6_485V_det7_485V_drift_700V/mx17_6": {
+   "gate": {
+    "correct": 11,
+    "wrong": 2,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 12,
+    "wrong": 1,
+    "unpaired": 0
+   }
+  },
+  "mx17_det6_det7_hv_scan_6-26-26/resist_det6_485V_det7_485V_drift_700V/mx17_7": {
+   "gate": {
+    "correct": 4,
+    "wrong": 2,
+    "unpaired": 1
+   },
+   "cost": {
+    "correct": 5,
+    "wrong": 2,
+    "unpaired": 0
+   }
+  },
+  "mx17_det6_det7_hv_scan_6-26-26/resist_det6_495V_det7_495V_drift_700V/mx17_6": {
+   "gate": {
+    "correct": 2,
+    "wrong": 0,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 2,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det6_det7_hv_scan_6-26-26/resist_det6_495V_det7_495V_drift_700V/mx17_7": {
+   "gate": {
+    "correct": 4,
+    "wrong": 0,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 4,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det6_det7_hv_scan_6-26-26/resist_det6_500V_det7_500V_drift_700V/mx17_6": {
+   "gate": {
+    "correct": 1,
+    "wrong": 0,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 1,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det6_det7_hv_scan_6-26-26/resist_det6_500V_det7_500V_drift_700V/mx17_7": {
+   "gate": {
+    "correct": 3,
+    "wrong": 0,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 3,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det6_det7_overnight_6-26-26/long_run/mx17_6": {
+   "gate": {
+    "correct": 80,
+    "wrong": 13,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 89,
+    "wrong": 3,
+    "unpaired": 1
+   }
+  },
+  "mx17_det6_det7_overnight_6-26-26/long_run/mx17_7": {
+   "gate": {
+    "correct": 28,
+    "wrong": 8,
+    "unpaired": 3
+   },
+   "cost": {
+    "correct": 36,
+    "wrong": 3,
+    "unpaired": 0
+   }
+  },
+  "mx17_det6_det7_overnight_6-26-26/longer_run/mx17_6": {
+   "gate": {
+    "correct": 39,
+    "wrong": 5,
+    "unpaired": 1
+   },
+   "cost": {
+    "correct": 42,
+    "wrong": 2,
+    "unpaired": 1
+   }
+  },
+  "mx17_det6_det7_overnight_6-26-26/longer_run/mx17_7": {
+   "gate": {
+    "correct": 13,
+    "wrong": 4,
+    "unpaired": 1
+   },
+   "cost": {
+    "correct": 17,
+    "wrong": 1,
+    "unpaired": 0
+   }
+  },
+  "mx17_det6_det7_overnight_6-26-26/resist_det6_505V_det7_480V_drift_700V/mx17_6": {
+   "gate": {
+    "correct": 6,
+    "wrong": 2,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 7,
+    "wrong": 1,
+    "unpaired": 0
+   }
+  },
+  "mx17_det6_det7_overnight_6-26-26/resist_det6_505V_det7_480V_drift_700V/mx17_7": {
+   "gate": {
+    "correct": 4,
+    "wrong": 0,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 4,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det6_det7_overnight_6-26-26/resist_det6_510V_det7_485V_drift_700V/mx17_6": {
+   "gate": {
+    "correct": 5,
+    "wrong": 2,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 7,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det6_det7_overnight_6-26-26/resist_det6_510V_det7_485V_drift_700V/mx17_7": {
+   "gate": {
+    "correct": 1,
+    "wrong": 2,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 2,
+    "wrong": 1,
+    "unpaired": 0
+   }
+  },
+  "mx17_det6_det7_overnight_6-26-26/resist_det6_515V_det7_490V_drift_700V/mx17_6": {
+   "gate": {
+    "correct": 4,
+    "wrong": 2,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 4,
+    "wrong": 2,
+    "unpaired": 0
+   }
+  },
+  "mx17_det6_det7_overnight_6-26-26/resist_det6_515V_det7_490V_drift_700V/mx17_7": {
+   "gate": {
+    "correct": 2,
+    "wrong": 0,
+    "unpaired": 1
+   },
+   "cost": {
+    "correct": 3,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det6_det7_overnight_6-26-26/resist_det6_520V_det7_495V_drift_700V/mx17_6": {
+   "gate": {
+    "correct": 1,
+    "wrong": 1,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 1,
+    "wrong": 0,
+    "unpaired": 1
+   }
+  },
+  "mx17_det6_det7_overnight_6-26-26/resist_det6_520V_det7_495V_drift_700V/mx17_7": {
+   "gate": {
+    "correct": 2,
+    "wrong": 0,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 2,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det6_det7_overnight_6-26-26/resist_det6_525V_det7_500V_drift_700V/mx17_6": {
+   "gate": {
+    "correct": 2,
+    "wrong": 1,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 3,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det6_det7_overnight_6-26-26/resist_det6_525V_det7_500V_drift_700V/mx17_7": {
+   "gate": {
+    "correct": 2,
+    "wrong": 2,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 1,
+    "wrong": 3,
+    "unpaired": 0
+   }
+  },
+  "mx17_det6_det7_overnight_6-26-26/resist_det6_530V_det7_505V_drift_700V/mx17_6": {
+   "gate": {
+    "correct": 2,
+    "wrong": 0,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 2,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det6_det7_overnight_6-26-26/resist_det6_530V_det7_505V_drift_700V/mx17_7": {
+   "gate": {
+    "correct": 0,
+    "wrong": 2,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 2,
+    "wrong": 0,
+    "unpaired": 0
+   }
+  },
+  "mx17_det6_det7_overnight_6-26-26/short_run/mx17_6": {
+   "gate": {
+    "correct": 12,
+    "wrong": 3,
+    "unpaired": 2
+   },
+   "cost": {
+    "correct": 14,
+    "wrong": 2,
+    "unpaired": 1
+   }
+  },
+  "mx17_det6_det7_overnight_6-26-26/short_run/mx17_7": {
+   "gate": {
+    "correct": 15,
+    "wrong": 1,
+    "unpaired": 0
+   },
+   "cost": {
+    "correct": 15,
+    "wrong": 1,
+    "unpaired": 0
+   }
   }
  }
 }

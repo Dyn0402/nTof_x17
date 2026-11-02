@@ -14,6 +14,7 @@ What carries, what is replaced, and why (each choice is written into the bundle'
       rigid tilt (w0_const_*) belongs to the bench mounting and is dropped with w0.
   replaced, x-y pairing
       xy_pairing['select'] -> 'gate' (the bench golden rows carry 'cost': rerun/effbudget/single/PAIRING_FIX_2026-11-02.md)
+      xy_pairing['split_corrob'] -> 'count' (the bench carries 'charge': rerun/effbudget/single/MERGED_PROJECTION_2026-11-02.md)
   dropped
       v_map (bench v(x,y) of one night), w0 (rigid tilt of the bench mounting), the bench t0_abs (the bench latency).
   replaced
@@ -47,7 +48,7 @@ V_START = {'A': 38.0, 'B': 42.6, 'C': 28.7, 'D': 28.0}
 BOW_DROP = ('w0_const_x', 'w0_const_y')
 
 
-def build(arm, out, src=None, v=None, k=20, sat=3550.0, bow=True, latency=None, t0_sigma=5.0, tan_max=None,
+def build(arm, out, src=None, v=None, k=20, sat=3550.0, bow=True, latency=None, t0_sigma=5.0, tan_max=None, kw=None,
           n_samples=20, sample_ns=60.0, conditions=None):
     from wft.calib import CalibrationBundle
     chamber, row = GOLDEN[arm]
@@ -71,6 +72,9 @@ def build(arm, out, src=None, v=None, k=20, sat=3550.0, bow=True, latency=None, 
         rec['bow'] = 'dropped' if cal.bow else 'none in source'
         cal.bow = {}
     cal.v_drift = float(v if v is not None else V_START[arm])
+    if kw:
+        rec['kw'] = dict(bench=dict(cal.kw), ntof=dict(kw), source='in-situ A-C cosmic line (ac_line.py ratio x bench kw)')
+        cal.kw = {p_: float(x) for p_, x in kw.items()}
     rec['v_drift'] = f'{cal.v_drift} um/ns ({"given" if v is not None else "V_START: is2 in-situ / wall / Magboltz"}); ' \
                      'NOT the column-duration measurement yet'
     # x-y pairing: the bench golden rows pair first and gate after (xy_pairing select 'cost',
@@ -79,6 +83,11 @@ def build(arm, out, src=None, v=None, k=20, sat=3550.0, bow=True, latency=None, 
     if cal.xy_pairing:
         rec['xy_pairing_select'] = dict(source=cal.xy_pairing.get('select', 'gate'), ntof='gate')
         cal.xy_pairing = dict(cal.xy_pairing, select='gate')
+        # two-track split corroboration: the bench lets a charge-corroborated split through with one plausible child
+        # (MERGED_PROJECTION_2026-11-02.md); on run_145 that rule would fire on 4 % (A) / 13 % (C) of beam events where
+        # the 'count' rule does not, with no two-particle truth on beam to say it is right -> n_TOF keeps 'count'
+        rec['xy_pairing_split_corrob'] = dict(source=cal.xy_pairing.get('split_corrob', 'count'), ntof='count')
+        cal.xy_pairing = dict(cal.xy_pairing, split_corrob='count')
     cal.n_depth_bins = int(k)
     cal.sat_adc = float(sat)
     cal.tan_max = None if tan_max is None else float(tan_max)
@@ -115,9 +124,11 @@ def main():
     ap.add_argument('--no-bow', action='store_true')
     ap.add_argument('--latency', default=None, help='n_TOF latency json (measure_latency output) -> pinned t0')
     ap.add_argument('--t0-sigma', type=float, default=5.0)
+    ap.add_argument('--kw', default=None, help='in-situ kw "x,y" (replaces the bench kw)')
     ap.add_argument('--tan-max', type=float, default=None, help='candidate |tan| limit for this dataset (registry tan_max)')
     a = ap.parse_args()
     build(a.arm, a.out, a.src, a.v, a.k, a.sat, not a.no_bow, a.latency, a.t0_sigma, a.tan_max,
+          kw=(dict(zip('xy', map(float, a.kw.split(',')))) if a.kw else None),
           conditions=dict(gas='Ar/Iso 90/10', latency=27))
 
 

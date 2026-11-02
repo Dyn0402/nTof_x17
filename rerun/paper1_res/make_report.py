@@ -24,6 +24,7 @@ COL = dict(det2='#1f77b4', det3='#d62728', det4='#2ca02c', det6='#9467bd', det7=
 HEAD = {'det2': 'c26__mx17_det2_det3_overnight_6-22-26__long_run__mx17_2',
         'det3': 'c26__mx17_det3_p2_det1_overnight_6-27-26__long_run_p2_det1_sanity_check__mx17_3',
         'det4': 'g_det4', 'det6': 'g_det6_long', 'det7': 'g_det7_long'}
+RES_ROWS = os.path.join(RES, 'rows')       # per-row json (res_rows.py); --rows overrides
 MIN_N = 200                  # fewest events for a row to enter a scan plot
 MIN_N_SCAN = 80              # ... an HV-scan row (short rows; error bars drawn)
 
@@ -41,7 +42,7 @@ def table(rows, head):
 
 def load_rows():
     R = {}
-    for p in sorted(glob.glob(os.path.join(RES, 'rows', '*.json'))):
+    for p in sorted(glob.glob(os.path.join(RES_ROWS, '*.json'))):
         o = json.load(open(p))
         R[o['key']] = o
     return R
@@ -169,35 +170,49 @@ def figs(R, hv, dr):
 
 
 def tracking_perf(R):
-    """papers/paper1 fig tracking_perf: sigma_theta vs angle (headline rows, v(t) arm where applied) and the
-    within-5 mm efficiency (rerun/effbudget pass-1 rows.csv, interior_good)."""
+    """papers/paper1 fig tracking_perf: sigma_theta (s68, the half-width of the central 68 % of the angle residual
+    to M3) against the M3 angle on the headline rows, v(t) arm where applied.  Paper style (papers/paper_style.py):
+    det3 leads (heavy, on top), det2/det6/det7 lighter; det4 (the defective chamber, 2-2.9 deg) in its own panel so
+    it does not set the scale.  The efficiency is section 5's (rerun/effbudget), not repeated here."""
+    import sys
     import matplotlib
     matplotlib.use('Agg')
     import matplotlib.pyplot as plt
-    eff = {r['key']: r for r in csv.DictReader(open(os.path.join(REPO, 'rerun', 'effbudget', 'pass1', 'results',
-                                                                  'rows.csv')))}
-    fig, axs = plt.subplots(1, 2, figsize=(9, 3.6), gridspec_kw=dict(width_ratios=[1.6, 1]))
-    for i, d in enumerate(DETS):
+    import pandas as pd
+    sys.path.insert(0, os.path.join(REPO, 'papers'))
+    import paper_style as ps
+    ps.use()
+    fig, (ax, a4) = ps.fig_for('full', height=2.55, nrows=1, ncols=2, gridspec_kw=dict(width_ratios=[2.6, 1]))
+    rows = []
+    for d in ('det3', 'det2', 'det6', 'det7', 'det4'):
         o = R.get(HEAD[d])
         if not o:
             continue
         arm = 'vt' if o['vt']['applied'] else 'pass'
-        for p, ls in (('x', 'o-'), ('y', 's--')):
+        tgt = a4 if d == 'det4' else ax
+        lead = d in ('det3', 'det4')
+        for p in ('x', 'y'):
             B = [b for b in o['views'][p]['arms'][arm]['by_angle'] if b['n'] >= 50]
-            axs[0].errorbar([0.5 * (b['lo'] + b['hi']) + (0.3 if p == 'y' else 0) for b in B], [b['s68'] for b in B],
-                            yerr=[b['s68_err'] for b in B], fmt=ls, color=COL[d], ms=3, lw=1, capsize=1.5,
-                            label=f'{d} {p.upper()}')
-        e = eff.get(HEAD[d])
-        if e:
-            axs[1].errorbar([i], [float(e['eff_ig'])], yerr=[float(e['err_ig'])], fmt='o', color=COL[d], ms=5)
-    axs[0].set_xlabel(r'$|\theta_{\rm ref}|$ [deg]'); axs[0].set_ylabel(r'$\sigma_\theta$ (s68) [deg]')
-    axs[0].legend(fontsize=6, ncol=2, frameon=False); axs[0].grid(alpha=.3); axs[0].set_ylim(0, None)
-    axs[1].set_xticks(range(len(DETS))); axs[1].set_xticklabels(DETS)
-    axs[1].set_ylabel('efficiency within 5 mm [%]'); axs[1].set_ylim(0, 100); axs[1].grid(alpha=.3)
-    fig.tight_layout()
-    for ext in ('pdf', 'png'):
-        fig.savefig(os.path.join(HERE, 'figures', f'tracking_perf.{ext}'), dpi=150)
-    plt.close(fig)
+            c = [0.5 * (b['lo'] + b['hi']) + (0.4 if p == 'y' else -0.4 if lead else 0) for b in B]
+            kw = ps.det(d, view=p)
+            kw.update(ms=4.5 if d == 'det3' else 3.2, capsize=0, elinewidth=1.0)
+            if not lead:
+                kw.update(alpha=0.6, ms=3.0, lw=1.0)
+            tgt.errorbar(c, [b['s68'] for b in B], yerr=[b['s68_err'] for b in B], **kw)
+            rows += [dict(det=d, row=HEAD[d], arm=arm, view=p.upper(), theta_lo=b['lo'], theta_hi=b['hi'], n=b['n'],
+                          s68_deg=b['s68'], s68_err_deg=b['s68_err']) for b in B]
+    ax.set_xlabel(r'$|\theta_{\rm M3}|$ [deg]'); ax.set_ylabel(r'$\sigma_\theta$ [deg]')
+    ax.set_xlim(0, 20); ax.set_ylim(0.6, 1.7)
+    a4.set_xlabel(r'$|\theta_{\rm M3}|$ [deg]'); a4.set_xlim(0, 20); a4.set_ylim(1.5, 3.1)
+    for a in (ax, a4):
+        a.set_xticks([0, 5, 10, 15, 20])
+    ps.panel_labels([ax, a4])
+    # one legend: chamber colours, then the view line styles (X solid filled, Y dashed open)
+    hd = ps.det_handles(('det3', 'det2', 'det6', 'det7', 'det4'))
+    for h_ in hd:
+        h_.set_label(h_.get_label())
+    ps.legend_above(fig, hd + ps.view_handles(), ncol=7, handlelength=2.2)
+    ps.save(fig, os.path.join(HERE, 'figures', 'tracking_perf'), data=pd.DataFrame(rows))
 
 
 def gas_vE(R):
@@ -468,4 +483,15 @@ ladder (the angle scale against M3); its depths, and so its mid-gap positions in
 
 
 if __name__ == '__main__':
-    main()
+    import argparse
+    _ap = argparse.ArgumentParser(description=__doc__.split('\n')[0])
+    _ap.add_argument('--rows', help='directory of the per-row json (default results/rows; on EOS '
+                     'cosmic_bench/x17rerun/paper1_res/results_18efcd0d/rows)')
+    _ap.add_argument('--only', choices=['tracking_perf'], help='make this paper figure only (no report)')
+    _a = _ap.parse_args()
+    if _a.rows:
+        RES_ROWS = _a.rows
+    if _a.only == 'tracking_perf':
+        tracking_perf(load_rows())
+    else:
+        main()

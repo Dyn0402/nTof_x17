@@ -282,27 +282,38 @@ def fig_drift(scans, figdir):
 
 
 def fig_balance(golden, ev, figdir, paper_out=None):
-    fig, ax = plt.subplots(figsize=(6.4, 4.2))
+    """The Paper I charge_balance figure, in the paper style (papers/paper_style.py): det3 first and on top.
+    Checklist pass 2026-11-02: drawn at its printed width (4.3 in), no selection text on the axis (the caption has it),
+    capital view letters as in the text, legend = chamber with its median / core sigma / n (the numbers the text quotes)."""
+    import sys
+    import pandas as pd
+    sys.path.insert(0, os.path.join(REPO, 'papers'))
+    import paper_style as ps
+    order = ['mx17_3', 'mx17_2', 'mx17_4', 'mx17_6', 'mx17_7']
     bins = np.linspace(-0.6, 0.6, 61)
-    for r in golden:
-        z = ev[r['key']]
-        u = ~(z['sat_x'] | z['sat_y'])
-        lr = np.log(z['qx'][u] / z['qy'][u])
-        lr = lr[np.isfinite(lr)]
-        e = r['est']
-        ax.hist(lr, bins=bins, histtype='step', lw=1.6, color=COL[r['det']], density=True,
-                label=f"{NAME[r['det']]}: median {e['xy_ln_median']:+.3f}, core σ {e['xy_ln_core_sigma']:.3f}"
-                      f" (n={len(lr)})")
-    ax.axvline(0, color=MUTED, lw=1)
-    ax.set_xlabel('ln(Q_x / Q_y), unsaturated events, golden rows', color=INK)
-    ax.set_ylabel('events (normalised)', color=INK)
-    ax.set_title('X/Y charge balance (pass 1, waveform fit)', color=INK, fontsize=11, loc='left')
-    ax.legend(frameon=False, fontsize=8)
-    style(ax)
-    fig.tight_layout()
-    for ext in ('png', 'pdf'):
-        fig.savefig(os.path.join(figdir, f'charge_balance.{ext}'), dpi=150)
-    plt.close(fig)
+    tab = dict(bin_lo=bins[:-1], bin_hi=bins[1:])
+    with matplotlib.rc_context():
+        ps.use()
+        fig, ax = ps.fig_for(4.3, aspect=0.66)
+        for r in sorted(golden, key=lambda r: order.index(r['det'])):
+            z = ev[r['key']]
+            u = ~(z['sat_x'] | z['sat_y'])
+            lr = np.log(z['qx'][u] / z['qy'][u])
+            lr = lr[np.isfinite(lr)]
+            e = r['est']
+            d = NAME[r['det']]
+            st = ps.det(d)
+            h, _ = np.histogram(lr, bins=bins, density=True)
+            tab[d] = h
+            ax.stairs(h, bins, color=st['color'], lw=st['lw'], zorder=st['zorder'],
+                      label=d)   # median / core sigma / n per chamber: results/summary.json golden[], quoted in the caption
+        ax.axvline(0, color=ps.MUTED, lw=0.8, zorder=0)
+        ax.set_xlim(bins[0], bins[-1])
+        ax.set_xlabel(r'$\ln(Q_X/Q_Y)$')
+        ax.set_ylabel('probability density')
+        ax.set_ylim(0, h_max * 1.02 if (h_max := max(np.max(tab[NAME[r['det']]]) for r in golden)) else None)
+        ax.legend(loc='upper right', handlelength=1.4)
+        ps.save(fig, os.path.join(figdir, 'charge_balance'), data=pd.DataFrame(tab))
 
 
 def fig_spectra(golden, ev, figdir):

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""bow_pass1.py build --out-dir D | fig --in-dir D -- the Paper I bow figures (bow_profiles, bow_closure) re-made on
+"""bow_pass1.py build --out-dir D | fig --in-dir D | plot -- the Paper I bow figures (bow_profiles, bow_closure) re-made on
 the pass-1 golden rows, with and without the in-row v(t) (PASS1_RESOLUTION_2026-10-31.md §6).
 
 build  (lxplus; READ-ONLY on Analysis_pass1) per golden row, the per-event table in the layout of
@@ -7,6 +7,7 @@ build  (lxplus; READ-ONLY on Analysis_pass1) per golden row, the per-event table
        tangents in the chamber's raw strip frame (the effbudget rays: the row's own waveform alignment), joined to the
        pass table; plus v_rel per event (vt_correction, rows of vt_corrected_rows.csv) and the row's angle constants
        -> D/<det>.parquet, D/<det>.bundle.json
+plot   (anywhere) re-draw both figures from the committed results/bow/profiles_*.json (no estimator run)
 fig    (anywhere) fb_bow_maps' profiles (profiles.run's estimator, unchanged) on each table in two arms:
          pass  w as reconstructed
          vt    w -> w0 + (w - w0) / r(t): the transverse speed a constant v would have given (r = v_rel; the w that
@@ -85,48 +86,7 @@ def fig(in_dir):
             PR.RES = res
             PR.run(f'{d}_{arm}')
             out[(d, arm)] = json.load(open(os.path.join(res, f'profiles_{d}_{arm}.json')))
-    import matplotlib
-    matplotlib.use('Agg')
-    import matplotlib.pyplot as plt
-    COL = {'det2': '#1f5fa8', 'det3': '#2f8a5b', 'det4': '#c63d4f', 'det6': '#7a52b8', 'det7': '#c99318'}
-    for arm, suffix in (('vt', ''), ('pass', '_pass')):
-        f1, axs = plt.subplots(1, 2, figsize=(9, 3.6), sharey=True)
-        for ax, p in zip(axs, 'xy'):
-            for d in F.DETS:
-                pr = out[(d, arm)].get(p)
-                if not pr:
-                    continue
-                pos, h, he = np.array(pr['pos']), np.array(pr['h']), np.array(pr['h_err'])
-                c = np.polyval(pr['h_par'], 0.0)
-                ok = np.abs(h - c) < 4
-                ax.errorbar(pos[ok], (h - c)[ok], yerr=he[ok], fmt='o-', ms=3, lw=1.2, capsize=1.5, color=COL[d], label=d)
-            ax.axhline(0, color='grey', lw=0.6, ls=':')
-            ax.set_xlabel(f'track {p} at mid-gap [mm]'); ax.set_title(f'{p.upper()} strips', fontsize=10)
-        axs[0].set_ylabel(r'mesh height $h - h_{\rm centre}$ [mm]')
-        axs[0].legend(fontsize=7, ncol=2, frameon=False)
-        f1.tight_layout()
-        for ext in ('pdf', 'png'):
-            f1.savefig(os.path.join(figd, f'bow_profiles{suffix}.{ext}'), dpi=200)
-        plt.close(f1)
-        f2, ax = plt.subplots(figsize=(4.4, 4.0))
-        xs = np.linspace(0, 10, 10)
-        ax.plot(xs, xs, 'k--', lw=1, label=r'$r_f = 1$ (cathode follows)')
-        ax.plot(xs, 0.5 * xs, 'k:', lw=1, label=r'$r_f = 1/2$ (flat cathode)')
-        for d in F.DETS:
-            for p, mk in (('x', 'o'), ('y', 'D')):
-                P = out[(d, arm)].get(p)
-                if not P:
-                    continue
-                ax.plot(P['b_med'] * P['h_curv'] * 1e3, P['w0_slope'] * 1e3, mk, color=COL[d], ms=6,
-                        label=(d + (' (circle X, diamond Y)' if d == 'det2' else '')) if p == 'x' else None)
-        ax.set_xlim(0, 10); ax.set_ylim(0, 8)
-        ax.set_xlabel(r'$v\,h^{\prime\prime}$ from positions [µm/ns per m]')
-        ax.set_ylabel(r'measured $dw_0/dp$ [µm/ns per m]')
-        ax.legend(fontsize=7, frameon=False, loc='upper left')
-        f2.tight_layout()
-        for ext in ('pdf', 'png'):
-            f2.savefig(os.path.join(figd, f'bow_closure{suffix}.{ext}'), dpi=200)
-        plt.close(f2)
+    plot(out)
     S = {f'{d}_{arm}': {p: (dict(h_curv_per_km=v[p]['h_curv'] * 1e6, w0_slope=v[p]['w0_slope'], r_f=v[p]['r_f'],
                                  b_med=v[p]['b_med']) if v.get(p) else None) for p in 'xy'}
          for (d, arm), v in out.items()}
@@ -134,9 +94,79 @@ def fig(in_dir):
     print(json.dumps(S, indent=1, default=float))
 
 
+ORDER = ('det3', 'det2', 'det6', 'det7', 'det4')      # det3 leads (papers/paper_style.py)
+
+
+def plot(out=None):
+    """The two figures (both arms) from the profiles; with out=None, read results/bow/profiles_<det>_<arm>.json (the
+    committed output of fig): `plot` mode re-draws without re-running the estimator.  Paper style: det3 dark blue on
+    top, det4 grey underneath; X strips solid, Y strips dashed / open markers."""
+    import matplotlib
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+    sys.path.insert(0, os.path.join(REPO, 'papers'))
+    import paper_style as ps
+    ps.use()
+    res = os.path.join(HERE, 'results', 'bow')
+    figd = os.path.join(HERE, 'figures')
+    if out is None:
+        out = {(d, arm): json.load(open(os.path.join(res, f'profiles_{d}_{arm}.json')))
+               for d in ORDER for arm in ('pass', 'vt')}
+    for arm, suffix in (('vt', ''), ('pass', '_pass')):
+        f1, axs = ps.fig_for('full', height=2.45, nrows=1, ncols=2, sharey=True)
+        rows = []
+        for ax, p in zip(axs, 'xy'):
+            for d in ORDER:
+                pr = out[(d, arm)].get(p)
+                if not pr:
+                    continue
+                pos, h, he = np.array(pr['pos']), np.array(pr['h']), np.array(pr['h_err'])
+                c = np.polyval(pr['h_par'], 0.0)
+                ok = np.abs(h - c) < 4
+                kw = ps.det(d, view=p, label=d, ms=3.5 if d == 'det3' else 2.8)
+                ax.errorbar(pos[ok], (h - c)[ok], yerr=he[ok], elinewidth=0.8, **kw)
+                rows += [dict(det=d, arm=arm, view=p.upper(), pos_mm=x, h_minus_centre_mm=y, err_mm=e)
+                         for x, y, e in zip(pos[ok], (h - c)[ok], he[ok])]
+            ax.axhline(0, color=ps.MUTED, lw=0.6, ls=':')
+            ax.set_xlabel(f'track ${p}$ at mid-gap [mm]')
+            ax.set_xlim(0, 400); ax.set_xticks([0, 100, 200, 300, 400])
+        axs[0].set_ylabel(r'mesh height $h - h_{\rm centre}$ [mm]')
+        axs[0].set_ylim(-1.5, 4.5)
+        ps.panel_labels(axs)
+        ps.legend_above(f1, ps.det_handles(ORDER), ncol=5)
+        ps.save(f1, os.path.join(figd, f'bow_profiles{suffix}'), data=pd.DataFrame(rows))
+        f2, ax = ps.fig_for('half', height=3.0)
+        xs = np.linspace(0, 10, 10)
+        ax.plot(xs, xs, '--', color=ps.MODEL, lw=1)
+        ax.plot(xs, 0.5 * xs, ':', color=ps.MODEL, lw=1)
+        # the two reference lines named on the line (cathode follows the mesh / flat cathode)
+        ax.text(6.3, 6.9, '$r_f = 1$', rotation=0, ha='right', va='bottom', fontsize=ps.BASE_PT * 0.85)
+        ax.text(9.0, 4.1, '$r_f = 1/2$', ha='center', va='top', fontsize=ps.BASE_PT * 0.85)
+        rows = []
+        for d in ORDER:
+            for p in 'xy':
+                P = out[(d, arm)].get(p)
+                if not P:
+                    continue
+                xp, yp = P['b_med'] * P['h_curv'] * 1e3, P['w0_slope'] * 1e3
+                ax.plot(xp, yp, ls='none', ms=5.5 if d == 'det3' else 4.5,
+                        **ps.det(d, view=p, line=False, label=d if p == 'x' else None))
+                rows.append(dict(det=d, arm=arm, view=p.upper(), predicted=xp, measured=yp, r_f=P['r_f']))
+        from matplotlib.lines import Line2D
+        h = ps.det_handles(ORDER, line=False, ls='none')
+        h += [Line2D([], [], ls='none', marker='o', color=ps.INK, label='X'),
+              Line2D([], [], ls='none', marker='o', color=ps.INK, mfc='white', label='Y')]
+        h = [h[i] for i in (0, 4, 1, 5, 2, 6, 3)]       # rows: det3 det2 det6 det7 / det4 X Y (legend fills by column)
+        ps.legend_above(ax, h, ncol=4, columnspacing=0.8, handletextpad=0.2)
+        ax.set_xlim(0, 10); ax.set_ylim(0, 8)
+        ax.set_xlabel(r'predicted gradient [µm ns$^{-1}$ m$^{-1}$]')
+        ax.set_ylabel(r'measured gradient [µm ns$^{-1}$ m$^{-1}$]')
+        ps.save(f2, os.path.join(figd, f'bow_closure{suffix}'), data=pd.DataFrame(rows))
+
+
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
-    ap.add_argument('mode', choices=('build', 'fig'))
+    ap.add_argument('mode', choices=('build', 'fig', 'plot'))
     ap.add_argument('--out-dir'); ap.add_argument('--in-dir')
     a = ap.parse_args()
-    build(a.out_dir) if a.mode == 'build' else fig(a.in_dir)
+    {'build': lambda: build(a.out_dir), 'fig': lambda: fig(a.in_dir), 'plot': plot}[a.mode]()

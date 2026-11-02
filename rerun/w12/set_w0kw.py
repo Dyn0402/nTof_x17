@@ -59,6 +59,10 @@ def main():
     ap.add_argument('--xy-select', default='cost', choices=['gate', 'cost'],
                     help="with --table: xy_pairing['select'] of the new pairing block (the wft.reco.select_tracks mode; "
                          "'cost' on the bench: rerun/effbudget/single/PAIRING_FIX_2026-11-02.md)")
+    ap.add_argument('--split-corrob', default='charge', choices=['count', 'charge'],
+                    help="with --table: xy_pairing['split_corrob'] of the new pairing block (how the two-track split is "
+                         "corroborated from the other view; 'charge' on the bench: "
+                         "rerun/effbudget/single/MERGED_PROJECTION_2026-11-02.md)")
     ap.add_argument('--pairing-only', action='store_true',
                     help='with --table: re-measure dt_xy and xy_pairing only, keep the bundle\'s w0/kw (a gate arm that '
                          'must not move the angle mapping)')
@@ -168,7 +172,7 @@ def main():
         pairing = dict(features=['lq', 'u50', 'u90', 'tc'], median={k: float(np.median(v)) for k, v in feats.items()},
                        rsig={k: rs(v) for k, v in feats.items()}, n=int(len(both)), source=a.table,
                        tc_tol=float(np.percentile(np.abs(tc), 98)), tc_q95=float(np.percentile(np.abs(tc), 95)),
-                       select=a.xy_select)
+                       select=a.xy_select, split_corrob=a.split_corrob)
         # charge balance per event class (FE item 11): clean / censored (dead or band strip in a window) / saturated
         if {'x_n_sat_strips', 'y_n_sat_strips', 'x_n_band_strips'} <= set(both.columns):
             sat = (both.x_n_sat_strips > 0) | (both.y_n_sat_strips > 0)

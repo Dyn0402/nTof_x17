@@ -177,6 +177,13 @@ def main():
     txt = '\n'.join(L) + '\n'
     print(txt)
     if a.out:
+        # hand-added '## Addendum ...' sections of the previous ledger are carried over (e.g. the 2026-11-02 pairing
+        # refresh: wft/pairing_cost/)
+        if os.path.exists(a.out):
+            old = open(a.out).read()
+            i = old.find('\n## Addendum')
+            if i >= 0 and '\n## Addendum' not in txt:
+                txt = txt.rstrip('\n') + '\n' + old[i:]
         open(a.out, 'w').write(txt)
         json.dump(dict(bench=B, sps=S), open(a.out.replace('.md', '.json'), 'w'), indent=1, default=str)
 

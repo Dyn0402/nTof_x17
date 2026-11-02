@@ -24,10 +24,11 @@ section_state = "partial"
 note = "Photo or drawing from production (Stephan), plus the measured efficient area 399.4 x 359.9 mm."
 
 [fig.microtpc_principle]
-title = "Micro-TPC principle"
+title = "Micro-TPC principle: (a) drift gap, mesh, resistive strips, pads -> X/Y strips; (b) a real det3 muon (event 7884, X view), data and forward model at the pass-1 fit"
 state = "current"
-source = "mx_june_cosmic_qa/engineer_package/figures/02-microtpc-principle-schematic.pdf"
-producer = "see mx_june_cosmic_qa/engineer_package/figures/FIGURE_GUIDE.md (02)"
+source = "papers/paper1/figs/out/microtpc_principle.pdf"
+producer = ".venv/bin/python papers/paper1/figs/make_principle.py --event 7884 --bench <X17_BENCH_ROOT staging of sat_det3 (rr1)> --ana <Analysis_pass1 copy> --rays <paper1_eff budget rays_det3.parquet>"
+note = "Redone 2026-11-02: the old figure (engineer_package 02) taught a per-strip hit-time fit and showed an n_TOF attachment threshold. The event is replayed through wft.reco (replay w equals the pass table's); the model panel is wft.model.model_waveforms at the pass fit."
 
 # --- 3 Setups -----------------------------------------------------------------
 
@@ -36,9 +37,10 @@ title = "Saclay cosmic bench"
 state = "current"
 source = "mx_june_cosmic_qa/engineer_package/figures/00-cosmic-bench-schematic.pdf"
 producer = "cd mx_june_cosmic_qa/engineer_package && ../../.venv/bin/python make_bench_diagram.py"
-note = "Swap for the mpgd26 bench_side render when its inputs are on this machine."
+note = "Swap for the mpgd26 bench_side render when its inputs are on this machine. Restyled 2026-11-02 (paper_style): z labels of the M3 planes (24, 144, 1185, 1302 mm) and the test-slot chamber centres (232, 702 mm, det_center_coords); det3 golden-row slot marked (top, z = 702: run_config.json of mx17_det3_p2_det1_overnight_6-27-26 and mx17_det3_saturday_scan_6-27-26); title moved to the caption. Checklist pass 2026-11-02: 4.3 in drawn (4.4 in PDF), fonts embedded; labels shortened, footer note removed, z axis to scale (vertical compressed), ps.save + geometry CSV. Numbers unchanged."
 
 [fig.sps_setup]
+appendix_candidate = "Dylan 2026-11-02: keep in the body for now; maybe move to an appendix later (see how the paper reads)"
 title = "SPS H4: uRWELL references and det4 on the rail"
 state = "placeholder"
 section_state = "ready"
@@ -49,18 +51,18 @@ note = "The mpgd26 render exists as a script; its inputs are listed in mpgd26/sl
 # --- 4 Operation --------------------------------------------------------------
 
 [fig.hv_scan]
-title = "HV scans of det2/det3/det6/det7: interior efficiency, tracks lost to discharges, discharge rate"
+title = "HV scans of det3/det2/det6/det7: interior efficiency and discharges per trigger"
 state = "current"
 source = "rerun/paper1_ops/figures/hv_scan.pdf"
-producer = "lxplus: rerun/paper1_ops/condor/spark.sub (spark_timeline.py per pass-1 row) -> .venv/bin/python rerun/paper1_ops/make_report.py --spark <spark> --telgain <tel_gain> --spsgain <sps_gain> --hitsgain <hits_gain>"
-note = "Rebuilt 2026-10-31 on pass 1 (was the 06-29 hits figure 30, det3 only). Efficiency = the loss budget's interior_good (rerun/effbudget/pass1); discharge = a vetoed trigger (> 50 strips) with a chip of >= 8 strips over 3000 ADC; bursts (vetoed, no discharge) dotted. Numbers: rerun/paper1_ops/report.html."
+producer = ".venv/bin/python rerun/paper1_ops/make_report.py --spark <spark> --telgain <tel_gain> --spsgain <sps_gain> --hitsgain <hits_gain>  # inputs: EOS cosmic_bench/x17rerun/paper1_ops/{spark,tel_gain,sps_gain,hits_gain}, fetched over xrootd (70 MB); spark.sub (lxplus condor) makes them"
+note = "Rebuilt 2026-10-31 on pass 1 (was the 06-29 hits figure 30, det3 only). Efficiency = the loss budget's interior_good (rerun/effbudget/pass1); discharge = a vetoed trigger (> 50 strips) with a chip of >= 8 strips over 3000 ADC; Numbers: rerun/paper1_ops/report.html. Split restyled 2026-11-02 (paper_style): the discharge loss vs efficiency moved to eff_vs_hv_discharge (section 5); this figure keeps (a) efficiency and (b) discharges per trigger; det4 golden star has its own legend entry. Numbers unchanged (results/*.csv and summary.json reproduce byte for byte). Checklist pass 2026-11-02: 4.3 in drawn (4.4 in PDF), fonts embedded; titles -> (a)/(b), one legend above, efficiency axis 30-100 %. Numbers unchanged."
 
 [fig.spark_deadtime]
 title = "Efficiency and charge against the time since the previous discharge: no dead time"
 state = "current"
 source = "rerun/paper1_ops/figures/spark_deadtime.pdf"
-producer = "as hv_scan (rerun/paper1_ops/make_report.py)"
-note = "Rebuilt 2026-10-31 on pass 1, all five chambers (was the 07 det3 hits figure 44). Dead time per discharge integrated below 0.1 s."
+producer = ".venv/bin/python rerun/paper1_ops/make_report.py --spark <spark> --telgain <tel_gain> --spsgain <sps_gain> --hitsgain <hits_gain>  # inputs: EOS cosmic_bench/x17rerun/paper1_ops/{spark,tel_gain,sps_gain,hits_gain}, fetched over xrootd (70 MB); spark.sub (lxplus condor) makes them"
+note = "Rebuilt 2026-10-31 on pass 1, all five chambers (was the 07 det3 hits figure 44). Dead time per discharge integrated below 0.1 s. Restyled 2026-11-02 (paper_style): det3 leads; det2/det6/det7 lighter; det4 in its own small panel (c); bootstrap errors on the charge ratio (summary.json deadtime.*.q_err, new); the dead-time values left the legend (report.html table). Checklist pass 2026-11-02: full width (6.1 in drawn, 6.22 in PDF), fonts embedded; titles -> (a)-(c), one legend above, discharge counts out of the legend (caption), (a)/(b) share 0.8-1.2. Numbers unchanged."
 
 # --- 5 Charge balance and efficiency -----------------------------------------
 
@@ -68,126 +70,181 @@ note = "Rebuilt 2026-10-31 on pass 1, all five chambers (was the 07 det3 hits fi
 title = "X/Y charge balance: ln(Q_x/Q_y) on the five golden rows, waveform-fit charge, unsaturated events"
 state = "current"
 source = "rerun/paper1_charge/figures/charge_balance.pdf"
-producer = "python3 rerun/paper1_charge/charge_rows.py (lxplus, Analysis_pass1) && .venv/bin/python rerun/paper1_charge/make_report.py --in <charge_rows out-dir>"
-note = "Rebuilt 2026-10-31 on pass 1 (was the 07-12 hits figure 61). Interior >= 30 mm, det7 X ch 256-511, single track, M3-matched; numbers in rerun/paper1_charge/report.html."
+producer = ".venv/bin/python rerun/paper1_charge/make_report.py --in <EOS x17rerun/paper1_charge/v1, fetched over xrootd> [--out <scratch> to leave the other report figures alone]"
+note = "Rebuilt 2026-10-31 on pass 1 (was the 07-12 hits figure 61). Interior >= 30 mm, det7 X ch 256-511, single track, M3-matched; numbers in rerun/paper1_charge/report.html. Restyled 2026-11-02 (paper_style): palette, det3 first and heaviest, mathtext x label, legend in the empty upper right (median, core sigma, n); summary.json/rows.csv/report.html reproduce byte for byte. Checklist pass 2026-11-02: 4.3 in drawn (4.4 in PDF), fonts embedded; x label just ln(Q_X/Q_Y), legend chamber names only: median / core sigma / n move to the caption (summary.json golden[]). Numbers unchanged."
 
 [fig.eff_vs_radius]
 title = "det3 efficiency against the matching radius, production pick and multi-track credit, with the accidental rate"
 state = "current"
 source = "rerun/effbudget/single/figures/eff_vs_radius.pdf"
 producer = ".venv/bin/python rerun/effbudget/single/radius.py --root <cosmic_bench mirror> && .venv/bin/python rerun/effbudget/single/make_figures.py"
-note = "2026-11-02, pass 1, both det3 golden rows; R = 5 mm is the knee (9 core sigma, accidentals 0.07 %). rerun/effbudget/single/README.md section 3."
+note = "2026-11-02, pass 1, both det3 golden rows; R = 5 mm is the knee (9 core sigma, accidentals 0.07 %). rerun/effbudget/single/README.md section 3. Checklist pass 2026-11-02: 4.3 in drawn (4.4 in PDF), fonts embedded; det3 palette only (filled = multi-track credit, open = production pick, solid/dashed = golden rows), binomial errors, one legend. Numbers unchanged."
 
 [fig.residuals]
 title = "det3 residual distributions at the mesh: per view and radial, with the event-mixed accidentals"
 state = "current"
 source = "rerun/effbudget/single/figures/residuals.pdf"
 producer = ".venv/bin/python rerun/effbudget/single/radius.py --root <cosmic_bench mirror> && .venv/bin/python rerun/effbudget/single/make_figures.py"
-note = "2026-11-02; Dylan: show the full distribution behind the R = 5 mm choice."
+note = "2026-11-02; Dylan: show the full distribution behind the R = 5 mm choice. Checklist pass 2026-11-02: full width (6.1 in drawn, 6.22 in PDF), fonts embedded; (a)/(b), the two golden rows summed per view, legend off the data. Numbers unchanged."
+
+[fig.loss_budget]
+title = "Where the det3 single-track inefficiency goes, full active area (% of single tracks, by class)"
+state = "current"
+source = "rerun/effbudget/single/figures/loss_budget.pdf"
+producer = ".venv/bin/python rerun/effbudget/single/single_track_area.py --root <cosmic_bench mirror> && .venv/bin/python rerun/effbudget/single/make_figures.py"
+note = "2026-11-02, paper_style; both golden rows; edge-zone classes are the budget ladder (no A1 waveform class outside the interior). Checklist pass 2026-11-02: full width (6.1 in drawn, 6.22 in PDF), fonts embedded; det3 dot plot with Poisson errors, groups as y-axis headings (no borrowed chamber colours), CSV gains pct_err. Numbers unchanged."
+
+[fig.two_particle]
+title = "det3 events with a second particle: count per configuration and muon recovery"
+state = "current"
+source = "rerun/effbudget/single/figures/two_particle.pdf"
+producer = ".venv/bin/python rerun/effbudget/single/single_track_area.py --root <cosmic_bench mirror> && .venv/bin/python rerun/effbudget/single/make_figures.py"
+note = "2026-11-02, paper_style; pass 1, BEFORE the merged-projection and discharge-veto fixes: rebuild after they land. Checklist pass 2026-11-02: 4.3 in drawn (4.4 in PDF), fonts embedded; bars -> det3 markers with binomial errors, title removed. Numbers unchanged."
 
 [fig.eff_vs_hv_discharge]
 title = "Efficiency and discharge loss against the resist HV (det3, det6, det7)"
-state = "placeholder"
-section_state = "partial"
-note = "Dylan 2026-11-02: show that a well-built chamber reaches its plateau before discharges limit it. Inputs: hv_scan rows of the pass (effbudget budgets) and the discharge rates of rerun/paper1_ops."
-producer = "(to write)"
+state = "current"
+note = "2026-11-02 (paper_style): per chamber, interior efficiency (filled) and the % of M3 tracks lost to a discharge (dashed, open) vs resist HV, from rerun/paper1_ops/results/tradeoff.csv (the effbudget pass-1 rows + spark_timeline). Shaded = plateau (within 1 point of the maximum, the optimum table of report.html). det3 holds 91-94 % from 425 to 500 V and its discharge loss stays < 1 % up to 490 V (plateau 460-490 V); det6 / det7 reach 1 % discharge loss at their efficiency maximum (480 / 430 V) and fall from there. Checklist pass 2026-11-02: full width (6.1 in drawn, 6.22 in PDF), fonts embedded; titles -> (a)-(c) with chamber name in panel, one legend above, plateau note removed. Numbers unchanged."
+producer = ".venv/bin/python rerun/paper1_ops/make_report.py --spark <spark> --telgain <tel_gain> --spsgain <sps_gain> --hitsgain <hits_gain>  # inputs: EOS cosmic_bench/x17rerun/paper1_ops/{spark,tel_gain,sps_gain,hits_gain}, fetched over xrootd (70 MB); spark.sub (lxplus condor) makes them"
+source = "rerun/paper1_ops/figures/eff_vs_hv_discharge.pdf"
 
 [fig.xy_pairing]
 title = "X/Y pairing of two particles by charge: ln(qX/qY) of true and swapped pairings, 552 real cosmic events"
 state = "current"
 source = "rerun/effbudget/single/figures/xy_pairing.pdf"
 producer = ".venv/bin/python rerun/effbudget/single/xy_pairing.py --root <cosmic_bench mirror> && .venv/bin/python rerun/effbudget/single/make_figures.py"
-note = "2026-11-02, pass 1, both det3 golden rows; truth from M3 marking one particle in both views. README section 2."
+note = "2026-11-02, pass 1, both det3 golden rows; truth from M3 marking one particle in both views. README section 2. Checklist pass 2026-11-02: 4.3 in drawn (4.4 in PDF), fonts embedded; single-track band grey (was det6 orange), bin width in the y label, in-plot text cut to the one claim. Numbers unchanged."
 
 [fig.currents_vs_hv]
 title = "Resistive-electrode current against HV, every chamber and prototype on the bench"
 state = "current"
 source = "rerun/paper1_ops/currents/results/figures/currents_vs_hv.pdf"
-producer = "WORK_DATA=... .venv/bin/python rerun/paper1_ops/currents/hv_currents.py"
-note = "2026-11-02; n_TOF-batch boards only (from 6-17; boards by run-config description; 6-20 weekend excluded); one curve per night, det3 6-27 fit I = 1.05 uA x 2^((V-490)/13.3 V). rerun/paper1_ops/currents/README.md"
+producer = "WORK_DATA=/media/ucla/work .venv/bin/python rerun/paper1_ops/currents/hv_currents.py  # HV logs in $WORK_DATA/claude-jobs/17c92c46/hv"
+note = "2026-11-02; n_TOF-batch boards only (from 6-17; boards by run-config description; 6-20 weekend excluded); one curve per night, det3 6-27 fit I = 1.05 uA x 2^((V-490)/13.3 V). rerun/paper1_ops/currents/README.md. Restyled 2026-11-02 (paper_style): board colours from the palette, one legend entry per board, nights by marker, reference slope gain x2 per 16.7 V (dotted), det3 6-27 fit kept. Checklist pass 2026-11-02: 4.3 in drawn (4.4 in PDF), fonts embedded; one legend above (boards by colour, nights by marker), fixed night-marker order (was set-order dependent). Numbers unchanged."
 
 [fig.efficiency_map]
 title = "Detection efficiency maps, all five chambers (pass 1, plateau pools, 8 mm disk)"
 state = "current"
 source = "papers/paper1/figures/efficiency_map.pdf"
-producer = ".venv/bin/python rerun/paper1_figs/make_effmap_figure.py --root <paper1_eff outputs: budget/<rel>/rays_<det>.parquet>"
-note = "Rebuilt 2026-10-31 on pass 1: the loss budget's denominator (every measured M3 ray in the active area) and its 'detected'; pools in rerun/effbudget/pass1/results/map_pools.json; det4 is its golden row alone. Was the 07-14 hits figure 20."
+producer = ".venv/bin/python rerun/paper1_figs/make_effmap_figure.py --root <EOS x17rerun/paper1_eff, fetched over xrootd>"
+note = "Rebuilt 2026-10-31 on pass 1: the loss budget's denominator (every measured M3 ray in the active area) and its 'detected'; pools in rerun/effbudget/pass1/results/map_pools.json; det4 is its golden row alone. Was the 07-14 hits figure 20. Restyled 2026-11-02 (paper_style): det3 large with det2/det4/det6/det7 small (2x2), shared colour bar; titles give the golden-row interior efficiency the text quotes and the pooling (rows, rays); pixels outside the active area masked; interior box 30 mm from the x sides / 8 mm from the y sides; det7 'X ch 0-255 not quoted' boxed. CSV figures/efficiency_map.csv.gz. Checklist pass 2026-11-02: full width (6.1 in drawn, 6.22 in PDF), fonts embedded; titles -> (a) det3 ... (e) det7; golden-row efficiencies move to the caption (rerun/paper1_figs/results/efficiency_map.json); det7 X ch 0-255 veiled; maps rasterized 300 dpi. Numbers unchanged."
 
 [fig.edge_turnon]
 title = "The edge zone (det3): efficiency turn-on, angle bias of the perpendicular view, column duration"
 state = "current"
 source = "papers/paper1/figures/edge_turnon.pdf"
 section_state = "partial"
-producer = ".venv/bin/python rerun/paper1_figs/edge_study.py ... && .venv/bin/python rerun/paper1_figs/edge_angles.py ... && .venv/bin/python rerun/paper1_figs/make_edge_figure.py"
-note = "Rebuilt 2026-10-31 on pass 1 (D4: wft angles, M3 rays, FA column duration). Replaces the 07-12 hits dashboard. The x sides (no passivation) carry a drift-field fringe over ~20-30 mm; the passivated y sides are sharp beyond 5 mm (rerun/paper1_figs/README.md)."
+producer = ".venv/bin/python rerun/paper1_figs/make_edge_figure.py  # re-plots the committed results JSONs of edge_study.py / edge_angles.py"
+note = "Rebuilt 2026-10-31 on pass 1 (D4: wft angles, M3 rays, FA column duration). Replaces the 07-12 hits dashboard. The x sides (no passivation) carry a drift-field fringe over ~20-30 mm; the passivated y sides are sharp beyond 5 mm (rerun/paper1_figs/README.md). Restyled 2026-11-02 (paper_style): linear 0-60 mm axis (was symlog), 0-30 mm edge zone shaded, one legend for the four sides above the panels (x solid, passivated y dashed/open). Checklist pass 2026-11-02: full width (6.1 in drawn, 6.22 in PDF), fonts embedded; titles -> (a)-(c), x labels on every panel, error bars on (a) (binomial) and (b) (1.2533 s68/sqrt(n_det), n_det = rays x eff: an estimate), one legend above. Numbers unchanged."
+
+[fig.display_merged_projection]
+title = "Two particles, separate in X and merged in projection in Y (det3 event 17907, pass 1)"
+state = "current"
+source = "papers/paper1/figs/out/display_merged_projection.pdf"
+producer = ".venv/bin/python papers/paper1/figs/make_two_particle_displays.py --only display_merged_projection --root <paper1_eff copy> --ana <Analysis_pass1 copy> --eos-run-dir <june_tests/mx17_det3_saturday_scan_6-27-26 copy>"
+note = "2026-11-02. One-view class 'merged in projection' (single_track_v2.py oneview_events, sat_det3). Lines from events.candidates.parquet."
+
+[fig.display_muon_deposit]
+title = "A clean muon plus a separate deposit, the trigger vetoed by the 50-strip discharge rule (det3 event 36603)"
+state = "current"
+source = "papers/paper1/figs/out/display_muon_deposit.pdf"
+producer = ".venv/bin/python papers/paper1/figs/make_two_particle_displays.py --only display_muon_deposit --root <paper1_eff copy> --ana <Analysis_pass1 copy> --eos-run-dir <june_tests/mx17_det3_saturday_scan_6-27-26 copy>"
+note = "2026-11-02. sparks class muon+other (x17rerun/paper1_eff/a1/<rel>/sparks_det3.parquet). Vetoed: no pass fit, M3 only."
+
+[fig.display_two_separate]
+title = "Two particles, separate in both views, both fitted by the pass (det3 event 1063)"
+state = "current"
+source = "papers/paper1/figs/out/display_two_separate.pdf"
+producer = ".venv/bin/python papers/paper1/figs/make_two_particle_displays.py --only display_two_separate --root <paper1_eff copy> --ana <Analysis_pass1 copy> --eos-run-dir <june_tests/mx17_det3_saturday_scan_6-27-26 copy>"
+note = "2026-11-02. n_tracks = 2 on pass 1, track_id 0/1 in both views."
 
 # --- 6 Gas --------------------------------------------------------------------
 
 [fig.gas_vE]
-title = "Drift velocity v(E): det3's 6-27 drift scan on pass 1 (angle-scale v) vs Magboltz for the bench gas"
-state = "current"
-source = "rerun/paper1_res/figures/gas_vE.pdf"
-section_state = "partial"
-note = "Pass 1 (2026-10-31): v_drift x mean kw per row, the M3-calibrated angle-scale v (it carries kw: not a timing v); the 333 V/cm cluster is the 6-27 HV-scan rows at 1000 V drift. Magboltz bench gas 0.95 % H2O (0.6 / 1.4 % bracket), cloud_basics FINDINGS 22. The composition fit is cloud_basics/driftscan_fit.py."
-producer = "cd rerun/paper1_res && ../../.venv/bin/python make_report.py"
-
-[fig.gas_vE_timing]
-title = "Drift velocity v(E) on the bench: timing v (gap / T) and angle-scale v (v_drift x kw) against Magboltz, one water"
+title = "det3 drift scan: timing v (g / T) and angle-scale v (M3 ladder) on one Magboltz curve, 0.97 % water"
 state = "current"
 source = "rerun/paper1_gas/figures/gas_vE_timing.pdf"
 section_state = "partial"
-note = "Pass 1 (2026-10-31, rerun/paper1_gas): det3 6-27 drift scan, timing v from the head-on stack (S4 re-check recipe, 500-1100 V; 300 V does not fit in the window) and angle-scale v at all seven fields; one water 0.97 % [0.95, 0.99], chi2 2.5/3, Magboltz bench gas on the fine grid air_merged. Other chambers' golden timing v at their own field (0.42-1.00 % water). RECOMMENDED for section 6 over gas_vE (which shows only the angle-scale v, carrying kw)."
-producer = "cd rerun/paper1_gas && python pg_gas.py <fit dir> && python pg_figs.py"
+note = "2026-11-02: this id now carries the two-velocity drift scan (was gas_vE_timing, built 10-31, unused). det3 6-27, pass 1: timing v from the head-on stack at 500-1100 V (300 V: the column overruns the window), angle-scale v = v_drift x mean kw at all seven fields (100-1100 V and the 1000 V HV-scan row) with the ladder estimator's stat error (rerun/paper1_gas/results/twov.json); curve = Magboltz bench gas (fine grid air_merged) at the timing-v fit, 0.97 % [0.95, 0.99], chi2 2.5/3; lower panel v / Magboltz (angle-scale v within -1.7..+1.5 % from 106 to 390 V/cm). Other chambers' golden timing v (0.42-1.00 % water) are no longer drawn here: they are the text's water table. RETIRED: the angle-only figure rerun/paper1_res/figures/gas_vE.pdf (0.95 % label, no error bars). Checklist pass 2026-11-02: 4.3 in drawn (4.4 in PDF), fonts embedded; title removed, (a)/(b), legend in the empty lower right (4 entries), ratio range 0.90-1.26 (177 V/cm error bar no longer clipped). Numbers unchanged."
+producer = "cd rerun/paper1_gas && ../../.venv/bin/python pg_twov.py extract <data dir> && ../../.venv/bin/python pg_figs.py vE"
+
+[fig.two_velocities]
+title = "Two drift velocities and the gap: the head-on stack (T = g / v), the M3 ladder (slope = v, no gap) and g = v_M3 x T per field"
+state = "current"
+source = "rerun/paper1_gas/figures/two_velocities.pdf"
+section_state = "partial"
+note = "2026-11-02 (Dylan's outline). det3 6-27 drift scan, pass 1. (a) the in30 head-on stacks (rc_diffusion.stack, |tan_x| < 0.03, rr1 waveforms, unsaturated) with the s4f_fit model at its stored sigma_0, Dd, T, dt (A refitted, linear); markers = fitted column start dt and end dt + T. (b) M3 ladder: binned medians of the fitted w - w0 against the bow-corrected M3 slope, X filled / Y open, lines slope v_drift x kw. (c) g = v_ladder x T: 24.9 +- 2.9 / 27.9 +- 0.5 / 27.4 +- 1.1 / 29.4 +- 0.8 mm at 177 / 248 / 319 / 390 V/cm, mean 28.2 +- 0.5 mm (chi2 4.1/3), against the strip-extent gap 28.19 +- 0.19 (S4 re-check). NB: the 29 [28, 30] mm in the story is the gap profile of the timing-v Magboltz fit (results/summary.json scan.profile), not this ratio. Inputs copied from EOS x17rerun/paper1_gas (stacks, fit_v1) and Analysis_pass1 (03_angles, bundles); numbers in results/twov.json. Checklist pass 2026-11-02: full width (6.1 in drawn, 6.22 in PDF), fonts embedded; titles -> (a)-(c), one field legend above, field ramp from det3 tints, (b) y label w - w0. Numbers unchanged."
+producer = "cd rerun/paper1_gas && ../../.venv/bin/python pg_twov.py extract <data dir> && ../../.venv/bin/python pg_twov.py fig"
+
+[fig.gas_drying]
+title = "The bench gas dries over a night: det6/det7 water on 6-26, one time shape; det3 one water at every field"
+state = "current"
+source = "rerun/paper1_gas/figures/gas_drying.pdf"
+section_state = "partial"
+note = "2026-11-02, from rerun/paper1_gas/results/gas.json (no recomputation). (a) water from the anchored M3 ladder (k v_lad, k = timing stack / ladder on the attachment-free rows: det6 0.970 +- 0.013, det7 0.984 +- 0.011) through Magboltz: det6 1.47 -> 0.76 %, det7 0.68 -> 0.35 % (01:00 -> 15:00), dashed = afternoon plateaus; grey = the golden rows 06:00-10:20. (b) excess over plateau, det6 / 2.17: r = 0.975. (c) det3 6-27 timing-v water per field (0.87 / 0.97 / 0.91 / 1.05 %) on the one-water fit 0.97 % [0.95, 0.99]; the 390 V/cm point sits near the velocity maximum, hence its wide interval. Checklist pass 2026-11-02: full width (6.1 in drawn, 6.22 in PDF), fonts embedded; titles -> (a)-(c), in-plot labels removed except det6 / 2.17, one legend above. Numbers unchanged."
+producer = "cd rerun/paper1_gas && ../../.venv/bin/python pg_figs.py drying"
 
 [fig.attachment]
-title = "What gas each setup had: water (bench golden rows vs SPS epochs) and O2 at SPS"
+appendix_candidate = "Dylan 2026-11-02: keep in the body for now; maybe move to an appendix later (see how the paper reads)"
+title = "What gas det4 had at SPS: water and O2 of every run group (CO2 and CF4 mixtures), bench range for scale"
 state = "current"
 section_state = "partial"
 source = "rerun/paper1_spsfigs/figures/attachment.pdf"
 producer = "cd rerun/paper1_spsfigs && ../../.venv/bin/python make_figs.py --only attachment"
-note = "SPS from rerun/sps_gasfit/results/verdict.json (4127f9ea, gap 27.9 mm); bench from rerun/paper1_gas/results/summary.json (det4 point at the old 30.48 mm gap; 337f7fd1 measures 28.6 mm)."
+note = "Restyled 2026-11-02 (paper_style; gas legend from ps.GAS; unrotated run ticks). SPS from rerun/sps_gasfit/results/verdict.json (4127f9ea, gap 27.9 mm; at det4's geometric 28.6 mm water is ~0.1-0.2 % lower, O2 ~30-40 ppm lower). Bench chambers no longer drawn point by point (they are gas_vE / gas_drying): only the golden-row range 0.42-1.00 % as a grey band; det6 early-night O2-equivalent 370-600 ppm band in (b). Checklist pass 2026-11-02: full width (6.1 in drawn, 6.22 in PDF), fonts embedded; titles and band labels removed, (a)/(b), one legend above. Numbers unchanged."
 # --- 7 Timing -----------------------------------------------------------------
 
 [fig.timing]
+appendix_candidate = "Dylan 2026-11-02: keep in the body for now; maybe move to an appendix later (see how the paper reads)"
 title = "Time resolution from the waveforms: HV scans, the uncorrelated part vs signal size (bench and det4 at SPS), golden-row split"
 state = "current"
 source = "rerun/paper1_timing/figures/timing.pdf"
 section_state = "partial"
 producer = "cd rerun/paper1_timing && ../../.venv/bin/python make_report.py"
-note = "Pass 1 (2026-10-31): column start of the strip sum (edge25), M3-matched tracks; event time 40-46 ns (det2/3/7), per view 22-28 ns, common 35-40 ns; replaces the hits 33 ns. rerun/paper1_timing/README.md."
+note = "Pass 1 (2026-10-31): column start of the strip sum (edge25), M3-matched tracks; event time 40-46 ns (det2/3/7), per view 22-28 ns, common 35-40 ns; replaces the hits 33 ns. rerun/paper1_timing/README.md. Restyled 2026-11-02 (paper_style): palette; one chamber legend above the panels, in-panel legends only for line styles; (c) ordered det3, det2, det6, det7, det4; det4 at SPS grey open markers; x axis of (a) is the resist HV. Checklist pass 2026-11-02: full width (6.1 in drawn, 6.22 in PDF), fonts embedded; titles -> (a)-(c), one legend above, (b) y range to 700 ns (det4 SPS no longer clipped). Numbers unchanged."
 
 # --- 8 Tracking and resolution ------------------------------------------------
 
 [fig.tracking_perf]
-title = "Cosmic tracking on pass 1: sigma_theta vs angle (interior_good), within-5 mm efficiency, five chambers"
+title = "Cosmic tracking on pass 1: angle resolution sigma_theta (s68) vs track angle (interior_good), det3 leading, det4 on its own scale"
 state = "current"
 source = "rerun/paper1_res/figures/tracking_perf.pdf"
 section_state = "requote"
-note = "Pass 1 (2026-10-31), headline row per chamber (det2/det3 the quoted golden rows; det4/6/7 the calibration rows, in-sample), v(t) arm on det2/det4/det6/det7. rerun/paper1_res/PASS1_RESOLUTION_2026-10-31.md; efficiency from rerun/effbudget/PASS1_RESULT_2026-10-31.md."
-producer = "cd rerun/paper1_res && ../../.venv/bin/python make_report.py"
+note = "Pass 1 (2026-10-31), headline row per chamber (det2/det3 the quoted golden rows; det4/6/7 the calibration rows, in-sample), v(t) arm on det2/det4/det6/det7. rerun/paper1_res/PASS1_RESOLUTION_2026-10-31.md; efficiency from rerun/effbudget/PASS1_RESULT_2026-10-31.md. Restyled 2026-11-02 (paper_style): efficiency panel dropped (it repeated section 5 with stale values); det3 X/Y heavy on top with s68 errors (smaller than the markers); det4 in its own small panel at its own scale; sigma_theta defined in the caption, the axis says sigma_theta. Checklist pass 2026-11-02: full width (6.1 in drawn, 6.22 in PDF), fonts embedded; det4 title -> (a)/(b), one legend row above. Numbers unchanged."
+producer = "cd rerun/paper1_res && ../../.venv/bin/python make_report.py --only tracking_perf --rows <EOS x17rerun/paper1_res/results_18efcd0d/rows, fetched over xrootd>"
+
+[fig.bench_position_res]
+title = "Bench intrinsic position resolution (det3 headline): residual vs M3 chi2 extrapolated to chi2 -> 0, then the M3 pointing subtracted"
+state = "current"
+section_state = "partial"
+source = "rerun/paper1_floor/figures/bench_position_res.pdf"
+producer = "cd rerun/paper1_floor && FLOOR_FRAMES=<frames dir> ../../.venv/bin/python position_ms_fig.py bins && ../../.venv/bin/python position_ms_fig.py fig"
+note = "2026-11-02, the §8 headline position result (rerun/paper1_floor/position_ms.py; near-normal |theta_M3| < 5 deg, headline rows). (a) det3 core sigma in M3-chi2 quintiles of the matching coordinate, sigma^2 linear in chi2 -> sigma_0 = 274 +- 16 (X) / 237 +- 18 um (Y); M3 pointing P 243 / 207 um. (b) chamber = sqrt(sigma_0^2 - P^2) against the assumed P scale: det3 126 +- 34 (X) / 116 +- 36 um (Y), det2 163 +- 29 / 176 +- 21 um (stat); +-10 % on P moves det3 X to 58-164 and Y to 67-147 um (grey band). det4 at SPS region R (120-138 um) for scale. The quintile bins of the near-normal subset were never stored: position_ms_fig.py bins recomputes them with position_ms's functions and checks the intercepts reproduce position_ms.json (they do, to 0.1 um). Frames: EOS x17rerun/paper1_floor/frames/. Checklist pass 2026-11-02: full width (6.1 in drawn, 6.22 in PDF), fonts embedded; titles -> (a)/(b), values out of the figure (caption), one legend above. Numbers unchanged."
 
 [fig.sps_resolution]
-title = "det4 intrinsic resolution at SPS H4: the 3-zone telescope decomposition, run63 flat700 (CF4) with run53 (Ar/CO2) as cross-check"
+appendix_candidate = "Dylan 2026-11-02: keep in the body for now; maybe move to an appendix later (see how the paper reads)"
+title = "det4 at SPS H4 in the small working region R (run 63 flat700, Ar/CF4/iso): residuals, telescope subtraction against f, model-free upper bounds"
 state = "current"
 section_state = "requote"
 source = "rerun/paper1_spsfigs/figures/sps_resolution.pdf"
 producer = "cd rerun/paper1_spsfigs && ../../.venv/bin/python make_figs.py --only sps_resolution"
-note = "Final SPS chain (rerun/sps_junk/results/final_rule.json). Y p0 190 +- 10 um (chi2/1 0.3) is the clean measurement; the X zone fits fail (chi2/1 7-88), so X has no intercept measurement (open markers) -- decisions A/B. 176 um = 0.23 x pitch (not 0.30)."
+note = "Redone 2026-11-02 on decision A + B (11-01): rerun/sps_region/results/region.json, R = X 150-160 x Y 222-246 mm. sigma_X 138 um (p_mid; f range 112-153, stat 7), sigma_Y 120 um (p0; 89-136, stat 9); f = 0.266 [0.254, 0.284]; upper bounds X <= 153 +- 6 (back and front 2-strip), Y <= 145 +- 6 (back 2-strip). The superseded full-beam 3-zone figure is make_figs.py sps_resolution_zones -> rerun/paper1_spsfigs/figures/sps_resolution_zones.pdf. Checklist pass 2026-11-02: full width (6.1 in drawn, 6.22 in PDF), fonts embedded; titles and sigma values out of the legends (caption), one legend above (a)/(b), shared y range, data in ps.INK. Numbers unchanged."
 # --- 8b The chamber bow (draft, FB 2026-10-27) ---------------------------------
 
 [fig.bow_profiles]
 title = "Mesh height across the chamber from position residuals vs M3 slope, X and Y strips, five chambers"
 state = "current"
 source = "rerun/paper1_res/figures/bow_profiles.pdf"
-note = "Pass 1 golden rows (2026-10-31), fb_bow_maps' estimator unchanged, v(t) arm (w read at one v). The audit-table version is rerun/model_audit/followups/fb_bow_maps/figures/bow_profiles.pdf."
-producer = "rerun/paper1_res/bow_pass1.py build (lxplus) then fig --in-dir <fetched tables>"
+note = "Pass 1 golden rows (2026-10-31), fb_bow_maps' estimator unchanged, v(t) arm (w read at one v). The audit-table version is rerun/model_audit/followups/fb_bow_maps/figures/bow_profiles.pdf. Restyled 2026-11-02 (paper_style): palette, det3 heavy on top, X solid / Y dashed open. Checklist pass 2026-11-02: full width (6.1 in drawn, 6.22 in PDF), fonts embedded; titles -> (a) X / (b) Y, legend above, x 0-400 mm, y -1.5 to 4.5 mm. Numbers unchanged."
+producer = ".venv/bin/python rerun/paper1_res/bow_pass1.py plot  # re-plots results/bow/profiles_*.json; full chain: bow_pass1.py build (lxplus) then fig --in-dir <tables>"
 
 [fig.bow_closure]
+appendix_candidate = "Dylan 2026-11-02: keep in the body for now; maybe move to an appendix later (see how the paper reads)"
 title = "Measured drift-tilt gradient vs the one predicted by the position-route curvature"
 state = "current"
 source = "rerun/paper1_res/figures/bow_closure.pdf"
-note = "Pass 1 golden rows (2026-10-31), v(t) arm; the pass arm is rerun/paper1_res/figures/bow_closure_pass.pdf."
-producer = "rerun/paper1_res/bow_pass1.py build (lxplus) then fig --in-dir <fetched tables>"
+note = "Pass 1 golden rows (2026-10-31), v(t) arm; the pass arm is rerun/paper1_res/figures/bow_closure_pass.pdf. Restyled 2026-11-02 (paper_style): palette; axis labels in words (measured drift-tilt gradient vs the one predicted from the mesh curvature, um/ns per m); reference lines named (cathode follows the mesh r_f = 1, flat cathode r_f = 1/2). Checklist pass 2026-11-02: half width (3.0 in drawn, 3.1 in PDF), fonts embedded; redrawn at half width, r_f lines labelled on the plot, compact legend above. Numbers unchanged."
+producer = ".venv/bin/python rerun/paper1_res/bow_pass1.py plot  # re-plots results/bow/profiles_*.json; full chain: bow_pass1.py build (lxplus) then fig --in-dir <tables>"
 
 # --- 9 det4 stripes -----------------------------------------------------------
 
@@ -196,106 +253,107 @@ title = "det4: the non-amplifying stripes, bench (M3) and SPS (uRWELL telescope)
 state = "current"
 source = "papers/paper1/figures/det4_stripes.pdf"
 section_state = "ready"
-producer = ".venv/bin/python rerun/paper1_figs/det4_stripes.py --rays <paper1_eff budget g_det4 rays_det4.parquet> --tel <sps_audit/tel>"
-note = "Rebuilt 2026-10-31 on pass 1 (was a placeholder on the retired hits alignment). Bench and SPS stripe positions agree on 82-85 % of 1 mm bins (run63), mirror 52 %. Stephan: production cause?"
+producer = ".venv/bin/python rerun/paper1_figs/det4_stripes.py --rays <paper1_eff>/budget/mx17_det4_day_6-24-26/long_run/mx17_4/rays_det4.parquet --tel <x17rerun/sps_audit/tel>  # both fetched from EOS over xrootd"
+note = "Rebuilt 2026-10-31 on pass 1 (was a placeholder on the retired hits alignment). Bench and SPS stripe positions agree on 82-85 % of 1 mm bins (run63), mirror 52 %. Stephan: production cause? Restyled 2026-11-02 (paper_style): bench in det4 grey, SPS run63 / run53 in ps.GAS (CF4 / CO2), legend handles as thick as the curves; det4_stripes.json reproduces (82.3 / 51.9 / 84.8 %). Checklist pass 2026-11-02: full width (6.1 in drawn, 6.22 in PDF), fonts embedded; (a) bench whole chamber with the SPS range shaded, new (b) zoom with bench + both SPS runs overlaid, one legend above. Numbers unchanged."
 
 # --- Appendix A1 Loss categories (det3 interior, one real event per class) ----------------
-# Rebuilt on pass 1 (2026-10-31, rerun/paper1_figs/README.md); figures/<id>.pdf is committed.
+# Pass 1 (2026-10-31 picks); restyled 2026-11-02: class names of the A1 table as titles, no fractions, the paper's
+# display style (papers/paper1/figs/evd_style.py). Produced locally from copies of EOS (rerun/paper1_figs/a1_displays.py).
 
 [fig.loss_band]
-title = "det3 loss class band: noise band (baseline offset on a strip patch) (event 14789)"
+title = "det3 A1 display: Noise band on a strip patch (event 14789)"
 state = "current"
-source = "papers/paper1/figures/loss_band.pdf"
-producer = "rerun/paper1_figs/a1_displays.py sat_det3 --out <EOS paper1_figs/a1[_paper]> --paper ... (condor, rerun/paper1_figs/condor/a1d.sub)"
-note = "Rebuilt 2026-10-31 on pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
+source = "papers/paper1/figs/out/a1/loss_band.pdf"
+producer = ".venv/bin/python rerun/paper1_figs/a1_displays.py sat_det3 --out <scratch> --paper-figs papers/paper1/figs/out/a1 --only-paper --root <paper1_eff copy> --ana <Analysis_pass1 copy> --eos-run-dir <june_tests/mx17_det3_saturday_scan_6-27-26 copy>"
+note = "Pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
 
 [fig.loss_multi_m3picked]
-title = "det3 loss class multi:m3_picked: second particle: M3 one fitted, view cut (event 30375)"
+title = "det3 A1 display: Second particle: M3 one fitted, view cut (event 30375)"
 state = "current"
-source = "papers/paper1/figures/loss_multi_m3picked.pdf"
-producer = "rerun/paper1_figs/a1_displays.py sat_det3 --out <EOS paper1_figs/a1[_paper]> --paper ... (condor, rerun/paper1_figs/condor/a1d.sub)"
-note = "Rebuilt 2026-10-31 on pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
+source = "papers/paper1/figs/out/a1/loss_multi_m3picked.pdf"
+producer = ".venv/bin/python rerun/paper1_figs/a1_displays.py sat_det3 --out <scratch> --paper-figs papers/paper1/figs/out/a1 --only-paper --root <paper1_eff copy> --ana <Analysis_pass1 copy> --eos-run-dir <june_tests/mx17_det3_saturday_scan_6-27-26 copy>"
+note = "Pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
 
 [fig.loss_multi_otherpicked]
-title = "det3 loss class multi:other_picked: second particle: the other one fitted (event 28078)"
+title = "det3 A1 display: Second particle: the other one fitted (event 28078)"
 state = "current"
-source = "papers/paper1/figures/loss_multi_otherpicked.pdf"
-producer = "rerun/paper1_figs/a1_displays.py sat_det3 --out <EOS paper1_figs/a1[_paper]> --paper ... (condor, rerun/paper1_figs/condor/a1d.sub)"
-note = "Rebuilt 2026-10-31 on pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
+source = "papers/paper1/figs/out/a1/loss_multi_otherpicked.pdf"
+producer = ".venv/bin/python rerun/paper1_figs/a1_displays.py sat_det3 --out <scratch> --paper-figs papers/paper1/figs/out/a1 --only-paper --root <paper1_eff copy> --ana <Analysis_pass1 copy> --eos-run-dir <june_tests/mx17_det3_saturday_scan_6-27-26 copy>"
+note = "Pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
 
 [fig.loss_multi_merged]
-title = "det3 loss class multi:m3_not_found: second particle: merged in projection (event 30049)"
+title = "det3 A1 display: Second particle: merged in projection (event 30049)"
 state = "current"
-source = "papers/paper1/figures/loss_multi_merged.pdf"
-producer = "rerun/paper1_figs/a1_displays.py sat_det3 --out <EOS paper1_figs/a1[_paper]> --paper ... (condor, rerun/paper1_figs/condor/a1d.sub)"
-note = "Rebuilt 2026-10-31 on pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
+source = "papers/paper1/figs/out/a1/loss_multi_merged.pdf"
+producer = ".venv/bin/python rerun/paper1_figs/a1_displays.py sat_det3 --out <scratch> --paper-figs papers/paper1/figs/out/a1 --only-paper --root <paper1_eff copy> --ana <Analysis_pass1 copy> --eos-run-dir <june_tests/mx17_det3_saturday_scan_6-27-26 copy>"
+note = "Pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
 
 [fig.loss_spark_discharge]
-title = "det3 loss class spark:discharge: spark: discharge (event 18645)"
+title = "det3 A1 display: Spark: discharge (event 18645)"
 state = "current"
-source = "papers/paper1/figures/loss_spark_discharge.pdf"
-producer = "rerun/paper1_figs/a1_displays.py sat_det3 --out <EOS paper1_figs/a1[_paper]> --paper ... (condor, rerun/paper1_figs/condor/a1d.sub)"
-note = "Rebuilt 2026-10-31 on pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
+source = "papers/paper1/figs/out/a1/loss_spark_discharge.pdf"
+producer = ".venv/bin/python rerun/paper1_figs/a1_displays.py sat_det3 --out <scratch> --paper-figs papers/paper1/figs/out/a1 --only-paper --root <paper1_eff copy> --ana <Analysis_pass1 copy> --eos-run-dir <june_tests/mx17_det3_saturday_scan_6-27-26 copy>"
+note = "Pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
 
 [fig.loss_spark_muonother]
-title = "det3 loss class spark:muon+other: spark: muon + unrelated deposit (event 36694)"
+title = "det3 A1 display: Spark: muon + unrelated deposit (event 36694)"
 state = "current"
-source = "papers/paper1/figures/loss_spark_muonother.pdf"
-producer = "rerun/paper1_figs/a1_displays.py sat_det3 --out <EOS paper1_figs/a1[_paper]> --paper ... (condor, rerun/paper1_figs/condor/a1d.sub)"
-note = "Rebuilt 2026-10-31 on pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
+source = "papers/paper1/figs/out/a1/loss_spark_muonother.pdf"
+producer = ".venv/bin/python rerun/paper1_figs/a1_displays.py sat_det3 --out <scratch> --paper-figs papers/paper1/figs/out/a1 --only-paper --root <paper1_eff copy> --ana <Analysis_pass1 copy> --eos-run-dir <june_tests/mx17_det3_saturday_scan_6-27-26 copy>"
+note = "Pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
 
 [fig.loss_spark_shower]
-title = "det3 loss class spark:shower: spark: shower at the crossing (event 41538)"
+title = "det3 A1 display: Spark: shower at the crossing (event 41538)"
 state = "current"
-source = "papers/paper1/figures/loss_spark_shower.pdf"
-producer = "rerun/paper1_figs/a1_displays.py sat_det3 --out <EOS paper1_figs/a1[_paper]> --paper ... (condor, rerun/paper1_figs/condor/a1d.sub)"
-note = "Rebuilt 2026-10-31 on pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
+source = "papers/paper1/figs/out/a1/loss_spark_shower.pdf"
+producer = ".venv/bin/python rerun/paper1_figs/a1_displays.py sat_det3 --out <scratch> --paper-figs papers/paper1/figs/out/a1 --only-paper --root <paper1_eff copy> --ana <Analysis_pass1 copy> --eos-run-dir <june_tests/mx17_det3_saturday_scan_6-27-26 copy>"
+note = "Pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
 
 [fig.loss_delta]
-title = "det3 loss class far:DELTA: delta-ray on the track (event 28537)"
+title = "det3 A1 display: delta-ray on the track (event 28537)"
 state = "current"
-source = "papers/paper1/figures/loss_delta.pdf"
-producer = "rerun/paper1_figs/a1_displays.py sat_det3 --out <EOS paper1_figs/a1[_paper]> --paper ... (condor, rerun/paper1_figs/condor/a1d.sub)"
-note = "Rebuilt 2026-10-31 on pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
+source = "papers/paper1/figs/out/a1/loss_delta.pdf"
+producer = ".venv/bin/python rerun/paper1_figs/a1_displays.py sat_det3 --out <scratch> --paper-figs papers/paper1/figs/out/a1 --only-paper --root <paper1_eff copy> --ana <Analysis_pass1 copy> --eos-run-dir <june_tests/mx17_det3_saturday_scan_6-27-26 copy>"
+note = "Pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
 
 [fig.loss_satblob]
-title = "det3 loss class far:FIT_SAT: saturated delta blob, fit pulled off (event 41373)"
+title = "det3 A1 display: Saturated delta blob, fit pulled off (event 41373)"
 state = "current"
-source = "papers/paper1/figures/loss_satblob.pdf"
-producer = "rerun/paper1_figs/a1_displays.py sat_det3 --out <EOS paper1_figs/a1[_paper]> --paper ... (condor, rerun/paper1_figs/condor/a1d.sub)"
-note = "Rebuilt 2026-10-31 on pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
+source = "papers/paper1/figs/out/a1/loss_satblob.pdf"
+producer = ".venv/bin/python rerun/paper1_figs/a1_displays.py sat_det3 --out <scratch> --paper-figs papers/paper1/figs/out/a1 --only-paper --root <paper1_eff copy> --ana <Analysis_pass1 copy> --eos-run-dir <june_tests/mx17_det3_saturday_scan_6-27-26 copy>"
+note = "Pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
 
 [fig.loss_fit]
-title = "det3 loss class far:FIT: clean track, fit off (event 4490)"
+title = "det3 A1 display: Fit off, no other flag (event 4490)"
 state = "current"
-source = "papers/paper1/figures/loss_fit.pdf"
-producer = "rerun/paper1_figs/a1_displays.py sat_det3 --out <EOS paper1_figs/a1[_paper]> --paper ... (condor, rerun/paper1_figs/condor/a1d.sub)"
-note = "Rebuilt 2026-10-31 on pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
+source = "papers/paper1/figs/out/a1/loss_fit.pdf"
+producer = ".venv/bin/python rerun/paper1_figs/a1_displays.py sat_det3 --out <scratch> --paper-figs papers/paper1/figs/out/a1 --only-paper --root <paper1_eff copy> --ana <Analysis_pass1 copy> --eos-run-dir <june_tests/mx17_det3_saturday_scan_6-27-26 copy>"
+note = "Pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
 
 [fig.loss_headon]
-title = "det3 loss class head_on: head-on: 2-strip cluster, never seeded (event 12351)"
+title = "det3 A1 display: Fit failed in one view (the pre-pass head-on class is recovered on pass 1) (event 12351)"
 state = "current"
-source = "papers/paper1/figures/loss_headon.pdf"
-producer = "rerun/paper1_figs/a1_displays.py sat_det3 --out <EOS paper1_figs/a1[_paper]> --paper ... (condor, rerun/paper1_figs/condor/a1d.sub)"
-note = "Rebuilt 2026-10-31 on pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py. Class now fit_failed (the head-on class is recovered on pass 1: 0.02 % left)."
+source = "papers/paper1/figs/out/a1/loss_headon.pdf"
+producer = ".venv/bin/python rerun/paper1_figs/a1_displays.py sat_det3 --out <scratch> --paper-figs papers/paper1/figs/out/a1 --only-paper --root <paper1_eff copy> --ana <Analysis_pass1 copy> --eos-run-dir <june_tests/mx17_det3_saturday_scan_6-27-26 copy>"
+note = "Pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py. The figure id is kept for the .tex label; the event is the one fit_failed track of pass 1 (the pre-pass head-on class, a 2-strip cluster never seeded, is recovered: no head-on loss is left to show)."
 
 [fig.loss_edge]
-title = "det3 loss class far:EDGE: edge of the other coordinate (event 8662)"
+title = "det3 A1 display: Edge of the other coordinate (event 8662)"
 state = "current"
-source = "papers/paper1/figures/loss_edge.pdf"
-producer = "rerun/paper1_figs/a1_displays.py sat_det3 --out <EOS paper1_figs/a1[_paper]> --paper ... (condor, rerun/paper1_figs/condor/a1d.sub)"
-note = "Rebuilt 2026-10-31 on pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
+source = "papers/paper1/figs/out/a1/loss_edge.pdf"
+producer = ".venv/bin/python rerun/paper1_figs/a1_displays.py sat_det3 --out <scratch> --paper-figs papers/paper1/figs/out/a1 --only-paper --root <paper1_eff copy> --ana <Analysis_pass1 copy> --eos-run-dir <june_tests/mx17_det3_saturday_scan_6-27-26 copy>"
+note = "Pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
 
 [fig.loss_postail]
-title = "det3 loss class far:POS_TAIL: position tail (mostly bent M3 tracks) (event 9855)"
+title = "det3 A1 display: Position tail (mostly bent M3 tracks) (event 9855)"
 state = "current"
-source = "papers/paper1/figures/loss_postail.pdf"
-producer = "rerun/paper1_figs/a1_displays.py sat_det3 --out <EOS paper1_figs/a1[_paper]> --paper ... (condor, rerun/paper1_figs/condor/a1d.sub)"
-note = "Rebuilt 2026-10-31 on pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
+source = "papers/paper1/figs/out/a1/loss_postail.pdf"
+producer = ".venv/bin/python rerun/paper1_figs/a1_displays.py sat_det3 --out <scratch> --paper-figs papers/paper1/figs/out/a1 --only-paper --root <paper1_eff copy> --ana <Analysis_pass1 copy> --eos-run-dir <june_tests/mx17_det3_saturday_scan_6-27-26 copy>"
+note = "Pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
 
 [fig.loss_multi_deposit]
-title = "det3 loss class far:MULTI: second deposit (not particle-like) (event 963)"
+title = "det3 A1 display: Second deposit, not particle-like (event 963)"
 state = "current"
-source = "papers/paper1/figures/loss_multi_deposit.pdf"
-producer = "rerun/paper1_figs/a1_displays.py sat_det3 --out <EOS paper1_figs/a1[_paper]> --paper ... (condor, rerun/paper1_figs/condor/a1d.sub)"
-note = "Rebuilt 2026-10-31 on pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."
+source = "papers/paper1/figs/out/a1/loss_multi_deposit.pdf"
+producer = ".venv/bin/python rerun/paper1_figs/a1_displays.py sat_det3 --out <scratch> --paper-figs papers/paper1/figs/out/a1 --only-paper --root <paper1_eff copy> --ana <Analysis_pass1 copy> --eos-run-dir <june_tests/mx17_det3_saturday_scan_6-27-26 copy>"
+note = "Pass 1 (det3 sat_det3 table, the pass fit, rr1 waveforms); class from rerun/effbudget/pass1 a1_recat.py."

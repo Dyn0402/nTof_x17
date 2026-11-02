@@ -1,5 +1,75 @@
 # Handoff
 
+## n_TOF pass 1: reprocess the n_TOF tracks on the final chain — updated 2026-11-02 (dylan-MS-7C84)
+
+**Resume:** pre-freeze studies for the n_TOF pass; next: pinned-t0 on all 12 staged run_149 sub-runs, then tan_max + Q7 scan.
+
+**Goal:** reconstruct every n_TOF trigger of ours with the pass-1 bench/SPS algorithm, calibrated in situ, with every
+n_TOF lesson in code or registry. The plan, the decisions and every result are in
+`rerun/ntof/NTOF_PASS_PLAN_2026-11-02.md`; §2 is the lessons checklist, §5 Dylan's decisions, §6 the findings.
+
+**Done (11-02):**
+- **Plan and decisions.**
+  - Scope: production 36 runs + beam-off cosmics now; pre-production in a last pass.
+  - t0: pin it, but test first.
+  - Output: `july_beam/Analysis_pass1`.
+  - Bow block: carried to n_TOF.
+  - Angle limit `tan_max`: per dataset.
+  - A full re-decode was approved and is done.
+- **Registry** (`rerun/ntof/make_ntof_registry.py` → `ntof_registry.csv`): 3,937 acquisitions; one readout, HV and gas
+  setup throughout; `redecode` flags; `tan_max` 0.6.
+- **Re-decode with fa80c06:** 31,496 FEU files, 0 errors, in `<subrun>/decoded_root_fa80c06/` (condor 4612805). It
+  also covers four truncated EOS decodes (run_130 `_000` held 654 of 8,387 events) and a few fused triggers.
+- **Code:**
+  - `CalibrationBundle.tan_max` + `wft.reco.tan_max()`: bench/SPS unchanged, tests pass.
+  - `rerun/ntof/ntof_bundle.py`: pass-1 golden → n_TOF bundle, with options `--v --kw --latency --tan-max --no-bow`.
+  - `rerun/ntof/ntof_reco.py`: the driver, with `--seed hits|waveform`, `--hits-dir` and `--events`.
+  - `wft_beam` additions: `allow_bow`, `min_strips`, `acq_tag`, `hits_from_waveforms`.
+  - Scorers: `rerun/ntof/ac_line.py` (A–C cosmic line, scale ratio) and `capsule_point.py` (beam pointing).
+- **Results** (all in plan §6):
+  - **Seeding (Q4) decided: hits.** The old n_TOF hits are identical to the rr1 recipe. Waveform seeding adds only
+    non-pointing tracks, at 2–3× the CPU.
+  - **v in situ** (stacked column duration): A 38.6, C 28.1, D ~31 µm/ns; B not measurable.
+  - **kw in situ ≈ 1:** A 0.98/0.97, C 1.01/1.01. Held out on cos_0001 the scale closes at 0.99–1.01.
+  - **Angle limit:** 1.0 adds mostly wrong steep fits on the cosmic line and non-pointing tracks on beam, so 0.6 is
+    tentative. The two-sided search gives no gain at 5× the CPU.
+  - **t0 on cosmics:** trigger jitter ~13 ns against a free-fit t0 resolution of 47/72 ns. Pinned vs free, held out:
+    A angle residual −8 %, C neutral; not significant yet.
+
+**In progress / where it stopped:** nothing running (local or condor). No half-done edits.
+
+**Next steps:**
+1. Pinned vs free on all 12 staged run_149 sub-runs (~2,000 A–C lines), with kw re-measured under the pin
+   (the scale moves 1–2 % when pinned). Then a beam-side t0 check.
+2. tan_max scan 0.5–1.0 together with Q7 (`xy_pairing['select']` gate vs cost, two-track plausibility guards; Paper I
+   session's fix 743d6d31, notes `rerun/ntof/NOTE_PAIRING_FIX_2026-11-02.md` and
+   `rerun/effbudget/single/MERGED_PROJECTION_2026-11-02.md`). Score on beam overlay pairs
+   (`sept26_prelim_analysis/intra_bench.py`) and capsule pointing.
+3. D's beam events: on beam, D's column-start fit sits at the edge of its range; on cosmics D is normal.
+4. B and D angle-scale routes (D wall on cosmics); Dp for 90/10; template residual check; sat 3550 vs 3700.
+5. Regenerate hits (rr1 recipe) on the full campaign, then the condor driver and DAG (P6), ledger, stage 3.
+
+**Gotchas / decisions:**
+- Every n_TOF pair or multi-track number is provisional until Q7 is decided.
+- Don't carry cosmic conclusions to beam without a beam check (Dylan).
+- The independent decoder audit doesn't understand n_TOF frames: it reports ~56 k "orphan" data runs and false
+  "incomplete" events on FEU 01/03. The C++ decode stands.
+- The D −210 ns "window offset" was withdrawn: it is beam-only, and D is normal on cosmics.
+- Bench and n_TOF channel → strip maps are identical on A–D, so dead lists and the bow carry by channel.
+- Compare seeding arms on fixed trigger sets (`--events`); `--limit-per-tag` picks different events per seed source.
+- CPU timing noise is ±25 % on identical work.
+
+**Key files & commands:**
+- Local test data (ucla, scratch, regenerable from EOS): `/media/ucla/work/ntof_pass1/`. It holds `runs/` (run_145 ×3
+  and run_149 ×12 sub-runs, fa80c06 decodes + hits), `bundles/` (v0, tm*, v1, v1k, v1kpin, latency json),
+  `bench_bundles/`, and the outputs `tanmax/`, `q4/`, `heldout/`, `colsum/`. Delete when the pass is done.
+- Reco: `.venv/bin/python rerun/ntof/ntof_reco.py --run 149 --subrun cosbounce_cos_0001 --arm A --bundle <b> --out <o>.parquet --base /media/ucla/work/ntof_pass1/runs --limit-per-tag 1500 --jobs 14`
+- Score: `.venv/bin/python rerun/ntof/ac_line.py --a A.parquet --c C.parquet --run-config /media/ucla/work/ntof_pass1/runs/run_149/run_config.json`
+- Column v: `rerun/model_audit/followups/gc_gas_time/ntof_colsum.py` (env `WFT_REPO`, `WFT_BEAM_BASE`), then the stacked
+  `colsum.GridFit` (the snippet is in plan §6).
+- lxplus jobs: `~/x17rerun/ntof/{decode_spot,redecode,rehit}`; records in
+  `/eos/experiment/ntof/data/x17/july_beam/Analysis_pass1/checks/`.
+
 ## Paper journals decided; next: the flow of Paper I for JINST — updated 2026-11-01 (dylan-Yoga)
 
 **Resume:** journals set (I → JINST, II → NIM A). Next: outline Paper I's body vs appendices for JINST.

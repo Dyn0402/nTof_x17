@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
 """make_figs.py [--only NAME ...] -- the SPS figures of Paper I/II on the final SPS chain (2026-11-01).
 
-    sps_resolution   det4 intrinsic resolution at H4: the 3-zone telescope decomposition (rerun/sps_junk/results/final_rule.json)
+    sps_resolution   det4 intrinsic resolution at H4 in the small working region R (decisions A + B, 2026-11-01;
+                     rerun/sps_region/results/region.json): residuals, telescope subtraction against f, upper bounds
+    sps_resolution_zones  SUPERSEDED: the full-beam 3-zone decomposition (rerun/sps_junk/results/final_rule.json)
     kernel_forms     the head-on sharing kernel from RAW run71 (results/kernel_<key>.npz, kernel_job.py)
     angled_kernel    run63 flat700 against run63_rot25 d425/d325 on the same builder (results/kernel_<key>.npz)
     known_angle      measured |tan| of the inclined view against the stage angle (results/known_angle.json, tan_known.py)
-    attachment       SPS late-charge loss vs the gas fit (rerun/sps_gasfit/results, when it is pushed)
+    attachment       SPS water and O2 from the gas fit (rerun/sps_gasfit/results/verdict.json; attach_fig.py)
 
 Writes figures/<name>.pdf (+ .png) and results/figs_summary.json (every number a caption or the numbers sheet quotes).
 """
-import argparse, json, os
+import argparse, json, os, sys
 import numpy as np
 import matplotlib
 matplotlib.use('Agg')
@@ -47,7 +49,98 @@ def zfit(zones):
     return bb, cov
 
 
+Z_DET4, Z_BACK = 1120.0, 1370.0     # rerun/sps_audit/analyze.py: det4 and the telescope back plane along the beam (mm)
+
+
+def pointing_mm(f, pitch=1.0):
+    """sps_audit.analyze.pointing: the telescope pointing at det4 for back-plane resolution f x pitch and a binary
+    front plane (1 mm / sqrt 12)."""
+    return float(np.sqrt((Z_DET4 / Z_BACK) ** 2 * (f * pitch) ** 2 + (1 - Z_DET4 / Z_BACK) ** 2 * (1.0 / np.sqrt(12)) ** 2))
+
+
 def sps_resolution():
+    """Paper I SPS cross-check (decisions A + B, 2026-11-01): det4 in the small working region R of run 63 flat700
+    (rerun/sps_region/results/region.json).  (a)/(b) the X (p_mid) and Y (fit p0) residuals in R, all single-cluster
+    telescope tracks and the subsample with a 2-strip back-plane cluster (the model-free upper bound), each with its
+    Gaussian core; (c) det4 = sqrt(sigma_res^2 - P(f)^2) against the telescope back-plane f, the f range shaded, and the
+    upper bounds.  The superseded full-beam zone fits are sps_resolution_zones()."""
+    sys.path.insert(0, os.path.join(REPO, 'papers'))
+    import paper_style as ps
+    import pandas as pd
+    from scipy.optimize import curve_fit
+    ps.use()
+    G = json.load(open(os.path.join(REPO, 'rerun', 'sps_region', 'results', 'region.json')))
+    r63 = G['resolution']['run63']
+    fc, frng = G['f_common']['f'], G['f_common']['range']
+    V = {'X': (r63['R|p_mid']['X'], 'fit at mid-gap', 'res_b2f2'), 'Y': (r63['R|p0']['Y'], 'fit at the mesh', 'res_b2')}
+    for v, (o, _, _) in V.items():
+        assert abs(pointing_mm(fc) - o['pointing']) < 1e-4, 'pointing model does not reproduce region.json'
+    edges = np.arange(-1.5, 1.5001, 0.05); xc = 0.5 * (edges[1:] + edges[:-1])
+    c4 = ps.color('det4'); ink = ps.INK
+    # checklist pass 2026-11-02: full width, no panel titles, (a)-(c) labels, one legend above for (a)/(b); the sigma
+    # values, the estimators (X at mid-gap, Y at the mesh), f and the upper-bound numbers are in the caption
+    from matplotlib.lines import Line2D
+    from matplotlib.patches import Patch
+    fig, axs = ps.fig_for('full', height=2.45, ncols=3, gridspec_kw=dict(width_ratios=[1, 1, 1.15]))
+    rows, summ = [], {}
+    g = lambda x, a, m, s: a * np.exp(-0.5 * ((x - m) / s) ** 2)
+    for ax, v in zip(axs[:2], 'XY'):
+        o, est, ub = V[v]
+        for key, s_key, mk, lab in (('hist', 'sigma_res', 'o', 'all tracks'), ('hist_b2', 'res_b2', 'o', '2-strip back cluster')):
+            h = np.array(o[key], float); hn = h / h.sum() / 0.05
+            s = o[s_key] if key == 'hist' else o['res_b2'][0]
+            core = np.abs(xc) < 1.2
+            (a, m), _ = curve_fit(lambda x, a, m: g(x, a, m, s), xc[core], hn[core], p0=(hn.max(), 0.0))
+            full = key == 'hist'
+            col = ink if full else ps.ACCENT
+            ax.errorbar(xc, hn, yerr=np.sqrt(np.maximum(h, 1)) / h.sum() / 0.05, fmt=mk, ms=2.4, lw=0.5, color=col,
+                        mfc=col if full else 'white', mec=col, zorder=4 if full else 3)
+            xx = np.linspace(-1.2, 1.2, 200)
+            ax.plot(xx, g(xx, a, m, s), '-' if full else '--', color=ps.MODEL, lw=0.9, zorder=5)
+            for xi, yi, hi in zip(xc, hn, h):
+                rows.append(dict(panel='a' if v == 'X' else 'b', view=v, sample=key, residual_mm=xi, density=yi, count=hi))
+        ax.set_xlim(-1.5, 1.5); ax.set_ylim(0, 3.25)
+        ax.set_xlabel(f'{v} residual $\\Delta {v.lower()}$ (mm)')
+    axs[0].set_ylabel('density (mm$^{-1}$)')
+    ps.legend_above(fig, [Line2D([], [], ls='', marker='o', ms=3, color=ink),
+                          Line2D([], [], ls='', marker='o', ms=3, color=ps.ACCENT, mfc='white'),
+                          Line2D([], [], color=ps.MODEL, lw=0.9), Patch(fc=ps.ACCENT, alpha=0.18, lw=0)],
+                    ['all tracks', '2-strip back-plane cluster', 'Gaussian core', 'upper bound (2-strip)'],
+                    ncol=4, handlelength=1.6)
+    ax = axs[2]
+    ff = np.linspace(0.20, 0.34, 141)
+    ax.axvspan(frng[0], frng[1], color=ps.GRID, lw=0, zorder=0)
+    ax.axvline(fc, color=ps.MUTED, lw=0.7, zorder=1)
+    for v in 'XY':
+        o, est, ub = V[v]
+        s = o['sigma_res']
+        d4 = np.array([np.sqrt(max(s ** 2 - pointing_mm(f) ** 2, 0)) for f in ff]) * 1e3
+        kw = ps.det('det4', view=v.lower())
+        ax.plot(ff, d4, ls=kw['ls'], color=ink, lw=1.2, zorder=3)
+        ax.errorbar([fc], [o['sigma_det4'] * 1e3], yerr=[o['stat'] * 1e3], fmt='o', ms=4.5, color=ink,
+                    mfc=ink if v == 'X' else 'white', mec=ink, zorder=5)
+        b, be = o[ub][0] * 1e3, o[ub][1] * 1e3
+        ax.axhspan(b - be, b + be, color=ps.ACCENT, alpha=0.18 if v == 'X' else 0.10, lw=0, zorder=1)
+        ax.axhline(b, color=ps.ACCENT, lw=0.9, ls=kw['ls'], zorder=2)
+        for fi, di in zip(ff[::10], d4[::10]):
+            rows.append(dict(panel='c', view=v, f=fi, sigma_det4_um=di, upper_bound_um=b, upper_bound_err_um=be))
+        summ[v] = dict(estimator=est, sigma_res_um=round(s * 1e3, 1), pointing_um=round(o['pointing'] * 1e3, 1),
+                       sigma_det4_um=round(o['sigma_det4'] * 1e3, 1), stat_um=round(o['stat'] * 1e3, 1),
+                       f_range_um=[round(x * 1e3, 1) for x in o['sys_range']], upper_bound_um=[round(b, 1), round(be, 1)],
+                       upper_bound_sample=ub, n_core=o['n_core'])
+    ax.set_xlim(0.20, 0.34); ax.set_ylim(0, 300)
+    ax.set_xlabel(r"back-plane $f$ ($\sigma$ / pitch)"); ax.set_ylabel('det4 resolution $\\sigma$ (µm)')
+    ax.legend(ps.view_handles(color=ink), ['X', 'Y'], loc='upper right')
+    ps.panel_labels(axs)
+    ps.save(fig, os.path.join(FIG, 'sps_resolution'), data=pd.DataFrame(rows))
+    print('wrote', os.path.join(FIG, 'sps_resolution.pdf'))
+    summ['f'] = dict(f=round(fc, 4), range=[round(x, 4) for x in frng])
+    summ['region'] = G['region']
+    SUMMARY['sps_resolution'] = summ
+
+
+def sps_resolution_zones():
+    """SUPERSEDED (2026-11-01, decisions A + B): the run63 full-beam 3-zone decomposition.  Kept for the record."""
     R = json.load(open(os.path.join(REPO, 'rerun', 'sps_junk', 'results', 'final_rule.json')))
     r63, r53 = R['run63 flat700']['est'], R['run53']['est']
     fig = plt.figure(figsize=(10.5, 3.5))
@@ -90,8 +183,8 @@ def sps_resolution():
     ax.set_xticks(range(3)); ax.set_xticklabels(['run63 X\nCF₄', 'run63 Y\nCF₄', 'run53 Y\nAr/CO₂'], fontsize=8)
     ax.set_ylabel('det4 intrinsic σ [µm]'); ax.set_ylim(0, 380); ax.set_xlim(-0.5, 2.5)
     ax.set_title('det4 alone (open: zone fit χ²/1 > 4)', fontsize=9)
-    save(fig, 'sps_resolution')
-    SUMMARY['sps_resolution'] = summ
+    save(fig, 'sps_resolution_zones')
+    SUMMARY['sps_resolution_zones'] = summ
 
 
 def _load_kernel(key):
@@ -222,9 +315,10 @@ def attachment():
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument('--only', nargs='*')
     a = ap.parse_args()
-    for name in ('sps_resolution', 'kernel_forms', 'angled_kernel', 'known_angle', 'attachment'):
+    for name in ('sps_resolution', 'sps_resolution_zones', 'kernel_forms', 'angled_kernel', 'known_angle', 'attachment'):
         if not a.only or name in a.only:
-            globals()[name]()
+            with plt.rc_context():          # paper_style's ps.use() inside a producer must not leak into the next one
+                globals()[name]()
     p = os.path.join(RES, 'figs_summary.json')
     old = json.load(open(p)) if os.path.exists(p) else {}
     old.update(SUMMARY)

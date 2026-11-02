@@ -20,7 +20,8 @@ from typing import Dict, Optional
 
 import numpy as np
 
-from .calib import CalibrationBundle, check_xy_pairing, XY_SELECT_MODES as PAIR_SELECT_MODES
+from .calib import (CalibrationBundle, check_xy_pairing, XY_SELECT_MODES as PAIR_SELECT_MODES,
+                    XY_SPLIT_CORROB_MODES as SPLIT_CORROB_MODES)
 from . import model as wm
 
 # ---------------------------------------------------------------- quality
@@ -1179,14 +1180,23 @@ def fit_plane_two(P, plane: str, cal: CalibrationBundle, parent: PlaneFit,
                 overlap=float(r['overlap']),
                 tie_t0=bool(r['tie_t0']), nfev=int(r['nfev']),
                 qfrac=float(qfrac), threshold=float(thr),
-                guards_ok=bool(guards_ok), accepted=accepted, **guards)
+                guards_ok=bool(guards_ok), accepted=accepted, **guards,
+                **{f'{k}_{c}': v for k, f in (('a', fa), ('b', fb)) for c, v in
+                   (('p0', float(f.p0)), ('tan', float(f.tan_theta)), ('q', float(f.q_sum)),
+                    ('plausible', bool(f._plausible)))})
 
 
 def _n_gated(all_fits: Dict[str, list], ftst_diff, cal=None) -> int:
-    """How many gated tracks the selector would report for these candidates."""
+    """How many gated tracks the selector would report for these candidates.
+
+    Always counted with select_tracks mode 'gate', whatever the bundle's xy_pairing['select']: this count only decides
+    whether a two-track split is reverted, and holding it to 'gate' keeps every fit, split and winner independent of
+    the pairing mode (the 'cost' mode then changes track_id / track_gated / n_tracks only, as the pass-1 table refresh
+    assumes; PAIRING_FIX_2026-11-02.md §7: with the bundle's mode, 1 det4 split of 2 251 re-reconstructed events
+    reverted differently)."""
     try:
         pairs = select_tracks(all_fits, ftst_diff, cal or _CAL,
-                              max_tracks=MAX_TRACKS, pairing=_PAIRING)
+                              max_tracks=MAX_TRACKS, pairing=_PAIRING, mode='gate')
     except Exception:
         return 0
     return int(sum(1 for _i, _j, g in pairs if g))
@@ -1217,11 +1227,124 @@ def _cross_plane_mismatch(this: list, other: list) -> bool:
                for i in range(len(ok)) for j in range(i + 1, len(ok)))
 
 
+#: How the other view corroborates a split (``xy_pairing['split_corrob']``; MERGED_PROJECTION_2026-11-02.md).
+#:   'count'  (absent; n_TOF, SPS, the pass-1 bench bundles): :func:`_cross_plane_mismatch` -- the other view resolves
+#:            two time-coincident PLAUSIBLE candidates where this one resolves fewer plausible ones; a corroborated split
+#:            needs F >= TWO_TRACK_F_CORROB and BOTH children plausible.
+#:   'charge' (the bench): additionally :func:`_charge_corroboration` -- this candidate shares the trigger t0 with two
+#:            other-view candidates (which share it with each other), this view holds fewer candidates, and its charge
+#:            is not above their sum (one particle leaves the same charge in both views: r-sigma ln(qx/qy) ~0.06).  Such
+#:            a split is accepted when F >= TWO_TRACK_F_CORROB, the children are distinguishable and share the column
+#:            (the unchanged geometric guards, incl. the 4-pitch floor), at least ONE child is plausible (the muon), and
+#:            the two children's charges match the two other-view candidates, each coincident with its partner in column
+#:            time (:func:`_child_charge_match`).  Every split
+#:            the 'count' rule accepts is still accepted: the mode only adds splits.
+#:            Why: 'plausible' (column end in the u window, raw |tan| < tan_max) is the beam's acceptance.  Bench
+#:            secondaries are short (soft electrons) and steep (tan spread ~0.38), so on 195 det3 events where two real
+#:            particles merge in one projection the 'count' trigger fired on 35 % and every attempt was refused, 68/68,
+#:            with a median F of 543; with 'charge' the muon is credited in 53.8 % (41.0) and correctly paired in 36.4 %
+#:            (20.5), and no split is added on clean single muons of any of the five bench chambers.
+#: SPLIT_CORROB_MODE (a worker option) overrides the bundle for A/B runs.
+SPLIT_CORROB_MODE: Optional[str] = None
+#: 'charge' trigger: the merged candidate's charge may not exceed the other view's two by more than this [sigma of the
+#: bundle's ln(qx/qy) balance]; it may be below (a one-track fit of a merged window explains only part of the charge).
+CHARGE_CORROB_SUM_NSIG = 4.0
+#: 'charge' acceptance: each child's charge within this many sigma of the other-view candidate it is matched to (best
+#: of the two assignments), the sigma being the bundle's balance width widened in quadrature by CHARGE_CORROB_CHILD_REL
+#: (a child's charge is one of two blocks of one solve, not a whole window).
+CHARGE_CORROB_CHILD_NSIG = 3.0
+CHARGE_CORROB_CHILD_REL = 0.20
+#: 'charge' acceptance: each child coincident in column time (t0 + u50) with the other-view candidate it is matched to,
+#: within the bundle's tc tolerance -- the per-particle form of the x-y coincidence.
+CHARGE_CORROB_TC = True
+
+
+def split_corrob_mode(pairing: Optional[dict]) -> str:
+    """The cross-view corroboration this pairing calibration asks for (:data:`SPLIT_CORROB_MODES`)."""
+    if not (pairing or {}).get('features'):
+        return 'count'
+    m = SPLIT_CORROB_MODE if SPLIT_CORROB_MODE is not None else (pairing.get('split_corrob') or 'count')
+    if m not in SPLIT_CORROB_MODES:
+        raise ValueError(f'split corroboration mode must be one of {SPLIT_CORROB_MODES}: {m!r}')
+    return str(m)
+
+
+def _lq_ref(pairing: Optional[dict], fits) -> tuple:
+    """(median, rsig) of ln(qx/qy) for the worst event class among ``fits``; det3 bench fallback."""
+    cls = max((view_class(f) for f in fits), key=PAIR_CLASSES.index)
+    med, rs = lq_balance(pairing, cls)
+    return (med, rs) if med is not None and rs else HEADON_RESCUE_LQ
+
+
+def _lq_z(qx: float, qy: float, ref: tuple, extra_rel: float = 0.0) -> float:
+    if not (qx > 0 and qy > 0):
+        return np.inf
+    return float((np.log(qx / qy) - ref[0]) / np.hypot(ref[1], extra_rel))
+
+
+def _charge_corroboration(f, plane: str, this: list, other: list, pairing: Optional[dict],
+                          ftst_diff=None) -> Optional[dict]:
+    """Two other-view candidates that one candidate ``f`` of this view could be the merger of, or None.
+
+    Conditions (none uses ``plausible``): this view holds fewer candidates than the other; the two share the trigger
+    t0 with each other and with ``f`` (within the bundle's tc tolerance, ftst phase-corrected); ``f``'s charge is not above their sum
+    by more than CHARGE_CORROB_SUM_NSIG.  Of several such pairs, the one whose summed charge fits ``f`` best.
+    ``z_sum`` / ``z_alone`` are signed so that positive = ``f`` brighter than the sum / the brighter of the two."""
+    oth = [g for g in (other or []) if g is not None]
+    if len(oth) < 2 or len([g for g in (this or []) if g is not None]) >= len(oth):
+        return None
+    sgn = 1.0 if plane == 'x' else -1.0
+    best = None
+    for i in range(len(oth)):
+        for j in range(i + 1, len(oth)):
+            a, b = oth[i], oth[j]
+            # same trigger: t0, not the column time.  A short secondary (a soft electron) drifts from part of the gap
+            # only, so its column time t0 + u50 sits up to ~400 ns from the muon's (det3: median 170 ns between the
+            # two particles of the merged events, half beyond the tc tolerance), and the merged candidate's is a mix
+            # of the two.  The column time is checked per particle after the split (_child_charge_match).
+            if abs(a.t0 - b.t0) > TC_TOL_NS:
+                continue
+            sh = FTST_NS * float(ftst_diff) if ftst_diff is not None else 0.0
+            dts = [(f.t0 - g.t0 if plane == 'x' else g.t0 - f.t0) + sh for g in (a, b)]
+            if max(abs(d) for d in dts) > TC_TOL_NS:
+                continue
+            ref = _lq_ref(pairing, (f, a, b))
+            qs = a.q_sum + b.q_sum
+            z_sum = sgn * _lq_z(*((f.q_sum, qs) if plane == 'x' else (qs, f.q_sum)), ref)
+            if not np.isfinite(z_sum) or z_sum > CHARGE_CORROB_SUM_NSIG:
+                continue
+            qb = max(a.q_sum, b.q_sum)
+            z_alone = sgn * _lq_z(*((f.q_sum, qb) if plane == 'x' else (qb, f.q_sum)), ref)
+            if best is None or abs(z_sum) < abs(best['z_sum']):
+                best = dict(a=a, b=b, ref=ref, z_sum=float(z_sum), z_alone=float(z_alone),
+                            q_o1=float(a.q_sum), q_o2=float(b.q_sum))
+    return best
+
+
+def _child_charge_match(children, corr: dict, plane: str, ftst_diff=None) -> tuple:
+    """(score, z1, z2, tc): the two children against the two corroborating candidates.  Of the two assignments, the one
+    whose larger |z| (charge balance, in units of the bundle width widened by CHARGE_CORROB_CHILD_REL) is smaller;
+    ``tc`` = the larger |column-time difference| of its two x-y pairs [ns] (one particle: ~0, tolerance TC_TOL_NS)."""
+    ca, cb = children
+    out = None
+    for o1, o2 in ((corr['a'], corr['b']), (corr['b'], corr['a'])):
+        zs, tcs = [], []
+        for c, o in ((ca, o1), (cb, o2)):
+            qx, qy = (c.q_sum, o.q_sum) if plane == 'x' else (o.q_sum, c.q_sum)
+            zs.append(_lq_z(qx, qy, corr['ref'], CHARGE_CORROB_CHILD_REL))
+            tcs.append(abs(col_dt(c, o, ftst_diff) if plane == 'x' else col_dt(o, c, ftst_diff)))
+        sc = max(abs(z) for z in zs)
+        if out is None or sc < out[0]:
+            out = (float(sc), float(zs[0]), float(zs[1]), float(max(tcs)))
+    return out
+
+
 def resolve_two_tracks(all_fits: Dict[str, list], windows: Dict[str, list],
                        cal: CalibrationBundle, ftst_diff=None,
                        max_try: int = TWO_TRACK_MAX_TRY,
                        selected: Optional[Dict[str, set]] = None,
-                       attempts: Optional[list] = None) -> tuple:
+                       attempts: Optional[list] = None,
+                       pairing: Optional[dict] = None) -> tuple:
     """Offer the merged-looking candidates of both planes a second track.
 
     Runs AFTER the ordinary per-plane candidate fits, so the one-track answer
@@ -1234,11 +1357,16 @@ def resolve_two_tracks(all_fits: Dict[str, list], windows: Dict[str, list],
     parents a split displaced, per plane, for the candidates side table.
 
     ``attempts``, when a list, also collects every attempt WITH its two
-    children, accepted or not -- the input of :func:`two_track_ladder`."""
+    children, accepted or not -- the input of :func:`two_track_ladder`.
+
+    ``pairing`` (default: the worker's bundle ``xy_pairing``) sets the cross-view corroboration,
+    :data:`SPLIT_CORROB_MODE`."""
     splits = []
     replaced = {'x': [], 'y': []}
     if not TWO_TRACK:
         return all_fits, splits, replaced
+    pairing = _PAIRING if pairing is None else pairing
+    cmode = split_corrob_mode(pairing)
     out = {p: list(all_fits.get(p) or []) for p in ('x', 'y')}
     if selected is None and TWO_TRACK_SELECTED_ONLY:
         try:
@@ -1275,22 +1403,46 @@ def resolve_two_tracks(all_fits: Dict[str, list], windows: Dict[str, list],
                 probe = None
             if probe is None:
                 continue
+            cc = (_charge_corroboration(f, plane, all_fits.get(plane), all_fits.get(other), pairing, ftst_diff)
+                  if cmode == 'charge' else None)
             trig = two_track_triggers(probe, other_two=corrob)
-            if not (trig['residual'] or trig['width'] or trig['cross_plane']):
+            old_trig = trig['residual'] or trig['width'] or trig['cross_plane']
+            if not (old_trig or cc is not None):
                 continue
             tried += 1
+            h = hints
+            if cc is not None and not corrob:
+                sh = -FTST_NS * float(ftst_diff) if ftst_diff is not None else 0.0
+                h = [g.t0 + (1.0 if plane == 'x' else -1.0) * sh for g in (cc['a'], cc['b'])]
             try:
-                r = fit_plane_two(P, plane, cal, f, t0_hints=hints,
+                r = fit_plane_two(P, plane, cal, f, t0_hints=h,
                                   f_thresh=thr, probe=probe,
                                   t0_mode=TWO_TRACK_T0)
             except Exception:
                 r = None
             if r is None:
                 continue
+            ccx = {}
+            if cmode == 'charge':
+                # the 'count' answer stands where the 'count' rule made the attempt; the charge rule can only add
+                acc_count = bool(old_trig and r['accepted'])
+                acc_charge = False
+                ccx = dict(corrob_charge=cc is not None, cc_z_sum=np.nan, cc_z_alone=np.nan, cc_q_o1=np.nan,
+                           cc_q_o2=np.nan, cc_match=np.nan, cc_z1=np.nan, cc_z2=np.nan, cc_tc=np.nan)
+                if cc is not None:
+                    sc, z1, z2, tcm = _child_charge_match(r['children'], cc, plane, ftst_diff)
+                    n_pl = int(r['a_plausible']) + int(r['b_plausible'])
+                    acc_charge = bool(r['fstat'] >= TWO_TRACK_F_CORROB and r['distinguishable']
+                                      and r['column_shared'] and n_pl >= 1 and sc <= CHARGE_CORROB_CHILD_NSIG
+                                      and (tcm <= TC_TOL_NS or not CHARGE_CORROB_TC))
+                    ccx.update(cc_z_sum=cc['z_sum'], cc_z_alone=cc['z_alone'], cc_q_o1=cc['q_o1'],
+                               cc_q_o2=cc['q_o2'], cc_match=sc, cc_z1=z1, cc_z2=z2, cc_tc=tcm)
+                r['accepted'] = acc_count or acc_charge
+                ccx.update(accepted_count=acc_count, accepted_charge=acc_charge)
             rec = dict(plane=plane, rank=int(rank), corroborated=bool(corrob),
                        **{k: v for k, v in r.items()
                           if k not in ('children', 'profiles')},
-                       **{f'trig_{k}': v for k, v in trig.items()})
+                       **{f'trig_{k}': v for k, v in trig.items()}, **ccx)
             splits.append(rec)
             if attempts is not None:
                 attempts.append(dict(plane=plane, parent=f, win=iw,
@@ -1332,8 +1484,9 @@ def two_track_ladder(kept: Dict[str, list], attempts: list, ftst_diff,
     for F in ladder:
         Fc = F * ratio
         acc = [a for a in attempts
-               if a['rec']['guards_ok']
-               and a['rec']['fstat'] >= (Fc if a['rec']['corroborated'] else F)]
+               if (a['rec']['guards_ok']
+                   and a['rec']['fstat'] >= (Fc if a['rec']['corroborated'] else F))
+               or (a['rec'].get('accepted_charge') and a['rec']['fstat'] >= Fc)]
         fits = {p: list(kept.get(p) or []) for p in ('x', 'y')}
         for a in acc:
             ca, cb = a['children']
@@ -1518,7 +1671,7 @@ def select_tracks(cand_fits: Dict[str, list], ftst_diff: Optional[int],
     mode = mode or pair_select_mode(pairing)
     if mode not in PAIR_SELECT_MODES:
         raise ValueError(f'select_tracks mode must be one of {PAIR_SELECT_MODES}: {mode!r}')
-    if mode == 'cost':
+    if mode == 'cost' and (pairing or {}).get('features'):      # no pairing calibration: nothing to cost -> 'gate'
         return _select_tracks_cost(cand_fits, ftst_diff, pairing, dt, max_tracks)
     return _select_tracks_gate(cand_fits, ftst_diff, pairing, dt, max_tracks)
 
@@ -1847,7 +2000,7 @@ WORKER_OPTS = ('TWO_TRACK', 'TWO_TRACK_F', 'TWO_TRACK_F_CORROB', 'TWO_TRACK_T0',
                'TWO_TRACK_RESID_Z', 'TWO_TRACK_WIDTH_MARGIN', 'TWO_TRACK_MAX_TRY',
                'TWO_TRACK_SELECTED_ONLY', 'TWO_TRACK_SCALE', 'TWO_TRACK_SEARCH',
                'TWO_TRACK_F_LADDER', 'PIVOT_START', 'HEADON_RESCUE', 'HEADON_RESCUE_Z',
-               'PAIR_SELECT_MODE')
+               'PAIR_SELECT_MODE', 'SPLIT_CORROB_MODE')
 
 
 def _worker_init(bundle_path, pairing_path=None, opts=None):
