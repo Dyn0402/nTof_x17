@@ -392,3 +392,23 @@ A failing arm is held, as on the bench.
     bench). If this is trigger-to-particle jitter, a pinned t0 is wrong at n_TOF.
   - **Test:** t0_A − t0_C on run_149 A–C cosmics (the same particle, ~2 ns apart, so trigger jitter cancels) measures
     the chambers' own t0 resolution against the common jitter.
+- **t0 at n_TOF, cosmics (11-02, run_149 cosbounce_cos_0000/0001).**
+  - **The column-sum box start is a coarse t0 estimator.** Within one chamber t0x − t0y has a robust σ of 75–110 ns
+    (≈ 55 ns per view), so the 80 ns scatter seen on beam is mostly the estimator.
+  - **D's −210 ns beam offset is not a window offset.** On cosmics D's box starts with the others (median −45 ns vs
+    A −35, C −30). What differs on beam is D's beam events (hot cells / flash), to be looked at; the earlier D finding
+    is withdrawn.
+  - **Fitted t0 on the same muon** (165 A–C line events, v0 bundles, free t0): t0_A robust σ 49 ns, t0_C 73 ns,
+    t0_A − t0_C 86 ns. That gives a common (trigger) jitter of only ~13 ns, against a free-fit t0 resolution of
+    47 (A) / 72 (C) ns, so the trigger knows t0 3–5× better than the free fit. Offsets differ per chamber (A − C −53 ns),
+    so latency is per (arm, view).
+  - **Latency** (median of t0 + 10·ftst over ~600–700 single cosmic tracks, `bundles/latency_<arm>_r149.json`):
+    A x −5 / y +1 ns, C x +35 / y +27 ns. The ftst slope is −5…−7 ns per class against the bench's −10 (diluted by the
+    free fit's lattice?). Open.
+  - **Pinned (σ 15 ns) vs free on the A–C line** (474 candidate events): no measurable change. 171 vs 165 line events;
+    common 158: A 68 % residual 2.75 vs 2.70°, C 3.64 vs 3.67°; median line separation 8.3 vs 7.9 mm.
+  - **Not conclusive yet:** the line residuals are dominated by the uncalibrated angle scale (v, kw), which pinning
+    cannot fix. Decide t0 after v and kw are measured in situ; the beam trigger (PS + singles) also needs its own check.
+- **Order of the remaining calibration studies:** v in situ (column duration on full-gap tracks, A/C; B/D
+    limitations), then kw from the A–C line, then t0 pin vs free, then the tan_max scan, then seeding (Q4 runs
+    meanwhile: its conclusion does not depend on the angle scale).
