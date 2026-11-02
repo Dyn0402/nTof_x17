@@ -1,3 +1,2 @@
-# producer outputs; make_figures.py copies the pdf into ../../figures/
-*
-!.gitignore
+# producer outputs; the pdf is the figures.toml source (committed so make_figures.py works on a fresh clone)
+*.png
