@@ -21,10 +21,9 @@ fault); flat in position and angle. Equivalently the X/Y charge ratio of one tra
 (the whole chamber: the edge cut changes the efficiency by ${\le}0.9$\,pt, so the headline numbers use the full area
 and \cref{sec:edge} studies the edges). Detected: both views fitted, ${\le}2$ competing strips per view, and the
 reconstructed track within $R$ of the M3 ray at the mesh. When the chamber reconstructs several tracks, the event is
-detected if one of them is the M3 track (multi-track credit; this is the default number). Removed from the denominator:
-tracks the reference itself got wrong (bent between the M3 doublets, 0.20\,\%) and tracks leaving through the edge
-of the other coordinate (0.15\,\%); both are classified only away from the edges, so near the edges they stay as
-losses.}
+detected if one of them is the M3 track (multi-track credit; this is the default number). Nothing is removed from the denominator: tracks far from M3 with the right angle (0.20\,\%) are only half
+explained by muons scattering between the M3 doublets, so they count as losses with everything else we cannot pin on
+the reference.}
 \tbw{\textbf{The radius.} $\varepsilon(R)$ has two regimes (\cref{fig:effradius}): the resolution core (core
 $\sigma=0.55$\,mm per view at the mesh, dominated by the M3 pointing and scattering), steep up to ${\sim}4$\,mm; then a
 slow rise of 0.1--0.2\,pt per mm out to 40\,mm, made of mis-measured tracks ($\delta$-pulled fits, saturated
@@ -47,8 +46,8 @@ the inefficiency. $R\in[4,8]$\,mm moves the efficiency by $-0.5/{+0.6}$\,pt (sys
   \label{fig:residuals}
 \end{figure}
 \tbw{\textbf{Area.} det3, both golden rows: full active area / interior (${\ge}30$\,mm from the $x$ sides, ${\ge}8$\,mm from
-the $y$ sides) / ${\ge}30$\,mm from every side: production pick 91.8 / 92.6 / 92.3\,\%; single-track 95.1 / 96.1 /
-95.8\,\%. The angles need the interior (\cref{sec:edge}); the efficiency does not.}
+the $y$ sides) / ${\ge}30$\,mm from every side: production pick 91.5 / 92.3 / 92.3\,\%; single-track 94.8 / 95.7 /
+95.5\,\%. The angles need the interior (\cref{sec:edge}); the efficiency does not.}
 
 \subsection{Efficiency maps of the five chambers}
 \tbw{Maps (8\,mm disk) of all five chambers on their golden rows. Interior efficiency (production pick; full-area values to re-quote): det2 90.3, det3 92.6, det4 40.9
@@ -84,10 +83,10 @@ view, not attached to the muon; (ii) two segments in one view and, in the other,
 in projection: wider than a single track (median 15--25 strips against 12), carrying the charge of both, or placed
 between them within the 12\,mm seed gap; (iii) a clean single-track muon in both views plus a separate deposit, which
 together trip the discharge veto (${>}50$ strips). Everything else stays in the sample and counts against the chamber.}
-\tbw{\textbf{Result.} Over the full active area (two golden rows, 28\,353 tracks):
-$\varepsilon_\mathrm{single}=95.1\pm0.1$\,(stat)$^{+0.6}_{-0.5}$\,($R$)\,\%; in the interior 96.0--96.1\,\%. Interior
-losses (4.0\,\%): $\delta$-rays 2.5 (below), discharges 0.5, noise bands 0.2, fits off with no flag 0.3, second deposits
-not particle-like 0.2. The chamber hardware itself (discharges, noise bands) accounts for 0.7\,\%; the rest is the
+\tbw{\textbf{Result.} Over the full active area (two golden rows, 28\,453 tracks):
+$\varepsilon_\mathrm{single}=94.8\pm0.1$\,(stat)$^{+0.6}_{-0.5}$\,($R$)\,\%; in the interior 95.7\,\%. Interior
+losses (4.3\,\%): $\delta$-rays 2.5 (below), discharges 0.5, noise bands 0.2, fits off with no flag 0.3, second deposits
+not particle-like 0.2, fits right in angle but far from M3 0.2, edge of the other coordinate 0.15. The chamber hardware itself (discharges, noise bands) accounts for 0.7\,\%; the rest is the
 reconstruction of a muon accompanied by its own $\delta$-ray. The extra 0.9\,pt lost over the full area is the edge
 response (\cref{sec:edge}).}
 \tbw{\textbf{$\delta$-rays: one population, three outcomes by size.} Median strips over threshold: a clean muon 12; a

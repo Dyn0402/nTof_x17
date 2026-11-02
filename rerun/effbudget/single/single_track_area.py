@@ -14,8 +14,10 @@ Per M3 ray (one clean ray, decoder-complete, footprint inside the measured activ
                 (iii) spark-vetoed with a clean muon + separate deposit (sparks.py 'muon+other'; interior only, the
                      waveform class exists only there: edge spark rays stay in the single sample, i.e. losses)
   single        every other ray: everything we cannot show to be a second particle counts against the chamber.
-Reference-failure and other-coordinate-edge classes (A1 POS_TAIL / EDGE) are classified only in the interior and
-are dropped from the denominator there only (outside they stay as losses: conservative).
+Nothing leaves the denominator (Dylan 2026-11-02: what we cannot pin on something else counts as a loss). A1's
+POS_TAIL is only about half explained by muons bent between the M3 doublets (kinkvtx: 53 % within 2 mm of the
+doublet-vertex prediction; sixpt puts the rest on the chamber), and the other-coordinate EDGE class is edge response,
+part of the full-area number. DROP_CLASSES restores the old exclusion for comparison.
 Writes results/single_track_area.json.
 """
 import argparse, json, os
@@ -27,6 +29,7 @@ RES = os.path.join(HERE, 'results')
 ROWS = {'sat_det3': 'mx17_det3_saturday_scan_6-27-26/long_run_resist_490V_drift_1000V/mx17_3',
         'p2_det3': 'mx17_det3_p2_det1_overnight_6-27-26/long_run_p2_det1_sanity_check/mx17_3'}
 R_MM, GAP, ATTACH, NSIG = 5.0, 28.0, 3.0, 5.0
+DROP_CLASSES = [c for c in os.environ.get('DROP_CLASSES', '').split(',') if c]   # e.g. far:POS_TAIL,far:EDGE
 
 
 def seg_dist(a, b):
@@ -79,7 +82,7 @@ def main():
         R = pd.read_parquet(os.path.join(a.root, 'x17rerun/paper1_eff/a1', rel, 'recat.parquet'))
         recat = R.recat.reindex(B.index)
         cls[recat.eq('spark:muon+other').to_numpy()] = 'two: muon + separate deposit (vetoed)'
-        drop = recat.isin(['far:POS_TAIL', 'far:EDGE']).to_numpy()
+        drop = recat.isin(DROP_CLASSES).to_numpy()
         det = (B.cat_xy_5 == 'detected').to_numpy()
         credit = det | B.det_any_5.astype(bool).to_numpy()
         interior = (B.region == 'interior').to_numpy()

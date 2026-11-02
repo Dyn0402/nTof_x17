@@ -86,6 +86,11 @@ trigger and its acceptance both require beam-tuned `plausible` candidates/childr
 events never attempt a split, all 68 attempts refused (`guards_ok` False: both_plausible 44, column_shared 27,
 distinguishable 20). Being fixed in a separate session: `MERGED_PROJECTION_2026-11-02.md` (pending).
 
+**Update, same evening: nothing leaves the denominator.** POS_TAIL is only about half bent M3 tracks (kinkvtx 53 %
+within 2 mm of the doublet vertex; sixpt puts the rest on the chamber) and EDGE is edge response, so both count as
+losses (`DROP_CLASSES` restores the old exclusion). Full area: production 91.50, credit 94.13, **single-track
+94.81 ± 0.13 %**; interior single-track 95.72 %.
+
 ## 2. X/Y pairing on real two-particle cosmics
 
 552 events (both rows) with ≥ 2 candidates in each view where M3 marks exactly one X and one Y candidate (< 5 mm,
