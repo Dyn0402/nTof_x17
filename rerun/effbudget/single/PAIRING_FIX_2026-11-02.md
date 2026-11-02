@@ -169,8 +169,8 @@ All in `results/`:
 - `pairing_eff_check.json`
 - `pairing_ntof_check.json`
 
-The working tree (staged inputs, re-reco outputs, cost-mode tables) is `$WORK_DATA/claude-jobs/pairfix/`. It is
-regenerable from EOS and can be deleted.
+The working tree is `$WORK_DATA/claude-jobs/pairfix/`: re-reco outputs and cost-mode tables, 13 MB. The 7.9 GB of
+staged inputs were deleted; they are on EOS.
 
 ## What this does not rule out
 
