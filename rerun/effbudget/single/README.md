@@ -51,6 +51,12 @@ carries the charge of both particles, or sits 5–15 mm off the muon (between th
 195 events (84 %) are "merged in projection": a two-particle event at the two-track separation limit of one projection,
 not a chamber malfunction; 41 % of them are still credited. 14 are a faint (⅓ of the muon), short deposit seen in one
 view only: all 14 credited, so not losses. 24 unclear (kept in the sample).
+**Joint two-track fit on these (2026-11-02, `MERGED_PROJECTION_2026-11-02.md`):** pass 1 refused every one, through
+the beam-tuned `plausible` flag in its trigger and acceptance and a column-time coincidence that short secondaries fail.
+The bench mode `xy_pairing['split_corrob'] = 'charge'` (corroboration by the other view's charge; one plausible child)
+raises the credit on the 195 from 41.0 to 53.8 % and the correctly paired muon from 20.5 to 36.4 %. It adds no split on
+clean single muons on any of the five chambers, and the single-track efficiency does not move. It takes effect at the
+next bench re-pass, and n_TOF stays on `count`.
 
 **Spark-vetoed deposits: local, i.e. δ-rays, not outside showers.** Extra M3 clusters per event, upper / lower doublet
 (sat_det3): detected muons 0.56 / 0.72; independent second particle 1.55 / 1.46; **'shower' 0.49 / 0.47**;

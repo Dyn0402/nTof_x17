@@ -1,0 +1,96 @@
+{
+ "sat_det3": {
+  "interior_events_rereco": 612,
+  "faint, one view only": {
+   "n": 2,
+   "credit_cost": 2,
+   "credit_charge": 2,
+   "credit_gained": 0,
+   "credit_lost": 0,
+   "rank0_cost": 2,
+   "rank0_charge": 2,
+   "rank0_gained": 0,
+   "rank0_lost": 0
+  },
+  "merged in projection": {
+   "n": 49,
+   "credit_cost": 22,
+   "credit_charge": 25,
+   "credit_gained": 3,
+   "credit_lost": 0,
+   "rank0_cost": 12,
+   "rank0_charge": 12,
+   "rank0_gained": 1,
+   "rank0_lost": 1
+  },
+  "other": {
+   "n": 553,
+   "credit_cost": 535,
+   "credit_charge": 535,
+   "credit_gained": 0,
+   "credit_lost": 0,
+   "rank0_cost": 522,
+   "rank0_charge": 522,
+   "rank0_gained": 0,
+   "rank0_lost": 0
+  },
+  "unclear": {
+   "n": 8,
+   "credit_cost": 5,
+   "credit_charge": 5,
+   "credit_gained": 0,
+   "credit_lost": 0,
+   "rank0_cost": 1,
+   "rank0_charge": 1,
+   "rank0_gained": 0,
+   "rank0_lost": 0
+  }
+ },
+ "p2_det3": {
+  "interior_events_rereco": 757,
+  "faint, one view only": {
+   "n": 12,
+   "credit_cost": 12,
+   "credit_charge": 12,
+   "credit_gained": 0,
+   "credit_lost": 0,
+   "rank0_cost": 11,
+   "rank0_charge": 11,
+   "rank0_gained": 0,
+   "rank0_lost": 0
+  },
+  "merged in projection": {
+   "n": 146,
+   "credit_cost": 58,
+   "credit_charge": 80,
+   "credit_gained": 22,
+   "credit_lost": 0,
+   "rank0_cost": 33,
+   "rank0_charge": 39,
+   "rank0_gained": 7,
+   "rank0_lost": 1
+  },
+  "other": {
+   "n": 583,
+   "credit_cost": 565,
+   "credit_charge": 565,
+   "credit_gained": 0,
+   "credit_lost": 0,
+   "rank0_cost": 545,
+   "rank0_charge": 545,
+   "rank0_gained": 0,
+   "rank0_lost": 0
+  },
+  "unclear": {
+   "n": 16,
+   "credit_cost": 8,
+   "credit_charge": 8,
+   "credit_gained": 0,
+   "credit_lost": 0,
+   "rank0_cost": 5,
+   "rank0_charge": 5,
+   "rank0_gained": 0,
+   "rank0_lost": 0
+  }
+ }
+}

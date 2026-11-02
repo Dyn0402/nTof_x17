@@ -1,0 +1,46 @@
+[
+ {
+  "table": "/media/ucla/work/ntof_pass1/tanmax/r145_A_tm0.6.candidates.parquet",
+  "bundle": "/media/ucla/work/ntof_pass1/bundles/tm0.6_A",
+  "split_corrob": "count",
+  "events": 1500,
+  "count_fires": 165,
+  "charge_fires": 145,
+  "charge_only": 60,
+  "charge_only_implausible_other": 54,
+  "charge_only_pct": 4.0
+ },
+ {
+  "table": "/media/ucla/work/ntof_pass1/tanmax/r145_C_tm0.6.candidates.parquet",
+  "bundle": "/media/ucla/work/ntof_pass1/bundles/tm0.6_C",
+  "split_corrob": "count",
+  "events": 1500,
+  "count_fires": 191,
+  "charge_fires": 298,
+  "charge_only": 199,
+  "charge_only_implausible_other": 197,
+  "charge_only_pct": 13.266666666666667
+ },
+ {
+  "table": "/media/ucla/work/ntof_pass1/tanmax/r149_A_tm0.6.candidates.parquet",
+  "bundle": "/media/ucla/work/ntof_pass1/bundles/tm0.6_A",
+  "split_corrob": "count",
+  "events": 3357,
+  "count_fires": 51,
+  "charge_fires": 86,
+  "charge_only": 61,
+  "charge_only_implausible_other": 61,
+  "charge_only_pct": 1.817098599940423
+ },
+ {
+  "table": "/media/ucla/work/ntof_pass1/tanmax/r149_C_tm0.6.candidates.parquet",
+  "bundle": "/media/ucla/work/ntof_pass1/bundles/tm0.6_C",
+  "split_corrob": "count",
+  "events": 3071,
+  "count_fires": 55,
+  "charge_fires": 134,
+  "charge_only": 94,
+  "charge_only_implausible_other": 94,
+  "charge_only_pct": 3.0608922175187234
+ }
+]

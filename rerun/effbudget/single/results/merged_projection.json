@@ -1,0 +1,225 @@
+{
+ "sat_det3": {
+  "transitions_vs_cost": {
+   "p1": {
+    "events": 699,
+    "n_tracks_transitions": {
+     "1->2": 1
+    },
+    "n_splits": 22,
+    "events_table_changed": 0
+   },
+   "cost": {
+    "events": 699,
+    "n_tracks_transitions": {},
+    "n_splits": 22,
+    "events_table_changed": 0
+   },
+   "charge": {
+    "events": 699,
+    "n_tracks_transitions": {
+     "0->1": 6,
+     "1->2": 2
+    },
+    "n_splits": 32,
+    "events_table_changed": 10
+   }
+  },
+  "tc_tol": 197.3679857198247
+ },
+ "p2_det3": {
+  "transitions_vs_cost": {
+   "p1": {
+    "events": 927,
+    "n_tracks_transitions": {
+     "0->1": 1,
+     "2->1": 1
+    },
+    "n_splits": 50,
+    "events_table_changed": 0
+   },
+   "cost": {
+    "events": 927,
+    "n_tracks_transitions": {},
+    "n_splits": 50,
+    "events_table_changed": 0
+   },
+   "charge": {
+    "events": 927,
+    "n_tracks_transitions": {
+     "0->1": 25,
+     "0->2": 2,
+     "1->2": 7
+    },
+    "n_splits": 97,
+    "events_table_changed": 47
+   }
+  },
+  "tc_tol": 200.08030457126196
+ },
+ "summary": {
+  "merged in projection": {
+   "charge": {
+    "n": 195,
+    "credit": 0.5384615384615384,
+    "muon_track": 0.3641025641025641,
+    "muon_track_gated": 0.28205128205128205,
+    "both_tracks": 0.6717948717948717,
+    "split_merged_view": 0.2717948717948718,
+    "fit": {
+     "accepted": 53,
+     "no attempt": 33,
+     "refused: column_shared+both_plausible": 20,
+     "refused: distinguishable": 18,
+     "refused: both_plausible": 18,
+     "refused: column_shared": 17,
+     "refused: distinguishable+both_plausible": 11,
+     "refused: distinguishable+column_shared": 8,
+     "refused: ?": 6,
+     "refused: fstat+distinguishable+column_shared": 3,
+     "refused: distinguishable+column_shared+both_plausible": 3,
+     "refused: fstat+column_shared+both_plausible": 1,
+     "refused: fstat+distinguishable": 1,
+     "refused: fstat+distinguishable+column_shared+both_plausible": 1,
+     "refused: fstat": 1,
+     "refused: fstat+both_plausible": 1
+    }
+   },
+   "cost": {
+    "n": 195,
+    "credit": 0.41025641025641024,
+    "muon_track": 0.20512820512820512,
+    "muon_track_gated": 0.14871794871794872,
+    "both_tracks": 0.5333333333333333,
+    "split_merged_view": 0.0,
+    "fit": {
+     "no attempt": 127,
+     "refused: both_plausible": 26,
+     "refused: column_shared+both_plausible": 11,
+     "refused: column_shared": 10,
+     "refused: distinguishable": 10,
+     "refused: distinguishable+both_plausible": 5,
+     "refused: distinguishable+column_shared": 3,
+     "refused: distinguishable+column_shared+both_plausible": 2,
+     "refused: fstat+column_shared": 1
+    }
+   },
+   "p1": {
+    "n": 195,
+    "credit": 0.41025641025641024,
+    "muon_track": 0.20512820512820512,
+    "muon_track_gated": 0.14871794871794872,
+    "both_tracks": 0.5333333333333333,
+    "split_merged_view": 0.0,
+    "fit": {
+     "no attempt": 127,
+     "refused: both_plausible": 26,
+     "refused: column_shared+both_plausible": 11,
+     "refused: column_shared": 10,
+     "refused: distinguishable": 10,
+     "refused: distinguishable+both_plausible": 5,
+     "refused: distinguishable+column_shared": 3,
+     "refused: distinguishable+column_shared+both_plausible": 2,
+     "refused: fstat+column_shared": 1
+    }
+   },
+   "pass1": {
+    "n": 195,
+    "credit": 0.41025641025641024,
+    "muon_track": 0.20512820512820512,
+    "muon_track_gated": 0.14871794871794872,
+    "both_tracks": 0.5333333333333333,
+    "split_merged_view": 0.0,
+    "fit": {
+     "no attempt": 127,
+     "refused: both_plausible": 26,
+     "refused: column_shared+both_plausible": 11,
+     "refused: column_shared": 10,
+     "refused: distinguishable": 10,
+     "refused: distinguishable+both_plausible": 5,
+     "refused: distinguishable+column_shared": 3,
+     "refused: distinguishable+column_shared+both_plausible": 2,
+     "refused: fstat+column_shared": 1
+    }
+   },
+   "pass1_no_attempt_reason": {
+    "multi view: < 2 plausible candidates": 60,
+    "multi view: plausible pair not coincident": 45,
+    "count trigger satisfied (residual/width/selection)": 22
+   }
+  },
+  "unclear": {
+   "charge": {
+    "n": 24,
+    "credit": 0.5416666666666666,
+    "muon_track": 0.25,
+    "muon_track_gated": 0.20833333333333334,
+    "both_tracks": 0.5833333333333334,
+    "split_merged_view": 0.0,
+    "fit": {
+     "refused: distinguishable": 6,
+     "no attempt": 6,
+     "refused: distinguishable+column_shared": 3,
+     "refused: column_shared": 3,
+     "refused: fstat+distinguishable+column_shared": 2,
+     "refused: distinguishable+column_shared+both_plausible": 2,
+     "refused: fstat+distinguishable+column_shared+both_plausible": 1,
+     "refused: column_shared+both_plausible": 1
+    }
+   },
+   "cost": {
+    "n": 24,
+    "credit": 0.5416666666666666,
+    "muon_track": 0.25,
+    "muon_track_gated": 0.20833333333333334,
+    "both_tracks": 0.5833333333333334,
+    "split_merged_view": 0.0,
+    "fit": {
+     "no attempt": 13,
+     "refused: distinguishable": 4,
+     "refused: distinguishable+column_shared": 3,
+     "refused: column_shared": 2,
+     "refused: distinguishable+column_shared+both_plausible": 1,
+     "refused: column_shared+both_plausible": 1
+    }
+   },
+   "p1": {
+    "n": 24,
+    "credit": 0.5416666666666666,
+    "muon_track": 0.25,
+    "muon_track_gated": 0.20833333333333334,
+    "both_tracks": 0.5833333333333334,
+    "split_merged_view": 0.0,
+    "fit": {
+     "no attempt": 13,
+     "refused: distinguishable": 4,
+     "refused: distinguishable+column_shared": 3,
+     "refused: column_shared": 2,
+     "refused: distinguishable+column_shared+both_plausible": 1,
+     "refused: column_shared+both_plausible": 1
+    }
+   },
+   "pass1": {
+    "n": 24,
+    "credit": 0.5416666666666666,
+    "muon_track": 0.25,
+    "muon_track_gated": 0.20833333333333334,
+    "both_tracks": 0.5833333333333334,
+    "split_merged_view": 0.0,
+    "fit": {
+     "no attempt": 13,
+     "refused: distinguishable": 4,
+     "refused: distinguishable+column_shared": 3,
+     "refused: column_shared": 2,
+     "refused: distinguishable+column_shared+both_plausible": 1,
+     "refused: column_shared+both_plausible": 1
+    }
+   },
+   "pass1_no_attempt_reason": {
+    "multi view: < 2 plausible candidates": 9,
+    "multi view: plausible pair not coincident": 3,
+    "count trigger satisfied (residual/width/selection)": 1
+   }
+  }
+ }
+}

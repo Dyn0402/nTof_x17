@@ -14,6 +14,7 @@ What carries, what is replaced, and why (each choice is written into the bundle'
       rigid tilt (w0_const_*) belongs to the bench mounting and is dropped with w0.
   replaced, x-y pairing
       xy_pairing['select'] -> 'gate' (the bench golden rows carry 'cost': rerun/effbudget/single/PAIRING_FIX_2026-11-02.md)
+      xy_pairing['split_corrob'] -> 'count' (the bench carries 'charge': rerun/effbudget/single/MERGED_PROJECTION_2026-11-02.md)
   dropped
       v_map (bench v(x,y) of one night), w0 (rigid tilt of the bench mounting), the bench t0_abs (the bench latency).
   replaced
@@ -79,6 +80,11 @@ def build(arm, out, src=None, v=None, k=20, sat=3550.0, bow=True, latency=None, 
     if cal.xy_pairing:
         rec['xy_pairing_select'] = dict(source=cal.xy_pairing.get('select', 'gate'), ntof='gate')
         cal.xy_pairing = dict(cal.xy_pairing, select='gate')
+        # two-track split corroboration: the bench lets a charge-corroborated split through with one plausible child
+        # (MERGED_PROJECTION_2026-11-02.md); on run_145 that rule would fire on 4 % (A) / 13 % (C) of beam events where
+        # the 'count' rule does not, with no two-particle truth on beam to say it is right -> n_TOF keeps 'count'
+        rec['xy_pairing_split_corrob'] = dict(source=cal.xy_pairing.get('split_corrob', 'count'), ntof='count')
+        cal.xy_pairing = dict(cal.xy_pairing, split_corrob='count')
     cal.n_depth_bins = int(k)
     cal.sat_adc = float(sat)
     cal.tan_max = None if tan_max is None else float(tan_max)
