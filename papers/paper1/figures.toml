@@ -86,6 +86,20 @@ source = "rerun/effbudget/single/figures/residuals.pdf"
 producer = ".venv/bin/python rerun/effbudget/single/radius.py --root <cosmic_bench mirror> && .venv/bin/python rerun/effbudget/single/make_figures.py"
 note = "2026-11-02; Dylan: show the full distribution behind the R = 5 mm choice."
 
+[fig.loss_budget]
+title = "Where the det3 single-track inefficiency goes, full active area (% of single tracks, by class)"
+state = "current"
+source = "rerun/effbudget/single/figures/loss_budget.pdf"
+producer = ".venv/bin/python rerun/effbudget/single/single_track_area.py --root <cosmic_bench mirror> && .venv/bin/python rerun/effbudget/single/make_figures.py"
+note = "2026-11-02, paper_style; both golden rows; edge-zone classes are the budget ladder (no A1 waveform class outside the interior)."
+
+[fig.two_particle]
+title = "det3 events with a second particle: count per configuration and muon recovery"
+state = "current"
+source = "rerun/effbudget/single/figures/two_particle.pdf"
+producer = ".venv/bin/python rerun/effbudget/single/single_track_area.py --root <cosmic_bench mirror> && .venv/bin/python rerun/effbudget/single/make_figures.py"
+note = "2026-11-02, paper_style; pass 1, BEFORE the merged-projection and discharge-veto fixes: rebuild after they land."
+
 [fig.eff_vs_hv_discharge]
 title = "Efficiency and discharge loss against the resist HV (det3, det6, det7)"
 state = "placeholder"
