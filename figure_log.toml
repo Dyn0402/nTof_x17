@@ -342,3 +342,8 @@ change = "Checklist pass: Full width; (a) bench over the whole chamber with the 
 date = "2026-11-02"
 fig = "*"
 change = "Checklist pass on 24 figures (printed widths, no in-figure titles, panel labels, one legend above, palette only, embedded TrueType fonts, 300 dpi rasters in PDFs); paper_style gains fig_for / panel_label(s) / legend_above / det_handles / view_handles. Numbers unchanged. Open: histograms stay step outlines; paper1_ops figures keep thin joining lines; unit brackets mixed ([ns] vs (um/ns)). Commit 57633160."
+
+[[entry]]
+date = "2026-11-02"
+fig = "two_particle"
+change = "Merged-projection fix landed (28ac36a0, bench switch split_corrob = charge): on the 195 interior merged events the muon is credited 53.8 % (was 41.0 %). Needs waveforms, so the figure keeps the pass-1 44 % until the next bench re-pass; text says so."
