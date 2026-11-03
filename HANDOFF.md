@@ -1,5 +1,27 @@
 # Handoff
 
+## Paper I: all chamber A products on the two-track re-pass — updated 2026-11-03 evening (dylan-Yoga)
+
+**Resume:** Dylan reviews the deck/paper (main.pdf, 43 pp); pick two_particle (b) (17907 vs 16344); decide the 0.5-1.3x bow bound.
+
+**Done (commit e7171dc3):** Dylan: "update all figures to the most up-to-date numbers ... get everything fixed".
+- Condor DAG ~/x17rerun/paper1_eff_twotrack (budget/angles/a1 on Analysis_pass1_twotrack) -> EOS x17rerun/paper1_eff_twotrack,
+  validated vs paper1_eff. Every consumer of the two golden rows now reads the two-track products directly (new
+  --root/--eff/--analysis/--tree options, defaults unchanged; producer strings in figures.toml; figure_log entries).
+- Text requoted throughout (§3.3, §5, §8, 8b, A1, A4); A1 table was PRE-PASS, now generated (a1_table.py);
+  satblob test re-run (condor, /eos/user/d/dneff/satblob_tt); bow text re-derived with the same 2-D estimator
+  (fb_bow_maps/final_tables.py, results_final/, /eos/user/d/dneff/bow_final).
+- Local merged roots for re-runs: ~/work_data/claude-jobs/twotrack/{ttroot,mergedroot,timeseries_tt,...}.
+
+**Open:** two_particle (b): 17907 is messy on tt; 16344 is the clean merged-in-Y alternative (sheet in
+~/work_data/claude-jobs/75b1951f_a1/sheet/). 08b \requote{0.5-1.3x} (telescope-plane bound, not derivable from tables).
+Bow figures show the 1-D profile estimator, the text the 2-D one (agree on dish + sign; r_f C X 1.9 vs 0.87).
+Other chambers, A scans and SPS stay on pass 1 (fixes only affect multi-track events; a full bench re-pass would be condor).
+Not synced to Overleaf.
+
+**Gotchas:** compile on lxplus with CVMFS TeX Live 2026 (see below); \input inside a tabular must not be followed by
+\hline (the snippet carries its own closing rule).
+
 ## Paper I figure feedback: round 4 (laptop) — updated 2026-11-03 (dylan-Yoga)
 
 **Resume:** Dylan reviews round 4 in the deck + note replies.
