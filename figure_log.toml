@@ -442,3 +442,9 @@ date = "2026-11-03"
 fig = "sps_setup"
 status = "for review"
 change = "Was a placeholder: now the mpgd26 SPS side render with chamber E (new sps_side_mx17 entry; label 'MX17 chamber E'), title/footer cropped. Caption: chamber E z = 1155 mm is the run-config nominal, not a survey. Candidate for the appendix."
+
+[[entry]]
+date = "2026-11-03"
+fig = "hv_metrics"
+status = "for review"
+change = "Six panels. New (a) gain proxy: median fitted track charge (log; x2 per 18.8 V below 465 V) and the tracks with a saturated strip (0 -> 30 % at 490 V); new (e) angle scale (fit vs M3 tan, 0.99-1.02 up to 510 V: no tilt). The 'presumably' sentence is replaced by measurements: angle s68 flat across a x17 range of per-track charge, fit's own angle error flat, timing falls with early amplitude."

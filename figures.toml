@@ -105,10 +105,10 @@ producer = ".venv/bin/python rerun/paper1_ops/make_report.py --spark <spark> --t
 source = "rerun/paper1_ops/figures/eff_vs_hv_discharge.pdf"
 
 [fig.hv_metrics]
-title = "Chamber A against the resist HV: efficiency, angle s68, position core, time resolution (6-27 scan)"
+title = "Chamber A against the resist HV: gain proxy, efficiency, time, angle s68, angle scale, position core (6-27 scan)"
 state = "current"
 note = "New 2026-11-03 (Dylan: A looks on plateau at 430 V, why 490 V?). Per-row metrics of the 6-27 HV scan: eff_ig (effbudget pass1 rows.csv), discharge loss (eff_vs_hv_discharge.csv), s68 and mesh position core of the pass arm (paper1_res rows JSONs), timing (paper1_timing rows.csv). Efficiency, angle and position flat 425-505 V; only timing improves (109 -> 23 ns)."
-producer = ".venv/bin/python rerun/paper1_ops/hv_metrics.py --rows <EOS x17rerun/paper1_res/results_18efcd0d/rows, fetched over xrootd>"
+producer = ".venv/bin/python rerun/paper1_ops/hv_metrics.py --rows <EOS x17rerun/paper1_res/results_18efcd0d/rows> --events <EOS cosmic_bench/Analysis_pass1/mx17_det3_saturday_scan_6-27-26> --rays <EOS x17rerun/paper1_eff/budget/mx17_det3_saturday_scan_6-27-26>  # all fetched over xrootd"
 source = "rerun/paper1_ops/figures/hv_metrics.pdf"
 
 [fig.xy_pairing]
