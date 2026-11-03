@@ -99,11 +99,15 @@ def main():
             ax.spines[sp].set_visible(True)
         if big:
             ax.set_xticks([0, 100, 200, 300, 400]); ax.set_yticks([0, 100, 200, 300, 400])
-            ax.set_xlabel(r'$x$ at mid-gap [mm]'); ax.set_ylabel(r'$y$ at mid-gap [mm]')
+            ax.set_xlabel(r'$x$ at mid-gap [cm]'); ax.set_ylabel(r'$y$ at mid-gap [cm]')
         else:
             ax.set_xticks([0, 200, 400]); ax.set_yticks([0, 200, 400])
             if d in ('det7', 'det4'):
-                ax.set_xlabel(r'$x$ [mm]')
+                ax.set_xlabel(r'$x$ [cm]')
+        # 2026-11-03 (Dylan): tick labels in cm (data stay in mm; the CSV is in mm) to save a zero
+        from matplotlib.ticker import FuncFormatter
+        cm = FuncFormatter(lambda v, _: f'{v / 10:g}')
+        ax.xaxis.set_major_formatter(cm); ax.yaxis.set_major_formatter(cm)
         if d in ('det6', 'det4'):
             ax.tick_params(labelleft=False)
         if d in ('det2', 'det6'):

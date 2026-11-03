@@ -25,6 +25,14 @@ note = "2026-11-03: was a placeholder. Gerbers DFS3498A + common/mx17_active_are
 source = "papers/paper1/figs/out/readout_layout.pdf"
 producer = ".venv/bin/python papers/paper1/figs/make_readout_layout.py  # reads figs/data/readout_gerber_extract.npz (extract_readout_gerber.py, MX17_Geant gerbers)"
 
+
+[fig.readout_layout_allpads]
+title = "Readout board, variant: every pad outlined to scale in (a) (not in the .tex; sub-pixel, renders as mush)"
+state = "current"
+source = "papers/paper1/figs/out/readout_layout_allpads.pdf"
+producer = ".venv/bin/python papers/paper1/figs/make_readout_layout.py --allpads"
+note = "2026-11-03: pad pitch 0.78 mm = 0.86 px at 200 dpi, 2.6 px at 600 dpi; 262,144 outlines, 4.5 MB PDF."
+
 [fig.tpc_principle]
 title = "TPC principle: (a) the chamber in section, depth = drift time; (b) a real chamber A muon (Run 1 event 7884, X view); (c) the forward model at the pass-1 fit"
 state = "current"
@@ -69,6 +77,14 @@ source = "rerun/paper1_ops/figures/hv_scan.pdf"
 producer = ".venv/bin/python rerun/paper1_ops/make_report.py --spark <spark> --telgain <tel_gain> --spsgain <sps_gain> --hitsgain <hits_gain>  # inputs: EOS cosmic_bench/x17rerun/paper1_ops/{spark,tel_gain,sps_gain,hits_gain}, fetched over xrootd (70 MB); spark.sub (lxplus condor) makes them"
 note = "2026-11-03 (Dylan): combined into one row, a panel per chamber A-D, efficiency left axis (solid) and discharges per trigger right axis (dashed, open, 0-0.5 linear), plateau shaded, long-run stars; absorbs eff_vs_hv_discharge (removed from section 5, claims moved to the caption); redraw alone with make_report.py --hv-scan-only (reads results/tradeoff.csv). Earlier: Rebuilt 2026-10-31 on pass 1 (was the 06-29 hits figure 30, det3 only). Efficiency = the loss budget's interior_good (rerun/effbudget/pass1); discharge = a vetoed trigger (> 50 strips) with a chip of >= 8 strips over 3000 ADC; Numbers: rerun/paper1_ops/report.html. Split restyled 2026-11-02 (paper_style): the discharge loss vs efficiency moved to eff_vs_hv_discharge (section 5); this figure keeps (a) efficiency and (b) discharges per trigger; det4 golden star has its own legend entry. Numbers unchanged (results/*.csv and summary.json reproduce byte for byte). Checklist pass 2026-11-02: 4.3 in drawn (4.4 in PDF), fonts embedded; titles -> (a)/(b), one legend above, efficiency axis 30-100 %. Numbers unchanged."
 
+
+[fig.hv_scan_single]
+title = "HV scans of chambers A-D on one axis pair: interior efficiency (solid, left) and discharges per trigger (dashed, right)"
+state = "current"
+source = "rerun/paper1_ops/figures/hv_scan_single.pdf"
+producer = ".venv/bin/python rerun/paper1_ops/make_report.py --hv-scan-only   # reads results/tradeoff.csv; also redraws hv_scan"
+note = "2026-11-03 variant for Dylan to choose from the deck (not in the .tex); hv_scan (4 panels) stays the paper default."
+
 [fig.spark_deadtime]
 title = "Efficiency and charge against the time since the previous discharge: no dead time"
 state = "current"
@@ -86,7 +102,7 @@ producer = ".venv/bin/python rerun/paper1_charge/make_report.py --in <EOS x17rer
 note = "Rebuilt 2026-10-31 on pass 1 (was the 07-12 hits figure 61). Interior >= 30 mm, det7 X ch 256-511, single track, M3-matched; numbers in rerun/paper1_charge/report.html. Restyled 2026-11-02 (paper_style): palette, det3 first and heaviest, mathtext x label, legend in the empty upper right (median, core sigma, n); summary.json/rows.csv/report.html reproduce byte for byte. Checklist pass 2026-11-02: 4.3 in drawn (4.4 in PDF), fonts embedded; x label just ln(Q_X/Q_Y), legend chamber names only: median / core sigma / n move to the caption (summary.json golden[]). Numbers unchanged."
 
 [fig.eff_vs_radius]
-title = "Chamber A efficiency against the matching radius (Runs 1+2), any track vs the kept track, with the accidental rate"
+title = "Chamber A efficiency against the matching radius (Runs 1+2, interior): any candidate within R, with the accidental rate (appendix A4)"
 state = "current"
 source = "rerun/effbudget/single/figures/eff_vs_radius.pdf"
 producer = ".venv/bin/python rerun/effbudget/single/radius.py --root <cosmic_bench mirror> && .venv/bin/python rerun/effbudget/single/make_figures.py"
@@ -251,7 +267,7 @@ note = "2026-11-03: new (Dylan: the key plot showing attachment at SPS vs the be
 
 [fig.timing]
 appendix_candidate = "Dylan 2026-11-02: keep in the body for now; maybe move to an appendix later (see how the paper reads)"
-title = "Chamber A time resolution: vs resist HV, the uncorrelated part vs signal size (all rows and Runs 1+2 at one HV), and vs drift field"
+title = "Chamber A time resolution: vs resist HV and the uncorrelated part vs signal size (all rows and Runs 1+2 at one HV); the drift-field scan is timing_driftscan (A5)"
 state = "current"
 source = "rerun/paper1_timing/figures/timing.pdf"
 section_state = "partial"
@@ -266,6 +282,14 @@ producer = "cd rerun/paper1_timing && ../../.venv/bin/python make_report.py"
 note = "2026-11-03: the previous all-chamber timing figure, renamed."
 
 # --- 8 Tracking and resolution ------------------------------------------------
+
+
+[fig.timing_driftscan]
+title = "Chamber A time resolution against the drift field at 490 V (appendix A5): event time, (X-Y)/sqrt2, event time in mm of drift"
+state = "current"
+source = "rerun/paper1_timing/figures/timing_driftscan.pdf"
+producer = "cd rerun/paper1_timing && ../../.venv/bin/python make_report.py"
+note = "2026-11-03: the former panel (c) of timing, moved to appendix A5 (Dylan: details in a short appendix section)."
 
 [fig.angle_resolution]
 title = "Chamber A angular resolution: fitted vs reference angle (2D) and the residual median with +-s68 per angle bin (Runs 1+2)"
@@ -317,7 +341,7 @@ producer = ".venv/bin/python rerun/paper1_res/bow_pass1.py plot  # re-plots resu
 # --- 9 det4 stripes -----------------------------------------------------------
 
 [fig.det4_stripes]
-title = "Chamber E: the non-amplifying stripes, bench (reference) and SPS (uRWELL telescope), X-view efficiency against x"
+title = "Chamber E: X-view efficiency map at SPS (run 63) with the resolution region R and comparison patches R2-R6"
 state = "current"
 source = "papers/paper1/figures/det4_stripes.pdf"
 section_state = "ready"

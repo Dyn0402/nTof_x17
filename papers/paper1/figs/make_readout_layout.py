@@ -27,7 +27,8 @@ sys.path[:0] = [str(REPO / 'papers'), str(REPO)]
 import paper_style as ps                                            # noqa: E402
 from common.mx17_active_area import (PASSIVATION_Y_LOW_MM, PASSIVATION_Y_HIGH_MM, STRIP_MAX_MM)  # noqa: E402
 
-OUT = HERE / 'out' / 'readout_layout'
+ALLPADS = '--allpads' in sys.argv       # variant: outline every one of the 512 x 512 pads in (a)
+OUT = HERE / 'out' / ('readout_layout_allpads' if ALLPADS else 'readout_layout')
 E = np.load(HERE / 'data' / 'readout_gerber_extract.npz')
 C0 = 199.29                         # gerber -> local shift [mm]; pad (0,0) centre
 PITCH, PAD = 0.78, 0.68
@@ -53,6 +54,14 @@ axa.add_patch(Rectangle((-220 + C0, -220 + C0), 470, 470, fc=BOARD_FILL, ec=ps.I
 axa.add_patch(Rectangle((-206 + C0, -206 + C0), 412, 412, fc='none', ec=ps.MUTED, lw=0.6, ls=(0, (4, 2)), zorder=2))
 mx0, mx1 = -0.39, 2 * C0 + 0.39                                   # metallised pad edges (local)
 axa.add_patch(Rectangle((mx0, mx0), mx1 - mx0, mx1 - mx0, fc=PADFILL, ec='none', zorder=3))
+if ALLPADS:       # every pad, to scale: 0.68 mm squares on a 0.78 mm pitch (thin light outlines; one PolyCollection)
+    from matplotlib.collections import PolyCollection
+    g = np.arange(512) * PITCH
+    gx, gy = np.meshgrid(g, g)
+    o = PAD / 2
+    quads = np.stack([np.stack([gx - o, gy - o], -1), np.stack([gx + o, gy - o], -1),
+                      np.stack([gx + o, gy + o], -1), np.stack([gx - o, gy + o], -1)], -2).reshape(-1, 4, 2)
+    axa.add_collection(PolyCollection(quads, facecolors='white', edgecolors=ps.MUTED, linewidths=0.04, zorder=4))
 lo, hi = PASSIVATION_Y_LOW_MM, STRIP_MAX_MM - PASSIVATION_Y_HIGH_MM
 for ya, yb in ((mx0, lo), (hi, mx1)):
     axa.add_patch(Rectangle((mx0, ya), mx1 - mx0, yb - ya, fc='white', ec=ps.INK, hatch='//////', lw=0, alpha=0.9,
@@ -171,7 +180,7 @@ fig.text(3.78 / W, 0.47 / H,
          'green: traces of the even strips\nblack bars: vias of the odd strips (to L7)\ndots: connector contact pads',
          fontsize=FS * 0.95, color=ps.INK, ha='left', va='top', linespacing=1.15)
 
-fig.savefig(OUT.with_suffix('.png'), dpi=200)
+pass
 fig.canvas.draw(); _b = fig.get_tightbbox(fig.canvas.get_renderer()); print('content bbox in', round(_b.x0, 2), round(_b.x1, 2), 'w', round(_b.width, 2), 'h', round(_b.height, 2))
 ps.save(fig, OUT)
 print('ok', OUT)

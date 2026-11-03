@@ -740,3 +740,118 @@ date = "2026-11-03"
 fig = "*"
 status = "for review"
 change = "Dylan's pick: display style jet (zero white) normalised to 4096 (evd.DEFAULT = 'jet'); the dashed fits now run across the whole time axis like the solid black reference (past mesh and cathode); fits magenta (first) / brown (second, dotted = candidate not kept). All 17 display figures and tpc_principle(_stacked) regenerated; captions updated."
+
+# --- 2026-11-03 round 4 (laptop; Dylan's note items added 15:27-16:37) ---
+[[entry]]
+date = "2026-11-03"
+fig = "tpc_principle"
+status = "for review"
+change = "Round 4: (a) sketch now fills the full height of the data panels; legend of (b) at bottom right; (c) renamed 'fit model' (also caption and stacked variant)."
+
+[[entry]]
+date = "2026-11-03"
+fig = "evd_showcase"
+status = "for review"
+change = "Round 4: labels '(a) a single cosmic muon', '(b) two cosmic muons'; mesh and cathode lines now identical in X and Y (each view drawn in time since its own mesh crossing, shifted onto the common t0; fix in evd.py, applies to every display). Caption: fits magenta/brown (said blue/green)."
+
+[[entry]]
+date = "2026-11-03"
+fig = "two_particle"
+status = "for review"
+change = "Round 4: (b) restored to event 17907 (merged in projection, no axis break); (c) replaced with event 33974 (muon plus a wide curled deposit, vetoed; 5423, 4300, 11127 considered). Efficiencies unchanged."
+
+[[entry]]
+date = "2026-11-03"
+fig = "loss_gallery"
+status = "for review"
+change = "Round 4: mesh/cathode lines consistent across views (evd.py). The gallery never contained loss_band; the deck's A1 contact sheet did (top left). Deck now gives loss_band and loss_gallery their own slides; gallery caption points to fig:loss_band."
+
+[[entry]]
+date = "2026-11-03"
+fig = "loss_band"
+status = "for review"
+change = "Own figure and own deck slide (was the invisible top-left tile of the A1 contact sheet). Re-rendered with the evd.py mesh fix; all A1 displays re-rendered."
+
+[[entry]]
+date = "2026-11-03"
+fig = "chamber_stack"
+status = "for review"
+change = "Round 4: layers labelled by name only, all dimensions moved to the caption (dagger = assumed in spec.py); (a) widened and cut off with a fade on the right, plate and right wall removed; (b) Y strips redrawn as solid copper (bus + stub + land, no outlines), X strip an orange band with a schematic induced-charge gradient, L7 fan-out dropped, continuous FR4; all widths/pitches/thicknesses in (b) to scale in their own direction, z stretched 2.2x."
+
+[[entry]]
+date = "2026-11-03"
+fig = "readout_layout"
+status = "for review"
+change = "Added --allpads variant (readout_layout_allpads) outlining all 512x512 pads in (a). Pitch 0.86 px at 200 dpi, 2.6 px at 600 dpi, gap 0.3 px: renders as grey mush / moire; default unchanged."
+
+[[entry]]
+date = "2026-11-03"
+fig = "bench_setup"
+status = "for review"
+change = "Scale key shrunk to 200 mm bars in empty space (no extra width). Both MX17 slots one colour, labels 'MX17 (top slot)' / 'MX17 (bottom slot)'. Muon extended past both trigger scintillators. Reference-lever-arm arrow removed."
+
+[[entry]]
+date = "2026-11-03"
+fig = "sps_setup"
+status = "for review"
+change = "'Nominal, not surveyed' caveat removed. Drift-direction arrow replaced by 'drift window' (upstream face) and 'readout PCB' (downstream face) arrows; drift-window-upstream still assumed. Moved to appendix (app:sps, end of A3); main text keeps a one-line ref."
+
+[[entry]]
+date = "2026-11-03"
+fig = "charge_balance"
+status = "for review"
+change = "Legend font 1.1x base (was 0.85x), 3 columns; x range 0.40-0.80 (inset room on the right); y limit +22 % so the legend clears chamber A's peak. Numbers unchanged."
+
+[[entry]]
+date = "2026-11-03"
+fig = "xy_pairing"
+status = "for review"
+change = "Single-track band solid (alpha 0.25 let grid lines show as white stripes); y max = max bin + 8 (328, tallest bin 320); height 70 % (aspect 0.434). Re-plotted from figures/xy_pairing.csv (make_figures.py --only-xy). Numbers unchanged."
+
+[[entry]]
+date = "2026-11-03"
+fig = "two_velocities"
+status = "for review"
+change = "Height 80 % (6.1 x 3.44 in). (a) time axis cut at 2000 ns (was 2750): the data end at 1590 ns, only the 177 V/cm model tail lies beyond, reaching 0 at ~2000 ns. Numbers unchanged."
+
+[[entry]]
+date = "2026-11-03"
+fig = "efficiency_map"
+status = "for review"
+change = "Axes in cm (labels only; data and CSV stay in mm); caption says 'axes in cm'. Numbers unchanged."
+
+[[entry]]
+date = "2026-11-03"
+fig = "hv_scan_single"
+status = "for review"
+change = "New variant: chambers A-D on one axis pair; efficiency solid (left), discharges per trigger dashed open (right), chamber colours, legend colour = chamber and line style = quantity, stars = long runs. The 4-panel hv_scan stays the default until Dylan picks."
+
+[[entry]]
+date = "2026-11-03"
+fig = "eff_vs_radius"
+status = "for review"
+change = "Open circles (production pick) dropped; one curve = the quoted definition (nearest candidate to the ray in each view, radial |r| <= R). radius.py now uses the circle like budget det_any_R (was a square, +0.15 pt): R = 5 mm reads 94.98 % (was 95.12). Moved to new appendix A4 (efficiency definition) with residuals."
+
+[[entry]]
+date = "2026-11-03"
+fig = "residuals"
+status = "for review"
+change = "Unchanged; moved to appendix A4 (efficiency definition)."
+
+[[entry]]
+date = "2026-11-03"
+fig = "timing"
+status = "for review"
+change = "Panel (c) (drift-field scan) moved out to timing_driftscan; now (a) HV scan, (b) amplitude curve. Numbers unchanged."
+
+[[entry]]
+date = "2026-11-03"
+fig = "timing_driftscan"
+status = "for review"
+change = "New: former timing (c), chamber A drift-field scan at 490 V, in new appendix A5 (timing details: S/N not walk, fixed-amplitude HV independence, ~38 ns = 1.3 mm common part)."
+
+[[entry]]
+date = "2026-11-03"
+fig = "det4_stripes"
+status = "for review"
+change = "Panel (b) dropped; one full-width X-view efficiency map (run 63) with region R (X 150-160 x Y 222-246 mm, where every SPS resolution number is measured) boxed, and patches R2-R6 dashed (rerun/paper1_figs/sps_patches.py -> results/sps_patches.json: sigma_X 113-186, sigma_Y 120-172 um; R mid-range in X, good end in Y). Paper numbers unchanged."

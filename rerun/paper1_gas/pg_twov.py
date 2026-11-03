@@ -162,7 +162,7 @@ def fig():
     shade = dict(zip(map(str, STACK_V), [cmap(f) for f in (0.0, 0.3, 0.58, 0.82)]))
     # checklist pass 2026-11-02: full width, no panel titles, (a)-(c) labels, one field legend above the panels
     # Dylan 2026-11-03: (a) on its own full-width row to show its extent; (b), (c) side by side below
-    fig = plt.figure(figsize=(6.1, 4.3), layout='constrained')
+    fig = plt.figure(figsize=(6.1, 4.3 * 0.8), layout='constrained')
     gs = fig.add_gridspec(2, 2, height_ratios=[1.0, 1.0])
     axs = [fig.add_subplot(gs[0, :]), fig.add_subplot(gs[1, 0]), fig.add_subplot(gs[1, 1])]
     rows = []
@@ -182,7 +182,7 @@ def fig():
         for i in np.where(k)[0]:
             rows.append(dict(panel='a', drift_V=int(Vd), E=F['E'], t_ns=t[i], stack=y[i], err=e[i], model=m[i],
                              col_start_ns=t0, col_end_ns=t1))
-    ax.set_xlim(-250, 2750); ax.set_ylim(-0.1, 1.12)
+    ax.set_xlim(-250, 2000); ax.set_ylim(-0.1, 1.12)   # 2026-11-03: data end at 1590 ns (the window), the 500 V model tail reaches 0 at ~2000 ns
     ax.set_xlabel(r'time after leading edge $t$ (ns)'); ax.set_ylabel('strip-sum signal (normalised)')
 
     ax = axs[1]

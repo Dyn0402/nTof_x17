@@ -2,7 +2,7 @@
 """make_report.py -- Paper I §7 timing: figures + report.html from results/ (rows_matched.csv, rows.csv, angle.json,
 amplitude.json, sps_timing.json, t0_position.json).  Run from this directory: ../../.venv/bin/python make_report.py
 
-Figures (figures/): timing.pdf/png (the paper figure: HV scans, the amplitude curve with SPS, the golden-row budget),
+Figures (figures/): timing.pdf/png (the paper figure: (a) HV scan, (b) amplitude curve), timing_driftscan (appendix), timing_all (appendix A3),
 angle.png, drift.png.  Depths in mm use each row's timing v: the S4 golden-row v of the chamber scaled by the row's
 column duration, v_row = v_S4 x T_golden / T_row (colsum's median T; relative T is what colsum measures well).
 """
@@ -134,15 +134,15 @@ def fig_main(m, amp):
     """The main-text figure `timing`: chamber A only (Dylan 2026-11-03; all chambers are timing_all, appendix).
     (a) event time and the uncorrelated part (X-Y)/sqrt2 against the resist HV of the 6-27 scan; (b) the uncorrelated
     part against the early signal amplitude: every chamber-A row pooled (filled) and Runs 1+2 alone, one HV, binned in
-    the per-track amplitude (open; walk_snr.py); (c) the drift-field scan at 490 V (M3-matched, rows_matched.csv) in ns,
-    and the event time in drift distance (x the row's timing v, walk_snr.py) on the right axis (Dylan 2026-11-03)."""
+    the per-track amplitude (open; walk_snr.py). 2026-11-03: the drift-field scan that was panel (c) is now its own figure,
+    timing_driftscan (fig_driftscan), for the appendix on the timing details (Dylan)."""
     import sys
     sys.path.insert(0, os.path.join(HERE, '..', '..', 'papers'))
     import paper_style as ps
     from matplotlib.lines import Line2D
     ps.use()
     ws = jload('walk_snr.json')
-    fig, ax = ps.fig_for('full', height=2.3, nrows=1, ncols=3, gridspec_kw=dict(width_ratios=[1, 1, 1.12]))
+    fig, ax = ps.fig_for('full', height=2.4, nrows=1, ncols=2)
     d = 'mx17_3'; rows = []
     run, dv = HV_RUNS[d]
     s = m[(m.det == d) & (m.run == run) & (m.n >= 150) & (m.cls != 'skeptical') & (m.drift_V == dv)]
@@ -168,7 +168,20 @@ def fig_main(m, amp):
     a.set_yticks([10, 20, 50, 100, 200]); a.set_yticklabels(['10', '20', '50', '100', '200']); a.minorticks_off()
     a.set_xlabel('early amplitude, X + Y [ADC]'); a.set_ylabel(r'$(X-Y)/\sqrt{2}$ (s68) [ns]')
     a.legend(loc='lower left', handlelength=1.2)
-    a = ax[2]
+    ps.panel_labels(ax)
+    ps.save(fig, os.path.join(F, 'timing'), data=pd.DataFrame(rows))
+
+def fig_driftscan(ws):
+    """Appendix figure `timing_driftscan` (was panel (c) of `timing`): chamber A's drift-field scan at 490 V (M3-matched,
+    rows_matched.csv): event time and (X-Y)/sqrt2 in ns, and the event time in mm of drift (x the row's timing v) on the
+    right axis. 300 V has no mm (the column overruns the readout window, no timing v)."""
+    import sys
+    sys.path.insert(0, os.path.join(HERE, '..', '..', 'papers'))
+    import paper_style as ps
+    from matplotlib.lines import Line2D
+    ps.use()
+    fig, a = ps.fig_for(4.3, height=2.5)
+    ax = [a]; rows = []
     ds = [r for r in ws.get('drift_scan', []) if r['n'] >= 150]
     if ds:
         E = np.array([r['E_Vcm'] for r in ds])
@@ -183,12 +196,13 @@ def fig_main(m, amp):
         t.plot(E[k], np.array([r['evt_mm'] for r in ds])[k], color=ps.MODEL, marker='D', ms=3.0, mfc='white', ls=':',
                lw=0.9)
         t.set_ylim(0, 2.4); t.set_ylabel('event time [mm of drift]', labelpad=2)
-        a.legend(handles=[Line2D([], [], color=ps.MODEL, marker='D', mfc='white', ls=':', label='event time [mm]')],
+        a.legend(handles=[Line2D([], [], color=ps.color('det3'), marker='o', ls='-', label='event time [ns]'),
+                          Line2D([], [], color=ps.color('det3'), marker='o', mfc='white', ls='--', label=r'$(X-Y)/\sqrt{2}$ [ns]'),
+                          Line2D([], [], color=ps.MODEL, marker='D', mfc='white', ls=':', label='event time [mm, right]')],
                  loc='upper right')
-        rows += [dict(panel='c', x=r['E_Vcm'], drift_V=r['drift_V'], sigma_evt=r['sigma_evt'], sigma_xy=r['sigma_xy'],
+        rows += [dict(panel='driftscan', x=r['E_Vcm'], drift_V=r['drift_V'], sigma_evt=r['sigma_evt'], sigma_xy=r['sigma_xy'],
                       evt_mm=r['evt_mm'], v=r['v']) for r in ds]
-    ps.panel_labels(ax)
-    ps.save(fig, os.path.join(F, 'timing'), data=pd.DataFrame(rows))
+    ps.save(fig, os.path.join(F, 'timing_driftscan'), data=pd.DataFrame(rows))
 
 
 def fig_angle():
@@ -269,7 +283,7 @@ def table(df, cols, fmt=None):
 def main():
     m = load()
     amp = jload('amplitude.json'); sps = jload('sps_timing.json'); ang = jload('angle.json'); t0p = jload('t0_position.json')
-    fig_paper(m, amp, sps); fig_main(m, amp); fig_angle(); ds = fig_drift(m)
+    fig_paper(m, amp, sps); fig_main(m, amp); fig_driftscan(jload('walk_snr.json')); fig_angle(); ds = fig_drift(m)
     rows = pd.read_csv(os.path.join(R, 'rows.csv'))
     g = []
     for d in ('mx17_2', 'mx17_3', 'mx17_7', 'mx17_6', 'mx17_4'):

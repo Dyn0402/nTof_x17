@@ -34,7 +34,7 @@ DEF_EOS = os.path.join(LOCAL, 'june_tests', 'mx17_det3_saturday_scan_6-27-26')
 
 #: the gallery (deck appendix): the same events in every colour map x normalisation
 GALLERY = [(7884, 'tracks', 'a cosmic muon'), (47235, 'tracks', 'two muons'), (28537, 'none', r'a muon and its $\delta$-ray'),
-           (45001, 'all', 'two particles, merged in X')]
+           (17907, 'all', 'two particles, merged in Y')]
 NOBRK = 1e4          # Event.split for a figure drawn without broken axes
 
 class Data:
@@ -137,22 +137,24 @@ def gallery(D, out):
 #: split out again (figure id -> event, fits drawn)
 SINGLES = {
     'display_two_separate': (1063, 'tracks'),
-    'display_merged_projection': (45001, 'all'),  # 11-03: was 17907 (63 mm apart in X, broken axis)
-    'display_muon_deposit': (5423, 'none'),       # 11-03: was 36603 (Dylan: looked like two particles); a muon and a
-                                                  # curling low-energy electron, vetoed by the 50-strip rule
+    'display_merged_projection': (17907, 'all'),  # 11-03 round 4: 17907 restored (45001 replaced it by mistake)
+    'display_muon_deposit': (33974, 'none'),      # 11-03 round 4: was 5423, 36603 before (both read as 'two particles');
+                                                  # a straight muon plus a wide U-shaped curl, vetoed by the 50-strip rule
 }
 #: the two-particle figure: (label, key of TWO_JSON, event, fits).  Events (Run 1): 1063 two muons ~105 / 70 mm apart;
 #: 45001 two columns 20 mm apart in Y, one in X (the pass fits the other particle in Y, oneview class 'merged in
-#: projection', recat multi:other_picked); 5423 a muon and a curling electron, > 50 strips, vetoed.
+#: projection', recat multi:other_picked) was only a trial and is NOT used: (b) is 17907 again (two columns 63 mm apart in
+#: X, one broad column in Y; drawn WITHOUT the axis break, its X window is ~90 mm); 33974 a straight muon plus a wide
+#: U-shaped non-track deposit (~70 strips wide in X), > 50 strips, vetoed.
 TWO = [('two particles, separate in both views', 'two, separate in both views', 1063, 'tracks'),
-       ('two particles, merged in one projection (X)', 'two, merged in one projection', 45001, 'all'),
-       ('a muon and a separate deposit (> 50 strips: vetoed)', 'muon + deposit (> 50 strips, veto)', 5423, 'none')]
+       ('two particles, merged in one projection (Y)', 'two, merged in one projection', 17907, 'all'),
+       ('a muon and a separate deposit (> 50 strips: vetoed)', 'muon + deposit (> 50 strips, veto)', 33974, 'none')]
 #: the efficiencies of two_particle: ONE file, so a re-pass updates the figure by editing it.  Values 11-03: pass 1
 #: before the merged-projection / veto fixes (rerun/effbudget/single/figures/two_particle.csv, Runs 1+2, full area).
 TWO_JSON = os.path.join(HERE, 'data', 'two_particle_eff.json')
 #: what a TPC sees (evd_showcase): (title, event, fits).  11-03: just the muon and two muons, full width; the curling
 #: electron (5423) stays in the gallery and in two_particle (c).
-SHOWCASE = [('(a) a cosmic muon', 7884, 'tracks'), ('(b) two muons, about 25 mm apart in both views', 47235, 'tracks')]
+SHOWCASE = [('(a) a single cosmic muon', 7884, 'tracks'), ('(b) two cosmic muons', 47235, 'tracks')]
 #: main-text loss gallery (A1 class keys of a1_displays.PAPER_DET3)
 LOSS_MAIN = ['multi:other_picked', 'multi:m3_not_found', 'far:DELTA', 'far:FIT_SAT', 'spark:discharge', 'spark:shower']
 #: A1 classes drawn with a broken axis (particles far apart); every other display has none

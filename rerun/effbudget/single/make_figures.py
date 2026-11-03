@@ -46,7 +46,7 @@ def _steps(ax, edges, vals, **kw):
 
 def eff_vs_radius():
     """Chamber A's two golden runs merged (counts summed, binomial errors): any reconstructed track within R of the
-    reference ray (filled) vs the track the reconstruction keeps (open); accidentals (event mixing) on the right axis."""
+    reference ray in both views (the quoted definition, 'credit'); accidentals (event mixing) on the right axis."""
     d = json.load(open(os.path.join(RES, 'radius.json')))
     fig, ax = ps.fig_for(6.1, aspect=0.36)  # 2026-11-03: full page width, lower
     ax2 = ax.twinx(); ax2.grid(False); ax2.spines['right'].set_visible(True)
@@ -59,7 +59,6 @@ def eff_vs_radius():
     e, c, acc = (100 * kc['eff'] / n, 100 * kc['credit'] / n, 100 * ka / n)
     ee, ce = [100 * np.sqrt(q / 100 * (1 - q / 100) / n) for q in (e, c)]
     ax.errorbar(R, c, yerr=ce, color=D3, marker='o', ms=3.0, lw=1.2, zorder=5)
-    ax.errorbar(R, e, yerr=ee, color=D3, marker='o', ms=3.0, mfc='white', lw=0.9, zorder=4)
     ax2.plot(R, acc, color=ps.MUTED, marker='^', ms=2.6, lw=0.8)
     rows = [dict(n=n, R_mm=x, eff=a, eff_err=ae, credit=b, credit_err=be, accidental=f)
             for x, a, ae, b, be, f in zip(R, e, ee, c, ce, acc)]
@@ -70,8 +69,8 @@ def eff_vs_radius():
     ax.set_xlabel('matching radius $R$ at the mesh [mm]'); ax.set_ylabel('efficiency [%]')
     ax2.set_ylabel('accidental match [%]', color=ps.MUTED); ax2.set_ylim(0, 5)
     ax2.tick_params(axis='y', colors=ps.MUTED)
-    # 2026-11-03: the open curve ("the track the reconstruction keeps") is labelled on the curve, not in the legend
-    ax.text(13, float(np.interp(13, R, e)) - 1.2, 'kept track only', color=D3, ha='center', va='top', fontsize=ps.BASE_PT * 0.85)
+    # 2026-11-03 (Dylan): the open curve (production pick, 'kept track only') is dropped from the figure; it stays
+    # in the csv (columns eff, eff_err). The filled curve is the definition the quoted numbers use (credit).
     h = [Line2D([], [], color=D3, marker='o', ms=3.0, lw=1.2, label='any reconstructed track within $R$'),
          Line2D([], [], color=ps.MUTED, marker='^', ms=2.6, lw=0.8, label='unrelated track within $R$ (right axis)')]
     ax.legend(handles=h, loc='center right', bbox_to_anchor=(0.99, 0.62), fontsize=ps.BASE_PT * 0.8, framealpha=0.95)  # 2026-11-03: legend off the curves
@@ -130,14 +129,23 @@ def residuals():
 
 
 def xy_pairing():
-    E = pd.read_parquet(os.path.join(RES, 'xy_pairing_events.parquet'))
     ref = json.load(open(os.path.join(RES, 'xy_pairing.json')))
     med = np.mean([ref[k]['reference']['lq_med'] for k in ('sat_det3', 'p2_det3')])
     rs = np.mean([ref[k]['reference']['lq_rsig'] for k in ('sat_det3', 'p2_det3')])
-    true = np.r_[E.lq_true_m, E.lq_true_o]; swap = np.r_[E.lq_swap_1, E.lq_swap_2]
-    fig, ax = ps.fig_for(W_MID, aspect=0.62)
+    pq = os.path.join(RES, 'xy_pairing_events.parquet')
+    if os.path.exists(pq):
+        E = pd.read_parquet(pq)
+        true = np.r_[E.lq_true_m, E.lq_true_o]; swap = np.r_[E.lq_swap_1, E.lq_swap_2]
+    else:   # re-plot from the committed figure data (figures/xy_pairing.csv, same values), no re-analysis
+        C = pd.read_csv(os.path.join(OUT, 'xy_pairing.csv'))
+        true = C.lq_true.dropna().values; swap = C.lq_swap.dropna().values
+    fig, ax = ps.fig_for(W_MID, aspect=0.62 * 0.7)   # 2026-11-03 (Dylan): 70 % of the previous height
     b = np.linspace(-2.5, 2.5, 101)   # bins unchanged (0.05); the axis shows +-1.9
-    ax.axvspan(med - rs, med + rs, color=ps.MUTED, alpha=0.25, lw=0, zorder=0, label=r'single tracks, $\pm1\sigma$')
+    # 2026-11-03: solid band (was alpha 0.25, which let the grid lines show through as white stripes): the same grey,
+    # pre-blended on white, drawn above the grid (zorder 0.6 > grid 0.5)
+    from matplotlib.colors import to_rgb
+    band = tuple(0.25 * c + 0.75 for c in to_rgb(ps.MUTED))
+    ax.axvspan(med - rs, med + rs, facecolor=band, lw=0, zorder=0.6, label=r'single tracks, $\pm1\sigma$')
     ax.hist(true, b, histtype='step', color=D3, lw=1.3, label='true pairing (M3-tagged)')
     ax.hist(swap, b, histtype='step', color=ps.ACCENT, lw=1.0, label='swapped pairing')
     ax.set_xlabel(r'$\ln(q_X/q_Y)$ of an X/Y segment pair'); ax.set_ylabel('segment pairs / 0.05')
@@ -145,7 +153,8 @@ def xy_pairing():
     ax.text(0.98, 0.97, f"{ok['n']} two-particle events\ncorrectly paired:\n{100 * ok['charge_time']['frac']:.1f} % charge + time\n"
             f"{100 * ok['charge']['frac']:.1f} % charge only",
             transform=ax.transAxes, va='top', ha='right', fontsize=ps.BASE_PT * 0.85, color=ps.INK)
-    ax.set_xlim(-1.9, 1.9); ax.set_ylim(0, 1.3 * ax.get_ylim()[1])   # 2026-11-03: room on the right so the legend clears the grey band
+    ymax = max(np.histogram(true, b)[0].max(), np.histogram(swap, b)[0].max())
+    ax.set_xlim(-1.9, 1.9); ax.set_ylim(0, ymax + 8)   # 2026-11-03: a few counts above the tallest bin   # 2026-11-03: room on the right so the legend clears the grey band
     ax.legend(loc='upper left', fontsize=ps.BASE_PT * 0.75, handlelength=1.0, borderaxespad=0.4)
     ps.save(fig, os.path.join(OUT, 'xy_pairing'), data=pd.DataFrame(dict(lq_true=pd.Series(true), lq_swap=pd.Series(swap))))
 
@@ -231,5 +240,7 @@ def two_particle():
 if __name__ == '__main__':
     os.makedirs(OUT, exist_ok=True)
     ps.use()
+    if '--only-xy' in sys.argv:
+        xy_pairing(); sys.exit()
     eff_vs_radius(); residuals(); xy_pairing(); loss_budget()   # two_particle: made by papers/paper1/figs now; not regenerated here
     print('wrote', OUT)

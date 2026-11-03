@@ -58,11 +58,11 @@ for z in SCINT_Z.values():
     slab(z, SC_W, SC_T, SC_C)
 for z in M3_Z:
     slab(z, M3_W, M3_T, M3_C)
-slab(SLOT_Z['bottom'], MX_W, MX_T, OTHER_C)
+slab(SLOT_Z['bottom'], MX_W, MX_T, A_C, lw=1.0)
 slab(SLOT_Z['top'], MX_W, MX_T, A_C, lw=1.0)
 
 # muon, going down
-x0, z0, x1, z1 = 140, 1405, -120, -60
+x0, z0, x1, z1 = 150, 1510, -135, -150
 ax.annotate('', (x1, Y(z1)), (x0, Y(z0)), arrowprops=dict(arrowstyle='-|>', color=ps.ACCENT, lw=1.3, mutation_scale=9,
                                                           shrinkA=0, shrinkB=0), zorder=6)
 xat = lambda z: x0 + (x1 - x0) * (z - z0) / (z1 - z0)
@@ -82,31 +82,24 @@ for (za, zb), lab in (((M3_Z[2], M3_Z[3]), 'M3 reference planes\n(2 + 2)'),
     ax.plot([xb - 12, xb, xb, xb - 12], [Y(za), Y(za), Y(zb), Y(zb)], color=ps.INK, lw=LW)
     t = ax.text(XT, Y((za + zb) / 2), lab, ha='left', va='center', fontsize=FS, color=ps.INK, linespacing=1.05)
     t.set_gid(ps.KEEP_GID)
-ax.text(XT - 90, Y(SLOT_Z['top']), 'chamber A (top slot)', color=A_C, fontweight='bold', fontsize=FS, ha='left',
-        va='center')
-ax.text(XT - 90, Y(SLOT_Z['bottom']), 'other MX17 chamber', color=ps.INK, fontsize=FS, ha='left', va='center')
+ax.text(XT - 90, Y(SLOT_Z['top']), 'MX17 (top slot)', color=A_C, fontweight='bold', fontsize=FS, ha='left', va='center')
+ax.text(XT - 90, Y(SLOT_Z['bottom']), 'MX17 (bottom slot)', color=A_C, fontweight='bold', fontsize=FS, ha='left', va='center')
 
 # left column: z ticks and lever arm
 XTK = -285
 for z in M3_Z + [SLOT_Z['bottom'], SLOT_Z['top']]:
-    col = A_C if z == SLOT_Z['top'] else ps.INK
+    col = A_C if z in SLOT_Z.values() else ps.INK
     ax.plot([XTK + 10, XTK + 40], [Y(z)] * 2, color=col, lw=LW)
     ax.text(XTK, Y(z), f'{z}', ha='right', va='center', fontsize=FS * 0.95, color=col,
-            fontweight='bold' if z == SLOT_Z['top'] else 'normal')
+            fontweight='bold' if z in SLOT_Z.values() else 'normal')
 ax.text(XTK, Y(1500), '$z$ [mm]', ha='right', va='center', fontsize=FS, color=ps.INK)
-xl = -470
-ax.annotate('', (xl, Y(M3_Z[0])), (xl, Y(M3_Z[3])), arrowprops=dict(arrowstyle='<->', lw=LW, color=ps.INK, shrinkA=0,
-                                                                     shrinkB=0, mutation_scale=7))
-ax.text(xl - 18, Y((M3_Z[0] + M3_Z[3]) / 2), 'reference\nlever arm\n1278 mm', ha='right', va='center', fontsize=FS,
-        color=ps.INK, linespacing=1.05)
 
-# scale bars: the same 500 mm along z (compressed) and across
-xs0, ys0 = 700, 40
-ax.plot([xs0, xs0 + 500], [ys0, ys0], color=ps.INK, lw=1.0)
-ax.plot([xs0, xs0], [ys0, ys0 + ZC * 500], color=ps.INK, lw=1.0)
-ax.text(xs0 + 250, ys0 - 14, '500 mm', ha='center', va='top', fontsize=FS * 0.95, color=ps.INK)
-ax.text(xs0 - 12, ys0 + ZC * 250, '500 mm\nalong $z$', ha='right', va='center',
-        fontsize=FS * 0.95, color=ps.INK, linespacing=1.05)
+# small scale bars (200 mm), tucked into the empty space right of the muon, above the top-slot label
+xs0, ys0, L = 760, 285, 200
+ax.plot([xs0, xs0 + L], [ys0, ys0], color=ps.INK, lw=1.0)
+ax.plot([xs0, xs0], [ys0, ys0 + ZC * L], color=ps.INK, lw=1.0)
+ax.text(xs0 + L / 2, ys0 - 10, '200 mm', ha='center', va='top', fontsize=FS * 0.9, color=ps.INK)
+ax.text(xs0 + 12, ys0 + ZC * L / 2, '200 mm in $z$', ha='left', va='center', fontsize=FS * 0.9, color=ps.INK)
 
 geom = pd.DataFrame(
     [dict(element='scintillator', z_mm=z, width_mm=SC_W, z_measured=False) for z in SCINT_Z.values()]

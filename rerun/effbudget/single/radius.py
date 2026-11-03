@@ -50,7 +50,7 @@ def main():
         rmix = np.concatenate([np.hypot(np.roll(px, s) - mx, np.roll(py, s) - my)[np.roll(ok, s)] for s in shifts])
         for R in RADII:
             eff.append(100 * float((ok & (r <= R)).mean()))
-            cred.append(100 * float(((ok & (r <= R)) | ((nx <= R) & (ny <= R))).mean()))
+            cred.append(100 * float(((ok & (r <= R)) | (np.hypot(nx, ny) <= R)).mean()))   # 2026-11-03: circle, as budget det_any_R (was a square, +0.15 pt)
             acc.append(100 * float((rmix <= R).mean()) * float(ok.mean()))
         d = ok & (r <= 40)
         rx, ry = B.res_x.to_numpy()[d], B.res_y.to_numpy()[d]

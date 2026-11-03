@@ -359,6 +359,41 @@ def fig_hv_scan(T, figdir, O=None):
     ps.save(fig, os.path.join(figdir, 'hv_scan'), data=pd.concat(data, ignore_index=True))
 
 
+def fig_hv_scan_single(T, figdir):
+    """hv_scan_single (variant, 2026-11-03, Dylan asked to see it): the four chambers on ONE axis pair. Colour = chamber,
+    line style = quantity: interior efficiency solid/filled on the left axis, discharges per trigger dashed/open on the
+    right axis. Same data as hv_scan (results/tradeoff.csv); the 4-panel hv_scan stays the paper default."""
+    from matplotlib.lines import Line2D
+    order = sorted(SCANS, key=lambda r: ORDER.index(r[0]))
+    fig, ax = ps.fig_for('full', height=3.2)
+    t = ax.twinx(); t.grid(False); t.spines['right'].set_visible(True)
+    data = []
+    for det, run, drift in order:
+        s = scan_rows(T, det, run, drift)
+        c = COL[det]
+        st = ps.det(det, ms=3.4, mec='white', mew=0.4)
+        ax.errorbar(s.resist_V, s.eff_ig, yerr=s.err_ig, elinewidth=0.7, **_guide(st, 1.0))
+        g = T[(T.det == det) & T.cls.isin(['golden_calib', 'golden_quoted'])]
+        if len(g):
+            ax.plot(g.resist_V, g.eff_ig, '*', ms=8, color=c, mec=INK, mew=0.5, zorder=6, ls='none')
+        r = (s.epoch_rate_hz / s.trig_rate_hz).where(lambda v: v > 0)
+        t.plot(s.resist_V, r, color=c, marker='o', ms=3.4, mfc='white', mew=0.9, ls='--', lw=0.9, alpha=0.95, zorder=2)
+        data.append(s.assign(discharge_per_trig=s.epoch_rate_hz / s.trig_rate_hz)[
+            ['det', 'run', 'resist_V', 'drift_V', 'n_ig', 'eff_ig', 'err_ig', 'discharge_per_trig']])
+    ax.set_ylim(30, 101); ax.axhline(100, color=MUTED, lw=0.6, zorder=0)
+    t.set_ylim(0, 0.5)
+    ax.set_xlabel('resistive-strip HV [V]'); ax.set_ylabel('interior efficiency [%] (solid)')
+    t.set_ylabel('discharges per trigger (dashed)')
+    ax.set_zorder(t.get_zorder() + 1); ax.patch.set_visible(False)      # efficiency drawn over the discharge curves
+    h = [Line2D([], [], color=COL[d], marker=ps.det(d)['marker'], ms=3.8, lw=1.2, label='Chamber ' + ps.det(d)['label'])
+         for d, _, _ in order]
+    h += [Line2D([], [], color=INK, marker='o', ms=3.6, lw=1.0, label='efficiency (left)'),
+          Line2D([], [], color=INK, marker='o', ms=3.4, lw=0.9, ls='--', mfc='white', label='discharges (right)'),
+          Line2D([], [], ls='none', marker='*', ms=8, color='white', mec=INK, mew=0.6, label='long run')]
+    ps.legend_above(fig, handles=h, ncol=7)
+    ps.save(fig, os.path.join(figdir, 'hv_scan_single'), data=pd.concat(data, ignore_index=True))
+
+
 def fig_eff_vs_hv(T, O, figdir):
     """Paper I §5 (eff_vs_hv_discharge): per chamber, the interior efficiency and the fraction of M3 tracks lost to a
     discharge against the resist HV. det3 reaches its plateau before discharges cost anything; det6/det7 do not.
@@ -532,7 +567,7 @@ def main():
     paper_dir = os.path.join(REPO, 'papers', 'paper1', 'figures')
     if a.hv_scan_only:
         T = pd.read_csv(os.path.join(res_dir, 'tradeoff.csv'))
-        ps.use(); fig_hv_scan(T, fig_dir, optimum(T)); return
+        ps.use(); fig_hv_scan(T, fig_dir, optimum(T)); fig_hv_scan_single(T, fig_dir); return
     for d in (fig_dir, res_dir):
         os.makedirs(d, exist_ok=True)
     sreg = {r['key']: r for r in csv.DictReader(open(os.path.join(REPO, 'rerun', 'sps_registry.csv')))}
@@ -581,6 +616,7 @@ def main():
     DT = deadtime(a.spark, S)
     ps.use()
     fig_hv_scan(T, fig_dir, O)
+    fig_hv_scan_single(T, fig_dir)
     fig_eff_vs_hv(T, O, fig_dir)
     fig_deadtime(DT, fig_dir)
     fig_tradeoff(T, fig_dir)
