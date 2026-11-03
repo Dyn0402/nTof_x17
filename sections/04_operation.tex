@@ -8,30 +8,30 @@ muon-induced (4--6$\times$), concentrated at the edges; no post-spark dead time.
 \askStephan{Expected gain curve and spark behaviour for this resistivity: does what we see match production tests?}
 
 \paragraph{Dark current.}
-\tbw{The resistive electrode draws a steady current far above the signal current. On det3 (alone on the bench,
+\tbw{The resistive electrode draws a steady current far above the signal current. On chamber~A (alone on the bench,
 6-27): $I=(1.05\pm0.05)\,\text{\textmu A}\times2^{(V-490\,\text{V})/(13.3\pm0.3)\,\text{V}}$ (\cref{fig:currents}): it
 doubles every 13.3\,V while the gain doubles every 16.7\,V, so $I\propto G^{1.25}$, with no measurable ohmic part, and it
 does not depend on the drift field (100--1100\,V on the cathode: 1.03--1.11\,\textmu A). At the working point this is
 ${\sim}1$\,\textmu A, ${\sim}10^5$ times the cosmic signal current (${\sim}4$\,pA). It is therefore a gain-driven dark
 current of the amplification stage, with the same scaling as the noise bands ($G^{1.4-1.6}$, \cref{app:losses}) and the
-discharges. Across boards at 490\,V: det6 0.45, det4 0.58, det3 0.29--1.14 (night to night), det2 1.0--2.4, det7
+discharges. Across boards at 490\,V: C 0.45, E 0.58, A 0.29--1.14 (night to night), B 1.0--2.4, D
 6.0--6.4\,\textmu A (the chamber with the most discharges). The mechanism is not identified.}
 \begin{figure}[t]
   \centering
   \includegraphics[width=\linewidth]{currents_vs_hv}
-  \caption{\tbw{Resistive-electrode current against HV, boards from 17 June on. Colour: chamber; marker: night (``scan'': HV-scan days; other dates: overnight runs). Dashed: the det3 fit $I=1.05\,\text{\textmu A}\times2^{(V-490\,\text{V})/13.3\,\text{V}}$; dotted: one gain doubling per 16.7\,V, for reference.}}
+  \caption{\tbw{Resistive-electrode current against HV, boards from 17 June on. Colour: chamber; marker: night (``scan'': HV-scan days; other dates: overnight runs). Dashed: the chamber~A fit $I=1.05\,\text{\textmu A}\times2^{(V-490\,\text{V})/13.3\,\text{V}}$; dotted: one gain doubling per 16.7\,V, for reference.}}
   \label{fig:currents}
 \end{figure}
 
 \begin{figure}[t]
   \centering
   \includegraphics[width=\linewidth]{hv_scan}
-  \caption{\tbw{Resist-HV scans: (a) interior detection efficiency, (b) discharges per trigger (a discharge: a chip with ${\ge}8$ strips over 3000\,ADC). Scans: det3 6-27 and det2 6-22 at 1000\,V drift, det6/det7 6-26 at 700\,V. Lines: the HV scans; stars: the single long runs (det4 has no scan and is not shown). The tracks lost to discharges are in \cref{fig:effhv}.}}
+  \caption{\tbw{Resist-HV scans: (a) interior detection efficiency, (b) discharges per trigger (a discharge: a chip with ${\ge}8$ strips over 3000\,ADC). Scans: A 6-27 and B 6-22 at 1000\,V drift, C/D 6-26 at 700\,V. Lines: the HV scans; stars: the single long runs (E has no scan and is not shown). The tracks lost to discharges are in \cref{fig:effhv}.}}
   \label{fig:hv}
 \end{figure}
 \begin{figure}[t]
   \centering
   \includegraphics[width=0.95\linewidth]{spark_deadtime}
-  \caption{\tbw{(a) Detection efficiency and (b) median charge $Q_{50}$ against the time since the previous discharge, each relative to its value more than 1\,s after it; (c) det4 on its own scale. Discharges: det3 45\,500, det2 17\,208, det6 24\,126, det7 42\,827, det4 4\,303. Charge errors from a bootstrap. Fitted dead time per discharge: det3 $0.2\pm0.6$, det2 $-1.7\pm1.3$, det6 $0.8\pm1.1$, det7 $0.4\pm1.1$, det4 $-2.4\pm9.4$\,ms: none.}}
+  \caption{\tbw{(a) Detection efficiency and (b) median charge $Q_{50}$ against the time since the previous discharge, each relative to its value more than 1\,s after it; (c) chamber~E on its own scale. Discharges: A 45\,500, B 17\,208, C 24\,126, D 42\,827, E 4\,303. Charge errors from a bootstrap. Fitted dead time per discharge: A $0.2\pm0.6$, B $-1.7\pm1.3$, C $0.8\pm1.1$, D $0.4\pm1.1$, E $-2.4\pm9.4$\,ms: none.}}
   \label{fig:sparkdt}
 \end{figure}

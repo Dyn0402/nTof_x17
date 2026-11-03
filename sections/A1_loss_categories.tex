@@ -1,14 +1,14 @@
 \section{Where the inefficiency goes: loss categories}\label{app:losses}
 \sectionstate{partial}{\texttt{rerun/effbudget} (ladder) + \texttt{rerun/outliers/classify.py} (classes) + \texttt{rerun/satstudy} (re-categorised budget \texttt{summarize.recat}, displays \texttt{appendix\_figs.py}, recovery tests); note \texttt{notes/mx17-det3-loss-categories}. Fractions are on the PRE-PASS golden table (\texttt{final\_phys}, row \texttt{sat\_det3}): the re-processing pass tables (RERUN\_PLAN \S11) did not exist on 2026-10-26 --- re-derive there}
-\intent{Every M3 track crossing the det3 interior that is not detected, followed to the one place it ends up: one real
+\intent{Every M3 track crossing the chamber~A interior that is not detected, followed to the one place it ends up: one real
 event display per class, the fraction of tracks lost to it, its mechanism, and whether a reference-free change to the
 reconstruction recovers it (tested by re-running the reconstruction, not argued). Dylan 2026-10-26: a full appendix.}
 
 \begin{table}[h]
   \centering\small
-  \caption{det3 interior, \requote{6\,451} M3 tracks (one clean reference ray through the interior), \requote{91.18\,\%}
+  \caption{chamber~A interior, \requote{6\,451} M3 tracks (one clean reference ray through the interior), \requote{91.18\,\%}
   detected (both views fitted, $|r|\le5$\,mm from M3, $\le2$ competing strips per view). Every lost track is in exactly
-  one class; first matching class wins, in the order of the table. ``Multi-particle'' = det3 alone sees $\ge2$
+  one class; first matching class wins, in the order of the table. ``Multi-particle'' = chamber~A alone sees $\ge2$
   particle-like clusters (signal $\le$ one drift column) in a view.}
   \label{tab:losses}
   \begin{tabular}{lrl}
@@ -36,7 +36,7 @@ reconstruction recovers it (tested by re-running the reconstruction, not argued)
 
 \tbw{One paragraph per class: mechanism, how it was identified, the recovery test.}
 
-Each display (Figs.~\ref{fig:loss_band}--\ref{fig:loss_multi_deposit}) shows one real det3 event of the class in both
+Each display (Figs.~\ref{fig:loss_band}--\ref{fig:loss_multi_deposit}) shows one real chamber~A event of the class in both
 views: strip position against drift time, the amplitude of every sample above 4\,\% of the view's maximum, the M3
 track extrapolated through the drift gap (dashed) and the production fit (solid). The event is the one used in the
 loss-category note where it has one, otherwise picked by eye from six random events of the class.
@@ -57,4 +57,4 @@ loss-category note where it has one, otherwise picked by eye from six random eve
 \lossfig{loss_edge}{Edge of the other coordinate.}
 \lossfig{loss_multi_deposit}{A second deposit that is not particle-like.}
 
-\analysis{A1}{re-derive the fractions on the pass tables; decide whether det2/det4/det6/det7 get a column; one paragraph per class}
+\analysis{A1}{re-derive the fractions on the pass tables; decide whether B/E/C/D get a column; one paragraph per class}
