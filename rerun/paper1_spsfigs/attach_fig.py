@@ -5,8 +5,9 @@ Restyled 2026-11-02 (review deck: legend for the gas colours, readable unrotated
     Magboltz grid, at the gas fit's gap 27.9 mm), CO2 and CF4 mixtures in ps.GAS colours.  The bench is not plotted
     point by point (its water is §6's gas_vE_timing / gas_drying); its golden-row range is a grey band for scale
     (rerun/paper1_gas/results/summary.json, det4 there at the old 30.48 mm gap).
-(b) O2 of the same groups; the bench is attachment-free at steady state, except det6's first ~4 h of 6-26
-    (paper1_gas att_626, ~600 -> 370 ppm O2-equivalent, x2 model factor), drawn as a band.
+(b) O2 of the same groups.  2026-11-03 (Dylan): the det6 6-26 early-night O2-equivalent band (370-600 ppm) is DROPPED:
+    it is an inference from the truncated column against an anchored ladder with a model that has no attachment term
+    (x2), on one chamber, and was never confirmed by a charge-vs-depth tilt; see the 5(b) note in figures.toml.
 """
 import json, os, sys
 import numpy as np
@@ -63,7 +64,6 @@ def draw(verdict_path, save=None):
     BAND, BEDGE = '#aab2bf', '#6a7583'
     ax = axs[0]
     ax.axhspan(min(bw), max(bw), fc=BAND, alpha=0.55, ec=BEDGE, lw=0.8, ls=':', zorder=0)
-    axs[1].axhspan(370, 600, fc=BAND, alpha=0.55, ec=BEDGE, lw=0.8, ls=':', zorder=0)
     rows = []
     for xi, h, r in zip(x, hrs, T):
         g = GASNAME[r['gas']]; c = ps.GAS[g]
@@ -88,8 +88,6 @@ def draw(verdict_path, save=None):
     ax = axs[1]
     ax.axhline(0, color=ps.MUTED, lw=0.8)
     ax.set_ylabel('O$_2$ concentration (ppm)'); ax.set_ylim(-20, 760)
-    ax.text(0.98, 0.65, 'bench C, 6-26 night\n(not a golden row):\n370-600 ppm O$_2$-equiv.,\n$\\times$2 uncertainty', transform=ax.transAxes,
-            ha='right', va='center', fontsize=7, color='#2b3340', linespacing=1.15)
     ps.panel_labels(axs)
     ps.save(fig, os.path.join(HERE, 'figures', 'attachment'), data=pd.DataFrame(rows))
     print('wrote', os.path.join(HERE, 'figures', 'attachment.pdf'))

@@ -176,11 +176,9 @@ def drying():
     # 2026-11-03 (Dylan): drop the det3 per-field panel; left = what is measured (anchored reference-ladder velocity)
     # over the inferred water (Magboltz inversion), same time axis; right = the excess over plateau, one time shape.
     fig = plt.figure(figsize=(6.1, 3.1), layout='constrained')
-    gs = fig.add_gridspec(2, 2, width_ratios=[1.45, 1.0])
+    gs = fig.add_gridspec(2, 2, width_ratios=[1.45, 1.0], height_ratios=[1.3, 1.0])
     axv = fig.add_subplot(gs[0, 0]); axw = fig.add_subplot(gs[1, 0], sharex=axv); axe = fig.add_subplot(gs[:, 1])
     rows = []
-    for a in (axv, axw, axe):
-        a.axvspan(6.0, 10.33, color='#c9ced6', alpha=0.55, lw=0, zorder=0)       # golden rows, 06:00-10:20
     for det in ('det6', 'det7'):
         W = A[det]['water']
         t = np.array([w['t'] - T626 for w in W]); y = np.array([w['water'] for w in W])
@@ -192,8 +190,8 @@ def drying():
         for i in range(len(t)):
             rows.append(dict(panel='a/b', det=det, hours_626=t[i], v_um_per_ns=v[i], v_err=ve[i], water=y[i],
                              lo=y[i] - el[i], hi=y[i] + eh[i], E_Vcm=A[det]['E']))
-    axv.set_ylabel(r'drift velocity $v$ (µm/ns)')
-    axw.set_ylabel('H$_2$O fraction (%)'); axw.set_xlabel('time on 6-26 (h)'); axw.set_ylim(0, 1.62)
+    axv.set_ylabel(r'drift velocity $v$ (µm/ns)', fontsize=ps.BASE_PT * 0.85)
+    axw.set_ylabel('H$_2$O fraction (%)', fontsize=ps.BASE_PT * 0.85); axw.set_yticks([0, 0.5, 1.0, 1.5]); axw.set_xlabel('time on 6-26 (h)'); axw.set_ylim(0, 1.62)
     axw.set_xlim(0.5, 15.5)
     plt.setp(axv.get_xticklabels(), visible=False)
     r = S['excess_ratio_det6_over_det7']
@@ -210,9 +208,8 @@ def drying():
     axe.set_xlabel('time on 6-26 (h)'); axe.set_ylabel('H$_2$O above plateau (%)'); axe.set_xlim(0.5, 15.5)
     from matplotlib.patches import Patch
     hs = [Line2D([], [], ls='', marker=ps.DET_MARKER[d], color=ps.color(d), label=d) for d in ('det6', 'det7')]
-    hs += [Line2D([], [], color=ps.MUTED, ls='--', lw=0.7, label='afternoon plateau'),
-           Patch(fc='#c9ced6', alpha=0.55, label='golden rows (06:00-10:20)')]
-    ps.legend_above(fig, hs, ncol=4)
+    hs += [Line2D([], [], color=ps.MUTED, ls='--', lw=0.7, label='afternoon plateau')]
+    ps.legend_above(fig, hs, ncol=3, borderaxespad=0.1)
     ps.panel_labels([axv, axw, axe])
     ps.save(fig, os.path.join(OUT, 'gas_drying'), data=pd.DataFrame(rows))
 

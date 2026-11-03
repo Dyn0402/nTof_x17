@@ -133,13 +133,16 @@ def fig_paper(m, amp, sps):
 def fig_main(m, amp):
     """The main-text figure `timing`: chamber A only (Dylan 2026-11-03; all chambers are timing_all, appendix).
     (a) event time and the uncorrelated part (X-Y)/sqrt2 against the resist HV of the 6-27 scan; (b) the uncorrelated
-    part against the early signal amplitude, the bench curve of the same chamber."""
+    part against the early signal amplitude: every chamber-A row pooled (filled) and Runs 1+2 alone, one HV, binned in
+    the per-track amplitude (open; walk_snr.py); (c) the drift-field scan at 490 V (M3-matched, rows_matched.csv) in ns,
+    and the event time in drift distance (x the row's timing v, walk_snr.py) on the right axis (Dylan 2026-11-03)."""
     import sys
     sys.path.insert(0, os.path.join(HERE, '..', '..', 'papers'))
     import paper_style as ps
     from matplotlib.lines import Line2D
     ps.use()
-    fig, ax = ps.fig_for('full', height=2.3, nrows=1, ncols=2)
+    ws = jload('walk_snr.json')
+    fig, ax = ps.fig_for('full', height=2.3, nrows=1, ncols=3, gridspec_kw=dict(width_ratios=[1, 1, 1.12]))
     d = 'mx17_3'; rows = []
     run, dv = HV_RUNS[d]
     s = m[(m.det == d) & (m.run == run) & (m.n >= 150) & (m.cls != 'skeptical') & (m.drift_V == dv)]
@@ -154,11 +157,36 @@ def fig_main(m, amp):
              loc='upper right')
     a = ax[1]
     b = amp['bench'][d]['bins']
-    a.plot([x['amp'] for x in b], [x['sigma_xy'] for x in b], **ps.det('det3', ms=3.5))
+    a.plot([x['amp'] for x in b], [x['sigma_xy'] for x in b], **ps.det('det3', ms=3.5, label='all rows'))
     rows += [dict(panel='b', x=x['amp'], sigma_xy=x['sigma_xy']) for x in b]
+    if ws.get('fixed_hv'):
+        f = ws['fixed_hv']
+        a.errorbar([x['amp'] for x in f], [x['sigma_xy'] for x in f], yerr=[x['sigma_xy_err'] for x in f], color=ps.ACCENT,
+                   marker='s', ms=3.3, mfc='white', mew=0.9, ls='none', elinewidth=0.8, zorder=6, label='Runs 1+2 (490 V)')
+        rows += [dict(panel='b_fixed_hv', x=x['amp'], sigma_xy=x['sigma_xy'], err=x['sigma_xy_err']) for x in f]
     a.set_xscale('log'); a.set_yscale('log'); a.set_ylim(10, 300)
     a.set_yticks([10, 20, 50, 100, 200]); a.set_yticklabels(['10', '20', '50', '100', '200']); a.minorticks_off()
     a.set_xlabel('early amplitude, X + Y [ADC]'); a.set_ylabel(r'$(X-Y)/\sqrt{2}$ (s68) [ns]')
+    a.legend(loc='lower left', handlelength=1.2)
+    a = ax[2]
+    ds = [r for r in ws.get('drift_scan', []) if r['n'] >= 150]
+    if ds:
+        E = np.array([r['E_Vcm'] for r in ds])
+        a.errorbar(E, [r['sigma_evt'] for r in ds], yerr=[r['sigma_evt_err'] for r in ds], elinewidth=0.8,
+                   **ps.det('det3', view='x', ms=3.5))
+        a.errorbar(E, [r['sigma_xy'] for r in ds], yerr=[r['sigma_xy_err'] for r in ds], elinewidth=0.8,
+                   **ps.det('det3', view='y', ms=3.5))
+        a.set_ylim(0, 120); a.set_xlim(80, 410)
+        a.set_xlabel('drift field [V/cm]'); a.set_ylabel(r'$\sigma$ (s68) [ns]')
+        t = a.twinx(); t.grid(False); t.spines['right'].set_visible(True)
+        k = np.isfinite([r['evt_mm'] for r in ds])
+        t.plot(E[k], np.array([r['evt_mm'] for r in ds])[k], color=ps.MODEL, marker='D', ms=3.0, mfc='white', ls=':',
+               lw=0.9)
+        t.set_ylim(0, 2.4); t.set_ylabel('event time [mm of drift]', labelpad=2)
+        a.legend(handles=[Line2D([], [], color=ps.MODEL, marker='D', mfc='white', ls=':', label='event time [mm]')],
+                 loc='upper right')
+        rows += [dict(panel='c', x=r['E_Vcm'], drift_V=r['drift_V'], sigma_evt=r['sigma_evt'], sigma_xy=r['sigma_xy'],
+                      evt_mm=r['evt_mm'], v=r['v']) for r in ds]
     ps.panel_labels(ax)
     ps.save(fig, os.path.join(F, 'timing'), data=pd.DataFrame(rows))
 
@@ -192,6 +220,38 @@ def fig_drift(m):
     a.legend(loc='upper right', fontsize=7); b.legend(loc='center right', fontsize=7)
     fig.tight_layout(); fig.savefig(os.path.join(F, 'drift.png'), dpi=140); plt.close(fig)
     return s
+
+
+def walk_section(ws):
+    """Dylan 2026-11-03: is the HV gain amplitude walk (correctable) or signal-to-noise (not)? walk_snr.py's numbers."""
+    if not ws:
+        return ''
+    w = ws['walk']
+    fx = pd.DataFrame(ws['fixed_hv']); fx['hv_scan_ratio'] = [r['ratio'] for r in ws['fixed_over_hvscan']]
+    ds = pd.DataFrame(ws['drift_scan'])
+    return ('<h2>Amplitude walk or signal-to-noise? (walk_snr.py)</h2>'
+            '<p><b>Signal-to-noise, not walk.</b> At one HV (Runs 1+2, 490 V), binned in the per-track early amplitude, '
+            f'(X−Y)/√2 falls from {fx.sigma_xy.iloc[0]:.1f} to {fx.sigma_xy.iloc[-1]:.1f} ns and sits on the HV-scan curve '
+            f'at the same amplitude (ratio {fx.hv_scan_ratio.min():.2f}–{fx.hv_scan_ratio.max():.2f}): the HV improvement is '
+            'the signal size. The edge estimator fits a scaled template step, so a pure amplitude change does not move it: '
+            f'the median event time moves by {w["med_evt_span_ns"]:.0f} ns over the whole amplitude range (most of it in the '
+            f'top bin) and t<sub>X</sub>−t<sub>Y</sub> by {w["med_xy_span_ns"]:.1f} ns. Subtracting that walk curve changes '
+            f'σ_evt {w["sigma_evt"]:.1f} → {w["sigma_evt_walk_corrected"]:.1f} ns and (X−Y)/√2 {w["sigma_xy"]:.1f} → '
+            f'{w["sigma_xy_walk_corrected"]:.1f} ns. What falls with amplitude is the width (noise over the slope of the '
+            'rising edge), which no amplitude correction removes. The event time is flat in amplitude at fixed HV '
+            f'({", ".join(f"{q["sigma_evt"]:.0f}" for q in w["quartiles"])} ns by amplitude quartile): its common part is not '
+            'set by the signal size.</p>'
+            + table(fx, ['amp', 'n', 'sigma_xy', 'sigma_xy_err', 'sigma_evt', 'med_evt', 'hv_scan_ratio'],
+                    dict(amp='{:.0f}', sigma_xy='{:.1f}', sigma_xy_err='{:.1f}', sigma_evt='{:.1f}', med_evt='{:+.1f}',
+                         hv_scan_ratio='{:.2f}'))
+            + '<p><b>Drift field (490 V, M3-matched).</b> In ns the widths fall with the field; in drift distance the event '
+            'time and its common part are constant (the common part is a depth, ~1.2–1.4 mm: where the first electrons '
+            'are made, common to both views), and the uncorrelated part grows slowly (it follows the early amplitude, '
+            '∝ v).</p>'
+            + table(ds, ['drift_V', 'E_Vcm', 'n', 'v', 'sigma_evt', 'sigma_xy', 'sigma_common', 'evt_mm', 'xy_mm', 'common_mm'],
+                    dict(E_Vcm='{:.0f}', v='{:.1f}', sigma_evt='{:.1f}', sigma_xy='{:.1f}', sigma_common='{:.1f}',
+                         evt_mm='{:.2f}', xy_mm='{:.2f}', common_mm='{:.2f}'))
+            + f'<p>{html.escape(ws.get("note", ""))}</p>')
 
 
 def table(df, cols, fmt=None):
@@ -265,6 +325,7 @@ def main():
          'also at normal incidence. The wft fit\'s t0 is not (it is pinned to the trigger in the pass, σ = 0.05 ns).</p>',
          '<h2>Drift field (det3, 490 V)</h2><img src="figures/drift.png">',
          table(ds, ['E', 't', 'xy', 'mm'], dict(E=f0, t=f1, xy=f1, mm=f2)),
+         walk_section(jload('walk_snr.json')),
          '<h2>Estimator choice (σ_evt, all clean triggers)</h2>',
          table(est, ['row', 'edge25', 'edge15', 'edge40', 'cf10', 'fixT', 'box'],
                dict(edge25=f1, edge15=f1, edge40=f1, cf10=f1, fixT=f1, box=f1)),

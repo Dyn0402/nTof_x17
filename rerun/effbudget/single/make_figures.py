@@ -28,6 +28,7 @@ RES, OUT = os.path.join(HERE, 'results'), os.path.join(HERE, 'figures')
 D3 = ps.DET_COLOR['det3']
 ROWLS = {'sat_det3': '-', 'p2_det3': '--'}     # Run 1 solid, Run 2 dashed (2026-11-03)
 ROWLAB = dict(ps.RUN)                          # public names: sat_det3 = Run 1, p2_det3 = Run 2 (time order)
+VIEWC = {'x': D3, 'y': ps.DET_COLOR['det6']}   # 2026-11-03: X chamber-A blue, Y orange (distinguishable)
 W_MID = 4.3            # in (printed width of the single-panel figures)
 
 
@@ -47,7 +48,7 @@ def eff_vs_radius():
     """Chamber A's two golden runs merged (counts summed, binomial errors): any reconstructed track within R of the
     reference ray (filled) vs the track the reconstruction keeps (open); accidentals (event mixing) on the right axis."""
     d = json.load(open(os.path.join(RES, 'radius.json')))
-    fig, ax = ps.fig_for(6.1, aspect=0.45)  # 2026-11-03: full page width, lower
+    fig, ax = ps.fig_for(6.1, aspect=0.36)  # 2026-11-03: full page width, lower
     ax2 = ax.twinx(); ax2.grid(False); ax2.spines['right'].set_visible(True)
     R = np.array(d['sat_det3']['radii'])
     keys = ('sat_det3', 'p2_det3')
@@ -69,10 +70,11 @@ def eff_vs_radius():
     ax.set_xlabel('matching radius $R$ at the mesh [mm]'); ax.set_ylabel('efficiency [%]')
     ax2.set_ylabel('accidental match [%]', color=ps.MUTED); ax2.set_ylim(0, 5)
     ax2.tick_params(axis='y', colors=ps.MUTED)
+    # 2026-11-03: the open curve ("the track the reconstruction keeps") is labelled on the curve, not in the legend
+    ax.text(13, float(np.interp(13, R, e)) - 1.2, 'kept track only', color=D3, ha='center', va='top', fontsize=ps.BASE_PT * 0.85)
     h = [Line2D([], [], color=D3, marker='o', ms=3.0, lw=1.2, label='any reconstructed track within $R$'),
-         Line2D([], [], color=D3, marker='o', ms=3.0, mfc='white', lw=0.9, label='the track the reconstruction keeps, within $R$'),
          Line2D([], [], color=ps.MUTED, marker='^', ms=2.6, lw=0.8, label='unrelated track within $R$ (right axis)')]
-    ax.legend(handles=h, loc='center right', bbox_to_anchor=(0.99, 0.50), fontsize=ps.BASE_PT * 0.8)  # 2026-11-03: legend off the curves
+    ax.legend(handles=h, loc='center right', bbox_to_anchor=(0.99, 0.62), fontsize=ps.BASE_PT * 0.8, framealpha=0.95)  # 2026-11-03: legend off the curves
     ps.save(fig, os.path.join(OUT, 'eff_vs_radius'), data=pd.DataFrame(rows))
 
 
@@ -101,7 +103,7 @@ def residuals():
                        frac_within_3sigma=float(hv[np.abs(cv) < 3 * abs(p[2])].sum() / hv.sum()),
                        frac_within_5mm=float(hv[np.abs(cv) < 5].sum() / hv.sum()), fit_range_mm=1.5)
     for v in ('x', 'y'):
-        _steps(a1, be, np.where(tot[f'res_{v}'] > 0, tot[f'res_{v}'], np.nan), color=D3, lw=1.0, ls=ps.VIEW_LS[v], label=f'{v.upper()} view')
+        _steps(a1, be, np.where(tot[f'res_{v}'] > 0, tot[f'res_{v}'], np.nan), color=VIEWC[v], lw=1.0, ls=ps.VIEW_LS[v], label=f'{v.upper()} view')
     xx = np.linspace(-4, 4, 400)
     sx, sy = core['x']['sigma_mm'], core['y']['sigma_mm']
     hx = tot['res_x']; k = np.abs(cv) < 1.5
@@ -111,7 +113,7 @@ def residuals():
     json.dump(core, open(os.path.join(RES, 'residual_core.json'), 'w'), indent=1)
     w = np.diff(br)
     nz = lambda a: np.where(a > 0, a, np.nan)   # empty bins: a gap, not a drop to the axis
-    _steps(a2, br, nz(tot['r']) / w, color=D3, lw=1.1, label='its own M3 ray')
+    _steps(a2, br, nz(tot['r']) / w, color=ps.INK, lw=1.1, label='its own M3 ray')
     _steps(a2, br, nz(tot['r_mixed']) / w, color=ps.MUTED, lw=1.0, label='another event’s ray')
     a1.set_yscale('log'); a1.set_xlim(-20, 20); a1.set_ylim(0.6, 3e5)
     a1.set_xlabel('residual at the mesh, det3 − M3 [mm]'); a1.set_ylabel('tracks / 0.25 mm')
@@ -140,10 +142,11 @@ def xy_pairing():
     ax.hist(swap, b, histtype='step', color=ps.ACCENT, lw=1.0, label='swapped pairing')
     ax.set_xlabel(r'$\ln(q_X/q_Y)$ of an X/Y segment pair'); ax.set_ylabel('segment pairs / 0.05')
     ok = ref['pooled']['all']
-    ax.text(0.02, 0.97, f"{ok['n']} two-particle events\ncorrectly paired:\n{100 * ok['charge_time']['frac']:.1f} % charge + time\n"
+    ax.text(0.98, 0.97, f"{ok['n']} two-particle events\ncorrectly paired:\n{100 * ok['charge_time']['frac']:.1f} % charge + time\n"
             f"{100 * ok['charge']['frac']:.1f} % charge only",
-            transform=ax.transAxes, va='top', fontsize=ps.BASE_PT * 0.85, color=ps.INK)
-    ax.set_xlim(-1.9, 1.9); ax.set_ylim(0, 1.3 * ax.get_ylim()[1]); ax.legend(loc='upper right')
+            transform=ax.transAxes, va='top', ha='right', fontsize=ps.BASE_PT * 0.85, color=ps.INK)
+    ax.set_xlim(-1.9, 1.9); ax.set_ylim(0, 1.3 * ax.get_ylim()[1])   # 2026-11-03: room on the right so the legend clears the grey band
+    ax.legend(loc='upper left', fontsize=ps.BASE_PT * 0.75, handlelength=1.0, borderaxespad=0.4)
     ps.save(fig, os.path.join(OUT, 'xy_pairing'), data=pd.DataFrame(dict(lq_true=pd.Series(true), lq_swap=pd.Series(swap))))
 
 

@@ -32,6 +32,13 @@ source = "papers/paper1/figs/out/tpc_principle.pdf"
 producer = ".venv/bin/python papers/paper1/figs/make_tpc_principle.py [--cache <dir of principle_7884.pkl, made by make_principle.py>]"
 note = "2026-11-03: rework (Dylan: too narrow/tall, too much text): one full-width row, sketch on the same vertical scale as the data (t = t0 + z/v), evd.py display style. Replaces microtpc_principle (make_principle.py still makes the replay cache)."
 
+[fig.tpc_principle_stacked]
+title = "TPC principle, variant: (a) section; (b) event 7884 X heatmap; (c) stacked per-strip waveforms, data and model (not in the .tex; compare with tpc_principle)"
+state = "current"
+source = "papers/paper1/figs/out/tpc_principle_stacked.pdf"
+producer = ".venv/bin/python papers/paper1/figs/make_tpc_principle.py --variant stacked [--cache <dir of principle_7884.pkl>]"
+note = "2026-11-03: Dylan asked for a stacked-waveform view (style of mpgd26/make_microtpc.py draw_waveforms, rotated so time runs down); sketch muon tilted more (tan 0.45) in both variants."
+
 [fig.evd_showcase]
 title = "What one chamber sees: four chamber A events (muon, delta ray, muon + curling electron, two particles)"
 state = "current"
@@ -46,21 +53,21 @@ title = "Saclay cosmic bench"
 state = "current"
 source = "papers/paper1/figs/out/bench_setup.pdf"
 producer = ".venv/bin/python papers/paper1/figs/make_bench_setup.py"
-note = "2026-11-03: rewritten, z horizontal, 6.0 x 2.1 in (Dylan: too tall/narrow). Same numbers (run_config det_center_coords). Scintillator z never recorded: schematic. M3 named here only (ps.KEEP_GID)."
+note = "2026-11-03: redrawn in the physical orientation (z vertical, muons down), z compressed x0.35 with scale bars, 6.1 x 2.4 in. Same numbers (run_config det_center_coords). Scintillator z never recorded: schematic. M3 named here only (ps.KEEP_GID)."
 
 [fig.sps_setup]
-title = "SPS H4: uRWELL references and chamber E on the rail"
+title = "SPS H4 setup: beam, uRWELL references and chamber E (plan view)"
 state = "current"
 source = "papers/paper1/figs/out/sps_setup.pdf"
-producer = "cd mpgd26 && ../.venv/bin/python make_figures.py --theme light --only sps_side_mx17  # then crop the title/caption bands (y 0.10-0.875) and save 1830 px JPEG-in-PDF to papers/paper1/figs/out/sps_setup.pdf"
-note = "2026-11-03: was a placeholder. mpgd26 side render with MX17 (new FIGURES entry sps_side_mx17; label now 'MX17 chamber E'). Renders headless here. Caveat in the caption: chamber E z = 1155 mm is the run-config nominal (flagged PLACEHOLDER in mpgd26/geometry.py). Candidate for the appendix (Dylan)."
+producer = ".venv/bin/python papers/paper1/figs/make_sps_setup.py"
+note = "2026-11-03: 2D plan-view schematic in the style of bench_setup (Dylan: no 3D render, no P2 detectors). z from mpgd26/geometry.py SPS_STATIONS (run_59 run_config). Chamber E z = 1155 mm is the run-config nominal, flagged PLACEHOLDER there (dagger on the axis). Assumed, not checked: sign of the yaw and the sense of the drift arrow."
 
 [fig.hv_scan]
-title = "HV scans of chambers A-D: interior efficiency and discharges per trigger"
+title = "HV scans of chambers A-D: interior efficiency (left axis) and discharges per trigger (right axis), one panel per chamber"
 state = "current"
 source = "rerun/paper1_ops/figures/hv_scan.pdf"
 producer = ".venv/bin/python rerun/paper1_ops/make_report.py --spark <spark> --telgain <tel_gain> --spsgain <sps_gain> --hitsgain <hits_gain>  # inputs: EOS cosmic_bench/x17rerun/paper1_ops/{spark,tel_gain,sps_gain,hits_gain}, fetched over xrootd (70 MB); spark.sub (lxplus condor) makes them"
-note = "Rebuilt 2026-10-31 on pass 1 (was the 06-29 hits figure 30, det3 only). Efficiency = the loss budget's interior_good (rerun/effbudget/pass1); discharge = a vetoed trigger (> 50 strips) with a chip of >= 8 strips over 3000 ADC; Numbers: rerun/paper1_ops/report.html. Split restyled 2026-11-02 (paper_style): the discharge loss vs efficiency moved to eff_vs_hv_discharge (section 5); this figure keeps (a) efficiency and (b) discharges per trigger; det4 golden star has its own legend entry. Numbers unchanged (results/*.csv and summary.json reproduce byte for byte). Checklist pass 2026-11-02: 4.3 in drawn (4.4 in PDF), fonts embedded; titles -> (a)/(b), one legend above, efficiency axis 30-100 %. Numbers unchanged."
+note = "2026-11-03 (Dylan): combined into one row, a panel per chamber A-D, efficiency left axis (solid) and discharges per trigger right axis (dashed, open, 0-0.5 linear), plateau shaded, long-run stars; absorbs eff_vs_hv_discharge (removed from section 5, claims moved to the caption); redraw alone with make_report.py --hv-scan-only (reads results/tradeoff.csv). Earlier: Rebuilt 2026-10-31 on pass 1 (was the 06-29 hits figure 30, det3 only). Efficiency = the loss budget's interior_good (rerun/effbudget/pass1); discharge = a vetoed trigger (> 50 strips) with a chip of >= 8 strips over 3000 ADC; Numbers: rerun/paper1_ops/report.html. Split restyled 2026-11-02 (paper_style): the discharge loss vs efficiency moved to eff_vs_hv_discharge (section 5); this figure keeps (a) efficiency and (b) discharges per trigger; det4 golden star has its own legend entry. Numbers unchanged (results/*.csv and summary.json reproduce byte for byte). Checklist pass 2026-11-02: 4.3 in drawn (4.4 in PDF), fonts embedded; titles -> (a)/(b), one legend above, efficiency axis 30-100 %. Numbers unchanged."
 
 [fig.spark_deadtime]
 title = "Efficiency and charge against the time since the previous discharge: no dead time"
@@ -116,16 +123,23 @@ note = "2026-11-03: Dylan: efficiencies alongside event displays. Numbers from t
 [fig.eff_vs_hv_discharge]
 title = "Efficiency and discharge loss against the resist HV (chambers A, C, D)"
 state = "current"
-note = "2026-11-02 (paper_style): per chamber, interior efficiency (filled) and the % of M3 tracks lost to a discharge (dashed, open) vs resist HV, from rerun/paper1_ops/results/tradeoff.csv (the effbudget pass-1 rows + spark_timeline). Shaded = plateau (within 1 point of the maximum, the optimum table of report.html). det3 holds 91-94 % from 425 to 500 V and its discharge loss stays < 1 % up to 490 V (plateau 460-490 V); det6 / det7 reach 1 % discharge loss at their efficiency maximum (480 / 430 V) and fall from there. Checklist pass 2026-11-02: full width (6.1 in drawn, 6.22 in PDF), fonts embedded; titles -> (a)-(c) with chamber name in panel, one legend above, plateau note removed. Numbers unchanged."
+note = "2026-11-03: NO LONGER IN THE PAPER (merged into hv_scan, Dylan); still written for report.html. 2026-11-02 (paper_style): per chamber, interior efficiency (filled) and the % of M3 tracks lost to a discharge (dashed, open) vs resist HV, from rerun/paper1_ops/results/tradeoff.csv (the effbudget pass-1 rows + spark_timeline). Shaded = plateau (within 1 point of the maximum, the optimum table of report.html). det3 holds 91-94 % from 425 to 500 V and its discharge loss stays < 1 % up to 490 V (plateau 460-490 V); det6 / det7 reach 1 % discharge loss at their efficiency maximum (480 / 430 V) and fall from there. Checklist pass 2026-11-02: full width (6.1 in drawn, 6.22 in PDF), fonts embedded; titles -> (a)-(c) with chamber name in panel, one legend above, plateau note removed. Numbers unchanged."
 producer = ".venv/bin/python rerun/paper1_ops/make_report.py --spark <spark> --telgain <tel_gain> --spsgain <sps_gain> --hitsgain <hits_gain>  # inputs: EOS cosmic_bench/x17rerun/paper1_ops/{spark,tel_gain,sps_gain,hits_gain}, fetched over xrootd (70 MB); spark.sub (lxplus condor) makes them"
 source = "rerun/paper1_ops/figures/eff_vs_hv_discharge.pdf"
 
 [fig.hv_metrics]
-title = "Chamber A against the resist HV: gain proxy, efficiency, time, angle s68, angle scale, position core (6-27 scan)"
+title = "Chamber A against the resist HV: gain proxy, efficiency, angle s68, position core (6-27 scan)"
 state = "current"
 note = "New 2026-11-03 (Dylan: A looks on plateau at 430 V, why 490 V?). Per-row metrics of the 6-27 HV scan: eff_ig (effbudget pass1 rows.csv), discharge loss (eff_vs_hv_discharge.csv), s68 and mesh position core of the pass arm (paper1_res rows JSONs), timing (paper1_timing rows.csv). Efficiency, angle and position flat 425-505 V; only timing improves (109 -> 23 ns). 2026-11-03: layout 3x2, shared HV axis, one marker shape per quantity (X filled / Y open in d-f). Numbers unchanged (csv/json identical)."
 producer = ".venv/bin/python rerun/paper1_ops/hv_metrics.py --rows <EOS x17rerun/paper1_res/results_18efcd0d/rows> --events <EOS cosmic_bench/Analysis_pass1/mx17_det3_saturday_scan_6-27-26> --rays <EOS x17rerun/paper1_eff/budget/mx17_det3_saturday_scan_6-27-26>  # all fetched over xrootd"
 source = "rerun/paper1_ops/figures/hv_metrics.pdf"
+
+[fig.hv_metrics_extra]
+title = "Chamber A against the resist HV: time resolution, time against the early amplitude, angle scale (6-27 scan)"
+state = "current"
+note = "2026-11-03 (appendix A3): the two panels dropped from hv_metrics (Dylan) plus the time-vs-early-amplitude collapse (rerun/paper1_ops/timing_vs_hv_check.py -> results/timing_vs_hv_check.json): sigma_xy 109.4+-4.5 -> 23.2+-0.7 ns (425 -> 490 V) is the noise-over-slope of the edge estimate: all HV on one sigma(amp) curve."
+producer = "same command as hv_metrics (writes both); needs results/timing_vs_hv_check.json from .venv/bin/python rerun/paper1_ops/timing_vs_hv_check.py (per-trigger timing npz in /media/ucla/work/claude-jobs/pairfix/timing_rows)"
+source = "rerun/paper1_ops/figures/hv_metrics_extra.pdf"
 
 [fig.xy_pairing]
 title = "X/Y pairing of two particles by charge: ln(qX/qY) of true and swapped pairings, 552 real cosmic events"
@@ -210,6 +224,13 @@ section_state = "partial"
 note = "2026-11-02, from rerun/paper1_gas/results/gas.json (no recomputation). (a) water from the anchored M3 ladder (k v_lad, k = timing stack / ladder on the attachment-free rows: det6 0.970 +- 0.013, det7 0.984 +- 0.011) through Magboltz: det6 1.47 -> 0.76 %, det7 0.68 -> 0.35 % (01:00 -> 15:00), dashed = afternoon plateaus; grey = the golden rows 06:00-10:20. (b) excess over plateau, det6 / 2.17: r = 0.975. (c) det3 6-27 timing-v water per field (0.87 / 0.97 / 0.91 / 1.05 %) on the one-water fit 0.97 % [0.95, 0.99]; the 390 V/cm point sits near the velocity maximum, hence its wide interval. Checklist pass 2026-11-02: full width (6.1 in drawn, 6.22 in PDF), fonts embedded; titles -> (a)-(c), in-plot labels removed except det6 / 2.17, one legend above. Numbers unchanged. 2026-11-03: (c) dropped; left = measured k v_lad (a) over Magboltz-inverted water (b), shared time axis; right = excess over plateau."
 producer = "cd rerun/paper1_gas && ../../.venv/bin/python pg_figs.py drying"
 
+[fig.det_a_timeseries]
+title = "Chamber A, Runs 1+2 against time: drift velocity (water), gain and saturation, efficiency, position core, angle s68, time resolution"
+state = "current"
+source = "rerun/paper1_timeseries/figures/det_a_timeseries.pdf"
+producer = "cd rerun/paper1_timeseries && ../../.venv/bin/python timeseries.py --data $WORK_DATA/claude-jobs/1ccd2342/timeseries && ../../.venv/bin/python make_report.py  # inputs fetched from EOS by fetch.py (Analysis_pass1 events + 03_angles, paper1_eff budget rays + angles, paper1_timing rows)"
+note = "New 2026-11-03 (Dylan: Runs 1+2 is the paper's most important data set; everything against time). Same definitions as the integrated numbers, which the code reproduces (single-track eff 95.72 / 94.81 %, core 0.547 / 0.531 mm, s68 0.987 / 0.900 deg, (tX-tY)/sqrt2 22.4 / 22.2 ns). Bins: 30 min (v, efficiency, position, angle), 20 min (timing), 10 min (charge). Flat: efficiency, position, angle, timing (|z| <= 1.7). Moving: ladder v 35.80 (Run 1, flat) -> 36.64 um/ns end of Run 2 (water 0.99 -> 0.94 %), column v agrees inside Run 2 (+1.1 / +1.3 %) but not on the 0.9 % step between the runs; gain +4 % step at the run boundary (saturated 36 -> 39 %). rerun/paper1_timeseries/report.html."
+
 [fig.attachment]
 appendix_candidate = "Dylan 2026-11-02: keep in the body for now; maybe move to an appendix later (see how the paper reads)"
 title = "What gas chamber E had at SPS: water and O2 of every run group (CO2 and CF4 mixtures), bench range for scale"
@@ -230,12 +251,12 @@ note = "2026-11-03: new (Dylan: the key plot showing attachment at SPS vs the be
 
 [fig.timing]
 appendix_candidate = "Dylan 2026-11-02: keep in the body for now; maybe move to an appendix later (see how the paper reads)"
-title = "Chamber A time resolution: vs resist HV, and the uncorrelated part vs signal size"
+title = "Chamber A time resolution: vs resist HV, the uncorrelated part vs signal size (all rows and Runs 1+2 at one HV), and vs drift field"
 state = "current"
 source = "rerun/paper1_timing/figures/timing.pdf"
 section_state = "partial"
 producer = "cd rerun/paper1_timing && ../../.venv/bin/python make_report.py"
-note = "Pass 1 (2026-10-31): column start of the strip sum (edge25), M3-matched tracks; event time 40-46 ns (det2/3/7), per view 22-28 ns, common 35-40 ns; replaces the hits 33 ns. rerun/paper1_timing/README.md. Restyled 2026-11-02 (paper_style): palette; one chamber legend above the panels, in-panel legends only for line styles; (c) ordered det3, det2, det6, det7, det4; det4 at SPS grey open markers; x axis of (a) is the resist HV. Checklist pass 2026-11-02: full width (6.1 in drawn, 6.22 in PDF), fonts embedded; titles -> (a)-(c), one legend above, (b) y range to 700 ns (det4 SPS no longer clipped). Numbers unchanged. 2026-11-03: chamber A only; all chambers -> timing_all (appendix A3)."
+note = "Pass 1 (2026-10-31): column start of the strip sum (edge25), M3-matched tracks; event time 40-46 ns (det2/3/7), per view 22-28 ns, common 35-40 ns; replaces the hits 33 ns. rerun/paper1_timing/README.md. Restyled 2026-11-02 (paper_style): palette; one chamber legend above the panels, in-panel legends only for line styles; (c) ordered det3, det2, det6, det7, det4; det4 at SPS grey open markers; x axis of (a) is the resist HV. Checklist pass 2026-11-02: full width (6.1 in drawn, 6.22 in PDF), fonts embedded; titles -> (a)-(c), one legend above, (b) y range to 700 ns (det4 SPS no longer clipped). Numbers unchanged. 2026-11-03: chamber A only; all chambers -> timing_all (appendix A3). 2026-11-03 (Dylan: drift-scan timing; is (b) walk?): (c) new, the 490 V drift scan from rows_matched.csv (event time 114 -> 38 ns, (X-Y)/sqrt2 46 -> 22 ns from 106 to 390 V/cm; event time in drift distance flat 1.3-1.5 mm, right axis, v from gas.json); (b) adds Runs 1+2 binned in per-track early amplitude at one HV (open squares; on the all-row curve within 0.89-1.01): signal-to-noise, not walk (walk_snr.py -> results/walk_snr.json: walk correction moves sigma_evt 40.7 -> 40.5 ns)."
 
 [fig.timing_all]
 title = "Time resolution, all chambers and E at SPS (appendix A3)"

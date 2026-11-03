@@ -87,9 +87,9 @@ def main():
         pts(axs[0], cv, st=2 if cv['name'] == 'A' else 1, z=5 if cv['name'] == 'A' else 3)
     for ax, cv in zip(axs[1:], curves[1:]):
         pts(ax, cv)
-        ax.plot(cv['tt'], cv['mn'], '-', color=cv['color'], lw=1.3, zorder=4, label=f"fit, O$_2$ {cv['o2']:.0f} ppm")
+        ax.plot(cv['tt'], cv['mn'], '-', color=cv['color'], lw=1.3, zorder=4, label=f"gas fit, O$_2$ {cv['o2']:.0f} ppm")
         ax.plot(cv['tt'], cv['m0n'], '--', color=ps.INK, lw=1.1, zorder=4, label='same water, no O$_2$')
-        ax.legend(loc='upper right', handlelength=1.6)
+        ax.legend(loc='upper right', handlelength=1.4, fontsize=ps.BASE_PT * 0.78)
     for ax in axs:
         ax.set_xlim(*XL); ax.set_ylim(-0.1, 1.45); ax.set_xlabel('time after column start (ns)')
     axs[0].set_ylabel('strip-sum signal (plateau = 1)')

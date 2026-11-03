@@ -596,3 +596,141 @@ fig = "eff_vs_radius"
 status = "for review"
 change = "Runs 1+2 summed; legend: any track within R / the track the reconstruction keeps / unrelated track."
 
+
+[[entry]]
+date = "2026-11-03"
+fig = "*"
+status = "for review"
+change = "Event-display style (11-03 round 3): zero white, linear amplitude normalised to 4096 ADC full scale (one bar for all events), default white->red; reference solid black over the full time axis (past cathode and mesh), fits thin dashed (blue first, green second, dotted = candidate not kept); one display per row; axis breaks per figure, tick labels kept clear of the break, no time ticks right of a break; ranges padded off the frame. Appendix of the deck remade: 4 colour maps x 2 normalisations."
+
+[[entry]]
+date = "2026-11-03"
+fig = "evd_showcase"
+status = "for review"
+change = "Two rows, full width, no breaks: (a) single muon 7884, (b) two muons 47235 (Run 1), ~25 mm apart in X and Y. Old (c) 5423 moved to two_particle (c)."
+
+[[entry]]
+date = "2026-11-03"
+fig = "two_particle"
+status = "for review"
+change = "Side plots dropped; efficiency and counts in each row title (from figs/data/two_particle_eff.json, still pre-fix pass 1); no breaks; (b) is now event 45001 (merged in X). display_two_separate / merged_projection / muon_deposit removed from the text (producers kept)."
+
+[[entry]]
+date = "2026-11-03"
+fig = "loss_gallery"
+status = "for review"
+change = "Redrawn in the new style, one display per row (8.2 in tall: may need two columns again)."
+
+[[entry]]
+date = "2026-11-03"
+fig = "tpc_principle"
+status = "for review"
+change = "Sketch muon steeper (tan 0.17 -> 0.45) so the drift lines separate; colours follow the new display style. Variant tpc_principle_stacked (stacked waveform per strip, model dashed) made for comparison, not in the text."
+
+[[entry]]
+date = "2026-11-03"
+fig = "bench_setup"
+status = "for review"
+change = "Upright (z vertical, muon down), z compressed to 0.35 with scale bars; 6.1 x 2.4 in."
+
+[[entry]]
+date = "2026-11-03"
+fig = "sps_setup"
+status = "for review"
+change = "New 2D plan-view schematic (make_sps_setup.py), no P2: beam, two uRWELL references, chamber E yawed 25.6 deg with drift arrow; E z = 1155 mm nominal. Yaw sign and drift-arrow direction assumed, to check."
+
+[[entry]]
+date = "2026-11-03"
+fig = "readout_layout"
+status = "for review"
+change = "Box around the top-left connector region removed; the green/orange strip-direction guide lines and the centre ring (marked panel b's window) removed."
+
+[[entry]]
+date = "2026-11-03"
+fig = "hv_scan"
+status = "for review"
+change = "One row of four panels (A-D): efficiency left axis (solid filled), discharges per trigger right axis (dashed open, linear 0-0.5), plateau shaded, long-run stars. Replaces eff_vs_hv_discharge, which is out of the text (its claims in the caption)."
+
+[[entry]]
+date = "2026-11-03"
+fig = "eff_vs_hv_discharge"
+status = "for review"
+change = "Removed from the paper (merged into hv_scan)."
+
+[[entry]]
+date = "2026-11-03"
+fig = "hv_metrics"
+status = "for review"
+change = "2x2: gain proxy + saturation, efficiency, angle s68, position core. Time and angle scale -> new appendix figure hv_metrics_extra."
+
+[[entry]]
+date = "2026-11-03"
+fig = "hv_metrics_extra"
+status = "for review"
+change = "New (appendix A3): (a) time vs HV, (b) time vs early amplitude (all HV points on one curve), (c) angle scale."
+
+[[entry]]
+date = "2026-11-03"
+fig = "charge_balance"
+status = "for review"
+change = "Inset right and larger, legend left in two columns; inset shows only the median with its standard error."
+
+[[entry]]
+date = "2026-11-03"
+fig = "eff_vs_radius"
+status = "for review"
+change = "Legend higher and opaque; 'kept track' entry dropped from the legend (curve labelled directly); less tall."
+
+[[entry]]
+date = "2026-11-03"
+fig = "residuals"
+status = "for review"
+change = "(a) X blue solid / Y orange dashed; (b) reference-ray line in dark neutral."
+
+[[entry]]
+date = "2026-11-03"
+fig = "xy_pairing"
+status = "for review"
+change = "Legend upper left, text upper right, x range +-1.9; nothing over the grey band."
+
+[[entry]]
+date = "2026-11-03"
+fig = "efficiency_map"
+status = "for review"
+change = "Chamber D: veil and dotted split removed; orange box around the quoted right half (X ch 256-511, x > 199.3 mm)."
+
+[[entry]]
+date = "2026-11-03"
+fig = "two_velocities"
+status = "for review"
+change = "(a) on its own full-width row, (b) and (c) below."
+
+[[entry]]
+date = "2026-11-03"
+fig = "gas_drying"
+status = "for review"
+change = "Golden-rows shading removed; tighter vertically, full v label fits."
+
+[[entry]]
+date = "2026-11-03"
+fig = "attachment"
+status = "for review"
+change = "Ar/CF4 (E at SPS) green everywhere (paper_style GAS['CF4']); chamber C 6-26 O2 band dropped (column-duration anomaly, not established attachment)."
+
+[[entry]]
+date = "2026-11-03"
+fig = "attachment_charge"
+status = "for review"
+change = "Ar/CF4 green; legend/caption say the model is the sps_gasfit fit to these stacks (Magboltz v/attachment/diffusion; water and O2 fitted), dashed = same water, O2 = 0."
+
+[[entry]]
+date = "2026-11-03"
+fig = "angle_resolution"
+status = "for review"
+change = "(a) white->blue colormap, orange diagonal; (b) only s68 vs angle (bias dropped)."
+
+[[entry]]
+date = "2026-11-03"
+fig = "det4_stripes"
+status = "for review"
+change = "Ar/CF4 green; numbers unchanged."

@@ -4,7 +4,7 @@
 Per-track fitted angle (waveform forward-model fit, Analysis_pass1) against the reference (M3) angle for the reference-matched
 single tracks of the paper's resolution numbers: effbudget's 03_angles interior_good sample, exactly the one res_rows.py
 uses (pass arm; chamber A has no v(t) map).  Left: 2D histogram of theta_fit vs theta_ref (X and Y views stacked, they
-are the same physics), diagonal dashed.  Right: median of theta_fit - theta_ref per theta_ref bin, with the s68 band.
+are the same physics), diagonal dashed.  Right: s68 of theta_fit - theta_ref per theta_ref bin, X and Y (no bias panel, 2026-11-03).
 
 Input: per_event.npz of the two rows (x_/y_ eid, tan_ref, tan_fit), EOS x17rerun/paper1_eff/angles/<run>/<subrun>/mx17_3/
 (fetch with XRootD, see --data).  Output: figures/angle_resolution.{pdf,png,csv}, results/angle_resolution.json.
@@ -77,11 +77,12 @@ def main():
     fit = np.concatenate([D[p].fit for p in 'xy'])
     edges = np.arange(-LIM, LIM + 0.01, 0.5)
     H, xe, ye = np.histogram2d(ref, fit, bins=[edges, edges])
-    cm = plt.get_cmap('viridis').copy()
+    from matplotlib.colors import LinearSegmentedColormap   # 2026-11-03 (Dylan): solid blue, white -> chamber A's blue
+    cm = LinearSegmentedColormap.from_list('whiteblue', ['#ffffff', ps.DET_COLOR['det3']]).copy()
     cm.set_bad('white'); cm.set_under('white')
     Hm = np.ma.masked_where(H < 1, H)
     im = a1.pcolormesh(xe, ye, Hm.T, cmap=cm, norm=LogNorm(vmin=1, vmax=H.max()), rasterized=True)
-    a1.plot([-LIM, LIM], [-LIM, LIM], color='white', lw=0.9, ls=(0, (4, 3)))
+    a1.plot([-LIM, LIM], [-LIM, LIM], color=ps.ACCENT, lw=0.9, ls=(0, (4, 3)))
     a1.set_xlim(-LIM, LIM); a1.set_ylim(-LIM, LIM); a1.set_aspect('equal')
     a1.set_xlabel(r'$\theta_{\rm ref}$ [deg]'); a1.set_ylabel(r'$\theta_{\rm fit}$ [deg]')
     a1.set_xticks(range(-20, 21, 10)); a1.set_yticks(range(-20, 21, 10))
@@ -105,22 +106,16 @@ def main():
         med, sg = np.array(med), np.array(sg)
         kw = ps.det('det3', view=p)
         kw.pop('zorder', None); kw.pop('label', None)
-        col = ps.DET_COLOR['det3']
-        a2.fill_between(c, med - sg, med + sg, color=col, alpha=0.18 if p == 'x' else 0.0, lw=0)
-        a2.plot(c, med - sg, color=col, lw=0.7, ls=ps.VIEW_LS[p], alpha=0.8)
-        a2.plot(c, med + sg, color=col, lw=0.7, ls=ps.VIEW_LS[p], alpha=0.8)
         kw.update(ms=3.6, lw=1.2)
-        a2.plot(c, med, label=f'{p.upper()}', **kw)
+        a2.plot(c, sg, label=f'{p.upper()}', **kw)
         rows += [dict(view=p.upper(), theta_ref_center=ci, n=ni, median_dev_deg=m, s68_deg=s)
                  for ci, ni, m, s in zip(c, n, med, sg)]
         res[p]['by_ref_bin'] = [dict(center=float(ci), n=ni, median=m, s68=s) for ci, ni, m, s in zip(c, n, med, sg)]
-    a2.axhline(0, color='0.3', lw=0.6, ls=':')
-    a2.set_xlim(-LIM, LIM); a2.set_ylim(-2.0, 2.0); a2.set_yticks([-2, -1, 0, 1, 2])
+    # 2026-11-03 (Dylan): the right panel is the resolution only (s68 per theta_ref bin); no bias panel ("they trust us on the bias")
+    a2.set_xlim(-LIM, LIM); a2.set_ylim(0, 1.6); a2.set_yticks([0, 0.5, 1.0, 1.5])
     a2.set_xticks(range(-20, 21, 10))
-    a2.set_xlabel(r'$\theta_{\rm ref}$ [deg]'); a2.set_ylabel(r'$\theta_{\rm fit}-\theta_{\rm ref}$ [deg]')
-    a2.legend(loc='upper center', ncol=2, handlelength=2.2, title=None)
-    a2.text(0.5, 0.04, r'$s_{68}$: X %.2f$^\circ$, Y %.2f$^\circ$ (band: $\pm s_{68}$ per bin)' % (res['x']['s68'], res['y']['s68']),
-            transform=a2.transAxes, ha='center', va='bottom', fontsize=ps.BASE_PT * 0.85, color=ps.INK)
+    a2.set_xlabel(r'$\theta_{\rm ref}$ [deg]'); a2.set_ylabel(r'angular resolution $s_{68}$ [deg]')
+    a2.legend(loc='lower center', ncol=2, handlelength=2.2, title=None)
     ps.panel_labels([a1, a2])
     df = pd.DataFrame(rows)
     ps.save(fig, os.path.join(HERE, 'figures', 'angle_resolution'), data=df)

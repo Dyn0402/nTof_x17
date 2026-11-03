@@ -31,7 +31,7 @@ import paper_style as ps  # noqa: E402
 CACHE = '/media/ucla/work/claude-jobs/17c92c46-displays/principle'
 
 
-def sketch(ax, g, v_mm, t0, tlim):
+def sketch(ax, g, v_mm, t0, tlim, tan=0.45):
     """The section, in mm (x) against z (mm above the mesh, mapped onto the time axis of the data panels)."""
     import matplotlib.patches as mp
     z = lambda zz: t0 + zz / v_mm            # depth -> the shared (time) coordinate
@@ -53,9 +53,8 @@ def sketch(ax, g, v_mm, t0, tlim):
     ax.text(X1 + 0.6, z(-2.6), 'resistive strips', va='center', ha='left', fontsize=7.5, color=ink)
     ax.text(X1 + 0.6, z(-5.1), 'readout strips', va='center', ha='left', fontsize=7.5, color=ink)
     ax.text(X0 - 0.6, z(-1.2), 'avalanche', va='center', ha='right', fontsize=6.5, color=mut)
-    # the muon: enters at the cathode, leaves at the mesh, tilted like event 7884 in X (tan 0.17)
-    tan = 0.17
-    xm = 12.0
+    # the muon: enters at the cathode, leaves at the mesh, tilted well beyond event 7884 (tan 0.17) so the drift lines of successive clusters separate
+    xm = 6.0
     xs = lambda zz: xm + tan * zz
     ax.annotate('', xy=(xs(-1.8), z(-1.8)), xytext=(xs(g + 5), z(g + 5)),
                 arrowprops=dict(arrowstyle='-|>', color=ps.ACCENT, lw=1.3, mutation_scale=9), zorder=5)
@@ -72,11 +71,28 @@ def sketch(ax, g, v_mm, t0, tlim):
     ax.annotate('', xy=(X0 - 1.6, z(0)), xytext=(X0 - 1.6, z(g)),
                 arrowprops=dict(arrowstyle='<->', color=mut, lw=0.7, shrinkA=0, shrinkB=0))
     ax.text(X0 - 2.3, z(g / 2), f'$g$ = {g:.1f} mm', rotation=90, va='center', ha='right', fontsize=7.5, color=mut)
-    ax.text(xs(g * 0.62) + 3.0, z(g * 0.62), r'$t = t_0 + z/v$', fontsize=8, color=ink, ha='left', va='center',
+    ax.text(xs(g * 0.62) + 5.0, z(g * 0.62), r'$t = t_0 + z/v$', fontsize=8, color=ink, ha='left', va='center',
             bbox=dict(fc='white', ec='none', pad=1.0))
-    ax.set_xlim(X0 - 5.5, X1 + 13.5)
+    ax.set_xlim(X0 - 5.5, X1 + 13.5)  # (x range unchanged)
     ax.set_ylim(*tlim)
     ax.axis('off')
+
+
+def stacked(ax, W, M, P, cen, half, t0, v_mm, tlim, cmap):
+    """Stacked waveforms in the style of the mpgd26 micro-TPC talk figure (mpgd26/make_microtpc.py:draw_waveforms):
+    one trace per strip, baseline at the strip position, amplitude scaled to a few pitches, coloured by the time of
+    the peak.  Rotated so that time runs down, as in the sketch; data solid, model thin dashed."""
+    ts = np.arange(W.shape[1]) * evd.TS
+    order = np.argsort(P)
+    live = np.flatnonzero(W[order].max(axis=1) > 0.03 * W.max())
+    keep = order[max(live.min() - 1, 0):live.max() + 2]          # the strips with signal, plus one empty each side
+    scale = 0.9 * evd.PITCH / float(W[keep].max())               # one scale: the biggest pulse spans 0.9 pitch
+    col = ps.DET_COLOR['det3']
+    for i in keep:
+        ax.axvline(P[i], color=ps.GRID, lw=0.5, zorder=1)
+        ax.plot(P[i] + M[i] * scale, ts, color='k', lw=0.5, ls=(0, (2.5, 1.6)), zorder=4)
+        ax.plot(P[i] + W[i] * scale, ts, color=col, lw=1.0, zorder=3)
+    return scale, P[keep].min(), P[keep].max()
 
 
 def main():
@@ -84,8 +100,10 @@ def main():
     ap.add_argument('--cache', default=CACHE)
     ap.add_argument('--event', type=int, default=7884)
     ap.add_argument('--view', default='x')
-    ap.add_argument('--out', default=os.path.join(HERE, 'out', 'tpc_principle'))
+    ap.add_argument('--out', default=None)
+    ap.add_argument('--variant', default='heatmap', choices=['heatmap', 'stacked'])
     a = ap.parse_args()
+    a.out = a.out or os.path.join(HERE, 'out', 'tpc_principle' + ('_stacked' if a.variant == 'stacked' else ''))
     import matplotlib; matplotlib.use('Agg')
     import matplotlib.pyplot as plt
     ps.use()
@@ -98,7 +116,9 @@ def main():
     fig = plt.figure(figsize=(ps.FULL[0], 2.75))
     outer = fig.add_gridspec(1, 2, width_ratios=[1.45, 2.0], left=0.0, right=0.885, bottom=0.16, top=0.9,
                              wspace=0.2)
-    gs = outer[0, 1].subgridspec(1, 2, wspace=0.06)
+    stk = a.variant == 'stacked'
+    gs = outer[0, 1].subgridspec(1, 3 if stk else 2, wspace=0.06 if not stk else 0.6,
+                                 width_ratios=[1, 0.06, 1.25] if stk else None)
     axs_ = fig.add_subplot(outer[0, 0])
     sketch(axs_, g, v_mm, t0, tlim)
     m3 = r.get('m3') or {}
@@ -107,8 +127,9 @@ def main():
     W, M, P = np.asarray(d['W'], float), np.asarray(d['M'], float), np.asarray(d['pos'], float)
     vmax = max(float(np.percentile(W, 99.5)), 60.0)
     axd = fig.add_subplot(gs[0, 0])
-    axm = fig.add_subplot(gs[0, 1], sharey=axd)
-    for ax, A, title in ((axd, W, '(b) data'), (axm, M, '(c) model at the fit')):
+    axm = fig.add_subplot(gs[0, -1], sharey=axd)
+    panels = ((axd, W, '(b) data'),) if stk else ((axd, W, '(b) data'), (axm, M, '(c) model at the fit'))
+    for ax, A, title in panels:
         pc = evd.cells(ax, A, P, cen, half, vmax)
         evd.gap_lines(ax, t0, v_mm, label=False)
         ax.set_xlim(cen - half, cen + half)
@@ -122,18 +143,40 @@ def main():
     if m3:
         evd.reference(axd, float(m3[f'mesh_{a.view}']), float(m3[f'tan_{a.view}']), t0, v_mm)
     axd.set_ylabel('drift time [ns]')
+    if stk:
+        from matplotlib.lines import Line2D
+        evd.gap_lines(axm, t0, v_mm, label=False)
+        scale, lo, hi = stacked(axm, W, M, P, cen, half, t0, v_mm, tlim, evd.S['cmap'] if hasattr(evd.S['cmap'], '__call__') else plt.get_cmap(evd.S['cmap']))
+        axm.set_xlim(lo - 0.6, hi + 0.9); axm.set_ylim(*tlim)
+        axm.set_xlabel('$x$ [mm]')
+        axm.set_title('(c) waveform per strip', loc='left', fontsize=8, pad=3)
+        axm.tick_params(direction='in', top=True, right=True, length=2.5)
+        for sp in axm.spines.values():
+            sp.set_visible(True); sp.set_color('#555555')
+        axm.plot([], [], color=ps.DET_COLOR['det3'], lw=1.0, label='data'); axm.plot([], [], color='k', lw=0.5, ls=(0, (2, 1.4)), label='model')
     axm.tick_params(labelleft=False)
+    if stk:
+        axd.tick_params(labelleft=True)
     sec = axm.secondary_yaxis('right', functions=(lambda t: (t - t0) * v_mm, lambda zz: zz / v_mm + t0))
     sec.set_ylabel('$z$ above the mesh [mm]')
     sec.tick_params(direction='in', length=2.5)
     axs_.set_title('(a)', loc='left', fontsize=8, pad=3)
-    cax = fig.add_axes([0.965, 0.16, 0.012, 0.74])
+    if stk:
+        cax = fig.add_subplot(gs[0, 1])
+    else:
+        cax = fig.add_axes([0.965, 0.16, 0.012, 0.74])
     cb = fig.colorbar(pc, cax=cax)
-    cb.set_label('amplitude [ADC]', fontsize=7.5)
+    if stk:
+        cb.ax.set_title('ADC', fontsize=7, pad=3)
+    else:
+        cb.set_label('amplitude [ADC]', fontsize=7.5)
     cb.ax.tick_params(labelsize=7)
     h = {}
     for ax in (axd, axm):
         for hh, ll in zip(*ax.get_legend_handles_labels()):
+            h.setdefault(ll, hh)
+    if stk:
+        for hh, ll in zip(*axm.get_legend_handles_labels()):
             h.setdefault(ll, hh)
     axd.legend(list(h.values()), list(h.keys()), loc='upper left', fontsize=6.5, frameon=True, framealpha=0.9,
                edgecolor='none', handlelength=2.2, borderpad=0.3)

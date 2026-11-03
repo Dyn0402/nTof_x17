@@ -88,10 +88,9 @@ def main():
             ax.text(200, (b['y'][1] + STRIP_MAX_MM) / 2, 'passivated', ha='center', va='center',
                     fontsize=ps.BASE_PT * 0.75, color=ps.INK, zorder=6,
                     bbox=dict(fc='white', ec='none', pad=0.6))
-        if d == 'det7':      # X ch 0-255 are not quoted: veil them
-            ax.add_patch(Rectangle((b['x'][0], b['y'][0]), DET7_X_SPLIT - b['x'][0], b['y'][1] - b['y'][0],
-                                   fc='white', ec='none', alpha=0.55, zorder=3))
-            ax.axvline(DET7_X_SPLIT, color=ps.INK, ls=':', lw=0.8, zorder=4)
+        if d == 'det7':      # 2026-11-03 (Dylan): no veil, no split line; an orange box round the quoted half (X ch 256-511)
+            ax.add_patch(Rectangle((DET7_X_SPLIT, b['y'][0]), b['x'][1] - DET7_X_SPLIT, b['y'][1] - b['y'][0],
+                                   fill=False, ec=ps.ACCENT, lw=1.4, zorder=6))
         q = G.eff_ig
         ax.text(0, 1.02, rf'$\mathbf{{({chr(97 + i)})}}$ Chamber {ps.name(d)}', transform=ax.transAxes, ha='left', va='bottom',
                 fontsize=ps.BASE_PT, color=ps.INK)

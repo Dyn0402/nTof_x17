@@ -316,20 +316,19 @@ def fig_balance(golden, ev, figdir, paper_out=None):
         ax.set_xlabel(r'$f = Q_X/(Q_X+Q_Y)$')
         ax.set_ylabel('probability density')
         ax.set_ylim(0, max(np.max(v) for k, v in tab.items() if k.startswith('det')) * 1.02)
-        ax.legend(loc='upper right', handlelength=1.4)
-        # inset: f per chamber; marker = median with its error (thin, capped), thick bar = core sigma, thin long bar = SD
-        ins = ax.inset_axes([0.09, 0.50, 0.17, 0.45])
+        ax.legend(loc='upper left', ncol=2, handlelength=1.4, columnspacing=1.0)
+        # inset (right): median f per chamber with its standard error (error on the median, 1.2533 SD/sqrt(n));
+        # Dylan 2026-11-03: no core-sigma / SD bars (they are in the caption)
+        ins = ax.inset_axes([0.69, 0.30, 0.29, 0.66])
         ins.axhline(0.5, color=ps.MUTED, lw=0.7, ls='--', zorder=0)
         for i, (d, med, cs, sd, err, st) in enumerate(summ):
-            ins.errorbar(i, med, yerr=sd, color=st['color'], lw=0.7, capsize=1.5, capthick=0.7, zorder=2)
-            ins.errorbar(i, med, yerr=cs, color=st['color'], lw=2.2, zorder=3)
-            ins.errorbar(i, med, yerr=err, color='white', lw=0.5, capsize=0, zorder=4, marker='o', ms=2.6,
-                         mfc=st['color'], mec='white', mew=0.3)
+            ins.errorbar(i, med, yerr=err, color=st['color'], lw=1.0, capsize=2.0, capthick=0.9, zorder=3,
+                         marker='o', ms=4.0, mfc=st['color'], mec='white', mew=0.4)
         ins.set_xticks(range(len(summ))); ins.set_xticklabels([ps.name(x[0]) for x in summ])
-        ins.set_xlim(-0.6, len(summ) - 0.4); ins.set_ylim(0.3, 0.7)
+        ins.set_xlim(-0.6, len(summ) - 0.4); ins.set_ylim(0.44, 0.56)
         ins.set_ylabel('$f$', labelpad=1); ins.set_xlabel('chamber', labelpad=1)
-        ins.tick_params(labelsize=ps.BASE_PT * 0.7, length=2, pad=1)
-        ins.xaxis.label.set_size(ps.BASE_PT * 0.75); ins.yaxis.label.set_size(ps.BASE_PT * 0.75)
+        ins.tick_params(labelsize=ps.BASE_PT * 0.8, length=2, pad=1)
+        ins.xaxis.label.set_size(ps.BASE_PT * 0.85); ins.yaxis.label.set_size(ps.BASE_PT * 0.85)
         ins.grid(False)
         ps.save(fig, os.path.join(figdir, 'charge_balance'), data=pd.DataFrame(tab))
 

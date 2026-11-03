@@ -161,7 +161,10 @@ def fig():
     cmap = plt.get_cmap('viridis')
     shade = dict(zip(map(str, STACK_V), [cmap(f) for f in (0.0, 0.3, 0.58, 0.82)]))
     # checklist pass 2026-11-02: full width, no panel titles, (a)-(c) labels, one field legend above the panels
-    fig, axs = ps.fig_for('full', height=2.55, ncols=3, gridspec_kw=dict(width_ratios=[1.25, 1.1, 0.85]))
+    # Dylan 2026-11-03: (a) on its own full-width row to show its extent; (b), (c) side by side below
+    fig = plt.figure(figsize=(6.1, 4.3), layout='constrained')
+    gs = fig.add_gridspec(2, 2, height_ratios=[1.0, 1.0])
+    axs = [fig.add_subplot(gs[0, :]), fig.add_subplot(gs[1, 0]), fig.add_subplot(gs[1, 1])]
     rows = []
 
     ax = axs[0]

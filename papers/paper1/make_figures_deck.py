@@ -379,41 +379,44 @@ def s_a1(D, F, man):
             short='A1 displays')
 
 
-EVD_GALLERY = Path(os.environ.get('EVD_GALLERY', '/media/ucla/work/claude-jobs/77eb854f/evd/gallery'))
-EVD_PAGES = [  # (file stem, claim, what to look at)
-    ('style_navy', 'A: white to navy (the paper default for now)', 'The 11-02 colours, now in ADC on one scale for both views.'),
-    ('style_magma', 'B: magma (white, yellow, red, black)', 'High contrast; faint charge reads well; fits drawn blue.'),
-    ('style_grey', 'C: grey data, coloured lines', 'The lines pop most; the data recede; prints well in black and white.'),
-    ('style_viridis', 'D: viridis', 'Perceptually uniform; yellow for low charge can look washed out on white.'),
-    ('style_dark', 'E: dark background, inferno', 'The most striking on screen; heavy in print and for a journal page.'),
-    ('ref_dashed', 'Reference track: dashed with a halo (default)', 'Thicker than the fits; black in A.'),
-    ('ref_band', 'Reference track: translucent band + thin line', 'Marks the reference without covering the data.'),
-    ('ref_ticks', 'Reference track: thin line + arrowheads outside the gap', 'Points at where the reference enters and leaves.'),
-    ('gamma_0p5', 'Colour scale sqrt(ADC)', 'Faint charge brighter; the MIP core saturates the scale.'),
-    ('spaced', 'Views separated by a small gap', 'For comparison with the abutting default.'),
-    ('zoomed', 'Zoomed to the charge (depth not to the strip scale)', 'The default draws depth and strips on one mm scale where the window allows.'),
+EVD_GALLERY = Path(os.environ.get('EVD_GALLERY', '/media/ucla/work/claude-jobs/1ccd2342/evd/gallery'))
+#: colour map -> (claim, what to look at); each is shown in both normalisations (EVD_NORMS)
+EVD_MAPS = [
+    ('reds', 'White to red (the paper default)', 'Strongest contrast for the black reference and the blue fit; prints well; faint charge reads as pink.'),
+    ('greens', 'White to green', 'Fits drawn magenta; the green maximum is a little lighter than the red, so the core stands out less.'),
+    ('fire', 'White to yellow to red', 'Faint charge in yellow: brighter on screen, but pale yellow washes out on white paper.'),
+    ('jet', 'Jet, zero white', 'Every sample above threshold coloured (blue), so noise and diffusion tails look as loud as the track; fits magenta.'),
 ]
+EVD_NORMS = [('full', 'normalised to the ADC full scale (4096)', 'One scale for every event in the paper: the colour bar means the same in each figure.'),
+             ('event', 'normalised to the largest amplitude in the event', 'X and Y together; each event uses the whole colour range. Here it looks almost the same as full scale, because most events reach the 3550 ADC clip.')]
 
 
 def s_evd_styles(D):
-    """Appendix: event-display style candidates (Dylan 11-03: test a few, put them in the appendix, I choose)."""
-    pages = [(f, c, w) for f, c, w in EVD_PAGES if (EVD_GALLERY / f'{f}.png').exists()]
+    """Appendix: event-display colour maps x amplitude normalisations (Dylan 11-03, second pass), same events in each."""
+    pages = [(m, mc, mw, n, nc, nw) for m, mc, mw in EVD_MAPS for n, nc, nw in EVD_NORMS
+             if (EVD_GALLERY / f'style_{m}_{n}.png').exists()]
     if not pages:
         return
-    body = (sd.title('Appendix: event-display styles to choose from',
-                     'Same four chamber A events in each style (made by papers/paper1/figs/make_displays.py gallery)')
-            + sd.col(*[sd.p(f'<b>{c}</b> &nbsp; <span style="color:{sd.MUT}">{w}</span>', 22) for f, c, w in pages], gap=6))
-    D.slide('evd_index', body, '<p>Fixed in every style (from your 11-02 feedback): fits thin and dashed; the reference '
-            'track heavier; ADC on one colour scale for both views (not each view to its own maximum); X and Y views '
-            'touching; a view with two particles far apart drawn as a broken axis; mesh and cathode marked; depth and '
-            'strip position on one mm scale where the window allows. The choice is one line in papers/paper1/figs/evd.py '
-            '(DEFAULT, OPT).</p>', short='Display styles')
-    for f, c, w in pages:
-        im = Image.open(EVD_GALLERY / f'{f}.png').convert('RGB')
+    rows = [[f'<b>{mc}</b>', sd.esc(mw)] for m, mc, mw in EVD_MAPS]
+    body = (sd.title('Appendix: event-display colour maps and amplitude scales',
+                     'Four chamber A events (Run 1), one display per row, in 4 colour maps × 2 normalisations '
+                     '(papers/paper1/figs/make_displays.py gallery)')
+            + sd.table(['colour map', 'what to look at'], rows, size=21, widths=[420, 1240], align=['left', 'left'])
+            + sd.p('Normalisation: ' + '; '.join(f'<b>{n}</b> = {nc}' for n, nc, _ in EVD_NORMS) + '.', 21, sd.MUT))
+    D.slide('evd_index', body, '<p>Fixed in every option (11-03 second pass): mesh and cathode lines kept; the reference '
+            'track a solid black line running past them; fits thin and dashed, in a colour distinct from the data and '
+            'the reference; zero amplitude white (samples below 60 ADC are not drawn); a linear amplitude scale; X and Y '
+            'views of one event side by side on one row; broken axes only where a figure asks for them (none here). '
+            'The choice is one line in papers/paper1/figs/evd.py (DEFAULT, OPT["norm"]).</p>', short='Display styles')
+    for m, mc, mw, n, nc, nw in pages:
+        im = Image.open(EVD_GALLERY / f'style_{m}_{n}.png').convert('RGB')
         im.thumbnail((1500, 1500))
         b = io.BytesIO(); im.save(b, 'PNG', optimize=True)
-        body = sd.title(c, w) + sd.img(b.getvalue(), w=1100, h=int(1100 * im.size[1] / im.size[0]) if im.size[1] / im.size[0] < 0.62 else 680)
-        D.slide(f'evd_{f}', body, f'<p><code>{EVD_GALLERY}/{f}.png</code></p>', short=f)
+        h = 680
+        body = sd.row(sd.img(b.getvalue(), w=int(h * im.size[0] / im.size[1]), h=h),
+                      sd.col(sd.title(f'{mc}, {nc}', ''), sd.p(sd.esc(mw), 22), sd.p(sd.esc(nw), 22, sd.MUT), w=900, gap=14),
+                      gap=40)
+        D.slide(f'evd_{m}_{n}', body, f'<p><code>{EVD_GALLERY}/style_{m}_{n}.png</code></p>', short=f'{m}, {n}')
 
 
 def s_unused(D, F, man):

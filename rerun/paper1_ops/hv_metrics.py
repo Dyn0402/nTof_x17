@@ -29,6 +29,8 @@ import sys
 
 import numpy as np
 import pandas as pd
+import matplotlib
+import matplotlib.ticker
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.abspath(os.path.join(HERE, '..', '..'))
@@ -109,9 +111,10 @@ def main():
     df = per_track(load(a.rows), a.events, a.rays)
     ps.use()
     col = ps.DET_COLOR['det3']
-    # 3 x 2, one shared HV axis (ticks on the bottom row only). Every panel's quantity has its own marker shape; the
-    # X/Y panels draw X filled / Y open (ps.VIEW_LS) in that shape, so a shape names the quantity, fill names the view.
-    fig, ax2d = ps.fig_for('full', nrows=3, ncols=2, height=5.4, sharex=True)
+    # main figure: 2 x 2 (gain proxy, efficiency, angle s68, position core); the time and the angle scale are in
+    # hv_metrics_extra (Dylan 2026-11-03: too much here). Every panel's quantity has its own marker shape; the X/Y panels
+    # draw X filled / Y open (ps.VIEW_LS) in that shape, so a shape names the quantity, fill names the view.
+    fig, ax2d = ps.fig_for('full', nrows=2, ncols=2, height=3.7, sharex=True)
     axs = ax2d.ravel()
     V = df.resist_V.to_numpy()
     ms = 3.6
@@ -142,31 +145,56 @@ def main():
             label='lost to a discharge')
     ax.set_ylim(0, 100); ax.set_ylabel('reference tracks [%]')
     ax.legend(loc='center left', **leg)
-    # (c) time
-    ax = axs[2]
-    k = df.sigma_xy.notna()
-    ser(ax, V[k], df.sigma_xy[k], df.sigma_xy_err[k], 'P', label=r'$(t_X-t_Y)/\sqrt{2}$')
-    ser(ax, V[k], df.sigma_evt[k], df.sigma_evt_err[k], 'P', filled=False, ls='--', label='event time')
-    ax.set_ylim(0, 120); ax.set_ylabel(r'time $\sigma$ ($s_{68}$) [ns]')
-    ax.legend(loc='upper right', **leg)
-    # (d) angle resolution, (e) angle scale, (f) position core: one marker shape each, X filled / Y open
-    for ax, q, lab, lim, mk in ((axs[3], 's68', r'angle $s_{68}$ [deg]', (0, 1.5), 'o'),
-                                (axs[4], 'scale', 'angle scale\n(fit / reference tan)', (0.9, 1.1), '^'),
-                                (axs[5], 'pos_core', 'position core\nat mesh [mm]', (0, 0.8), 'v')):
+    # (c) angle resolution, (d) position core: one marker shape each, X filled / Y open
+    for ax, q, lab, lim, mk in ((axs[2], 's68', r'angle $s_{68}$ [deg]', (0, 1.5), 'o'),
+                                (axs[3], 'pos_core', 'position core\nat mesh [mm]', (0, 0.8), 'v')):
         for v in 'xy':
             ser(ax, V, df[f'{q}_{v}'], df[f'{q}_{v}_err'], mk, filled=(v == 'x'), ls=ps.VIEW_LS[v], label=v.upper())
         ax.set_ylabel(lab); ax.set_ylim(*lim)
         ax.legend(loc='lower left', ncol=2, **leg)
-    axs[4].axhline(1.0, color=ps.MUTED, lw=0.7, zorder=0)
     for ax in axs:
         ax.axvline(GOLDEN_V, color=ps.ACCENT, lw=0.8, ls=':', zorder=0)
         ax.set_xlim(418, 532)
-    for ax in axs[4:]:
+    for ax in axs[2:]:
         ax.set_xlabel('resist HV [V]')
     axs[1].text(GOLDEN_V - 2, 14, 'Runs 1, 2', color=ps.ACCENT, ha='right', fontsize=ps.BASE_PT * 0.75)
     ps.panel_labels(axs)
     fig.get_layout_engine().set(h_pad=0.07, w_pad=0.05)
     ps.save(fig, os.path.join(a.out, 'figures', 'hv_metrics'), data=df)
+
+    # appendix: time against HV and against the early amplitude, and the angle scale
+    fig, ex = ps.fig_for('full', ncols=3, height=2.2)
+    ax = ex[0]
+    k = df.sigma_xy.notna()
+    ser(ax, V[k], df.sigma_xy[k], df.sigma_xy_err[k], 'P', label=r'$(t_X-t_Y)/\sqrt{2}$')
+    ser(ax, V[k], df.sigma_evt[k], df.sigma_evt_err[k], 'P', filled=False, ls='--', label='event time')
+    ax.set_ylim(0, 120); ax.set_ylabel(r'time $\sigma$ ($s_{68}$) [ns]'); ax.set_xlabel('resist HV [V]')
+    ax.set_xlim(418, 532); ax.axvline(GOLDEN_V, color=ps.ACCENT, lw=0.8, ls=':', zorder=0)
+    ax.legend(loc='upper right', **leg)
+    ax = ex[1]
+    tj = os.path.join(HERE, 'results', 'timing_vs_hv_check.json')
+    if os.path.exists(tj):
+        import matplotlib.cm as cmm
+        tc = json.load(open(tj))['by_amp_bin']
+        for Vk in sorted(tc, key=int):
+            c = np.array(tc[Vk], float)
+            if len(c) and int(Vk) % 10 == 5 or int(Vk) in (425,):
+                ax.errorbar(c[:, 0], c[:, 1], yerr=c[:, 2], marker='o', ms=2.4, lw=0.7, elinewidth=0.6,
+                            color=cmm.viridis((int(Vk) - 425) / 80), label=f'{Vk} V' if int(Vk) in (425, 455, 485, 505) else None)
+        ax.set_xscale('log'); ax.set_yscale('log')
+        ax.set_xlabel('early amplitude X+Y [ADC]'); ax.set_ylabel(r'$(t_X-t_Y)/\sqrt{2}$ [ns]')
+        ax.yaxis.set_major_formatter(matplotlib.ticker.ScalarFormatter())
+        ax.yaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
+        ax.set_yticks([20, 30, 50, 100]); ax.legend(loc='upper right', **leg)
+    ax = ex[2]
+    for v in 'xy':
+        ser(ax, V, df[f'scale_{v}'], df[f'scale_{v}_err'], '^', filled=(v == 'x'), ls=ps.VIEW_LS[v], label=v.upper())
+    ax.axhline(1.0, color=ps.MUTED, lw=0.7, zorder=0)
+    ax.set_ylabel('angle scale\n(fit / reference tan)'); ax.set_ylim(0.9, 1.1); ax.set_xlabel('resist HV [V]')
+    ax.set_xlim(418, 532); ax.axvline(GOLDEN_V, color=ps.ACCENT, lw=0.8, ls=':', zorder=0)
+    ax.legend(loc='lower left', ncol=2, **leg)
+    ps.panel_labels(ex)
+    ps.save(fig, os.path.join(a.out, 'figures', 'hv_metrics_extra'))
     flat = df[(df.resist_V >= 425) & (df.resist_V <= 505)]
     summ = dict(run=RUN, n_rows=int(len(df)),
                 range_425_505=dict(eff_ig=[float(flat.eff_ig.min()), float(flat.eff_ig.max())],

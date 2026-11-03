@@ -309,45 +309,53 @@ def _guide(kw, lw=0.7):
     return kw
 
 
-def fig_hv_scan(T, figdir):
-    """Paper I §4: the HV scans: interior efficiency and discharges per trigger (det3 first, on top). The discharge
-    loss against efficiency is the §5 figure eff_vs_hv_discharge. Drawn at 4.3 in (the printed width): the scan
-    descriptions (run, drift) and the discharge definition are in the caption."""
+def fig_hv_scan(T, figdir, O=None):
+    """Paper I §4 (hv_scan), combined 2026-11-03 (Dylan): one row, one panel per chamber A-D on shared axes. Left axis:
+    interior efficiency (solid, filled); right axis: discharges per trigger (dashed, open), linear, same chamber colour.
+    Shaded: efficiency plateau (within 1 point of the maximum). Stars: the long runs. Replaces eff_vs_hv_discharge in the
+    main text (that figure is still written for report.html)."""
     from matplotlib.lines import Line2D
-    fig, axes = ps.fig_for(6.1, height=2.8, ncols=2)  # 2026-11-03: full page width, panels side by side (was 4.3 x 4.3 stacked)
+    from matplotlib.patches import Patch
     order = sorted(SCANS, key=lambda r: ORDER.index(r[0]))
+    fig, axes = ps.fig_for('full', height=2.35, ncols=len(order), sharey=True)
     data = []
-    for det, run, drift in order:
+    tw = []
+    for ax, (det, run, drift) in zip(axes, order):
         s = scan_rows(T, det, run, drift)
-        if not len(s):
-            continue
-        kw = _guide(ps.det(det, label=NAME[det], ms=4.0 if det == 'mx17_3' else 3.4, mec='white', mew=0.4),
-                    lw=0.9 if det == 'mx17_3' else 0.7)
-        axes[0].errorbar(s.resist_V, s.eff_ig, yerr=s.err_ig, elinewidth=0.8, **kw)
+        c = COL[det]
+        if O is not None:
+            o = O[(O.det == det) & (O.run == run)]
+            if len(o):
+                ax.axvspan(o.iloc[0].plateau_lo - 2, o.iloc[0].plateau_hi + 2, color=c, alpha=0.12, lw=0)
+        ax.errorbar(s.resist_V, s.eff_ig, yerr=s.err_ig, elinewidth=0.8,
+                    **_guide(ps.det(det, ms=3.4, mec='white', mew=0.4)))
+        g = T[(T.det == det) & T.cls.isin(['golden_calib', 'golden_quoted'])]
+        if len(g):
+            ax.plot(g.resist_V, g.eff_ig, '*', ms=8, color=c, mec=INK, mew=0.5, zorder=6, ls='none')
+            data.append(g.assign(golden=True)[['det', 'run', 'resist_V', 'drift_V', 'n_ig', 'eff_ig', 'err_ig',
+                                               'golden']])
+        t = ax.twinx(); t.grid(False); t.spines['right'].set_visible(True)
         r = (s.epoch_rate_hz / s.trig_rate_hz).where(lambda v: v > 0)
-        axes[1].plot(s.resist_V, r, **{k: v for k, v in kw.items() if k != 'label'})
+        t.plot(s.resist_V, r, color=c, marker='o', ms=3.2, mfc='white', mew=0.9, ls='--', lw=0.9)
+        tw.append(t)
+        ax.set_title(f'({chr(97 + len(tw) - 1)}) ' + NAME[det], loc='left', color=c, fontweight='bold', fontsize=ps.BASE_PT)
+        ax.set_ylim(30, 101); ax.axhline(100, color=MUTED, lw=0.6, zorder=0)
+        ax.xaxis.set_major_locator(matplotlib.ticker.MultipleLocator(40))
         data.append(s.assign(discharge_per_trig=s.epoch_rate_hz / s.trig_rate_hz)[
             ['det', 'run', 'resist_V', 'drift_V', 'n_ig', 'eff_ig', 'err_ig', 'discharge_per_trig']])
-    # golden long runs: det2/3/6/7 sit on their scan; det4 has no HV scan (its golden row only)
-    for det in ORDER:
-        if det == 'mx17_4':  # Dylan 2026-11-03: det4 has no HV scan, so its single point is left out
-            continue
-        g = T[(T.det == det) & T.cls.isin(['golden_calib', 'golden_quoted'])]
-        if not len(g):
-            continue
-        axes[0].plot(g.resist_V, g.eff_ig, '*', ms=9, color=COL[det], mec=INK, mew=0.5,
-                     zorder=6, ls='none')
-        data.append(g.assign(golden=True)[['det', 'run', 'resist_V', 'drift_V', 'n_ig', 'eff_ig', 'err_ig', 'golden']])
-    h = ps.det_handles([d.replace('mx17_', 'det') for d, _, _ in order], lw=0.7)
-    h += [Line2D([], [], ls='none', marker='*', ms=8, color='white', mec=INK, mew=0.6, label='long runs')]
-    ps.legend_above(axes[0], handles=h, ncol=3)
+    for t in tw[1:]:
+        t.sharey(tw[0])
+    tw[0].set_ylim(0, 0.5)
+    for t in tw[:-1]:
+        t.tick_params(axis='y', right=False, labelright=False)
+    tw[-1].set_ylabel('discharges per trigger')
+    fig.supxlabel('resistive-strip HV [V]', fontsize=ps.BASE_PT)
     axes[0].set_ylabel('interior efficiency [%]')
-    axes[0].set_ylim(30, 101)
-    axes[0].axhline(100, color=MUTED, lw=0.6, zorder=0)  # Dylan 2026-11-03: thin line at 100 %
-    axes[1].set_ylabel('discharges per trigger')
-    axes[1].set_ylim(bottom=0)  # Dylan 2026-11-03: linear, not log
-    axes[1].set_xlabel('resistive-strip HV [V]'); axes[0].set_xlabel('resistive-strip HV [V]')
-    ps.panel_labels(axes)
+    h = [Line2D([], [], color=INK, marker='o', ms=3.6, lw=0.9, label='interior efficiency (left)'),
+         Line2D([], [], color=INK, marker='o', ms=3.4, lw=0.9, ls='--', mfc='white', label='discharges per trigger (right)'),
+         Line2D([], [], ls='none', marker='*', ms=8, color='white', mec=INK, mew=0.6, label='long run'),
+         Patch(color=INK, alpha=0.12, lw=0, label='efficiency plateau')]
+    ps.legend_above(fig, handles=h, ncol=4)
     ps.save(fig, os.path.join(figdir, 'hv_scan'), data=pd.concat(data, ignore_index=True))
 
 
@@ -515,12 +523,16 @@ def table(df, cols, fmt=None):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('--spark', required=True); ap.add_argument('--telgain', required=True)
-    ap.add_argument('--spsgain', required=True); ap.add_argument('--hitsgain', default=None)
+    ap.add_argument('--spark'); ap.add_argument('--telgain')
+    ap.add_argument('--spsgain'); ap.add_argument('--hitsgain', default=None)
     ap.add_argument('--out', default=HERE)
+    ap.add_argument('--hv-scan-only', action='store_true', help='redraw hv_scan from results/tradeoff.csv')
     a = ap.parse_args()
     fig_dir = os.path.join(a.out, 'figures'); res_dir = os.path.join(a.out, 'results')
     paper_dir = os.path.join(REPO, 'papers', 'paper1', 'figures')
+    if a.hv_scan_only:
+        T = pd.read_csv(os.path.join(res_dir, 'tradeoff.csv'))
+        ps.use(); fig_hv_scan(T, fig_dir, optimum(T)); return
     for d in (fig_dir, res_dir):
         os.makedirs(d, exist_ok=True)
     sreg = {r['key']: r for r in csv.DictReader(open(os.path.join(REPO, 'rerun', 'sps_registry.csv')))}
@@ -568,7 +580,7 @@ def main():
     O = optimum(T)
     DT = deadtime(a.spark, S)
     ps.use()
-    fig_hv_scan(T, fig_dir)
+    fig_hv_scan(T, fig_dir, O)
     fig_eff_vs_hv(T, O, fig_dir)
     fig_deadtime(DT, fig_dir)
     fig_tradeoff(T, fig_dir)

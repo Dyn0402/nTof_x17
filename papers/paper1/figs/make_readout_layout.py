@@ -53,9 +53,6 @@ axa.add_patch(Rectangle((-220 + C0, -220 + C0), 470, 470, fc=BOARD_FILL, ec=ps.I
 axa.add_patch(Rectangle((-206 + C0, -206 + C0), 412, 412, fc='none', ec=ps.MUTED, lw=0.6, ls=(0, (4, 2)), zorder=2))
 mx0, mx1 = -0.39, 2 * C0 + 0.39                                   # metallised pad edges (local)
 axa.add_patch(Rectangle((mx0, mx0), mx1 - mx0, mx1 - mx0, fc=PADFILL, ec='none', zorder=3))
-for p in np.linspace(40, 360, 9):                                 # a few strips per view, for the direction
-    axa.plot([p, p], [0, 2 * C0], color=YC, lw=0.35, alpha=0.8, zorder=4)
-    axa.plot([0, 2 * C0], [p, p], color=XC, lw=0.35, alpha=0.8, zorder=4)
 lo, hi = PASSIVATION_Y_LOW_MM, STRIP_MAX_MM - PASSIVATION_Y_HIGH_MM
 for ya, yb in ((mx0, lo), (hi, mx1)):
     axa.add_patch(Rectangle((mx0, ya), mx1 - mx0, yb - ya, fc='white', ec=ps.INK, hatch='//////', lw=0, alpha=0.9,
@@ -144,9 +141,7 @@ axb.text(-0.0, 1.0, '(b)', transform=axb.transAxes, ha='right', va='top', fontsi
 
 
 # marker for window (b) on (a): a ring at pad (255, 255); window (c) outline
-axa.add_patch(Circle((C0 + 2.3, C0 + 2.3), 7, fc='none', ec='k', lw=0.8, zorder=10))
 CX0, CX1, CY0, CY1 = -207.0 + C0, 6.0 + C0, 195.0 + C0, 252.0 + C0
-axa.add_patch(Rectangle((CX0, CY0), CX1 - CX0, CY1 - CY0, fc='none', ec='k', lw=0.8, zorder=10))
 
 # ---------------------------------------------------------------------------------------------------------- legend
 axl = at(5.42, 1.58, 0.68, 1.50); axl.axis('off'); axl.set_xlim(0, 0.68); axl.set_ylim(0, 1.50)
