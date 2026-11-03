@@ -24,12 +24,25 @@ reconstructed track within $R$ of the M3 ray at the mesh. When the chamber recon
 detected if one of them is the M3 track (multi-track credit; this is the default number). Nothing is removed from the denominator: tracks far from M3 with the right angle (0.20\,\%) are only half
 explained by muons scattering between the M3 doublets, so they count as losses with everything else we cannot pin on
 the reference.}
-\tbw{\textbf{The radius.} $\varepsilon(R)$ has two regimes (\cref{fig:effradius}): the resolution core (core
-$\sigma=0.55$\,mm per view at the mesh, dominated by the M3 pointing and scattering), steep up to ${\sim}4$\,mm; then a
-slow rise of 0.1--0.2\,pt per mm out to 40\,mm, made of mis-measured tracks ($\delta$-pulled fits, saturated
-blobs, bent reference tracks) and accidentals. We use $R=5$\,mm, the knee: 9 core $\sigma$, where the Gaussian core
-is exhausted and the accidental rate (event mixing) is 0.07\,\%, below the statistical error and 70$\times$ below
-the inefficiency. $R\in[4,8]$\,mm moves the efficiency by $-0.5/{+0.6}$\,pt (systematic).}
+\tbw{\textbf{The radius.} $\varepsilon(R)$ has two regimes (\cref{fig:effradius}): the resolution core, steep up to
+${\sim}4$\,mm; then a slow rise of 0.1--0.2\,pt per mm out to 40\,mm. We use $R=5$\,mm, the knee, where the
+accidental rate (event mixing) is 0.07\,\%, below the statistical error and 70$\times$ below the inefficiency.
+$R\in[4,8]$\,mm moves the efficiency by $-0.5/{+0.6}$\,pt (systematic).}
+\tbw{\textbf{Why 5\,mm and not a few $\sigma$ of the resolution.} The residual at the mesh is not the chamber's
+resolution: a Gaussian fit to its core (\cref{fig:residuals}a, $|r|<1.5$\,mm) gives $\sigma=0.55\pm0.02$ (X) and
+$0.53\pm0.03$\,mm (Y), of which the chamber contributes ${\sim}0.12$\,mm (\cref{sec:posres}); the rest is the M3
+pointing at the chamber (0.24/0.21\,mm) and the multiple scattering of soft cosmic muons. And its tails are not
+Gaussian: only 94/92\,\% (X/Y) of the fitted tracks lie within 3$\sigma$ of M3, 98\,\% within 5\,mm. A cut at
+3$\sigma$ (${\approx}1.6$\,mm) would count 11\,pt of tracks the chamber did find, on the right particle, as losses,
+mixing the reference's resolution tails into the efficiency. The efficiency asks whether the chamber saw the muon;
+how well it measured it is the resolution (\cref{sec:tracking}). Between 1.6 and 5\,mm the efficiency rises by 11\,pt
+while the accidental rate stays below 0.07\,\%, so those tracks are the muon, measured less well.}
+\tbw{\textbf{What lies beyond 5\,mm} (\cref{fig:residuals}b). The grey curve is the distance to another event's M3
+ray, scaled as if every fit were unrelated to its muon: an unrelated fit lands mostly ${>}40$\,mm away. The data have
+7 tracks there against 16\,300 for that hypothesis, so at most ${\sim}0.05$\,\% of fits are unrelated, and they
+contribute ${<}1$ of the 244 tracks at 10--20\,mm. The shoulder from 5 to 20\,mm is therefore correlated with the
+muon: fits pulled by its $\delta$-rays and saturated blobs, a secondary fitted instead of the muon, and bent M3 tracks
+(the classes of \cref{app:losses}). We cut before it.}
 \begin{figure}[t]
   \centering
   \includegraphics[width=\linewidth]{eff_vs_radius}
@@ -39,7 +52,7 @@ the inefficiency. $R\in[4,8]$\,mm moves the efficiency by $-0.5/{+0.6}$\,pt (sys
 \begin{figure}[t]
   \centering
   \includegraphics[width=0.95\linewidth]{residuals}
-  \caption{\tbw{The full chamber~A residual distributions behind \cref{fig:effradius}, Runs 1 and 2 summed: (a) per view at the mesh (0.25\,mm bins), (b) radial, with the accidental distribution from event mixing. A steep core to ${\sim}5$\,mm, a shoulder of mis-measured tracks from 5 to 20\,mm, and accidentals taking over at ${\sim}15$\,mm.}}
+  \caption{\tbw{The full chamber~A residual distributions behind \cref{fig:effradius}, Runs 1 and 2 summed: (a) per view at the mesh (0.25\,mm bins), (b) radial, with the distance to another event's ray (event mixing, scaled to the same number of fits: what the data would be if every fit were unrelated to its muon). Black in (a): a Gaussian fit to the core ($|r|<1.5$\,mm), $\sigma=0.55$ (X) / 0.53\,mm (Y). Dotted: $R=5$\,mm. The 5--20\,mm shoulder is correlated with the muon, not accidental: the data have 7 tracks beyond 40\,mm where unrelated fits would put 16\,300.}}
   \label{fig:residuals}
 \end{figure}
 \tbw{\textbf{Area.} Chamber~A, Runs 1 and 2: full active area / interior (${\ge}30$\,mm from the $x$ sides, ${\ge}8$\,mm from
@@ -66,6 +79,22 @@ discharges before they reach it.}
   \includegraphics[width=0.95\linewidth]{eff_vs_hv_discharge}
   \caption{\tbw{Interior detection efficiency (filled) and the fraction of M3 tracks lost to discharges (open) against the resist HV: (a) chamber~A (6-27 scan, 1000\,V drift), (b) chamber~C and (c) chamber~D (6-26 scan, 700\,V drift). Shaded: the efficiency plateau (within 1\,pt of the maximum). Chamber~A holds 91--94\,\% from 425 to 500\,V while its discharge loss stays below 1\,\% up to 490\,V; chamber~C and chamber~D already lose 1.5--2.4\,\% to discharges at their efficiency maximum and fall from there.}}
   \label{fig:effhv}
+\end{figure}
+\tbw{\textbf{What the HV buys on chamber~A: time, not efficiency.} Across its 6-27 scan (\cref{fig:hvmetrics})
+the efficiency (90--94\,\%), the angle resolution ($s_{68}$ 0.91--1.03\textdegree{} X, 0.80--0.96\textdegree{} Y)
+and the position residual core at the mesh (0.43--0.56\,mm, M3 pointing included) are flat from 425 to 505\,V. The
+time resolution is not: the uncorrelated part $(t_X-t_Y)/\sqrt2$ falls from 109\,ns at 425\,V to 23\,ns at 490\,V,
+the event time from 105 to 42\,ns. In a TPC time is depth: at $v\approx35$\,\textmu m/ns that is 3.9\,mm against
+0.8\,mm. The angle presumably survives a low gain because it comes from the slope over the whole drift column, which a coarse
+time scale shifts but does not tilt.}
+\askDylan{The bench runs used 490\,V; the scans support any HV from ${\sim}460$\,V up for efficiency. Is timing
+(depth, $t_0$) the argument we want to make for 490\,V, or was it chosen for gain margin at n\_TOF? Note the noise floor
+doubled there (23 July), which would favour margin, but we have no n\_TOF HV scan to show it.}
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{hv_metrics}
+  \caption{\tbw{Chamber~A against the resist HV (6-27 scan, 1000\,V drift; 630--700 tracks per point up to 505\,V): (a) interior efficiency and the tracks lost to a discharge, (b) angle resolution $s_{68}$, (c) the core of the position residual at the mesh (M3 pointing and scattering included), X filled, Y open, (d) time resolution, the uncorrelated part $(t_X-t_Y)/\sqrt2$ (filled) and the event time (open), not measured above 505\,V. Dotted: 490\,V, the HV of Runs 1 and 2.}}
+  \label{fig:hvmetrics}
 \end{figure}
 \analysis{EFFHV}{build eff\_vs\_hv\_discharge from the hv\_scan rows (rerun/paper1\_ops + effbudget)}
 

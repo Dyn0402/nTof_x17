@@ -412,3 +412,21 @@ date = "2026-11-03"
 fig = "eff_vs_radius"
 status = "for review"
 change = "Line styles: Run 1 solid, Run 2 dashed (legend says Run 1 / Run 2, was '6-27 long run' / '6-27 Saturday long run')."
+
+[[entry]]
+date = "2026-11-03"
+fig = "residuals"
+status = "for review"
+change = "(a) Gaussian fit to the core (|r| < 1.5 mm): sigma 0.55 +- 0.02 (X) / 0.53 +- 0.03 mm (Y) (results/residual_core.json); legend top left. Caption and text corrected: the 5-20 mm shoulder of (b) is correlated with the muon, not accidental (7 tracks beyond 40 mm where unrelated fits would put 16,300). New text on why R = 5 mm and not 3 sigma."
+
+[[entry]]
+date = "2026-11-03"
+fig = "spark_deadtime"
+status = "for review"
+change = "Moved out of the main text to appendix A2 (Dylan: no resolution on the turn-on). Main text quotes the bound: dead time per discharge < 1.2 ms (95 % CL, chamber A 0.2 +- 0.6 ms); efficiency 0-3 ms after a discharge 1.07 +- 0.04 of the late value."
+
+[[entry]]
+date = "2026-11-03"
+fig = "hv_metrics"
+status = "for review"
+change = "New: chamber A against the resist HV, 6-27 scan: efficiency + discharge loss, angle s68, position core, time resolution. Answers 'why 490 V when A is on plateau at 430 V': efficiency, angle and position are flat 425-505 V; only timing improves (109 -> 23 ns). Text + askDylan on whether timing or n_TOF gain margin is the argument."
