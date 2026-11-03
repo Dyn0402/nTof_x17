@@ -1,30 +1,50 @@
 # Handoff
 
-## Paper I figure feedback: round 3 — updated 2026-11-03 (dylan-MS-7C84)
+## Paper I figure feedback: round 3 + chamber A two-track re-pass — updated 2026-11-03 (dylan-MS-7C84)
 
-**Resume:** Dylan reviews round 3 in the deck (https://dylan-neff.web.cern.ch/notes/mx17-paper1-figures.html) and the 💬 replies in the hub note; picks a display colour scheme (appendix) and tpc_principle vs tpc_principle_stacked.
+**Resume:** on the laptop: check condor DAG ~/x17rerun/pass_twotrack (chamber A two-track re-pass), validate, update two-particle numbers.
 
-**Done (commit 06dda5a9, log in papers/paper1/figure_log.toml):** display style (evd.py: white->red, /4096, solid reference, one per row),
-evd_showcase (7884 + 47235), two_particle (numbers in figs/data/two_particle_eff.json), chamber A time series
-(rerun/paper1_timeseries, figure det_a_timeseries, NOT in the .tex yet), timing drift-scan panel + walk_snr.py, hv_scan
-one row (eff_vs_hv_discharge out), hv_metrics 2x2 + hv_metrics_extra (A3), sps_setup plan-view schematic (make_sps_setup.py),
-bench upright, and the small tweaks.
+**Goal:** Paper I figures from Dylan's hub note (archive/Paper I Figure Feedback.md, replies as 💬), and the chamber A
+two-particle numbers with the two reconstruction fixes in.
 
-**Open / for Dylan:**
-1. Two-particle re-pass RUNNING (submitted 11-03 14:31): condor DAG ~/x17rerun/pass_twotrack/pass.dag (10 nodes:
-   RECO -> ALIGN -> EFF/ANG/MAPS for sat_det3 and the p2_det3 row), code_6f380442, bundles = the pass-1 ones stamped
-   select=cost + split_corrob=charge (stamp_select.py --split-corrob), output in the side tree
-   /eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1_twotrack/ (Analysis_pass1 untouched). Next: check the
-   merged class reproduces merged_effcheck.json (80 -> 105 of 195 interior), then point single_track_area.py /
-   single_track_v2.py / xy_pairing / two_particle_eff.json and loss_budget at the side tree for these two rows.
-2. Section 3.3 "35.8 vs 37.2 um/ns" mixes two estimators (time-series agent): same estimator +1.8 % (ladder) / +0.5 % (column).
-3. sps_setup: yaw sign and drift-arrow direction assumed.
-4. Where det_a_timeseries goes (main text vs appendix); its draft paragraph is in rerun/paper1_timeseries/report.html (cites a guessed \\cref label).
-5. chamber_stack: on hold; recommendation TikZ from spec.py.
-6. loss_gallery is 8.2 in tall at one display per row.
-7. Not synced to Overleaf.
+**Done (on main):**
+- Round 3 of the figure feedback (commit 06dda5a9; per-figure log papers/paper1/figure_log.toml; deck
+  https://dylan-neff.web.cern.ch/notes/mx17-paper1-figures.html; every new note item has a 💬 reply).
+- Dylan picked the display style: **jet (zero white) normalised to 4096**, reference solid black and the dashed fits
+  both across the whole time axis; fits magenta / brown (commit 4b8b3754; evd.DEFAULT = 'jet').
+- New: det_a_timeseries (rerun/paper1_timeseries, not in the .tex), timing drift-scan panel + walk_snr.py, hv_scan
+  one row (eff_vs_hv_discharge out), hv_metrics 2x2 + hv_metrics_extra (A3), make_sps_setup.py, bench upright.
+- Two-track re-pass submitted 14:31 (condor DAG ~/x17rerun/pass_twotrack/pass.dag on lxplus, 10 nodes, code_6f380442):
+  sat_det3 + the p2_det3 row (c26__mx17_det3_p2_det1_overnight_6-27-26__long_run_p2_det1_sanity_check__mx17_3), bundles =
+  pass-1 ones stamped select=cost + split_corrob=charge (rerun/effbudget/single/stamp_select.py --split-corrob), output
+  /eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1_twotrack/<rel>/ (Analysis_pass1 untouched).
 
-**Gotchas:** scratch inputs in /media/ucla/work/claude-jobs/1ccd2342/{evd,timeseries,deck} (regenerable; delete when Paper I figures are final).
+**In progress / where it stopped:**
+- At 15:50: sat_det3 chain finished (RECO 7,143 events written, same seeded/reconstructed counts as pass 1;
+  ALIGN/EFF/ANG/MAPS ok). p2 RECO still running (pass 1 took 82 min for it); then its ALIGN/EFF/ANG/MAPS.
+  Check: `ssh lxplus 'tail ~/x17rerun/pass_twotrack/pass.dag.dagman.out; condor_q -nobatch'`.
+  The desktop watcher died with the session; nothing else is running.
+
+**Next steps:**
+1. When the DAG exits 0: validate the merged-in-projection class against rerun/effbudget/single/results/merged_effcheck.json
+   (interior credit 80 -> 105 of 195; sat 22->25, p2 58->80) and the single-track efficiency unchanged (95.96 % v2).
+2. Point single_track_area.py / single_track_v2.py / xy_pairing.py at the side tree for these two rows (they read
+   <root>/Analysis_pass1/<rel>/wft/...; add an --analysis option or a side-tree root), regenerate
+   papers/paper1/figs/data/two_particle_eff.json, loss_budget, the two_particle figure; requote §5 text (73.7 %, 44 %, the
+   \analysis{MERGED} note) and drop "pre-fix" from the caption.
+3. Open questions for Dylan: §3.3 "35.8 vs 37.2 um/ns" mixes two estimators (+1.8 % ladder / +0.5 % column on one
+   estimator); where det_a_timeseries goes; sps_setup yaw sign/drift arrow assumed; tpc_principle vs _stacked;
+   tpc_principle colour bar still raw ADC; loss_gallery 8.2 in tall; chamber_stack on hold (TikZ recommended).
+4. Not synced to Overleaf (`papers/overleaf.sh sync paper1`).
+
+**Gotchas / decisions:**
+- Figure inputs: on the desktop under /media/ucla/work; **copied to the laptop at ~/work_data/** (same layout:
+  claude-jobs/{1ccd2342,17c92c46*,77eb854f,80be5bfd,mergedproj}, paper1_figs). On the laptop run producers with
+  `export WORK_DATA=~/work_data`; make_displays.py, make_tpc_principle.py, make_figures_deck.py, angle_resolution.py,
+  attach_charge.py, timeseries.py now honour it. Not copied: claude-jobs/pairfix (379 MB, bundles used by the merged re-reco).
+- n_TOF stays on select=gate / split_corrob=count; only the bench (chamber A) side tree has the fixes.
+- Deck: `.venv/bin/python papers/paper1/make_figures_deck.py --out <html>` then dylan-cern-site/scripts/add-note.py <html>
+  --slug mx17-paper1-figures --force --deploy (needs a Kerberos ticket on the laptop).
 
 ## Paper I figure feedback: second pass (rename, displays, schematics, chamber-A figures) — updated 2026-11-03 (dylan-MS-7C84)
 
