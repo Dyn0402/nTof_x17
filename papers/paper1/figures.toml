@@ -108,6 +108,13 @@ note = "2026-11-02 (paper_style): per chamber, interior efficiency (filled) and 
 producer = ".venv/bin/python rerun/paper1_ops/make_report.py --spark <spark> --telgain <tel_gain> --spsgain <sps_gain> --hitsgain <hits_gain>  # inputs: EOS cosmic_bench/x17rerun/paper1_ops/{spark,tel_gain,sps_gain,hits_gain}, fetched over xrootd (70 MB); spark.sub (lxplus condor) makes them"
 source = "rerun/paper1_ops/figures/eff_vs_hv_discharge.pdf"
 
+[fig.hv_metrics]
+title = "Chamber A against the resist HV: efficiency, angle s68, position core, time resolution (6-27 scan)"
+state = "current"
+note = "New 2026-11-03 (Dylan: A looks on plateau at 430 V, why 490 V?). Per-row metrics of the 6-27 HV scan: eff_ig (effbudget pass1 rows.csv), discharge loss (eff_vs_hv_discharge.csv), s68 and mesh position core of the pass arm (paper1_res rows JSONs), timing (paper1_timing rows.csv). Efficiency, angle and position flat 425-505 V; only timing improves (109 -> 23 ns)."
+producer = ".venv/bin/python rerun/paper1_ops/hv_metrics.py --rows <EOS x17rerun/paper1_res/results_18efcd0d/rows, fetched over xrootd>"
+source = "rerun/paper1_ops/figures/hv_metrics.pdf"
+
 [fig.xy_pairing]
 title = "X/Y pairing of two particles by charge: ln(qX/qY) of true and swapped pairings, 552 real cosmic events"
 state = "current"

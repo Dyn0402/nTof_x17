@@ -86,17 +86,35 @@ def residuals():
         rows += [dict(row=key, kind='radial', lo=lo, hi=hi, x=n, y=m) for lo, hi, n, m in zip(br[:-1], br[1:], h['r'], h['r_mixed'])]
     rows += [dict(row='both', kind='view', lo=lo, hi=hi, x=nx, y=ny) for lo, hi, nx, ny in zip(be[:-1], be[1:], tot['res_x'], tot['res_y'])]
     rows += [dict(row='both', kind='radial', lo=lo, hi=hi, x=n, y=m) for lo, hi, n, m in zip(br[:-1], br[1:], tot['r'], tot['r_mixed'])]
+    # Dylan 2026-11-03: a Gaussian fit to the core of (a) (|res| < 1.5 mm, Poisson weights) gives the core sigma per view
+    from scipy.optimize import curve_fit
+    cv = 0.5 * (be[:-1] + be[1:])
+    gauss = lambda x, A, m, s: A * np.exp(-0.5 * ((x - m) / s) ** 2)
+    core = {}
+    for v in ('x', 'y'):
+        hv = tot[f'res_{v}']; k = np.abs(cv) < 1.5
+        p, cov = curve_fit(gauss, cv[k], hv[k], p0=[hv.max(), 0.0, 0.5], sigma=np.sqrt(np.maximum(hv[k], 1)))
+        core[v] = dict(sigma_mm=float(abs(p[2])), sigma_err_mm=float(np.sqrt(cov[2, 2])), mean_mm=float(p[1]),
+                       frac_within_3sigma=float(hv[np.abs(cv) < 3 * abs(p[2])].sum() / hv.sum()),
+                       frac_within_5mm=float(hv[np.abs(cv) < 5].sum() / hv.sum()), fit_range_mm=1.5)
     for v in ('x', 'y'):
         _steps(a1, be, np.where(tot[f'res_{v}'] > 0, tot[f'res_{v}'], np.nan), color=D3, lw=1.0, ls=ps.VIEW_LS[v], label=f'{v.upper()} view')
+    xx = np.linspace(-4, 4, 400)
+    sx, sy = core['x']['sigma_mm'], core['y']['sigma_mm']
+    hx = tot['res_x']; k = np.abs(cv) < 1.5
+    p, _ = curve_fit(gauss, cv[k], hx[k], p0=[hx.max(), 0.0, 0.5], sigma=np.sqrt(np.maximum(hx[k], 1)))
+    a1.plot(xx, gauss(xx, *p), color=ps.MODEL, lw=0.8, ls='-', zorder=4,
+            label=f'Gaussian core, $\\sigma$ = {sx:.2f} (X) / {sy:.2f} (Y) mm')
+    json.dump(core, open(os.path.join(RES, 'residual_core.json'), 'w'), indent=1)
     w = np.diff(br)
     nz = lambda a: np.where(a > 0, a, np.nan)   # empty bins: a gap, not a drop to the axis
     _steps(a2, br, nz(tot['r']) / w, color=D3, lw=1.1, label='its own M3 ray')
     _steps(a2, br, nz(tot['r_mixed']) / w, color=ps.MUTED, lw=1.0, label='another event’s ray')
-    a1.set_yscale('log'); a1.set_xlim(-20, 20); a1.set_ylim(0.6, 3e4)
+    a1.set_yscale('log'); a1.set_xlim(-20, 20); a1.set_ylim(0.6, 3e5)
     a1.set_xlabel('residual at the mesh, det3 − M3 [mm]'); a1.set_ylabel('tracks / 0.25 mm')
     for x in (-5, 5):
         a1.axvline(x, color=ps.ACCENT, lw=0.8, ls=':', zorder=1)
-    a1.legend(loc='upper right')
+    a1.legend(loc='upper left', fontsize=ps.BASE_PT * 0.75, handlelength=1.4)
     a2.set_xscale('log'); a2.set_yscale('log'); a2.set_xlim(0.05, 200); a2.set_ylim(0.1, 2e5)
     _logticks(a2, [0.1, 1, 10, 100])
     a2.axvline(5, color=ps.ACCENT, lw=0.8, ls=':', zorder=1)
