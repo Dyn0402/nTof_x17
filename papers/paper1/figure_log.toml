@@ -978,3 +978,8 @@ date = "2026-11-03"
 fig = "loss_satblob"
 status = "for review"
 change = "Saturated-blob test re-run on the re-pass (Run 1, 350 saturated + 150 control views, condor): agreement 71.4 -> 72.9 % best arm (was 71.1 -> 73.7), pinned-track worse in 92.6 % of failures (93). A1 row via a1_table.py --satblob. Single-track R systematic re-derived (radius.py --single-events): -0.5 / +0.7 pt (was +0.6)."
+
+[[entry]]
+date = "2026-11-03"
+fig = "two_particle"
+change = "Dylan: keep 17907 for (b) ('very clear there in Y that there are two merged tracks'); alternatives 16344 / 1242 / 30746 / 2444 not used."
