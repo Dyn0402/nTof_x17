@@ -562,11 +562,19 @@ def main():
     ap.add_argument('--spsgain'); ap.add_argument('--hitsgain', default=None)
     ap.add_argument('--out', default=HERE)
     ap.add_argument('--hv-scan-only', action='store_true', help='redraw hv_scan from results/tradeoff.csv')
+    ap.add_argument('--eff-rows', default=None, help='with --hv-scan-only: efficiency rows.csv (e.g. the two-track merged '
+                    'ROOT/results/rows.csv) whose eff_ig/err_ig/n_ig/loss_* replace those columns of tradeoff.csv, by key; '
+                    'tradeoff.csv is rewritten')
     a = ap.parse_args()
     fig_dir = os.path.join(a.out, 'figures'); res_dir = os.path.join(a.out, 'results')
     paper_dir = os.path.join(REPO, 'papers', 'paper1', 'figures')
     if a.hv_scan_only:
         T = pd.read_csv(os.path.join(res_dir, 'tradeoff.csv'))
+        if a.eff_rows:
+            E = pd.read_csv(a.eff_rows).set_index('key')
+            cols = ['n_ig', 'eff_ig', 'err_ig', 'loss_spark_ig', 'loss_no_hit_ig', 'loss_far_ig']
+            T = T.set_index('key'); T.loc[T.index.intersection(E.index), cols] = E.loc[T.index.intersection(E.index), cols]
+            T = T.reset_index(); T.to_csv(os.path.join(res_dir, 'tradeoff.csv'), index=False)
         ps.use(); fig_hv_scan(T, fig_dir, optimum(T)); fig_hv_scan_single(T, fig_dir); return
     for d in (fig_dir, res_dir):
         os.makedirs(d, exist_ok=True)

@@ -27,7 +27,7 @@ SHORT = {'mx17_2': 'det2', 'mx17_3': 'det3', 'mx17_4': 'det4', 'mx17_6': 'det6',
 EXT_MAX, R_MM = 24, 5.0
 
 
-def band_events(root, rel):
+def band_events(root, rel):  # root = the bands root
     # the golden rows' census read every trigger (bands_full, --max-per-file 0); the row census reads <= 4000 per file
     p = os.path.join(root, 'bands_full', rel, 'bands.npz')
     if not os.path.exists(p):
@@ -40,7 +40,8 @@ def band_events(root, rel):
     return ev, scanned
 
 
-def recat_row(r, root):
+def recat_row(r, root, A=A, broot=None):
+    broot = broot or root
     rel = f"{r['run']}/{r['subrun']}/{r['det']}"; d = SHORT[r['det']]
     R = pd.read_parquet(os.path.join(root, 'budget', rel, f'rays_{d}.parquet'))
     R = R[~R.not_measured & (R.region == 'interior')].set_index('event_id')
@@ -59,7 +60,7 @@ def recat_row(r, root):
     npart = C[C.particle].groupby(['event_id', 'plane']).size().unstack(fill_value=0).reindex(R.index, fill_value=0)
     multi = set(R.index[(npart.max(axis=1) >= 2) & (R.cat_xy_5 != 'spark')])
     nx = set(C[C.near & (C.plane == 'x')].event_id); ny = set(C[C.near & (C.plane == 'y')].event_id)
-    band, scanned = band_events(root, rel)
+    band, scanned = band_events(broot, rel)
     cat = []
     for e, x in R.iterrows():
         c = x.cat_xy_5
@@ -100,15 +101,15 @@ def recat_row(r, root):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('--root', default=OUTROOT); ap.add_argument('--out', default=os.path.join(HERE, 'results'))
+    ap.add_argument('--root', default=OUTROOT); ap.add_argument('--analysis-root', default=A); ap.add_argument('--bands-root', default=None, help='where bands[_full]/ live (default --root)'); ap.add_argument('--only', default=None); ap.add_argument('--out', default=os.path.join(HERE, 'results'))
     ap.add_argument('--registry', default=os.path.join(HERE, '..', '..', 'pass_registry.csv'))
     a = ap.parse_args()
-    rows = [r for r in csv.DictReader(open(a.registry)) if r['cls'] in ('golden_calib', 'golden_quoted')]
+    rows = [r for r in csv.DictReader(open(a.registry)) if r['cls'] in ('golden_calib', 'golden_quoted') and (not a.only or r['key'] in a.only.split(','))]
     os.makedirs(a.out, exist_ok=True)
     res = {}
     for r in rows:
         try:
-            o = recat_row(r, a.root)
+            o = recat_row(r, a.root, a.analysis_root, a.bands_root)
         except FileNotFoundError as e:
             print('missing', r['key'], e); continue
         res[r['key']] = o

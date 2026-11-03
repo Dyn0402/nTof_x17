@@ -81,10 +81,10 @@ def row_numbers(r, root):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('--root', default=OUTROOT); ap.add_argument('--out', default=os.path.join(HERE, 'results'))
+    ap.add_argument('--root', default=OUTROOT); ap.add_argument('--only', default=None, help='comma list of registry keys'); ap.add_argument('--out', default=os.path.join(HERE, 'results'))
     ap.add_argument('--registry', default=os.path.join(HERE, '..', '..', 'pass_registry.csv'))
     a = ap.parse_args()
-    rows = [r for r in csv.DictReader(open(a.registry)) if r['cls'] != 'excluded']
+    rows = [r for r in csv.DictReader(open(a.registry)) if r['cls'] != 'excluded' and (not a.only or r['key'] in a.only.split(','))]
     T = pd.DataFrame([row_numbers(r, a.root) for r in rows])
     os.makedirs(a.out, exist_ok=True)
     T.to_csv(os.path.join(a.out, 'rows.csv'), index=False)

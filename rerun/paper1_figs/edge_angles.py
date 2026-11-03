@@ -70,6 +70,8 @@ def main():
     ap.add_argument('--figs', default=os.path.join(HERE, 'figures'))
     ap.add_argument('--phys', action='store_true', help='profiles against the physical-edge distance (key *_phys per side); no figures')
     ap.add_argument('--dets', nargs='*', default=None)
+    ap.add_argument('--merge', action='store_true', help='keep the chambers of the existing --out that are not rerun now '
+                    '(--dets), e.g. mx17_3 alone on the two-track re-pass products')
     a = ap.parse_args()
     res = {}
     for det in GOLD:
@@ -93,6 +95,10 @@ def main():
         r['interior'] = dict(eff=float(R.det[inn].mean()), dtx=float(np.nanmedian(R.dt_x[inn])), dty=float(np.nanmedian(R.dt_y[inn])),
                              s68x=s68(R.dt_x[inn]), s68y=s68(R.dt_y[inn]))
         res[SHORT[det]] = r
+    if a.merge and os.path.exists(a.out):
+        old = json.load(open(a.out))
+        old.update(res)
+        res = old
     os.makedirs(os.path.dirname(a.out), exist_ok=True)
     json.dump(res, open(a.out, 'w'), indent=1, default=float)
     if not a.phys:

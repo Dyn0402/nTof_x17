@@ -95,7 +95,7 @@ def main():
         np.savez_compressed(os.path.join(a.root, 'maps', f'effmap_{d}.npz'), **save)
         print(d, pools[d])
     import json
-    json.dump(pools, open(os.path.join(HERE, 'results', 'map_pools.json'), 'w'), indent=1)
+    json.dump(pools, open(os.path.join(os.path.dirname(os.path.abspath(a.rows)), 'map_pools.json'), 'w'), indent=1)
 
 
 if __name__ == '__main__':

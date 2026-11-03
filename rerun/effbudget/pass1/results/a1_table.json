@@ -1,0 +1,313 @@
+{
+ "keys": [
+  "c26__mx17_det3_p2_det1_overnight_6-27-26__long_run_p2_det1_sanity_check__mx17_3",
+  "sat_det3"
+ ],
+ "eff": "/home/dylan/work_data/claude-jobs/twotrack/paper1_eff_twotrack",
+ "analysis": "/home/dylan/work_data/claude-jobs/twotrack/Analysis_pass1_twotrack",
+ "pop": "interior",
+ "tot": {
+  "pooled": {
+   "n": 26542,
+   "counts": {
+    "detected": 24495,
+    "multi:other_picked": 402,
+    "multi:m3_picked": 305,
+    "far:FIT_SAT": 248,
+    "spark:shower": 216,
+    "far:DELTA": 231,
+    "spark:discharge": 133,
+    "multi:m3_not_found": 121,
+    "spark:muon+other": 93,
+    "far:FIT": 73,
+    "band": 58,
+    "far:EDGE": 54,
+    "far:MULTI": 55,
+    "far:POS_TAIL": 46,
+    "fit_failed": 5,
+    "cut:other": 3,
+    "other:charge_elsewhere": 3,
+    "other:not_seeded": 1
+   },
+   "detected_pct": 92.28769497400347
+  },
+  "run1": {
+   "n": 6454,
+   "counts": {
+    "detected": 5979,
+    "multi:other_picked": 95,
+    "multi:m3_picked": 66,
+    "far:DELTA": 58,
+    "far:FIT_SAT": 54,
+    "spark:shower": 43,
+    "multi:m3_not_found": 34,
+    "spark:discharge": 32,
+    "spark:muon+other": 26,
+    "far:FIT": 15,
+    "band": 14,
+    "far:POS_TAIL": 13,
+    "far:MULTI": 12,
+    "far:EDGE": 10,
+    "fit_failed": 1,
+    "cut:other": 1,
+    "other:charge_elsewhere": 1
+   },
+   "detected_pct": 92.64022311744654
+  }
+ },
+ "merged_followup": {
+  "n": 146,
+  "credited": 25,
+  "to": {
+   "multi:m3_not_found": 121,
+   "multi:other_picked": 17,
+   "multi:m3_picked": 8
+  },
+  "per_row": {
+   "c26__mx17_de": {
+    "n": 109,
+    "credited": 22
+   },
+   "sat_det3": {
+    "n": 37,
+    "credited": 3
+   }
+  }
+ },
+ "fit_failed_headon_frac": {
+  "c26__mx17_de": 0.5,
+  "sat_det3": 0.0
+ },
+ "table": [
+  {
+   "label": "noise band on a strip patch",
+   "fig": "loss_band",
+   "classes": [
+    "band"
+   ],
+   "pooled": {
+    "count": 58,
+    "pct": 0.21852158842589103
+   },
+   "run1": {
+    "count": 14,
+    "pct": 0.21691973969631237
+   }
+  },
+  {
+   "label": "second particle, reference particle fitted, view cut",
+   "fig": "loss_multi_m3picked",
+   "classes": [
+    "multi:m3_picked"
+   ],
+   "pooled": {
+    "count": 305,
+    "pct": 1.1491221460327028
+   },
+   "run1": {
+    "count": 66,
+    "pct": 1.022621629996901
+   }
+  },
+  {
+   "label": "second particle, the other one fitted",
+   "fig": "loss_multi_otherpicked",
+   "classes": [
+    "multi:other_picked"
+   ],
+   "pooled": {
+    "count": 402,
+    "pct": 1.5145806646070379
+   },
+   "run1": {
+    "count": 95,
+    "pct": 1.471955376510691
+   }
+  },
+  {
+   "label": "second particle, merged in projection",
+   "fig": "loss_multi_merged",
+   "classes": [
+    "multi:m3_not_found"
+   ],
+   "pooled": {
+    "count": 121,
+    "pct": 0.4558812448195313
+   },
+   "run1": {
+    "count": 34,
+    "pct": 0.5268050821196157
+   }
+  },
+  {
+   "label": "``spark'': discharge",
+   "fig": "loss_spark_discharge",
+   "classes": [
+    "spark:discharge"
+   ],
+   "pooled": {
+    "count": 133,
+    "pct": 0.5010926079421295
+   },
+   "run1": {
+    "count": 32,
+    "pct": 0.4958165478772854
+   }
+  },
+  {
+   "label": "``spark'': muon + unrelated deposit",
+   "fig": "loss_spark_muonother",
+   "classes": [
+    "spark:muon+other"
+   ],
+   "pooled": {
+    "count": 93,
+    "pct": 0.35038806420013563
+   },
+   "run1": {
+    "count": 26,
+    "pct": 0.4028509451502944
+   }
+  },
+  {
+   "label": "``spark'': shower at the crossing",
+   "fig": "loss_spark_shower",
+   "classes": [
+    "spark:shower"
+   ],
+   "pooled": {
+    "count": 216,
+    "pct": 0.8138045362067666
+   },
+   "run1": {
+    "count": 43,
+    "pct": 0.6662534862101023
+   }
+  },
+  {
+   "label": "$\\delta$-ray on the track",
+   "fig": "loss_delta",
+   "classes": [
+    "far:DELTA"
+   ],
+   "pooled": {
+    "count": 231,
+    "pct": 0.8703187401100143
+   },
+   "run1": {
+    "count": 58,
+    "pct": 0.8986674930275798
+   }
+  },
+  {
+   "label": "saturated $\\delta$ blob, fit pulled off",
+   "fig": "loss_satblob",
+   "classes": [
+    "far:FIT_SAT"
+   ],
+   "pooled": {
+    "count": 248,
+    "pct": 0.9343681712003616
+   },
+   "run1": {
+    "count": 54,
+    "pct": 0.8366904245429191
+   }
+  },
+  {
+   "label": "fit off, no other flag",
+   "fig": "loss_fit",
+   "classes": [
+    "far:FIT"
+   ],
+   "pooled": {
+    "count": 73,
+    "pct": 0.2750357923291387
+   },
+   "run1": {
+    "count": 15,
+    "pct": 0.23241400681747754
+   }
+  },
+  {
+   "label": "fit failed in one view (the pre-pass head-on class)",
+   "fig": "loss_headon",
+   "classes": [
+    "fit_failed"
+   ],
+   "pooled": {
+    "count": 5,
+    "pct": 0.018838067967749228
+   },
+   "run1": {
+    "count": 1,
+    "pct": 0.015494267121165169
+   }
+  },
+  {
+   "label": "position tail, mostly bent reference tracks",
+   "fig": "loss_postail",
+   "classes": [
+    "far:POS_TAIL"
+   ],
+   "pooled": {
+    "count": 46,
+    "pct": 0.1733102253032929
+   },
+   "run1": {
+    "count": 13,
+    "pct": 0.2014254725751472
+   }
+  },
+  {
+   "label": "edge of the other coordinate",
+   "fig": "loss_edge",
+   "classes": [
+    "far:EDGE"
+   ],
+   "pooled": {
+    "count": 54,
+    "pct": 0.20345113405169166
+   },
+   "run1": {
+    "count": 10,
+    "pct": 0.1549426712116517
+   }
+  },
+  {
+   "label": "second deposit, not particle-like",
+   "fig": "loss_multi_deposit",
+   "classes": [
+    "far:MULTI"
+   ],
+   "pooled": {
+    "count": 55,
+    "pct": 0.2072187476452415
+   },
+   "run1": {
+    "count": 12,
+    "pct": 0.18593120545398203
+   }
+  },
+  {
+   "label": "other (cuts, charge elsewhere)",
+   "fig": null,
+   "classes": [
+    "cut:other",
+    "other:charge_elsewhere",
+    "other:not_seeded",
+    "other:no_hit",
+    "other:one_view_silent",
+    "other:hw_known"
+   ],
+   "pooled": {
+    "count": 7,
+    "pct": 0.02637329515484892
+   },
+   "run1": {
+    "count": 2,
+    "pct": 0.030988534242330338
+   }
+  }
+ ]
+}

@@ -47,15 +47,25 @@ def widths(tx, ty, ex, ey):
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument('jobs'); ap.add_argument('--out', required=True)
     ap.add_argument('--nboot', type=int, default=30)
+    ap.add_argument('--analysis', default=A, help='Analysis_pass1 root holding <run>/<subrun>/<det>/wft/events.parquet '
+                    '(default EOS pass 1; the two-track re-pass copy for chamber A\'s golden rows)')
+    ap.add_argument('--rows-dir', default=None, help='directory holding <stem basename>.npz/.json (default: the stem of the jobs line)')
+    ap.add_argument('--only', default=None, help='comma list of row keys; other jobs lines skipped')
+    ap.add_argument('--merge', default=None, help='existing rows_matched.csv: its rows are kept, those of --only replaced')
     a = ap.parse_args()
+    only = set(a.only.split(',')) if a.only else None
     rng = np.random.default_rng(2)
     out = []
     for line in open(a.jobs):
         colsum, bundle, stem, *meta = line.split()
         md = dict(kv.split('=', 1) for kv in meta)
+        if only and md.get('key') not in only:
+            continue
+        if a.rows_dir:
+            stem = os.path.join(a.rows_dir, os.path.basename(stem))
         r = {k: md.get(k, '') for k in ('key', 'det', 'run', 'subrun', 'resist_V', 'drift_V', 'cls')}
         f = stem + '.npz'
-        ev = os.path.join(A, md['run'], md['subrun'], md['det'], 'wft', 'events.parquet')
+        ev = os.path.join(a.analysis, md['run'], md['subrun'], md['det'], 'wft', 'events.parquet')
         if not (os.path.exists(f) and os.path.exists(ev)):
             r['n'] = 0; out.append(r); continue
         z = np.load(f); tags = list(z['acq_tags'])
@@ -80,6 +90,10 @@ def main():
             r['T_x'], r['T_y'] = j.get('T_median_x', ''), j.get('T_median_y', '')
         out.append(r)
         print(r['key'], r['n'], round(r.get('sigma_evt', np.nan), 1), flush=True)
+    if a.merge:
+        new = {r['key'] for r in out}
+        old = [r for r in csv.DictReader(open(a.merge)) if r['key'] not in new]
+        out = old + out
     with open(a.out, 'w', newline='') as fh:
         w = csv.DictWriter(fh, COLS); w.writeheader()
         for r in out:

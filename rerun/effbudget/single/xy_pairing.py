@@ -32,10 +32,10 @@ def rsig(x):
     q = np.nanpercentile(x, [16, 84]); return 0.5 * (q[1] - q[0])
 
 
-def load(root, rel, analysis=side_tree.PASS1):
+def load(root, rel, analysis=side_tree.PASS1, eff=side_tree.EFF):
     C = pd.read_parquet(side_tree.cand_path(root, analysis, rel))
     C = C[C['rank'] >= 0]
-    B = pd.read_parquet(os.path.join(root, 'x17rerun/paper1_eff/budget', rel, 'rays_det3.parquet'))
+    B = pd.read_parquet(os.path.join(side_tree.eff_dir(root, eff), 'budget', rel, 'rays_det3.parquet'))
     B = B.drop_duplicates('event_id').set_index('event_id')
     B = B[(~B.not_measured) & (B.region == 'interior') & B.good_x]
     C = C[C.event_id.isin(B.index)].copy()
@@ -48,11 +48,13 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--root', default=os.environ.get('COSMIC_ROOT', '/eos/experiment/ntof/data/x17/cosmic_bench'))
     ap.add_argument('--out', default=os.path.join(os.path.dirname(os.path.abspath(__file__)), 'results'))
-    ap.add_argument('--analysis', default=side_tree.PASS1, help='tree holding the candidate tables (see side_tree.py)')
+    ap.add_argument('--analysis', default=side_tree.PASS1, help='tree holding the candidate tables')
+    ap.add_argument('--eff', default=side_tree.EFF, help='efficiency-chain dir (budget/, a1/) under --root, or absolute; '
+                    'paper1_eff_twotrack = the chamber A two-track re-pass products (read directly, no overlay)')
     a = ap.parse_args(); os.makedirs(a.out, exist_ok=True)
     res, evs = {}, []
     for key, rel in ROWS.items():
-        C, B = load(a.root, rel, a.analysis)
+        C, B = load(a.root, rel, a.analysis, a.eff)
         n = C.groupby(['event_id', 'plane']).size().unstack(fill_value=0)
         # single-track reference: exactly one candidate per view, both near M3
         one = n.index[(n.x == 1) & (n.y == 1)]

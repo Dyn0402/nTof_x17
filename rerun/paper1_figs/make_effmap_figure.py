@@ -38,10 +38,12 @@ def main():
     ap.add_argument('--root', required=True)
     ap.add_argument('--out', default=os.path.join(REPO, 'papers', 'paper1', 'figures', 'efficiency_map.pdf'))
     ap.add_argument('--r', type=float, default=8.0)
+    ap.add_argument('--rows', default=os.path.join(EB, 'results', 'rows.csv'), help='rows.csv (default pass 1; two-track merged: ROOT/results/rows.csv)')
+    ap.add_argument('--pools', default=os.path.join(EB, 'results', 'map_pools.json'))
     a = ap.parse_args()
     ps.use()
-    T = pd.read_csv(os.path.join(EB, 'results', 'rows.csv'))
-    pools = json.load(open(os.path.join(EB, 'results', 'map_pools.json')))
+    T = pd.read_csv(a.rows)
+    pools = json.load(open(a.pools))
 
     # 2026-11-03: axes placed by hand (inches). Constrained layout + equal aspect squeezed the small panels once their
     # tick numbers were back (sharing an axis had blanked them). Small panels share x/y and nearly touch (Dylan 11-03).

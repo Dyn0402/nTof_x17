@@ -37,15 +37,17 @@ def rel(r):
     return f"{r['run']}/{r['subrun']}/{r['det']}"
 
 
-def build(out_dir):
+def build(out_dir, only=None, p1=P1, eff=EFF):
     reg = {r['key']: r for r in csv.DictReader(open(os.path.join(REPO, 'rerun', 'pass_registry.csv')))}
     vt = {r['key']: r for r in csv.DictReader(open(os.path.join(REPO, 'rerun', 'vt_all', 'results', 'vt_corrected_rows.csv')))}
     os.makedirs(out_dir, exist_ok=True)
     for d, key in GOLD.items():
+        if only and d not in only:
+            continue
         r = reg[key]
-        wdir = os.path.join(P1, rel(r), 'wft')
+        wdir = os.path.join(p1, rel(r), 'wft')
         m = json.load(open(os.path.join(wdir, 'events.meta.json')))
-        rays = pd.read_parquet(os.path.join(EFF, 'budget', rel(r), f'rays_{d}.parquet')).drop_duplicates('event_id', keep=False)
+        rays = pd.read_parquet(os.path.join(eff, 'budget', rel(r), f'rays_{d}.parquet')).drop_duplicates('event_id', keep=False)
         df = pd.read_parquet(os.path.join(wdir, 'events.parquet')).drop_duplicates('event_id', keep=False)
         keep = ['event_id'] + [f'{p}_{c}' for p in 'xy' for c in COLS if f'{p}_{c}' in df.columns]
         T = rays[['event_id', 'mesh_x', 'mesh_y', 'tan_x', 'tan_y']].rename(
@@ -62,7 +64,7 @@ def build(out_dir):
         print(d, key, len(T), 'vt' if key in vt else '')
 
 
-def fig(in_dir):
+def fig(in_dir, only=None):
     fb = os.path.join(REPO, 'rerun', 'model_audit', 'followups', 'fb_bow_maps')
     sys.path.insert(0, fb)
     import fbcommon as F
@@ -72,6 +74,8 @@ def fig(in_dir):
     os.makedirs(res, exist_ok=True); os.makedirs(figd, exist_ok=True)
     out = {}
     for d in F.DETS:
+        if only and d not in only:
+            continue
         b = json.load(open(os.path.join(in_dir, f'{d}.bundle.json')))
         for arm in ('pass', 'vt'):
             T = F.load_path(os.path.join(in_dir, f'{d}.parquet'), b, d, name=f'{d}_{arm}')
@@ -86,6 +90,11 @@ def fig(in_dir):
             PR.RES = res
             PR.run(f'{d}_{arm}')
             out[(d, arm)] = json.load(open(os.path.join(res, f'profiles_{d}_{arm}.json')))
+    if only:       # the other chambers keep their committed profiles; the summary is updated in place
+        for d in ORDER:
+            for arm in ('pass', 'vt'):
+                if (d, arm) not in out:
+                    out[(d, arm)] = json.load(open(os.path.join(res, f'profiles_{d}_{arm}.json')))
     plot(out)
     S = {f'{d}_{arm}': {p: (dict(h_curv_per_km=v[p]['h_curv'] * 1e6, w0_slope=v[p]['w0_slope'], r_f=v[p]['r_f'],
                                  b_med=v[p]['b_med']) if v.get(p) else None) for p in 'xy'}
@@ -168,5 +177,9 @@ if __name__ == '__main__':
     ap = argparse.ArgumentParser()
     ap.add_argument('mode', choices=('build', 'fig', 'plot'))
     ap.add_argument('--out-dir'); ap.add_argument('--in-dir')
+    ap.add_argument('--only', default=None, help='comma list of chambers (det3,...) for build / fig; the others keep their products')
+    ap.add_argument('--pass-root', default=P1, help='build: reco tables root (two-track: Analysis_pass1_twotrack)')
+    ap.add_argument('--eff-root', default=EFF, help='build: paper1_eff root (two-track: paper1_eff_twotrack)')
     a = ap.parse_args()
-    {'build': lambda: build(a.out_dir), 'fig': lambda: fig(a.in_dir), 'plot': plot}[a.mode]()
+    only = a.only.split(',') if a.only else None
+    {'build': lambda: build(a.out_dir, only, a.pass_root, a.eff_root), 'fig': lambda: fig(a.in_dir, only), 'plot': plot}[a.mode]()

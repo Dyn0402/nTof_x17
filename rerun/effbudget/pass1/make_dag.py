@@ -28,12 +28,16 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('code'); ap.add_argument('--only', default=None)
     ap.add_argument('--what', default='budget,angles,bands,a1')
+    ap.add_argument('--analysis-root', default=A, help='Analysis tree the tables/alignments are read from (default pass 1)')
+    ap.add_argument('--outroot', default=OUTROOT, help='where the products are written (default paper1_eff)')
     ap.add_argument('--registry', default=os.path.join(HERE, '..', '..', 'pass_registry.csv'))
     a = ap.parse_args()
     rows = [r for r in csv.DictReader(open(a.registry)) if r['cls'] != 'excluded']
     by = {r['key']: r for r in rows}
     only = set(a.only.split(',')) if a.only else None
     what = set(a.what.split(','))
+    A_, OUT = a.analysis_root, a.outroot
+    EMPTY_ = f'{OUT}/empty_analysis'
     L = []
 
     def node(name, sub, args, cpus, mem):
@@ -46,23 +50,23 @@ def main():
             continue
         k, n = r['key'], r['key'].replace('.', '_')
         ak = r.get('align_key') or r['calib_key']
-        t = f'{A}/{rel(r)}/wft/events.parquet'
-        al = f'{A}/{rel(by[ak])}/wft/alignment/alignment.json'
-        sj = f'{k} --parts run_config,m3,hits --no-sync --eos-analysis {EMPTY}'
+        t = f'{A_}/{rel(r)}/wft/events.parquet'
+        al = f'{A_}/{rel(by[ak])}/wft/alignment/alignment.json'
+        sj = f'{k} --parts run_config,m3,hits --no-sync --eos-analysis {EMPTY_}'
         if 'budget' in what:
             node(f'BUD_{n}', 'stage1.sub', f'{sj} --script rerun/effbudget/budget.py -- {SHORT[r["det"]]} --table {t} '
                  f'--alignment {al} --cand {t.replace(".parquet", ".candidates.parquet")} '
-                 f'--out {OUTROOT}/budget/{rel(r)}', 1, 8000)
+                 f'--out {OUT}/budget/{rel(r)}', 1, 8000)
         if 'angles' in what:
             node(f'ANG_{n}', 'stage1.sub', f'{sj} --script mx_june_wft/03_angles.py -- --table {t} --alignment {al} '
-                 f'--fiducial interior_good --out {OUTROOT}/angles/{rel(r)}', 1, 8000)
+                 f'--fiducial interior_good --out {OUT}/angles/{rel(r)}', 1, 8000)
         if 'bands' in what:
-            node(f'BND_{n}', 'census.sub', f'{k} --out {OUTROOT}/bands', 1, 3000)
+            node(f'BND_{n}', 'census.sub', f'{k} --out {OUT}/bands', 1, 3000)
         if 'a1' in what and r['cls'] in ('golden_calib', 'golden_quoted'):
             d = SHORT[r['det']]
             node(f'A1_{n}', 'stage1.sub', f'{sj} --script rerun/effbudget/pass1/a1_job.py -- {d} --table {t} '
                  f'--alignment {al} --cand {t.replace(".parquet", ".candidates.parquet")} '
-                 f'--rays {OUTROOT}/budget/{rel(r)}/rays_{d}.parquet --out {OUTROOT}/a1/{rel(r)}', 1, 12000)
+                 f'--rays {OUT}/budget/{rel(r)}/rays_{d}.parquet --out {OUT}/a1/{rel(r)}', 1, 12000)
             if 'budget' in what:
                 L.append(f'PARENT BUD_{n} CHILD A1_{n}')
     open('p1eff.dag', 'w').write('\n'.join(L) + '\n')

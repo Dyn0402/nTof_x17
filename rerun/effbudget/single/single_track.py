@@ -153,22 +153,26 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--root', default=os.environ.get('COSMIC_ROOT', '/eos/experiment/ntof/data/x17/cosmic_bench'))
     ap.add_argument('--out', default=os.path.join(os.path.dirname(os.path.abspath(__file__)), 'results'))
-    ap.add_argument('--analysis', default=side_tree.PASS1, help='tree holding the candidate tables (see side_tree.py)')
+    ap.add_argument('--analysis', default=side_tree.PASS1, help='tree holding the candidate tables and alignment')
+    ap.add_argument('--eff', default=side_tree.EFF, help='efficiency-chain dir (budget/, a1/) under --root, or absolute; '
+                    'paper1_eff_twotrack = the chamber A two-track re-pass products (read directly, no overlay)')
+    ap.add_argument('--overlay', action='store_true', help='interim overlay (side_tree.py)')
+    ap.add_argument('--m3root', default=None, help='root holding x17rerun/m3clus (default --root)')
     a = ap.parse_args(); os.makedirs(a.out, exist_ok=True)
     res = {}
     for key, (run, sub, ch) in ROWS.items():
         rel = f'{run}/{sub}/{ch}'
-        a1 = os.path.join(a.root, 'x17rerun/paper1_eff/a1', rel)
+        a1 = os.path.join(side_tree.eff_dir(a.root, a.eff), 'a1', rel)
         R = pd.read_parquet(os.path.join(a1, 'recat.parquet'))
         R = R[R.good_x]
-        B = pd.read_parquet(os.path.join(a.root, 'x17rerun/paper1_eff/budget', rel, 'rays_det3.parquet'))
+        B = pd.read_parquet(os.path.join(side_tree.eff_dir(a.root, a.eff), 'budget', rel, 'rays_det3.parquet'))
         B = B.drop_duplicates('event_id').set_index('event_id').reindex(R.index)
-        al = json.load(open(os.path.join(a.root, side_tree.PASS1, rel, 'wft/alignment/alignment.json')))
-        M = m3_tags(a.root, run, sub, {'x': al['z_x'], 'y': al['z_y']}).reindex(R.index)
+        al = json.load(open(os.path.join(a.root, a.analysis, rel, 'wft/alignment/alignment.json')))
+        M = m3_tags(a.m3root or a.root, run, sub, {'x': al['z_x'], 'y': al['z_y']}).reindex(R.index)
         D = R.join(M)
         D['credit'] = D.recat.isin(CREDIT)
         D['strict'] = D.recat.eq('detected')
-        if a.analysis != side_tree.PASS1:          # two-track re-pass: credit / detection from its candidates (side_tree.py)
+        if a.overlay:                              # interim: two-track credit / detection patched from its candidates (side_tree.py)
             Bn = side_tree.overlay(a.root, a.analysis, rel, B)
             ch = (Bn.det_any_5.astype(bool) != B.det_any_5.astype(bool)).reindex(D.index).fillna(False).to_numpy()
             D['credit'] = np.where(ch, Bn.det_any_5.astype(bool).reindex(D.index), D.credit)

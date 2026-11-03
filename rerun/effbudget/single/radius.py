@@ -16,12 +16,13 @@ Result (2026-11-02): eff(R) has two regimes, the resolution core (steep up to ~4
 M3 pointing + scattering dominated) and a slow linear rise of ~0.1-0.2 pt per mm out to 40 mm (mis-measured tracks,
 which A1 classes as delta / saturated blob / bent M3, plus accidentals growing as R^2). The choice is the knee:
 R = 5 mm = 9 core sigma, where the Gaussian core is exhausted and acc(R) is 0.07 % (below the 0.15 % statistical
-error and ~70x below the inefficiency). R in [4, 8] mm moves the efficiency by -0.5 / +0.6 pt (quoted systematic).
+error and ~70x below the inefficiency). R in [4, 8] mm moves the single-track efficiency by -0.5 / +0.7 pt (quoted systematic; radius.py --single-events).
 Writes <out>/radius.json.
 """
 import argparse, json, os
 import numpy as np
 import pandas as pd
+import side_tree
 
 ROWS = {'sat_det3': 'mx17_det3_saturday_scan_6-27-26/long_run_resist_490V_drift_1000V/mx17_3',
         'p2_det3': 'mx17_det3_p2_det1_overnight_6-27-26/long_run_p2_det1_sanity_check/mx17_3'}
@@ -29,15 +30,47 @@ RADII = [0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 8.0, 10.0, 15.
 MAX_DROPPED = 2
 
 
+def single_curve(a):
+    """Credit efficiency(R) of the single-track sample (single_track_area.py: region != outside, nothing dropped) with the
+    candidate distances of the budget rays: credit(R) = (fitted production pick within R) or (nearest candidate of each
+    view within R, circle, as budget det_any_R). Checked against the stored credit at R = 5."""
+    tot = {R: [0, 0] for R in RADII}; per = {}
+    for key, rel in ROWS.items():
+        B = pd.read_parquet(os.path.join(side_tree.eff_dir(a.root, a.eff), 'budget', rel, 'rays_det3.parquet'))
+        B = B.drop_duplicates('event_id').set_index('event_id')
+        E = pd.read_parquet(os.path.join(a.single_events, f'single_track_area_events_{key}.parquet'))
+        B = B.loc[E.index]; m = E.cls.eq('single').to_numpy()
+        ok = (B.x_ok & B.y_ok & (B.x_n_dropped.fillna(99) <= MAX_DROPPED) & (B.y_n_dropped.fillna(99) <= MAX_DROPPED)).to_numpy()
+        r = B.r.to_numpy(); near = np.hypot(B.near_res_x.abs().to_numpy(), B.near_res_y.abs().to_numpy())
+        c5 = ((ok & (r <= 5)) | (near <= 5))
+        chk = int((c5 != E.credit.to_numpy()).sum())
+        print(f'single-track {key}: n={int(m.sum())}, credit(5) vs stored credit: {chk} rays differ')
+        per[key] = dict(n=int(m.sum()), mismatch_at_5=chk, eff=[])
+        for R in RADII:
+            k = int((((ok & (r <= R)) | (near <= R)) & m).sum())
+            tot[R][0] += int(m.sum()); tot[R][1] += k; per[key]['eff'].append(100 * k / m.sum())
+    pooled = [100 * tot[R][1] / tot[R][0] for R in RADII]
+    e5 = pooled[RADII.index(5.0)]
+    for R, e in zip(RADII, pooled):
+        print(f'  single-track R={R:5.2f}  eff {e:6.2f}  ({e - e5:+.2f} vs R=5)')
+    d4, d8 = pooled[RADII.index(4.0)] - e5, pooled[RADII.index(8.0)] - e5
+    print(f'single-track pooled R in [4, 8] mm: {d4:+.2f} / {d8:+.2f} pt')
+    return dict(radii=RADII, pooled_eff=pooled, per_row=per, delta_R4=d4, delta_R8=d8)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--root', default=os.environ.get('COSMIC_ROOT', '/eos/experiment/ntof/data/x17/cosmic_bench'))
     ap.add_argument('--out', default=os.path.join(os.path.dirname(os.path.abspath(__file__)), 'results'))
+    ap.add_argument('--eff', default=side_tree.EFF, help='efficiency-chain dir under --root, or absolute (paper1_eff_twotrack for chamber A re-pass)')
+    ap.add_argument('--single-events', default=None, help='dir holding single_track_area_events_<row>.parquet (from '
+                    'single_track_area.py on the same --root/--eff): also write the single-track credit curve, '
+                    'efficiency(R) of the single-track sample over the active area (the 5 mm headline sample) at every R')
     a = ap.parse_args(); os.makedirs(a.out, exist_ok=True)
     rng = np.random.default_rng(1)
     res = {}
     for key, rel in ROWS.items():
-        B = pd.read_parquet(os.path.join(a.root, 'x17rerun/paper1_eff/budget', rel, 'rays_det3.parquet'))
+        B = pd.read_parquet(os.path.join(side_tree.eff_dir(a.root, a.eff), 'budget', rel, 'rays_det3.parquet'))
         B = B.drop_duplicates('event_id')
         B = B[(~B.not_measured) & (B.region == 'interior') & B.good_x].reset_index(drop=True)
         ok = (B.x_ok & B.y_ok & (B.x_n_dropped.fillna(99) <= MAX_DROPPED) & (B.y_n_dropped.fillna(99) <= MAX_DROPPED)).to_numpy()
@@ -68,6 +101,8 @@ def main():
         print(f'== {key} n={len(B)} core sigma x/y {core["x"]:.2f}/{core["y"]:.2f} mm, tails {tails}')
         for R, e, c, f in zip(RADII, eff, cred, acc):
             print(f'  R={R:5.2f}  eff {e:6.2f}  credit {c:6.2f}  accidental {f:7.4f}')
+    if a.single_events:
+        res['single_track'] = single_curve(a)
     json.dump(res, open(os.path.join(a.out, 'radius.json'), 'w'), indent=1)
 
 

@@ -867,3 +867,114 @@ date = "2026-11-03"
 fig = "loss_budget"
 status = "for review"
 change = "Regenerated on the two-track re-pass: 'fit off, nothing flagged' 0.32 -> 0.34 %; everything else unchanged at printed precision. A1 class table still pass 1 (needs budget.py/a1_job.py on condor)."
+
+# --- 2026-11-03 evening: every chamber A golden-run product regenerated on the two-track re-pass ---
+# (Analysis_pass1_twotrack + x17rerun/paper1_eff_twotrack; condor DAG ~/x17rerun/paper1_eff_twotrack, validated vs paper1_eff:
+#  identical ray/event counts, production-pick detected unchanged, credit +3/+23 rays, 27 A1 class moves within multi:*)
+[[entry]]
+date = "2026-11-03"
+fig = "xy_pairing"
+status = "for review"
+change = "Direct read of the two-track products (no overlay): 567 events (was 552), charge + time 97.7 % (98.0), charge only 95.6 % (95.7), production 96.6 % (96.7)."
+
+[[entry]]
+date = "2026-11-03"
+fig = "eff_vs_radius"
+status = "for review"
+change = "From paper1_eff_twotrack budget rays; credit at 5 mm 95.1 % (was 95.0), circular cut kept."
+
+[[entry]]
+date = "2026-11-03"
+fig = "residuals"
+status = "for review"
+change = "From paper1_eff_twotrack; core sigma 0.55 / 0.53 mm unchanged."
+
+[[entry]]
+date = "2026-11-03"
+fig = "loss_budget"
+status = "for review"
+change = "Direct two-track read; identical to the overlay version (28,467 single-track tracks, 5.2 % lost). Interior breakdown in section 5 requoted (old text did not sum to 4.3 %). New fiducial_variants.py produces the three-area numbers (30 mm from every side: single-track 95.8 %, was 95.5 from a mismatched definition)."
+
+[[entry]]
+date = "2026-11-03"
+fig = "loss_gallery"
+status = "for review"
+change = "Displays default to the two-track tree (make_displays.py --tree tt); every A1 pick checked against the tt recat, all keep their class; pixel-identical except display_merged_projection (17907). A1 table rebuilt from scratch on the re-pass (was PRE-PASS): Runs 1+2 pooled (26,542 tracks, 92.29 %) + Run 1 column, rerun/effbudget/pass1/a1_table.py -> sections/a1_table_rows.tex."
+
+[[entry]]
+date = "2026-11-03"
+fig = "display_merged_projection"
+status = "for review"
+change = "17907 on the two-track tree (Y split: the two children cross the single Y blob). Clean alternatives: 16344 (merged in Y), 1242 / 30746 / 2444 (merged in X); renders in ~/work_data/claude-jobs/75b1951f_a1/sheet/."
+
+[[entry]]
+date = "2026-11-03"
+fig = "angle_resolution"
+status = "for review"
+change = "From the two-track angle tables, Runs 1+2: s68 X 0.9872 -> 0.9870, Y 0.8996 -> 0.8990; unchanged at the printed digit (Run 2 Y 0.901 -> 0.900 in section 3.3)."
+
+[[entry]]
+date = "2026-11-03"
+fig = "tracking_perf_all"
+status = "for review"
+change = "A curve from the two-track angle_resolution.json; unchanged at the printed digit."
+
+[[entry]]
+date = "2026-11-03"
+fig = "charge_balance"
+status = "for review"
+change = "A row (sat_det3) on the two-track table; medians and n unchanged."
+
+[[entry]]
+date = "2026-11-03"
+fig = "timing"
+status = "for review"
+change = "Runs 1+2 matched sample re-gated on the two-track events (Run 1 n 3523 -> 3524); timing_all and timing_driftscan likewise; numbers unchanged at the printed digit."
+
+[[entry]]
+date = "2026-11-03"
+fig = "det_a_timeseries"
+status = "for review"
+change = "All inputs from the two-track products (was mixed); bins move in the 3rd digit; 'no trend beyond 1.7 sigma' -> 1.8 sigma."
+
+[[entry]]
+date = "2026-11-03"
+fig = "edge_turnon"
+status = "for review"
+change = "Run 1 from the two-track budget rays and angles; unchanged."
+
+[[entry]]
+date = "2026-11-03"
+fig = "efficiency_map"
+status = "for review"
+change = "Golden rows from the two-track products (merged root); eff 92.64 / 92.17 % unchanged, pool 30 rows / 70,470 rays, pixels < 0.001 %."
+
+[[entry]]
+date = "2026-11-03"
+fig = "hv_scan"
+status = "for review"
+change = "Golden rows' efficiency from the two-track rows.csv (--eff-rows); unchanged as plotted. spark_deadtime / eff_vs_hv_discharge: golden rows re-run on condor (x17rerun/paper1_ops_twotrack/spark), identical."
+
+[[entry]]
+date = "2026-11-03"
+fig = "bow_profiles"
+status = "for review"
+change = "Chamber A rebuilt on the two-track tables: curvature X 80.0 -> 82.5, Y 139.8 -> 137.0 per km; r_f X 1.108 -> 1.066, Y 0.710 -> 0.741 (6 X / 4 Y events moved > 1 mm); control with old inputs reproduces. bow_closure redrawn."
+
+[[entry]]
+date = "2026-11-03"
+fig = "bench_position_res"
+status = "for review"
+change = "Chamber A frames rebuilt on the two-track re-pass: sigma0 274/237 -> 275/236 um; chamber term 126+-34 / 116+-36 -> 128+-33 / 113+-36 um; +-10 % P band 58-164 / 67-147 -> 63-166 / 62-145 um. Section 8 requoted."
+
+[[entry]]
+date = "2026-11-03"
+fig = "bow_closure"
+status = "for review"
+change = "Section 8b text re-derived on the final tables with the same 2-D estimator as before (fb_bow_maps xcheck/summary/gate via new final_tables.py; results_final/): depths B 1.87 / A 1.31 / E 1.69 / C 1.76 / D 1.68 mm (were 1.8/1.5/1.9/1.8/2.3 on the audit tables), curvature 1.2-1.7e-4 /mm, r_f 0.52-1.00 on all ten views, narrowest cluster 10/10 sign (8/10 > 2 sigma), gate gain 16 %. The figures show the 1-D profile estimator (unchanged); the two agree on the dish and the tilt sign, not on the own-axis X/Y split. One \\requote left: the 0.5-1.3x telescope-plane bound."
+
+[[entry]]
+date = "2026-11-03"
+fig = "loss_satblob"
+status = "for review"
+change = "Saturated-blob test re-run on the re-pass (Run 1, 350 saturated + 150 control views, condor): agreement 71.4 -> 72.9 % best arm (was 71.1 -> 73.7), pinned-track worse in 92.6 % of failures (93). A1 row via a1_table.py --satblob. Single-track R systematic re-derived (radius.py --single-events): -0.5 / +0.7 pt (was +0.6)."

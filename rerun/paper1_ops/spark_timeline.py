@@ -71,10 +71,13 @@ def main():
     ap.add_argument('--key', required=True)
     ap.add_argument('--registry', default=os.path.join(REPO, 'rerun', 'pass_registry.csv'))
     ap.add_argument('--out-dir', required=True)
+    ap.add_argument('--pass-root', default=PASS, help='reco tables root (default Analysis_pass1; two-track: Analysis_pass1_twotrack)')
+    ap.add_argument('--eff-root', default=EFF, help='budget dir (default paper1_eff/budget; two-track: paper1_eff_twotrack/budget)')
     a = ap.parse_args()
+    PASS_, EFF_ = a.pass_root, a.eff_root
     r = {x['key']: x for x in csv.DictReader(open(a.registry))}[a.key]
     rel = f"{r['run']}/{r['subrun']}/{r['det']}"
-    meta = json.load(open(f'{PASS}/{rel}/wft/events.meta.json'))
+    meta = json.load(open(f'{PASS_}/{rel}/wft/events.meta.json'))
     feus = [int(meta['run']['feu_x']), int(meta['run']['feu_y'])]
     eids, ts, mult, nchip = triggers(f"{BENCH}/{r['run']}/{r['subrun']}/combined_hits_root_rr1_cm0", feus)
     veto = mult > SPARK_VETO_HITS
@@ -88,7 +91,7 @@ def main():
     # DAQ: time to the next trigger after a discharge vs after a normal trigger
     gap = np.diff(ts)
     gs, gn = gap[spark[:-1]], gap[~spark[:-1]]
-    R = pd.read_parquet(f"{EFF}/{rel}/rays_{SHORT[r['det']]}.parquet")
+    R = pd.read_parquet(f"{EFF_}/{rel}/rays_{SHORT[r['det']]}.parquet")
     R = R[(R.region == 'interior') & R.good_x.astype(bool)].copy()
     tr = np.interp(R.event_id.to_numpy(float), eids.astype(float), ts)   # rays with no hit at all: interpolated
     R['t'] = tr
@@ -100,7 +103,7 @@ def main():
     R['det'] = R.cat_xy_5 == 'detected'
     j = np.searchsorted(ep_t, tr, side='left') - 1       # previous epoch strictly before the ray
     R['dt'] = np.where(j >= 0, tr - ep_t[np.clip(j, 0, None)], np.inf) if len(ep_t) else np.inf
-    T = pd.read_parquet(f'{PASS}/{rel}/wft/events.parquet', columns=['event_id', 'x_q_sum', 'y_q_sum',
+    T = pd.read_parquet(f'{PASS_}/{rel}/wft/events.parquet', columns=['event_id', 'x_q_sum', 'y_q_sum',
                                                                    'x_n_sat_strips', 'y_n_sat_strips'])
     T = T.drop_duplicates('event_id', keep=False).set_index('event_id')
     q = (T.x_q_sum + T.y_q_sum).where((T.x_n_sat_strips == 0) & (T.y_n_sat_strips == 0))

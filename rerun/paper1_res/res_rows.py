@@ -268,8 +268,13 @@ def main():
     ap.add_argument('--only', default=None)
     ap.add_argument('--dets', default=None)
     ap.add_argument('--registry', default=os.path.join(REPO, 'rerun', 'pass_registry.csv'))
+    ap.add_argument('--p1', default=None, help='Analysis_pass1 root (default: EOS)')
+    ap.add_argument('--eff', default=None, help='x17rerun/paper1_eff root (default: EOS)')
     ap.add_argument('--vt-rows', default=os.path.join(REPO, 'rerun', 'vt_all', 'results', 'vt_corrected_rows.csv'))
     a = ap.parse_args()
+    global P1, EFF
+    P1 = a.p1 or P1
+    EFF = a.eff or EFF
     reg = list(csv.DictReader(open(a.registry)))
     by = {r['key']: r for r in reg}
     vtrows = {r['key']: r for r in csv.DictReader(open(a.vt_rows))}

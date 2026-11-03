@@ -80,7 +80,8 @@ def rails():
                 m = raw.max(0); rawmax += list(m[m > 3800])
     pickle.dump(out, open(RAILS, 'wb'))
     h = np.bincount(np.clip(np.array(rawmax, int) - 3800, 0, 300))
-    print(f'{len(out)} events; max |rebuilt - stored W| = {max(chk):.2f} ADC (median {np.median(chk):.2f})')
+    print(f'{len(out)} events; max |rebuilt - stored W| = {max(chk):.2f} ADC (median {np.median(chk):.2f}); '
+          f'{int((np.array(chk) > 20).sum())} of {len(chk)} event-views differ by > 20 ADC somewhere (stored W is float16: ~2 ADC at 4000)')
     print('raw strip maxima > 3800: top values', {3800 + i: int(c) for i, c in enumerate(h) if c > 50})
 
 

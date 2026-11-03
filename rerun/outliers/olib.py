@@ -3,7 +3,7 @@ import os
 import numpy as np
 import pandas as pd
 
-BASE = os.path.expanduser('~/x17/cosmic_bench/outliers')
+BASE = os.environ.get('X17_OUTLIERS_BASE') or os.path.expanduser('~/x17/cosmic_bench/outliers')   # env: re-pass joined tables (satstudy on the two-track re-pass)
 DETS = ('det3', 'det4', 'det7', 'det6', 'det2')
 HEADON, FAR = 0.1, 5.0
 

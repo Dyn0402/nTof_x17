@@ -3,7 +3,7 @@
 
 figures/eff_vs_radius      det3 efficiency (production pick, multi-track credit) and the accidental rate vs R
 figures/residuals          the full det3 residual distributions behind the radius choice (per view, radial)
-figures/xy_pairing         ln(qX/qY) of the true and the swapped pairings of 552 real two-particle events
+figures/xy_pairing         ln(qX/qY) of the true and the swapped pairings of the real two-particle events (n from xy_pairing.json)
 figures/loss_budget        where the det3 single-track inefficiency goes, full active area (% of single tracks)
 figures/two_particle       det3 events with a second particle: how many per configuration, and the muon recovery
 Style: papers/paper_style.py (one palette for the paper; det3 dark blue). Each figure writes pdf + png + csv.

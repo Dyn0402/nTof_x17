@@ -29,8 +29,8 @@ CREDIT = ('detected', 'multi:m3_picked', 'multi:other_picked')
 LQ_MED, LQ_SIG, NSTRIP_SINGLE = -0.056, 0.062, 12
 
 
-def oneview(root, key, rel, D, analysis=side_tree.PASS1):
-    B = pd.read_parquet(os.path.join(root, 'x17rerun/paper1_eff/budget', rel, 'rays_det3.parquet')).drop_duplicates('event_id').set_index('event_id')
+def oneview(root, key, rel, D, analysis=side_tree.PASS1, eff=side_tree.EFF):
+    B = pd.read_parquet(os.path.join(side_tree.eff_dir(root, eff), 'budget', rel, 'rays_det3.parquet')).drop_duplicates('event_id').set_index('event_id')
     C = pd.read_parquet(side_tree.cand_path(root, analysis, rel))
     C = C[C['rank'] >= 0]
     out = []
@@ -71,13 +71,16 @@ def m3_doublets(root):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--root', default=os.environ.get('COSMIC_ROOT', '/eos/experiment/ntof/data/x17/cosmic_bench'))
-    ap.add_argument('--analysis', default=side_tree.PASS1, help='tree holding the candidate tables (see side_tree.py)')
+    ap.add_argument('--analysis', default=side_tree.PASS1, help='tree holding the candidate tables')
+    ap.add_argument('--eff', default=side_tree.EFF, help='efficiency-chain dir (budget/, a1/) under --root, or absolute; '
+                    'paper1_eff_twotrack = the chamber A two-track re-pass products (read directly, no overlay)')
+    ap.add_argument('--m3root', default=None, help='root holding x17rerun/m3clus (default --root)')
     ap.add_argument('--res', default=RES, help='directory of single_track_events_*.parquet (read) and the outputs (written)')
     a = ap.parse_args(); RESD = a.res; os.makedirs(RESD, exist_ok=True)
     res, acc, Os = {'oneview': {}, 'single_track_v2': {}}, {}, []
     for key, rel in ROWS.items():
         D = pd.read_parquet(os.path.join(RESD, f'single_track_events_{key}.parquet'))
-        O = oneview(a.root, key, rel, D, a.analysis); Os.append(O)
+        O = oneview(a.root, key, rel, D, a.analysis, a.eff); Os.append(O)
         res['oneview'][key] = {c: dict(n=int(len(g)), credited=float(g.recat.isin(CREDIT[1:]).mean()),
                                        q_sec_over_q_mu=float((g.q_sec / g.q_mu).median()),
                                        other_nstrips=float(g.other_nstrips.median()), sec_sep_mm=float(g.sec_sep.median()))
@@ -95,7 +98,7 @@ def main():
         r['v2 losses, % of sample'] = {c: 100 * v / base.sum() for c, v in D[base & ~cr].recat.value_counts().items()}
         res['single_track_v2'][key] = r
         if key == 'sat_det3':
-            M = m3_doublets(a.root); X = D.join(M)
+            M = m3_doublets(a.m3root or a.root); X = D.join(M)
             grp = np.where(X.indep_2nd, 'independent 2nd particle', X.recat)
             res['m3_doublet_extra_clusters_sat_det3'] = {
                 gname: dict(n=int(len(g)), upper=float(g.up_extra.mean()), lower=float(g.dn_extra.mean()))

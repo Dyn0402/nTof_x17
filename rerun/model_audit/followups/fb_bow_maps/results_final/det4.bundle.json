@@ -1,0 +1,14 @@
+{
+ "key": "g_det4",
+ "rel": "mx17_det4_day_6-24-26/long_run/mx17_4",
+ "pass_root": "/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1",
+ "v_drift": 33.0,
+ "kw": {
+  "x": 0.9327117764922814,
+  "y": 0.9608639429304104
+ },
+ "w0": {
+  "x": -0.09576478883147443,
+  "y": -0.25604321169637645
+ }
+}

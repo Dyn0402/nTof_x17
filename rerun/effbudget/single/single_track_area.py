@@ -38,10 +38,11 @@ def seg_dist(a, b):
     return 0.0 if d0 * d1 <= 0 else min(abs(d0), abs(d1))
 
 
-def classify(root, rel, analysis=side_tree.PASS1):
-    B = pd.read_parquet(os.path.join(root, 'x17rerun/paper1_eff/budget', rel, 'rays_det3.parquet'))
+def classify(root, rel, analysis=side_tree.PASS1, eff=side_tree.EFF, overlay=False):
+    B = pd.read_parquet(os.path.join(side_tree.eff_dir(root, eff), 'budget', rel, 'rays_det3.parquet'))
     B = B.drop_duplicates('event_id').set_index('event_id')
-    B = side_tree.overlay(root, analysis, rel, B)
+    if overlay:
+        B = side_tree.overlay(root, analysis, rel, B)
     B = B[(~B.not_measured) & (B.region != 'outside')].copy()
     C = pd.read_parquet(side_tree.cand_path(root, analysis, rel))
     C = C[(C['rank'] >= 0) & C.event_id.isin(B.index)].copy()
@@ -78,13 +79,18 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--root', default=os.environ.get('COSMIC_ROOT', '/eos/experiment/ntof/data/x17/cosmic_bench'))
     ap.add_argument('--analysis', default=side_tree.PASS1, help='analysis tree under --root holding the candidate tables '
-                    '(default Analysis_pass1; Analysis_pass1_twotrack = the chamber A two-track re-pass, see side_tree.py)')
+                    '(default Analysis_pass1; Analysis_pass1_twotrack = the chamber A two-track re-pass)')
+    ap.add_argument('--eff', default=side_tree.EFF, help='efficiency-chain dir (budget/, a1/) under --root, or absolute; '
+                    'paper1_eff_twotrack = the chamber A two-track re-pass products (read directly, no overlay)')
+    ap.add_argument('--overlay', action='store_true', help='interim: patch pass-1 rays from --analysis candidates (side_tree.py)')
     ap.add_argument('--out', default=RES)
+    ap.add_argument('--two-particle-json', default=None, help='also write the muon-recovery-per-configuration json read by '
+                    'papers/paper1/figs/make_displays.py (papers/paper1/figs/data/two_particle_eff.json)')
     a = ap.parse_args(); os.makedirs(a.out, exist_ok=True)
     res, acc = {}, {}
     for key, rel in ROWS.items():
-        B, cls, ref = classify(a.root, rel, a.analysis)
-        R = pd.read_parquet(os.path.join(a.root, 'x17rerun/paper1_eff/a1', rel, 'recat.parquet'))
+        B, cls, ref = classify(a.root, rel, a.analysis, a.eff, a.overlay)
+        R = pd.read_parquet(os.path.join(side_tree.eff_dir(a.root, a.eff), 'a1', rel, 'recat.parquet'))
         recat = R.recat.reindex(B.index)
         cls[recat.eq('spark:muon+other').to_numpy()] = 'two: muon + separate deposit (vetoed)'
         drop = recat.isin(DROP_CLASSES).to_numpy()
@@ -109,6 +115,15 @@ def main():
         res[key] = out
     res['pooled'] = {nm: dict(n=nn, eff=100 * k / nn, err=100 * np.sqrt(k / nn * (1 - k / nn) / nn)) for nm, (nn, k) in acc.items() if nn}
     json.dump(res, open(os.path.join(a.out, 'single_track_area.json'), 'w'), indent=1)
+    if a.two_particle_json:
+        lab = {'one particle': 'active area | single-track', 'two, separate in both views': 'active area | two: separate in both views',
+               'two, merged in one projection': 'active area | two: merged in one projection',
+               'muon + deposit (> 50 strips, veto)': 'active area | two: muon + separate deposit (vetoed)'}
+        cl = {}
+        for k_, nm in lab.items():
+            n_, k2 = acc[nm]; cl[k_] = dict(n=n_, k=k2, eff=round(100 * k2 / n_, 2), err=round(100 * np.sqrt(k2 / n_ * (1 - k2 / n_) / n_), 2))
+        old = json.load(open(a.two_particle_json)) if os.path.exists(a.two_particle_json) else {}
+        json.dump(dict(note=old.get('note', ''), classes=cl), open(a.two_particle_json, 'w'), indent=1)
     for nm, v in res['pooled'].items():
         print(f"{nm:70s} n={v['n']:6d}  {v['eff']:6.2f} ± {v['err']:.2f}")
 

@@ -21,12 +21,12 @@
     },
     "classes": {
      "detected": 5979,
-     "multi:other_picked": 92,
+     "multi:other_picked": 95,
      "multi:m3_picked": 66,
      "far:DELTA": 58,
      "far:FIT_SAT": 54,
      "spark:shower": 43,
-     "multi:m3_not_found": 37,
+     "multi:m3_not_found": 34,
      "spark:discharge": 32,
      "spark:muon+other": 26,
      "far:FIT": 15,
@@ -54,12 +54,12 @@
     },
     "classes": {
      "detected": 5979,
-     "multi:other_picked": 92,
+     "multi:other_picked": 95,
      "multi:m3_picked": 66,
      "far:DELTA": 58,
      "far:FIT_SAT": 54,
      "spark:shower": 43,
-     "multi:m3_not_found": 37,
+     "multi:m3_not_found": 34,
      "spark:discharge": 32,
      "spark:muon+other": 26,
      "far:FIT": 15,
@@ -109,10 +109,10 @@
      "err": 0.0
     },
     "classes": {
-     "multi:other_picked": 92,
+     "multi:other_picked": 95,
      "multi:m3_picked": 66,
      "spark:shower": 43,
-     "multi:m3_not_found": 37,
+     "multi:m3_not_found": 34,
      "spark:muon+other": 26,
      "far:MULTI": 12
     }
@@ -132,12 +132,12 @@
     },
     "classes": {
      "detected": 5979,
-     "multi:other_picked": 91,
+     "multi:other_picked": 94,
      "multi:m3_picked": 66,
      "far:DELTA": 58,
      "far:FIT_SAT": 54,
      "spark:shower": 43,
-     "multi:m3_not_found": 36,
+     "multi:m3_not_found": 33,
      "spark:discharge": 32,
      "spark:muon+other": 26,
      "far:FIT": 15,
@@ -163,14 +163,14 @@
     },
     "classes": {
      "detected": 2450,
+     "multi:other_picked": 24,
      "far:DELTA": 24,
-     "multi:other_picked": 23,
      "spark:shower": 22,
      "far:FIT_SAT": 21,
-     "multi:m3_picked": 19,
-     "multi:m3_not_found": 11,
+     "multi:m3_picked": 20,
      "spark:muon+other": 11,
      "spark:discharge": 10,
+     "multi:m3_not_found": 9,
      "far:MULTI": 4,
      "far:FIT": 4,
      "band": 4,
@@ -229,10 +229,10 @@
      "far:FIT_SAT": 54,
      "spark:shower": 43,
      "spark:discharge": 32,
-     "multi:m3_not_found": 29,
+     "multi:m3_not_found": 27,
      "spark:muon+other": 26,
-     "multi:other_picked": 18,
-     "multi:m3_picked": 16,
+     "multi:other_picked": 19,
+     "multi:m3_picked": 17,
      "far:FIT": 15,
      "band": 14,
      "far:MULTI": 12,
@@ -255,9 +255,9 @@
      "err": 0.0
     },
     "classes": {
-     "multi:other_picked": 74,
-     "multi:m3_picked": 50,
-     "multi:m3_not_found": 8
+     "multi:other_picked": 76,
+     "multi:m3_picked": 49,
+     "multi:m3_not_found": 7
     }
    },
    "det3 multi, 2nd particle attached to the muon (delta)": {
@@ -331,9 +331,9 @@
    "all": {
     "credit": {
      "n": 20088,
-     "k": 19063,
-     "eff": 94.89745121465552,
-     "err": 0.15525747080101324
+     "k": 19062,
+     "eff": 94.89247311827957,
+     "err": 0.1553291134299042
     },
     "strict": {
      "n": 20088,
@@ -343,13 +343,13 @@
     },
     "classes": {
      "detected": 18516,
-     "multi:other_picked": 291,
-     "multi:m3_picked": 233,
+     "multi:other_picked": 307,
+     "multi:m3_picked": 239,
      "far:FIT_SAT": 194,
      "spark:shower": 173,
      "far:DELTA": 173,
-     "multi:m3_not_found": 109,
      "spark:discharge": 101,
+     "multi:m3_not_found": 87,
      "spark:muon+other": 67,
      "far:FIT": 58,
      "band": 44,
@@ -365,9 +365,9 @@
    "all, ref/geom dropped": {
     "credit": {
      "n": 20011,
-     "k": 19063,
-     "eff": 95.26260556693819,
-     "err": 0.1501746417739069
+     "k": 19062,
+     "eff": 95.25760831542651,
+     "err": 0.1502498858996398
     },
     "strict": {
      "n": 20011,
@@ -377,13 +377,13 @@
     },
     "classes": {
      "detected": 18516,
-     "multi:other_picked": 291,
-     "multi:m3_picked": 233,
+     "multi:other_picked": 307,
+     "multi:m3_picked": 239,
      "far:FIT_SAT": 194,
      "far:DELTA": 173,
      "spark:shower": 173,
-     "multi:m3_not_found": 109,
      "spark:discharge": 101,
+     "multi:m3_not_found": 87,
      "spark:muon+other": 67,
      "far:FIT": 58,
      "band": 44,
@@ -397,9 +397,9 @@
    "det3-tagged single (biased)": {
     "credit": {
      "n": 19095,
-     "k": 18517,
-     "eff": 96.97302958889762,
-     "err": 0.12398516902762413
+     "k": 18516,
+     "eff": 96.96779261586803,
+     "err": 0.12408902547000455
     },
     "strict": {
      "n": 19095,
@@ -434,10 +434,10 @@
      "err": 0.0
     },
     "classes": {
-     "multi:other_picked": 291,
-     "multi:m3_picked": 233,
+     "multi:other_picked": 307,
+     "multi:m3_picked": 239,
      "spark:shower": 173,
-     "multi:m3_not_found": 109,
+     "multi:m3_not_found": 87,
      "spark:muon+other": 67,
      "far:MULTI": 43
     }
@@ -505,9 +505,9 @@
    "SKEPTICAL single: all but an independent 2nd particle": {
     "credit": {
      "n": 19538,
-     "k": 18608,
-     "eff": 95.24004504043403,
-     "err": 0.1523249923790604
+     "k": 18607,
+     "eff": 95.2349268092947,
+     "err": 0.1524027702808578
     },
     "strict": {
      "n": 19538,
@@ -521,13 +521,13 @@
      "far:DELTA": 173,
      "spark:shower": 173,
      "spark:discharge": 101,
-     "multi:m3_not_found": 72,
+     "multi:m3_not_found": 69,
      "spark:muon+other": 67,
      "far:FIT": 58,
      "multi:m3_picked": 52,
      "band": 44,
      "far:MULTI": 43,
-     "multi:other_picked": 36,
+     "multi:other_picked": 39,
      "fit_failed": 4,
      "cut:other": 2,
      "other:charge_elsewhere": 2,
@@ -548,9 +548,9 @@
      "err": 0.0
     },
     "classes": {
-     "multi:other_picked": 255,
-     "multi:m3_picked": 181,
-     "multi:m3_not_found": 37
+     "multi:other_picked": 268,
+     "multi:m3_picked": 187,
+     "multi:m3_not_found": 18
     }
    },
    "det3 multi, 2nd particle attached to the muon (delta)": {

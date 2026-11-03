@@ -1,0 +1,14 @@
+{
+ "key": "sat_det3",
+ "rel": "mx17_det3_saturday_scan_6-27-26/long_run_resist_490V_drift_1000V/mx17_3",
+ "pass_root": "/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1_twotrack",
+ "v_drift": 35.8,
+ "kw": {
+  "x": 1.0368355217021707,
+  "y": 1.0149061257816572
+ },
+ "w0": {
+  "x": -0.002496696974859436,
+  "y": -0.1651376992772256
+ }
+}

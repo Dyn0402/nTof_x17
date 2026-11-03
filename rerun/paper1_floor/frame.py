@@ -26,6 +26,9 @@ import uproot
 CODE = os.environ['RES_CODE']
 sys.path[:0] = [os.path.join(CODE, 'rerun', 'paper1_res')]
 import res_rows as rr  # noqa: E402
+# two-track re-pass: FRAME_PASS_ROOT / FRAME_EFF_ROOT override rr.P1 / rr.EFF (defaults: Analysis_pass1, paper1_eff)
+rr.P1 = os.environ.get('FRAME_PASS_ROOT', rr.P1)
+rr.EFF = os.environ.get('FRAME_EFF_ROOT', rr.EFF)
 
 ROWS = ('c26__mx17_det2_det3_overnight_6-22-26__long_run__mx17_2', 'o22_long_det2',
         'c26__mx17_det3_p2_det1_overnight_6-27-26__long_run_p2_det1_sanity_check__mx17_3', 'sat_det3',

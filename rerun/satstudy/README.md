@@ -88,3 +88,11 @@ by production, 521 samples ≥ 3550 are below their rail; bottom rail in 282/350
 Follow-up (2026-10-26 night): the x↔y pairing simulation study lives in `rerun/pairing_sim/` (PLAN.md §7, report
 notes/mx17-xy-pairing-sim): data gates on all five chambers, the MX17_Geant response sim against them (fails σ ln(qx/qy)),
 the simulated overlay.
+
+## Re-run on the two-track re-pass (2026-11-03, Paper I A1 / loss_satblob)
+Same test (350 saturated + 150 control views of Run 1, same seeds, same arms), inputs rebuilt from `Analysis_pass1_twotrack`:
+`outliers/join.py` on the re-pass `events.parquet` + `alignment.json` -> `joined_det3.parquet`; `satfit.py extract`, `fit --shard i 20`
+(condor), `mergefits`; `satblob.py rails / pack / pack_pinned`, `satblob_core.py` (60 + 35 condor jobs, ~30 min each); `merge`, `score`;
+`satblob_numbers.py` -> `results_tt/satblob_numbers.json` (read by `rerun/effbudget/pass1/a1_table.py`). Paths via env
+`X17_BENCH_ROOT`, `X17_OUTLIERS_BASE`, `SATSTUDY_OUT`, `SATSTUDY_BUNDLE`. Work dir `/eos/user/d/dneff/satblob_tt`, code `~/x17rerun/code_satblob_tt` on lxplus.
+Result: agreement 71.4 % (production) -> at most 72.9 % (both rails + compact deposit); pinned-track model worse in 92.6 % of failures.

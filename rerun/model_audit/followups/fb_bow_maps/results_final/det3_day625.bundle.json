@@ -1,0 +1,14 @@
+{
+ "key": "c26__mx17_det3_day_6-25-26__long_run__mx17_3",
+ "rel": "mx17_det3_day_6-25-26/long_run/mx17_3",
+ "pass_root": "/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1",
+ "v_drift": 22.421208429932715,
+ "kw": {
+  "x": 1.0043461412663988,
+  "y": 0.9956538587336011
+ },
+ "w0": {
+  "x": 0.17715232708762169,
+  "y": -0.22239705625411643
+ }
+}

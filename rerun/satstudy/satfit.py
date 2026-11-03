@@ -32,8 +32,8 @@ sys.path[:0] = [REPO, os.path.join(REPO, 'mx_june_cosmic_qa'), os.path.join(REPO
                 os.path.join(REPO, 'rerun', 'outliers')]
 from olib import load  # noqa: E402
 
-OUT = os.path.expanduser('~/x17/cosmic_bench/satstudy')
-BUNDLE = os.path.join(OUT, 'bundle_det3_phys')   # EOS Analysis_rr1/<golden row>/mx17_3/wft/w12/it1/phys/bundle
+OUT = os.environ.get('SATSTUDY_OUT') or os.path.expanduser('~/x17/cosmic_bench/satstudy')   # env: re-pass run (satstudy_tt)
+BUNDLE = os.environ.get('SATSTUDY_BUNDLE') or os.path.join(OUT, 'bundle_det3_phys')   # EOS Analysis_rr1/<golden row>/mx17_3/wft/w12/it1/phys/bundle
 KEY, DET = 'sat_det3', 'det3'
 NSAT_MIN, N_CONTROL, THR, PAD = 3, 400, 6.0, 3
 ARMS = ('prod', 'low', 'tail', 'strip', 'both')
@@ -141,7 +141,7 @@ def fit_one(args):
 N_SAT_VIEWS, N_CTRL_VIEWS = 350, 150     # a random subset: ~8 s per saturated fit and arm on 7 cores
 
 
-def fit(arms, nproc):
+def fit(arms, nproc, shard=None):
     from multiprocessing import Pool
     S = pickle.load(open(os.path.join(OUT, 'wf_det3.pkl'), 'rb')); wf = S['wf']; sat = set(S['sat'])
     d = load(DET).set_index('event_id')
@@ -168,6 +168,8 @@ def fit(arms, nproc):
     jc = [jc[i] for i in sorted(rng.choice(len(jc), min(N_CTRL_VIEWS, len(jc)), replace=False))]
     jobs = js + jc
     print(len(jobs), 'event-views')
+    if shard:      # condor: this shard's slice of the views (every n-th), output fits_det3_shard<i>.parquet
+        jobs = jobs[shard[0]::shard[1]]; print('shard', shard, len(jobs), 'views')
     rows = []
     with Pool(nproc, initializer=_init) as pool:
         for i, res in enumerate(pool.imap_unordered(fit_one, jobs, chunksize=4)):
@@ -176,20 +178,27 @@ def fit(arms, nproc):
                 print(i, flush=True)
     F = pd.DataFrame(rows)
     F['group'] = np.where(F.event_id.isin(S['sat']), 'sat', 'ctrl')
-    out = os.path.join(OUT, 'fits_det3.parquet')
+    out = os.path.join(OUT, 'fits_det3.parquet' if not shard else f'fits_shard/fits_det3_shard{shard[0]:03d}.parquet')
+    os.makedirs(os.path.dirname(out), exist_ok=True)
     if os.path.exists(out):      # a later run adds arms
         old = pd.read_parquet(out); F = pd.concat([old[~old.arm.isin(F.arm.unique())], F], ignore_index=True)
     F.to_parquet(out); print('wrote', len(F))
 
 
 def main():
-    ap = argparse.ArgumentParser(); ap.add_argument('cmd', choices=['extract', 'fit'])
+    ap = argparse.ArgumentParser(); ap.add_argument('cmd', choices=['extract', 'fit', 'mergefits'])
     ap.add_argument('--arms', nargs='+', default=list(ARMS)); ap.add_argument('--nproc', type=int, default=7)
+    ap.add_argument('--shard', nargs=2, type=int, default=None, metavar=('I', 'N'))
     a = ap.parse_args()
+    if a.cmd == 'mergefits':
+        import glob
+        fs = sorted(glob.glob(os.path.join(OUT, 'fits_shard', 'fits_det3_shard*.parquet')))
+        pd.concat([pd.read_parquet(f) for f in fs], ignore_index=True).to_parquet(os.path.join(OUT, 'fits_det3.parquet'))
+        print('merged', len(fs), 'shards'); return
     if a.cmd == 'extract':
         extract()
     else:
-        fit(a.arms, a.nproc)
+        fit(a.arms, a.nproc, a.shard)
 
 
 if __name__ == '__main__':

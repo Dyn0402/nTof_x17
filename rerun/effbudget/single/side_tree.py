@@ -1,4 +1,6 @@
-"""side_tree.py -- read the chamber A two-track re-pass (EOS Analysis_pass1_twotrack, bundles select=cost +
+"""side_tree.py -- (INTERIM overlay; since 2026-11-03 the scripts read the re-pass products directly: --eff paper1_eff_twotrack
+--analysis Analysis_pass1_twotrack, overlay only with --overlay, kept as a validated cross-check.)
+read the chamber A two-track re-pass (EOS Analysis_pass1_twotrack, bundles select=cost +
 split_corrob=charge) in place of Analysis_pass1, for the det3 single-track scripts (--analysis NAME).
 
 The ray table (budget/rays_det3.parquet) and the A1 classes (recat.parquet) come from pass 1 and are not regenerated
@@ -16,6 +18,12 @@ import pandas as pd
 
 REPO = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..'))
 PASS1 = 'Analysis_pass1'
+EFF = 'x17rerun/paper1_eff'
+
+
+def eff_dir(root, eff=EFF):
+    """Efficiency chain dir (budget/, a1/, results/): --eff relative to --root, or absolute."""
+    return eff if os.path.isabs(eff) else os.path.join(root, eff)
 
 
 def cand_path(root, analysis, rel):

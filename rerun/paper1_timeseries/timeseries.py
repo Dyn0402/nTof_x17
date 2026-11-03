@@ -201,6 +201,8 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--data', default=os.path.join(os.environ.get('WORK_DATA', '/media/ucla/work'),
                                                    'claude-jobs', '1ccd2342', 'timeseries'))
+    ap.add_argument('--eff-events', default=EFFRES, help='dir with single_track_area_events_{sat_det3,p2_det3}.parquet '
+                    '(default: the committed ones)')
     a = ap.parse_args()
     os.makedirs(RES, exist_ok=True)
     rng = np.random.default_rng(7)
@@ -255,7 +257,7 @@ def main():
             o.update({f'eff_{lab}': 100 * p, f'eff_{lab}_err': 100 * np.sqrt(p * (1 - p) / n), f'n_{lab}': n, f'k_{lab}': kk})
         return o
     for R in runs:
-        S = pd.read_parquet(os.path.join(EFFRES, f'single_track_area_events_{R.key}.parquet'))
+        S = pd.read_parquet(os.path.join(a.eff_events, f'single_track_area_events_{R.key}.parquet'))
         S['t'] = R.t_of(S.index.to_numpy())
         R.eff = S
     rows += per_bin(runs, 'eff', eff)

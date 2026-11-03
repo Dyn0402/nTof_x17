@@ -1,52 +1,98 @@
 {
- "active area: production pick": {
+ "full area | production pick": {
   "n": 29398,
+  "k": 26898,
   "eff": 91.5,
   "err": 0.16
  },
- "active area: any candidate within 5 mm (credit)": {
+ "full area | credit (all rays)": {
   "n": 29398,
-  "eff": 94.13,
+  "k": 27700,
+  "eff": 94.22,
   "err": 0.14
  },
- "interior 30 x / 8 y (current): production pick": {
+ "full area | single-track (nothing excused)": {
+  "n": 28467,
+  "k": 26983,
+  "eff": 94.79,
+  "err": 0.13
+ },
+ "full area | two-particle events": {
+  "n": 931,
+  "k": 717,
+  "eff": 77.01,
+  "err": 1.38
+ },
+ "interior 30x/8y | production pick": {
   "n": 26542,
+  "k": 24495,
   "eff": 92.29,
   "err": 0.16
  },
- "interior 30 x / 8 y (current): any candidate within 5 mm (credit)": {
+ "interior 30x/8y | credit (all rays)": {
   "n": 26542,
-  "eff": 94.98,
+  "k": 25235,
+  "eff": 95.08,
   "err": 0.13
  },
- "interior 30 x / 8 y (current): credit, ref/geom out": {
+ "interior 30x/8y | single-track (nothing excused)": {
+  "n": 25671,
+  "k": 24567,
+  "eff": 95.7,
+  "err": 0.13
+ },
+ "interior 30x/8y | two-particle events": {
+  "n": 871,
+  "k": 668,
+  "eff": 76.69,
+  "err": 1.43
+ },
+ "interior 30x/8y | credit, ref/geom out": {
   "n": 26442,
-  "eff": 95.22,
+  "k": 25202,
+  "eff": 95.31,
   "err": 0.13
  },
- "interior 30 x / 8 y (current): SINGLE-TRACK v2": {
-  "n": 25588,
-  "eff": 95.96,
+ "interior 30x/8y | single-track v2": {
+  "n": 25603,
+  "k": 24563,
+  "eff": 95.94,
   "err": 0.12
  },
- "30 mm from every side: production pick": {
+ "30 mm from every side | production pick": {
   "n": 24145,
+  "k": 22288,
   "eff": 92.31,
   "err": 0.17
  },
- "30 mm from every side: any candidate within 5 mm (credit)": {
+ "30 mm from every side | credit (all rays)": {
   "n": 24145,
-  "eff": 95.01,
+  "k": 22962,
+  "eff": 95.1,
   "err": 0.14
  },
- "30 mm from every side: credit, ref/geom out": {
+ "30 mm from every side | single-track (nothing excused)": {
+  "n": 23346,
+  "k": 22357,
+  "eff": 95.76,
+  "err": 0.13
+ },
+ "30 mm from every side | two-particle events": {
+  "n": 799,
+  "k": 605,
+  "eff": 75.72,
+  "err": 1.52
+ },
+ "30 mm from every side | credit, ref/geom out": {
   "n": 24101,
-  "eff": 95.06,
+  "k": 22932,
+  "eff": 95.15,
   "err": 0.14
  },
- "30 mm from every side: SINGLE-TRACK v2": {
-  "n": 23318,
-  "eff": 95.83,
+ "30 mm from every side | single-track v2": {
+  "n": 23331,
+  "k": 22353,
+  "eff": 95.81,
   "err": 0.13
  }
 }
