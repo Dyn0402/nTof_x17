@@ -11,9 +11,12 @@ one row (eff_vs_hv_discharge out), hv_metrics 2x2 + hv_metrics_extra (A3), sps_s
 bench upright, and the small tweaks.
 
 **Open / for Dylan:**
-1. Two-particle fixes: pairing (cost) already replayed on all tables; charge split gains merged class 41 -> 54 % (interior),
-   two-particle overall ~73.7 -> ~76.5 %; exact for both A runs from the existing re-reco. Decide: re-pass sat_det3 + p2_det3
-   on condor (bundles + select=cost, split_corrob=charge; make_pass_dag.py pass --only ... --analysis-root <side tree>) or quote.
+1. Two-particle re-pass RUNNING (submitted 11-03 14:31): condor DAG ~/x17rerun/pass_twotrack/pass.dag (10 nodes:
+   RECO -> ALIGN -> EFF/ANG/MAPS for sat_det3 and the p2_det3 row), code_6f380442, bundles = the pass-1 ones stamped
+   select=cost + split_corrob=charge (stamp_select.py --split-corrob), output in the side tree
+   /eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1_twotrack/ (Analysis_pass1 untouched). Next: check the
+   merged class reproduces merged_effcheck.json (80 -> 105 of 195 interior), then point single_track_area.py /
+   single_track_v2.py / xy_pairing / two_particle_eff.json and loss_budget at the side tree for these two rows.
 2. Section 3.3 "35.8 vs 37.2 um/ns" mixes two estimators (time-series agent): same estimator +1.8 % (ladder) / +0.5 % (column).
 3. sps_setup: yaw sign and drift-arrow direction assumed.
 4. Where det_a_timeseries goes (main text vs appendix); its draft paragraph is in rerun/paper1_timeseries/report.html (cites a guessed \\cref label).
