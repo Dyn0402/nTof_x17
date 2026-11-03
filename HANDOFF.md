@@ -13,9 +13,10 @@
   (fb_bow_maps/final_tables.py, results_final/, /eos/user/d/dneff/bow_final).
 - Local merged roots for re-runs: ~/work_data/claude-jobs/twotrack/{ttroot,mergedroot,timeseries_tt,...}.
 
-**Open:** two_particle (b): 17907 is messy on tt; 16344 is the clean merged-in-Y alternative (sheet in
-~/work_data/claude-jobs/75b1951f_a1/sheet/). 08b \requote{0.5-1.3x} (telescope-plane bound, not derivable from tables).
-Bow figures show the 1-D profile estimator, the text the 2-D one (agree on dish + sign; r_f C X 1.9 vs 0.87).
+**Bow (later the same evening, commit after e7171dc3):** figures now from the 2-D fit (bow_2d_fig.py), errors include the
+four-term scatter, reference-plane bound sourced (ref_bow_bound.py), Y-tilt explained (Y_TILT_2026-11-03.md), n_TOF
+sentence matches the plan. No \requote left in the paper. two_particle (b): Dylan keeps 17907.
+**Open:** none from this round; Dylan to review.
 Other chambers, A scans and SPS stay on pass 1 (fixes only affect multi-track events; a full bench re-pass would be condor).
 Not synced to Overleaf.
 
