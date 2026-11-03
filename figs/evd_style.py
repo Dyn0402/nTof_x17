@@ -4,10 +4,13 @@
 Used by papers/paper1/figs/make_principle.py, papers/paper1/figs/make_two_particle_displays.py and the A1 loss displays
 (rerun/paper1_figs/a1_displays.py), so the principle figure, the section 5 displays and the appendix read as one set:
 
-* amplitude: white -> det3 navy (the paper's det3 colour), cells below 4 % of the view's 99.5 % quantile left white;
-* M3 reference track: black, dashed (a reference is black, papers/paper_style.py);
-* the forward-model fit: ACCENT (vermillion), solid;
-* a second fitted track (two-particle displays): det6 amber, solid;
+Superseded for the paper's displays by evd.py (make_displays.py); kept for make_principle.py and the A1 contact sheets,
+with evd.py's colours since 2026-11-03 (Dylan: zero white, a saturated not dark maximum, the reference solid black):
+
+* amplitude: white -> saturated red (evd.STYLES['reds']), cells below 4 % of the view's 99.5 % quantile left white;
+* M3 reference track: black, solid (a reference is black, papers/paper_style.py);
+* the forward-model fit: blue, solid;
+* a second fitted track (two-particle displays): green, solid;
 * both lines carry a thin white halo so they read on the dark cells;
 * clipped samples (>= 3550 ADC): amber outline; samples on the bottom rail after a clip: sky outline.
 """
@@ -26,10 +29,10 @@ import paper_style as ps  # noqa: E402
 PITCH = 398.58 / 512           # readout strip pitch [mm]
 TS = 60.0                      # sample period [ns]
 S_SAT = 3550.0                 # clip level [ADC]
-CMAP = LinearSegmentedColormap.from_list('det3amp', ['#eef2fa', '#9ab3dc', '#3d6bb5', ps.DET_COLOR['det3'], '#041a45'])
-M3_KW = dict(color='black', lw=1.3, ls=(0, (4.5, 2.5)))
-FIT_KW = dict(color=ps.ACCENT, lw=1.4, ls='-')
-FIT2_KW = dict(color=ps.DET_COLOR['det6'], lw=1.4, ls='-')
+CMAP = LinearSegmentedColormap.from_list('w2red', ['#fde0d5', '#fcae91', '#fb6a4a', '#e8251f', '#d10f0f'])
+M3_KW = dict(color='black', lw=1.1, ls='-')
+FIT_KW = dict(color='#0a6fd6', lw=1.2, ls=(0, (4, 2)))
+FIT2_KW = dict(color='#11a36b', lw=1.2, ls=(0, (4, 2)))
 CLIP_C = ps.DET_COLOR['det6']
 BOT_C = ps.DET_COLOR['det2']
 HALO = [pe.Stroke(linewidth=2.8, foreground='white'), pe.Normal()]
