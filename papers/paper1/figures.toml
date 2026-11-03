@@ -24,7 +24,7 @@ section_state = "partial"
 note = "Photo or drawing from production (Stephan), plus the measured efficient area 399.4 x 359.9 mm."
 
 [fig.microtpc_principle]
-title = "Micro-TPC principle: (a) drift gap, mesh, resistive strips, pads -> X/Y strips; (b) a real det3 muon (event 7884, X view), data and forward model at the pass-1 fit"
+title = "TPC principle: (a) drift gap, mesh, resistive strips, pads -> X/Y strips; (b) a real det3 muon (event 7884, X view), data and forward model at the pass-1 fit"
 state = "current"
 source = "papers/paper1/figs/out/microtpc_principle.pdf"
 producer = ".venv/bin/python papers/paper1/figs/make_principle.py --event 7884 --bench <X17_BENCH_ROOT staging of sat_det3 (rr1)> --ana <Analysis_pass1 copy> --rays <paper1_eff budget rays_det3.parquet>"

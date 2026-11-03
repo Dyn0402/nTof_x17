@@ -290,29 +290,47 @@ def fig_balance(golden, ev, figdir, paper_out=None):
     sys.path.insert(0, os.path.join(REPO, 'papers'))
     import paper_style as ps
     order = ['mx17_3', 'mx17_2', 'mx17_4', 'mx17_6', 'mx17_7']
-    bins = np.linspace(-0.6, 0.6, 61)
+    # Dylan 2026-11-03: x axis in f = Q_X/(Q_X+Q_Y) (0.5 = balanced), inset with the per-chamber f (median, core sigma, SD)
+    bins = np.linspace(0.30, 0.70, 49)
     tab = dict(bin_lo=bins[:-1], bin_hi=bins[1:])
+    summ = []
     with matplotlib.rc_context():
         ps.use()
-        fig, ax = ps.fig_for(4.3, aspect=0.66)
+        fig, ax = ps.fig_for(6.1, aspect=0.42)  # 2026-11-03: full page width
         for r in sorted(golden, key=lambda r: order.index(r['det'])):
             z = ev[r['key']]
             u = ~(z['sat_x'] | z['sat_y'])
-            lr = np.log(z['qx'][u] / z['qy'][u])
-            lr = lr[np.isfinite(lr)]
-            e = r['est']
+            f = z['qx'][u] / (z['qx'][u] + z['qy'][u])
+            f = f[np.isfinite(f)]
             d = NAME[r['det']]
             st = ps.det(d)
-            h, _ = np.histogram(lr, bins=bins, density=True)
+            h, _ = np.histogram(f, bins=bins, density=True)
             tab[d] = h
+            med = float(np.median(f))
+            summ.append((d, med, float(1.4826 * np.median(np.abs(f - med))), float(np.std(f)),
+                         float(1.2533 * np.std(f) / np.sqrt(len(f))), st))
             ax.stairs(h, bins, color=st['color'], lw=st['lw'], zorder=st['zorder'],
                       label=d)   # median / core sigma / n per chamber: results/summary.json golden[], quoted in the caption
-        ax.axvline(0, color=ps.MUTED, lw=0.8, zorder=0)
+        ax.axvline(0.5, color=ps.MUTED, lw=0.8, zorder=0)
         ax.set_xlim(bins[0], bins[-1])
-        ax.set_xlabel(r'$\ln(Q_X/Q_Y)$')
+        ax.set_xlabel(r'$f = Q_X/(Q_X+Q_Y)$')
         ax.set_ylabel('probability density')
-        ax.set_ylim(0, h_max * 1.02 if (h_max := max(np.max(tab[NAME[r['det']]]) for r in golden)) else None)
+        ax.set_ylim(0, max(np.max(v) for k, v in tab.items() if k.startswith('det')) * 1.02)
         ax.legend(loc='upper right', handlelength=1.4)
+        # inset: f per chamber; marker = median with its error (thin, capped), thick bar = core sigma, thin long bar = SD
+        ins = ax.inset_axes([0.09, 0.50, 0.17, 0.45])
+        ins.axhline(0.5, color=ps.MUTED, lw=0.7, ls='--', zorder=0)
+        for i, (d, med, cs, sd, err, st) in enumerate(summ):
+            ins.errorbar(i, med, yerr=sd, color=st['color'], lw=0.7, capsize=1.5, capthick=0.7, zorder=2)
+            ins.errorbar(i, med, yerr=cs, color=st['color'], lw=2.2, zorder=3)
+            ins.errorbar(i, med, yerr=err, color='white', lw=0.5, capsize=0, zorder=4, marker='o', ms=2.6,
+                         mfc=st['color'], mec='white', mew=0.3)
+        ins.set_xticks(range(len(summ))); ins.set_xticklabels([x[0].replace('det', '') for x in summ])
+        ins.set_xlim(-0.6, len(summ) - 0.4); ins.set_ylim(0.3, 0.7)
+        ins.set_ylabel('$f$', labelpad=1); ins.set_xlabel('det', labelpad=1)
+        ins.tick_params(labelsize=ps.BASE_PT * 0.7, length=2, pad=1)
+        ins.xaxis.label.set_size(ps.BASE_PT * 0.75); ins.yaxis.label.set_size(ps.BASE_PT * 0.75)
+        ins.grid(False)
         ps.save(fig, os.path.join(figdir, 'charge_balance'), data=pd.DataFrame(tab))
 
 

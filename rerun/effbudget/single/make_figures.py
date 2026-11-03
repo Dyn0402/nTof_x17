@@ -46,7 +46,7 @@ def _steps(ax, edges, vals, **kw):
 def eff_vs_radius():
     """Both golden rows (line style); multi-track credit filled, production pick open; accidentals on the right axis."""
     d = json.load(open(os.path.join(RES, 'radius.json')))
-    fig, ax = ps.fig_for(W_MID, aspect=0.66)
+    fig, ax = ps.fig_for(6.1, aspect=0.45)  # 2026-11-03: full page width, lower
     ax2 = ax.twinx(); ax2.grid(False); ax2.spines['right'].set_visible(True)
     rows = []
     for key in ('p2_det3', 'sat_det3'):
@@ -59,9 +59,9 @@ def eff_vs_radius():
         rows += [dict(row=key, n=n, R_mm=x, eff=a, eff_err=ae, credit=b, credit_err=be, accidental=f)
                  for x, a, ae, b, be, f in zip(R, e, ee, c, ce, r['accidental'])]
     ax.axvline(5.0, color=ps.ACCENT, lw=0.8, ls=':', zorder=1)
-    ax.text(4.6, 63, '$R$ = 5 mm', color=ps.ACCENT, ha='right', fontsize=ps.BASE_PT * 0.85)
-    ax2.text(26, 3.4, 'accidental', color=ps.MUTED, ha='right', fontsize=ps.BASE_PT * 0.85)
-    ax.set_xscale('log'); ax.set_xlim(0.22, 45); ax.set_ylim(60, 100); _logticks(ax, [0.3, 1, 3, 10, 30])
+    ax.text(5.6, 63, '$R$ = 5 mm', color=ps.ACCENT, ha='left', fontsize=ps.BASE_PT * 0.85)
+    ax2.text(15, 1.15, 'accidental', color=ps.MUTED, ha='center', fontsize=ps.BASE_PT * 0.85)
+    ax.set_xlim(0, 30); ax.set_ylim(60, 100)  # Dylan 2026-11-03: linear R (was log)
     ax.set_xlabel('matching radius $R$ at the mesh [mm]'); ax.set_ylabel('efficiency [%]')
     ax2.set_ylabel('accidental match [%]', color=ps.MUTED); ax2.set_ylim(0, 5)
     ax2.tick_params(axis='y', colors=ps.MUTED)
@@ -69,7 +69,7 @@ def eff_vs_radius():
          Line2D([], [], color=D3, marker='o', ms=3.0, mfc='white', lw=0.9, label='production pick'),
          Line2D([], [], color=ps.INK, ls='-', lw=0.9, label=ROWLAB['p2_det3']),
          Line2D([], [], color=ps.INK, ls='--', lw=0.9, label=ROWLAB['sat_det3'])]
-    ax.legend(handles=h, loc='lower right', bbox_to_anchor=(0.99, 0.22), fontsize=ps.BASE_PT * 0.8)
+    ax.legend(handles=h, loc='center right', bbox_to_anchor=(0.99, 0.50), fontsize=ps.BASE_PT * 0.8)  # 2026-11-03: legend off the curves (top left is on the multi-track curve)
     ps.save(fig, os.path.join(OUT, 'eff_vs_radius'), data=pd.DataFrame(rows))
 
 

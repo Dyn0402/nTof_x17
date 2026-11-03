@@ -45,10 +45,15 @@ def main():
     pools = json.load(open(os.path.join(EB, 'results', 'map_pools.json')))
 
     fig = plt.figure(figsize=(ps.WIDTH['full'], 3.25), layout='constrained')
-    gs = GridSpec(2, 4, figure=fig, width_ratios=[2, 1, 1, 0.07])
-    axes = {'det3': fig.add_subplot(gs[:, 0]), 'det2': fig.add_subplot(gs[0, 1]), 'det4': fig.add_subplot(gs[0, 2]),
-            'det6': fig.add_subplot(gs[1, 1]), 'det7': fig.add_subplot(gs[1, 2])}
-    cax = fig.add_subplot(gs[:, 3])
+    # Dylan 2026-11-03: the four small panels share their x and y axes (labels on the outer edges only, panels touching)
+    gs = GridSpec(1, 3, figure=fig, width_ratios=[2, 2.04, 0.07])
+    gin = gs[0, 1].subgridspec(2, 2, wspace=0.03, hspace=0.03)
+    a2 = fig.add_subplot(gin[0, 0])
+    a4 = fig.add_subplot(gin[0, 1], sharey=a2)
+    a6 = fig.add_subplot(gin[1, 0], sharex=a2)
+    a7 = fig.add_subplot(gin[1, 1], sharex=a4, sharey=a6)
+    axes = {'det3': fig.add_subplot(gs[0, 0]), 'det2': a2, 'det4': a4, 'det6': a6, 'det7': a7}
+    cax = fig.add_subplot(gs[0, 2])
     cmap = plt.get_cmap('viridis').copy(); cmap.set_bad('white')
     summ, csv = {}, []
     for i, d in enumerate(DETS):

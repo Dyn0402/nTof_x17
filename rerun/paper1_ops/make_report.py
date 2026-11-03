@@ -314,7 +314,7 @@ def fig_hv_scan(T, figdir):
     loss against efficiency is the §5 figure eff_vs_hv_discharge. Drawn at 4.3 in (the printed width): the scan
     descriptions (run, drift) and the discharge definition are in the caption."""
     from matplotlib.lines import Line2D
-    fig, axes = ps.fig_for(4.3, height=4.3, nrows=2, sharex=True)
+    fig, axes = ps.fig_for(6.1, height=2.8, ncols=2)  # 2026-11-03: full page width, panels side by side (was 4.3 x 4.3 stacked)
     order = sorted(SCANS, key=lambda r: ORDER.index(r[0]))
     data = []
     for det, run, drift in order:
@@ -330,22 +330,23 @@ def fig_hv_scan(T, figdir):
             ['det', 'run', 'resist_V', 'drift_V', 'n_ig', 'eff_ig', 'err_ig', 'discharge_per_trig']])
     # golden long runs: det2/3/6/7 sit on their scan; det4 has no HV scan (its golden row only)
     for det in ORDER:
+        if det == 'mx17_4':  # Dylan 2026-11-03: det4 has no HV scan, so its single point is left out
+            continue
         g = T[(T.det == det) & T.cls.isin(['golden_calib', 'golden_quoted'])]
         if not len(g):
             continue
-        axes[0].plot(g.resist_V, g.eff_ig, '*', ms=9 if det != 'mx17_4' else 8, color=COL[det], mec=INK, mew=0.5,
+        axes[0].plot(g.resist_V, g.eff_ig, '*', ms=9, color=COL[det], mec=INK, mew=0.5,
                      zorder=6, ls='none')
         data.append(g.assign(golden=True)[['det', 'run', 'resist_V', 'drift_V', 'n_ig', 'eff_ig', 'err_ig', 'golden']])
     h = ps.det_handles([d.replace('mx17_', 'det') for d, _, _ in order], lw=0.7)
-    h += [Line2D([], [], ls='none', marker='*', ms=8, color=COL['mx17_4'], mec=INK, mew=0.5, label='det4 (golden row)'),
-          Line2D([], [], ls='none', marker='*', ms=8, color='white', mec=INK, mew=0.6, label='golden long runs')]
+    h += [Line2D([], [], ls='none', marker='*', ms=8, color='white', mec=INK, mew=0.6, label='long runs')]
     ps.legend_above(axes[0], handles=h, ncol=3)
     axes[0].set_ylabel('interior efficiency [%]')
-    axes[0].set_ylim(30, 100)
+    axes[0].set_ylim(30, 101)
+    axes[0].axhline(100, color=MUTED, lw=0.6, zorder=0)  # Dylan 2026-11-03: thin line at 100 %
     axes[1].set_ylabel('discharges per trigger')
-    axes[1].set_yscale('log')
-    axes[1].set_ylim(2e-4, 1)
-    axes[1].set_xlabel('resistive-strip HV [V]')
+    axes[1].set_ylim(bottom=0)  # Dylan 2026-11-03: linear, not log
+    axes[1].set_xlabel('resistive-strip HV [V]'); axes[0].set_xlabel('resistive-strip HV [V]')
     ps.panel_labels(axes)
     ps.save(fig, os.path.join(figdir, 'hv_scan'), data=pd.concat(data, ignore_index=True))
 

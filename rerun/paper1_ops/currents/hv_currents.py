@@ -148,7 +148,7 @@ def main():
         ps.use()
         # printed at 4.3 in (publication checklist 2026-11-02): data markers with a thin guide line, the det3 fit
         # (black dashed) and the gain slope reference (dotted) as lines; boards above, nights by marker
-        fig, ax = ps.fig_for(4.3, height=3.0)
+        fig, ax = ps.fig_for(6.1, height=2.7)  # 2026-11-03: full page width
         scan = U[U.subrun.str.contains('resist_') & ~U.subrun.str.startswith('drift_scan')]
         nights = sorted({r for (b, r), g in scan.groupby(['board', 'run']) if len(g) >= 4}, key=lambda r: (run_day(r), r))  # deterministic markers
         # one colour per board (the paper palette), one marker per night
@@ -172,7 +172,8 @@ def main():
             I500 = 2 * fit['A_uA_at_490'] * 2 ** (10 / fit['V2_doubling_V'])
             ax.plot(Vr, I500 * 2 ** ((Vr - 500) / 16.7), ':', color=ps.MUTED, lw=1.4, zorder=6)
         ax.set_xlabel('resistive-strip HV [V]'); ax.set_ylabel(r'median resistive-strip current [$\mu$A]')
-        ax.set_yscale('log')
+        # Dylan 2026-11-03: linear y (was log); the reference curves would leave the frame, so clip to the data
+        ax.set_ylim(0, 1.08 * float(scan.I_med.max()))
         hb = [Line2D([], [], **{k: v for k, v in ps.det(b).items() if k not in ('zorder', 'label', 'marker', 'lw')},
                       lw=1.6, label=b)
               for b in order if b in set(scan.board)]
