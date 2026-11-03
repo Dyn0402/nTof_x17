@@ -352,3 +352,39 @@ change = "Merged-projection fix landed (28ac36a0, bench switch split_corrob = ch
 date = "2026-11-02"
 fig = "two_particle"
 change = "Discharge-veto rescue studied (4858cf31, switch seed.SPARK_RESCUE, off): recovered tracks right 57-75 % on det2/det3, 11-26 % on det4/6/7 vs 95 % ordinary, so it ships off; the muon+separate-deposit bar (1 %) and the edge-zone veto loss stay. Text in §5 says why."
+
+[[entry]]
+date = "2026-11-03"
+fig = "*"
+status = "for review"
+change = "Dylan's 11-03 feedback, simple items: 'micro-TPC' purged from the text and manifest (TPC); hv_scan, currents_vs_hv, eff_vs_radius, charge_balance redrawn at full page width and lower (4.3 -> 6.1 in drawn, includegraphics at linewidth)."
+
+[[entry]]
+date = "2026-11-03"
+fig = "hv_scan"
+status = "for review"
+change = "Panels side by side (6.1 x 2.8 in); discharges per trigger on a linear axis; thin line at 100 %; det4's single point left out (no scan); caption says lines = HV scans, stars = single long runs."
+
+[[entry]]
+date = "2026-11-03"
+fig = "currents_vs_hv"
+status = "for review"
+change = "Linear y axis (clipped at the data maximum), full page width (6.1 x 2.7 in). Still busy: appendix / det3-only is open."
+
+[[entry]]
+date = "2026-11-03"
+fig = "eff_vs_radius"
+status = "for review"
+change = "Linear matching-radius axis (0-30 mm); legend moved off the curves (centre right); full width (6.1 x 2.8 in)."
+
+[[entry]]
+date = "2026-11-03"
+fig = "charge_balance"
+status = "for review"
+change = "x axis is f = Q_X/(Q_X+Q_Y); inset top left: median f per chamber with core sigma, SD and the error on the median, dashed line at 0.5; full width (6.1 x 2.6 in)."
+
+[[entry]]
+date = "2026-11-03"
+fig = "efficiency_map"
+status = "for review"
+change = "The four small panels share x and y axes and touch (labels on the outer edges only)."
