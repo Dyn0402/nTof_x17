@@ -2,7 +2,15 @@
 
 ## Paper I figure feedback: round 4 (laptop) — updated 2026-11-03 (dylan-Yoga)
 
-**Resume:** Dylan reviews round 4 in the deck + note replies; two-track DAG (below) still to validate when it exits.
+**Resume:** Dylan reviews round 4 in the deck + note replies.
+
+**Two-track re-pass: DONE (commit b377eeaa).** DAG exited 0 (16:57); validated (rerun/effbudget/single/results/
+twotrack_validate.json: merged credit 80 -> 105 of 195, no event lost; single-track v2 95.96 -> 95.92 %, class
+migration). §5 requoted (two-particle 77.0 %, merged 47 %, 41.0 -> 53.8 % on the fixed set); two_particle displays read
+the side tree (`--ana ~/work_data/claude-jobs/twotrack/Analysis_pass1_twotrack`). Still pass 1, to redo: A1 class table
+(`\requote`s in A1_loss_categories.tex; budget.py/a1_job.py on condor), A4 radius curve (95.0 -> ~95.1 at 5 mm),
+edge section's 95.5 (fiducial_variants.json). two_particle (b) 17907 is now split in Y with the muon's Y fit paired to
+the other particle: it looks messy; Dylan may prefer another (b).
 
 **Done (commit 8f1957c3, deck redeployed):** all 31 note items Dylan added 15:27-16:37 answered with 💬 replies
 (written into the note file directly: the hub's /item/respond only finds top-level items, not nested "  - [ ]" ones).
