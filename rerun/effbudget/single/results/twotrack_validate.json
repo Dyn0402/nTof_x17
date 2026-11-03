@@ -1,0 +1,178 @@
+{
+ "sat_det3": {
+  "interior_rays": 6454,
+  "events_rows": {
+   "p1": 7143,
+   "tt": 7143
+  },
+  "events_unique": {
+   "p1": 7143,
+   "tt": 7143
+  },
+  "ref_merged_effcheck": {
+   "faint, one view only": [
+    2,
+    2,
+    2
+   ],
+   "merged in projection": [
+    22,
+    25,
+    49
+   ],
+   "other": [
+    535,
+    535,
+    553
+   ],
+   "unclear": [
+    5,
+    5,
+    8
+   ]
+  },
+  "faint, one view only": {
+   "n": 2,
+   "credit_p1": 2,
+   "credit_tt": 2,
+   "gained": 0,
+   "lost": 0,
+   "rank0_p1": 2,
+   "rank0_tt": 2,
+   "r0_gained": 0,
+   "r0_lost": 0
+  },
+  "merged in projection": {
+   "n": 49,
+   "credit_p1": 22,
+   "credit_tt": 25,
+   "gained": 3,
+   "lost": 0,
+   "rank0_p1": 12,
+   "rank0_tt": 12,
+   "r0_gained": 1,
+   "r0_lost": 1
+  },
+  "other": {
+   "n": 6395,
+   "credit_p1": 6125,
+   "credit_tt": 6125,
+   "gained": 0,
+   "lost": 0,
+   "rank0_p1": 6047,
+   "rank0_tt": 6047,
+   "r0_gained": 0,
+   "r0_lost": 0
+  },
+  "unclear": {
+   "n": 8,
+   "credit_p1": 5,
+   "credit_tt": 5,
+   "gained": 0,
+   "lost": 0,
+   "rank0_p1": 1,
+   "rank0_tt": 1,
+   "r0_gained": 0,
+   "r0_lost": 0
+  },
+  "ALL": {
+   "n": 6454,
+   "credit_p1": 6154,
+   "credit_tt": 6157,
+   "gained": 3,
+   "lost": 0,
+   "rank0_p1": 6062,
+   "rank0_tt": 6062,
+   "r0_gained": 1,
+   "r0_lost": 1
+  }
+ },
+ "p2_det3": {
+  "interior_rays": 20091,
+  "events_rows": {
+   "p1": 22300,
+   "tt": 22300
+  },
+  "events_unique": {
+   "p1": 22300,
+   "tt": 22300
+  },
+  "ref_merged_effcheck": {
+   "faint, one view only": [
+    12,
+    12,
+    12
+   ],
+   "merged in projection": [
+    58,
+    80,
+    146
+   ],
+   "other": [
+    565,
+    565,
+    583
+   ],
+   "unclear": [
+    8,
+    8,
+    16
+   ]
+  },
+  "faint, one view only": {
+   "n": 12,
+   "credit_p1": 12,
+   "credit_tt": 12,
+   "gained": 0,
+   "lost": 0,
+   "rank0_p1": 11,
+   "rank0_tt": 11,
+   "r0_gained": 0,
+   "r0_lost": 0
+  },
+  "merged in projection": {
+   "n": 146,
+   "credit_p1": 58,
+   "credit_tt": 80,
+   "gained": 22,
+   "lost": 0,
+   "rank0_p1": 33,
+   "rank0_tt": 39,
+   "r0_gained": 7,
+   "r0_lost": 1
+  },
+  "other": {
+   "n": 19917,
+   "credit_p1": 19015,
+   "credit_tt": 19015,
+   "gained": 0,
+   "lost": 0,
+   "rank0_p1": 18748,
+   "rank0_tt": 18748,
+   "r0_gained": 0,
+   "r0_lost": 0
+  },
+  "unclear": {
+   "n": 16,
+   "credit_p1": 8,
+   "credit_tt": 8,
+   "gained": 0,
+   "lost": 0,
+   "rank0_p1": 5,
+   "rank0_tt": 5,
+   "r0_gained": 0,
+   "r0_lost": 0
+  },
+  "ALL": {
+   "n": 20091,
+   "credit_p1": 19093,
+   "credit_tt": 19115,
+   "gained": 22,
+   "lost": 0,
+   "rank0_p1": 18797,
+   "rank0_tt": 18803,
+   "r0_gained": 7,
+   "r0_lost": 1
+  }
+ }
+}

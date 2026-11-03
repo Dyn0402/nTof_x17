@@ -119,7 +119,7 @@ note = "2026-11-02; Dylan: show the full distribution behind the R = 5 mm choice
 title = "Where the chamber A single-track inefficiency goes, full active area (% of single tracks, by class)"
 state = "current"
 source = "rerun/effbudget/single/figures/loss_budget.pdf"
-producer = ".venv/bin/python rerun/effbudget/single/single_track_area.py --root <cosmic_bench mirror> && .venv/bin/python rerun/effbudget/single/make_figures.py"
+producer = ".venv/bin/python rerun/effbudget/single/single_track_area.py --root <cosmic_bench mirror> --analysis Analysis_pass1_twotrack && .venv/bin/python rerun/effbudget/single/make_figures.py"
 note = "2026-11-02, paper_style; both golden rows; edge-zone classes are the budget ladder (no A1 waveform class outside the interior). Checklist pass 2026-11-02: full width (6.1 in drawn, 6.22 in PDF), fonts embedded; det3 dot plot with Poisson errors, groups as y-axis headings (no borrowed chamber colours), CSV gains pct_err. Numbers unchanged."
 
 [fig.loss_gallery]
@@ -133,8 +133,8 @@ note = "2026-11-03: Dylan: a curated subset of the loss displays in the main tex
 title = "Chamber A two-particle events: one real event per configuration next to the fraction in which the muon is found"
 state = "current"
 source = "papers/paper1/figs/out/two_particle.pdf"
-producer = ".venv/bin/python papers/paper1/figs/make_displays.py figures --only two_particle [--root <paper1_eff copy> --ana <Analysis_pass1 copy> --eos-run-dir <june_tests/mx17_det3_saturday_scan_6-27-26 copy>]  # defaults: the WORK_DATA copies  # efficiencies from rerun/effbudget/single/figures/two_particle.csv"
-note = "2026-11-03: Dylan: efficiencies alongside event displays. Numbers from two_particle.csv (pass 1, BEFORE the merged-projection and discharge-veto fixes). Muon+deposit event now 5423 (muon + curling electron)."
+producer = ".venv/bin/python papers/paper1/figs/make_displays.py figures --only two_particle --ana <Analysis_pass1_twotrack copy, e.g. $WORK_DATA/claude-jobs/twotrack/Analysis_pass1_twotrack> [--root <paper1_eff copy> --eos-run-dir <june_tests/mx17_det3_saturday_scan_6-27-26 copy>]  # efficiencies from papers/paper1/figs/data/two_particle_eff.json (single_track_area.py --analysis Analysis_pass1_twotrack)"
+note = "2026-11-03: Dylan: efficiencies alongside event displays. Round 4: events 1063 / 17907 / 33974; numbers and displays from the chamber A two-track re-pass (Analysis_pass1_twotrack, select=cost + split_corrob=charge; validated: rerun/effbudget/single/results/twotrack_validate.json)."
 
 [fig.eff_vs_hv_discharge]
 title = "Efficiency and discharge loss against the resist HV (chambers A, C, D)"

@@ -855,3 +855,15 @@ date = "2026-11-03"
 fig = "det4_stripes"
 status = "for review"
 change = "Panel (b) dropped; one full-width X-view efficiency map (run 63) with region R (X 150-160 x Y 222-246 mm, where every SPS resolution number is measured) boxed, and patches R2-R6 dashed (rerun/paper1_figs/sps_patches.py -> results/sps_patches.json: sigma_X 113-186, sigma_Y 120-172 um; R mid-range in X, good end in Y). Paper numbers unchanged."
+
+[[entry]]
+date = "2026-11-03"
+fig = "two_particle"
+status = "for review"
+change = "Efficiencies and displays now from the chamber A two-track re-pass (Analysis_pass1_twotrack; select=cost, split_corrob=charge; validated against merged_effcheck: interior merged credit 80 -> 105 of 195, no event lost): one particle 94.79 %, separate 95.6 % (662), merged in one projection 47.2 % (176; on the fixed pass-1 set 41.0 -> 53.8 %), muon+deposit 1.1 % (93). Event 17907 is now split in Y (the muon's Y fit is paired with the other particle; caption says so). 'Pre-fix' dropped."
+
+[[entry]]
+date = "2026-11-03"
+fig = "loss_budget"
+status = "for review"
+change = "Regenerated on the two-track re-pass: 'fit off, nothing flagged' 0.32 -> 0.34 %; everything else unchanged at printed precision. A1 class table still pass 1 (needs budget.py/a1_job.py on condor)."

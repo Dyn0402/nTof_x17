@@ -27,6 +27,7 @@ Writes <out>/single_track.json and per-event <out>/single_track_events.parquet.
 import argparse, glob, itertools, json, os
 import numpy as np
 import pandas as pd
+import side_tree
 
 ROWS = {'sat_det3': ('mx17_det3_saturday_scan_6-27-26', 'long_run_resist_490V_drift_1000V', 'mx17_3'),
         'p2_det3': ('mx17_det3_p2_det1_overnight_6-27-26', 'long_run_p2_det1_sanity_check', 'mx17_3')}
@@ -111,10 +112,10 @@ def seg_dist(a, b):
     return 0.0 if d0 * d1 <= 0 else min(abs(d0), abs(d1))
 
 
-def second_particle(root, rel, B, events):
+def second_particle(root, rel, B, events, analysis=side_tree.PASS1):
     """For det3-tagged multi events: is the extra candidate a real second particle (both views, charge-paired)
     and is it attached to the M3 track inside the gas (a delta ray from the muon)?"""
-    C = pd.read_parquet(os.path.join(root, 'Analysis_pass1', rel, 'wft/events.candidates.parquet'))
+    C = pd.read_parquet(side_tree.cand_path(root, analysis, rel))
     C = C[(C['rank'] >= 0) & C.event_id.isin(B.index)].copy()
     C['mesh'] = np.where(C.plane == 'x', B.mesh_x.reindex(C.event_id).to_numpy(), B.mesh_y.reindex(C.event_id).to_numpy())
     C['d'] = (C.p0 - C.mesh).abs()
@@ -152,6 +153,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--root', default=os.environ.get('COSMIC_ROOT', '/eos/experiment/ntof/data/x17/cosmic_bench'))
     ap.add_argument('--out', default=os.path.join(os.path.dirname(os.path.abspath(__file__)), 'results'))
+    ap.add_argument('--analysis', default=side_tree.PASS1, help='tree holding the candidate tables (see side_tree.py)')
     a = ap.parse_args(); os.makedirs(a.out, exist_ok=True)
     res = {}
     for key, (run, sub, ch) in ROWS.items():
@@ -161,11 +163,17 @@ def main():
         R = R[R.good_x]
         B = pd.read_parquet(os.path.join(a.root, 'x17rerun/paper1_eff/budget', rel, 'rays_det3.parquet'))
         B = B.drop_duplicates('event_id').set_index('event_id').reindex(R.index)
-        al = json.load(open(os.path.join(a.root, 'Analysis_pass1', rel, 'wft/alignment/alignment.json')))
+        al = json.load(open(os.path.join(a.root, side_tree.PASS1, rel, 'wft/alignment/alignment.json')))
         M = m3_tags(a.root, run, sub, {'x': al['z_x'], 'y': al['z_y']}).reindex(R.index)
         D = R.join(M)
         D['credit'] = D.recat.isin(CREDIT)
         D['strict'] = D.recat.eq('detected')
+        if a.analysis != side_tree.PASS1:          # two-track re-pass: credit / detection from its candidates (side_tree.py)
+            Bn = side_tree.overlay(a.root, a.analysis, rel, B)
+            ch = (Bn.det_any_5.astype(bool) != B.det_any_5.astype(bool)).reindex(D.index).fillna(False).to_numpy()
+            D['credit'] = np.where(ch, Bn.det_any_5.astype(bool).reindex(D.index), D.credit)
+            D['strict'] = np.where(Bn.cat_xy_5.reindex(D.index).ne(B.cat_xy_5.reindex(D.index)).to_numpy(),
+                                   Bn.cat_xy_5.reindex(D.index).eq('detected'), D.strict)
         D['det3_multi'] = D.recat.isin(DET3_MULTI)
         D['m3_2nd_x'] = D.m3_nalt_x.fillna(0) > 0
         D['m3_2nd_y'] = D.m3_nalt_y.fillna(0) > 0
@@ -174,7 +182,7 @@ def main():
         D['m3_clean'] = ~D.m3_2nd_any
         drop = D.recat.isin(['far:POS_TAIL', 'far:EDGE'])  # reference / geometry, out of the denominator
         D['m3_tags'] = D.m3_extra.notna()
-        P, pref = second_particle(a.root, rel, B, list(D.index[D.det3_multi]))
+        P, pref = second_particle(a.root, rel, B, list(D.index[D.det3_multi]), a.analysis)
         for c in ('second_3d', 'second_paired', 'attached', 'one_view_only'):
             D[c] = P[c].reindex(D.index).astype('boolean').fillna(False).astype(bool) if len(P) else False
         # a real, independent second particle: both views, charge-paired, not a delta attached to the muon in the gas

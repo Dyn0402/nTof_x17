@@ -19,6 +19,7 @@ Writes results/single_track_v2.json, results/oneview_events.parquet.
 import argparse, glob, json, os
 import numpy as np
 import pandas as pd
+import side_tree
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 RES = os.path.join(HERE, 'results')
@@ -28,9 +29,9 @@ CREDIT = ('detected', 'multi:m3_picked', 'multi:other_picked')
 LQ_MED, LQ_SIG, NSTRIP_SINGLE = -0.056, 0.062, 12
 
 
-def oneview(root, key, rel, D):
+def oneview(root, key, rel, D, analysis=side_tree.PASS1):
     B = pd.read_parquet(os.path.join(root, 'x17rerun/paper1_eff/budget', rel, 'rays_det3.parquet')).drop_duplicates('event_id').set_index('event_id')
-    C = pd.read_parquet(os.path.join(root, 'Analysis_pass1', rel, 'wft/events.candidates.parquet'))
+    C = pd.read_parquet(side_tree.cand_path(root, analysis, rel))
     C = C[C['rank'] >= 0]
     out = []
     for e in D.index[D.one_view_only & D.det3_multi]:
@@ -70,11 +71,13 @@ def m3_doublets(root):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--root', default=os.environ.get('COSMIC_ROOT', '/eos/experiment/ntof/data/x17/cosmic_bench'))
-    a = ap.parse_args()
+    ap.add_argument('--analysis', default=side_tree.PASS1, help='tree holding the candidate tables (see side_tree.py)')
+    ap.add_argument('--res', default=RES, help='directory of single_track_events_*.parquet (read) and the outputs (written)')
+    a = ap.parse_args(); RESD = a.res; os.makedirs(RESD, exist_ok=True)
     res, acc, Os = {'oneview': {}, 'single_track_v2': {}}, {}, []
     for key, rel in ROWS.items():
-        D = pd.read_parquet(os.path.join(RES, f'single_track_events_{key}.parquet'))
-        O = oneview(a.root, key, rel, D); Os.append(O)
+        D = pd.read_parquet(os.path.join(RESD, f'single_track_events_{key}.parquet'))
+        O = oneview(a.root, key, rel, D, a.analysis); Os.append(O)
         res['oneview'][key] = {c: dict(n=int(len(g)), credited=float(g.recat.isin(CREDIT[1:]).mean()),
                                        q_sec_over_q_mu=float((g.q_sec / g.q_mu).median()),
                                        other_nstrips=float(g.other_nstrips.median()), sec_sep_mm=float(g.sec_sep.median()))
@@ -100,8 +103,8 @@ def main():
                                                              'spark:muon+other', 'spark:discharge', 'far:DELTA', 'far:FIT_SAT')}
     res['single_track_v2']['pooled'] = {nm: dict(n=n, eff=100 * k / n, err=100 * np.sqrt(k / n * (1 - k / n) / n))
                                         for nm, (n, k) in acc.items()}
-    pd.concat(Os).to_parquet(os.path.join(RES, 'oneview_events.parquet'))
-    json.dump(res, open(os.path.join(RES, 'single_track_v2.json'), 'w'), indent=1)
+    pd.concat(Os).to_parquet(os.path.join(RESD, 'oneview_events.parquet'))
+    json.dump(res, open(os.path.join(RESD, 'single_track_v2.json'), 'w'), indent=1)
     print(json.dumps({k: v for k, v in res.items() if k != 'oneview'}, indent=1)[:3500])
     print(json.dumps(res['oneview'], indent=1))
 

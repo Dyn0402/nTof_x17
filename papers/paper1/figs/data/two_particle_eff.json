@@ -1,9 +1,29 @@
 {
-  "note": "Muon recovery per two-particle configuration, chamber A, Runs 1+2, full active area (pass 1, BEFORE the merged-projection and discharge-veto fixes). Copied 2026-11-03 from rerun/effbudget/single/figures/two_particle.csv (rerun/effbudget/single/single_track_area.py). Edit here after the re-pass; make_displays.py two_particle reads only this file.",
-  "classes": {
-    "one particle":                          {"n": 28453, "k": 26976, "eff": 94.81, "err": 0.13},
-    "two, separate in both views":           {"n": 620,   "k": 592,   "eff": 95.48, "err": 0.83},
-    "two, merged in one projection":         {"n": 232,   "k": 103,   "eff": 44.40, "err": 3.26},
-    "muon + deposit (> 50 strips, veto)":    {"n": 93,    "k": 1,     "eff": 1.08,  "err": 1.07}
+ "note": "Muon recovery per two-particle configuration, chamber A, Runs 1+2, full active area, from the chamber A two-track re-pass (EOS Analysis_pass1_twotrack: pass-1 bundles + select=cost + split_corrob=charge; 2026-11-03). Pass-1 values were 94.81 / 95.48 / 44.40 / 1.08 % (n 28453 / 620 / 232 / 93). Produced by rerun/effbudget/single/single_track_area.py --analysis Analysis_pass1_twotrack (rays and A1 classes from pass 1, candidate tables and credit from the re-pass; side_tree.py). make_displays.py two_particle reads only this file.",
+ "classes": {
+  "one particle": {
+   "n": 28467,
+   "k": 26983,
+   "eff": 94.79,
+   "err": 0.13
+  },
+  "two, separate in both views": {
+   "n": 662,
+   "k": 633,
+   "eff": 95.62,
+   "err": 0.8
+  },
+  "two, merged in one projection": {
+   "n": 176,
+   "k": 83,
+   "eff": 47.16,
+   "err": 3.76
+  },
+  "muon + deposit (> 50 strips, veto)": {
+   "n": 93,
+   "k": 1,
+   "eff": 1.08,
+   "err": 1.07
   }
+ }
 }

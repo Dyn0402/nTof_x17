@@ -9,9 +9,9 @@
    "all": {
     "credit": {
      "n": 6454,
-     "k": 6137,
-     "eff": 95.08831732259064,
-     "err": 0.26900741497521485
+     "k": 6140,
+     "eff": 95.13480012395414,
+     "err": 0.2677969139762817
     },
     "strict": {
      "n": 6454,
@@ -42,9 +42,9 @@
    "all, ref/geom dropped": {
     "credit": {
      "n": 6431,
-     "k": 6137,
-     "eff": 95.42839371792878,
-     "err": 0.26045575768610085
+     "k": 6140,
+     "eff": 95.47504276162338,
+     "err": 0.25918682142667543
     },
     "strict": {
      "n": 6431,
@@ -98,9 +98,9 @@
    "det3-tagged multi": {
     "credit": {
      "n": 276,
-     "k": 158,
-     "eff": 57.2463768115942,
-     "err": 2.9778712992699843
+     "k": 161,
+     "eff": 58.333333333333336,
+     "err": 2.9675512983829986
     },
     "strict": {
      "n": 276,
@@ -120,9 +120,9 @@
    "M3 clean (external single)": {
     "credit": {
      "n": 6429,
-     "k": 6136,
-     "eff": 95.44252605381864,
-     "err": 0.26011257414530764
+     "k": 6139,
+     "eff": 95.48918960958159,
+     "err": 0.25884076636752495
     },
     "strict": {
      "n": 6429,
@@ -151,9 +151,9 @@
    "M3 clean, m3_extra == 0 (strictest)": {
     "credit": {
      "n": 2604,
-     "k": 2492,
-     "eff": 95.6989247311828,
-     "err": 0.39757728210167165
+     "k": 2494,
+     "eff": 95.7757296466974,
+     "err": 0.3941695733789623
     },
     "strict": {
      "n": 2604,
@@ -212,16 +212,16 @@
    },
    "SKEPTICAL single: all but an independent 2nd particle": {
     "credit": {
-     "n": 6304,
-     "k": 6017,
-     "eff": 95.44733502538071,
-     "err": 0.2625467504570789
+     "n": 6299,
+     "k": 6015,
+     "eff": 95.49134783298936,
+     "err": 0.2614385182016757
     },
     "strict": {
-     "n": 6304,
+     "n": 6299,
      "k": 5979,
-     "eff": 94.84454314720813,
-     "err": 0.2785041368423301
+     "eff": 94.91982854421337,
+     "err": 0.2766826033337361
     },
     "classes": {
      "detected": 5979,
@@ -229,10 +229,10 @@
      "far:FIT_SAT": 54,
      "spark:shower": 43,
      "spark:discharge": 32,
-     "multi:m3_not_found": 30,
+     "multi:m3_not_found": 29,
      "spark:muon+other": 26,
-     "multi:other_picked": 20,
-     "multi:m3_picked": 18,
+     "multi:other_picked": 18,
+     "multi:m3_picked": 16,
      "far:FIT": 15,
      "band": 14,
      "far:MULTI": 12,
@@ -243,21 +243,21 @@
    },
    "independent 2nd particle (both views, paired, detached)": {
     "credit": {
-     "n": 127,
-     "k": 120,
-     "eff": 94.48818897637796,
-     "err": 2.025042123800394
+     "n": 132,
+     "k": 125,
+     "eff": 94.6969696969697,
+     "err": 1.9504873126683218
     },
     "strict": {
-     "n": 127,
+     "n": 132,
      "k": 0,
      "eff": 0.0,
      "err": 0.0
     },
     "classes": {
-     "multi:other_picked": 72,
-     "multi:m3_picked": 48,
-     "multi:m3_not_found": 7
+     "multi:other_picked": 74,
+     "multi:m3_picked": 50,
+     "multi:m3_not_found": 8
     }
    },
    "det3 multi, 2nd particle attached to the muon (delta)": {
@@ -277,21 +277,21 @@
    },
    "det3 multi, 2nd candidate in one view only": {
     "credit": {
-     "n": 59,
-     "k": 28,
-     "eff": 47.45762711864407,
-     "err": 6.5010251344576355
+     "n": 50,
+     "k": 23,
+     "eff": 46.0,
+     "err": 7.0484040746824395
     },
     "strict": {
-     "n": 59,
+     "n": 50,
      "k": 0,
      "eff": 0.0,
      "err": 0.0
     },
     "classes": {
-     "multi:m3_not_found": 28,
-     "multi:m3_picked": 14,
-     "multi:other_picked": 14,
+     "multi:m3_not_found": 24,
+     "multi:other_picked": 12,
+     "multi:m3_picked": 11,
      "far:MULTI": 3
     }
    },
@@ -325,15 +325,15 @@
   "n_interior_good": 20088,
   "pairing_ref": {
    "lq_med": -0.054759203166511165,
-   "lq_rsig": 0.06286888077327504
+   "lq_rsig": 0.06286888077327368
   },
   "selections": {
    "all": {
     "credit": {
      "n": 20088,
-     "k": 19040,
-     "eff": 94.78295499800876,
-     "err": 0.15689498564842974
+     "k": 19063,
+     "eff": 94.89745121465552,
+     "err": 0.15525747080101324
     },
     "strict": {
      "n": 20088,
@@ -365,9 +365,9 @@
    "all, ref/geom dropped": {
     "credit": {
      "n": 20011,
-     "k": 19040,
-     "eff": 95.1476687821698,
-     "err": 0.1518937481790142
+     "k": 19063,
+     "eff": 95.26260556693819,
+     "err": 0.1501746417739069
     },
     "strict": {
      "n": 20011,
@@ -397,9 +397,9 @@
    "det3-tagged single (biased)": {
     "credit": {
      "n": 19095,
-     "k": 18516,
-     "eff": 96.96779261586803,
-     "err": 0.12408902547000455
+     "k": 18517,
+     "eff": 96.97302958889762,
+     "err": 0.12398516902762413
     },
     "strict": {
      "n": 19095,
@@ -423,9 +423,9 @@
    "det3-tagged multi": {
     "credit": {
      "n": 916,
-     "k": 524,
-     "eff": 57.20524017467249,
-     "err": 1.6348031524281987
+     "k": 546,
+     "eff": 59.60698689956332,
+     "err": 1.6212648718268312
     },
     "strict": {
      "n": 916,
@@ -504,16 +504,16 @@
    },
    "SKEPTICAL single: all but an independent 2nd particle": {
     "credit": {
-     "n": 19571,
-     "k": 18617,
-     "eff": 95.12544070308108,
-     "err": 0.1539251237135116
+     "n": 19538,
+     "k": 18608,
+     "eff": 95.24004504043403,
+     "err": 0.1523249923790604
     },
     "strict": {
-     "n": 19571,
+     "n": 19538,
      "k": 18516,
-     "eff": 94.60937100812427,
-     "err": 0.16142852942363023
+     "eff": 94.76916777561675,
+     "err": 0.15928646568111182
     },
     "classes": {
      "detected": 18516,
@@ -521,13 +521,13 @@
      "far:DELTA": 173,
      "spark:shower": 173,
      "spark:discharge": 101,
-     "multi:m3_not_found": 92,
+     "multi:m3_not_found": 72,
      "spark:muon+other": 67,
-     "multi:m3_picked": 59,
      "far:FIT": 58,
+     "multi:m3_picked": 52,
      "band": 44,
      "far:MULTI": 43,
-     "multi:other_picked": 42,
+     "multi:other_picked": 36,
      "fit_failed": 4,
      "cut:other": 2,
      "other:charge_elsewhere": 2,
@@ -536,55 +536,57 @@
    },
    "independent 2nd particle (both views, paired, detached)": {
     "credit": {
-     "n": 440,
-     "k": 423,
-     "eff": 96.13636363636363,
-     "err": 0.9187886669825158
+     "n": 473,
+     "k": 455,
+     "eff": 96.19450317124736,
+     "err": 0.879731696511483
     },
     "strict": {
-     "n": 440,
+     "n": 473,
      "k": 0,
      "eff": 0.0,
      "err": 0.0
     },
     "classes": {
-     "multi:other_picked": 249,
-     "multi:m3_picked": 174,
-     "multi:m3_not_found": 17
+     "multi:other_picked": 255,
+     "multi:m3_picked": 181,
+     "multi:m3_not_found": 37
     }
    },
    "det3 multi, 2nd particle attached to the muon (delta)": {
     "credit": {
-     "n": 0,
-     "k": 0,
-     "eff": NaN,
-     "err": NaN
+     "n": 1,
+     "k": 1,
+     "eff": 100.0,
+     "err": 0.0
     },
     "strict": {
-     "n": 0,
-     "k": 0,
-     "eff": NaN,
-     "err": NaN
-    },
-    "classes": {}
-   },
-   "det3 multi, 2nd candidate in one view only": {
-    "credit": {
-     "n": 174,
-     "k": 77,
-     "eff": 44.252873563218394,
-     "err": 3.765367391914091
-    },
-    "strict": {
-     "n": 174,
+     "n": 1,
      "k": 0,
      "eff": 0.0,
      "err": 0.0
     },
     "classes": {
-     "multi:m3_not_found": 88,
-     "multi:m3_picked": 48,
-     "multi:other_picked": 29,
+     "multi:m3_picked": 1
+    }
+   },
+   "det3 multi, 2nd candidate in one view only": {
+    "credit": {
+     "n": 130,
+     "k": 62,
+     "eff": 47.69230769230769,
+     "err": 4.380616883335231
+    },
+    "strict": {
+     "n": 130,
+     "k": 0,
+     "eff": 0.0,
+     "err": 0.0
+    },
+    "classes": {
+     "multi:m3_not_found": 59,
+     "multi:m3_picked": 39,
+     "multi:other_picked": 23,
      "far:MULTI": 8,
      "spark:muon+other": 1
     }

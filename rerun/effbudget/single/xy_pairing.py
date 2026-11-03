@@ -21,6 +21,7 @@ Writes <out>/xy_pairing.json, <out>/xy_pairing_events.parquet.
 import argparse, json, os
 import numpy as np
 import pandas as pd
+import side_tree
 
 ROWS = {'sat_det3': 'mx17_det3_saturday_scan_6-27-26/long_run_resist_490V_drift_1000V/mx17_3',
         'p2_det3': 'mx17_det3_p2_det1_overnight_6-27-26/long_run_p2_det1_sanity_check/mx17_3'}
@@ -31,8 +32,8 @@ def rsig(x):
     q = np.nanpercentile(x, [16, 84]); return 0.5 * (q[1] - q[0])
 
 
-def load(root, rel):
-    C = pd.read_parquet(os.path.join(root, 'Analysis_pass1', rel, 'wft/events.candidates.parquet'))
+def load(root, rel, analysis=side_tree.PASS1):
+    C = pd.read_parquet(side_tree.cand_path(root, analysis, rel))
     C = C[C['rank'] >= 0]
     B = pd.read_parquet(os.path.join(root, 'x17rerun/paper1_eff/budget', rel, 'rays_det3.parquet'))
     B = B.drop_duplicates('event_id').set_index('event_id')
@@ -47,10 +48,11 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--root', default=os.environ.get('COSMIC_ROOT', '/eos/experiment/ntof/data/x17/cosmic_bench'))
     ap.add_argument('--out', default=os.path.join(os.path.dirname(os.path.abspath(__file__)), 'results'))
+    ap.add_argument('--analysis', default=side_tree.PASS1, help='tree holding the candidate tables (see side_tree.py)')
     a = ap.parse_args(); os.makedirs(a.out, exist_ok=True)
     res, evs = {}, []
     for key, rel in ROWS.items():
-        C, B = load(a.root, rel)
+        C, B = load(a.root, rel, a.analysis)
         n = C.groupby(['event_id', 'plane']).size().unstack(fill_value=0)
         # single-track reference: exactly one candidate per view, both near M3
         one = n.index[(n.x == 1) & (n.y == 1)]
