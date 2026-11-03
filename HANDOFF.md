@@ -1,5 +1,28 @@
 # Handoff
 
+## Paper I figure feedback: round 3 — updated 2026-11-03 (dylan-MS-7C84)
+
+**Resume:** Dylan reviews round 3 in the deck (https://dylan-neff.web.cern.ch/notes/mx17-paper1-figures.html) and the 💬 replies in the hub note; picks a display colour scheme (appendix) and tpc_principle vs tpc_principle_stacked.
+
+**Done (commit 06dda5a9, log in papers/paper1/figure_log.toml):** display style (evd.py: white->red, /4096, solid reference, one per row),
+evd_showcase (7884 + 47235), two_particle (numbers in figs/data/two_particle_eff.json), chamber A time series
+(rerun/paper1_timeseries, figure det_a_timeseries, NOT in the .tex yet), timing drift-scan panel + walk_snr.py, hv_scan
+one row (eff_vs_hv_discharge out), hv_metrics 2x2 + hv_metrics_extra (A3), sps_setup plan-view schematic (make_sps_setup.py),
+bench upright, and the small tweaks.
+
+**Open / for Dylan:**
+1. Two-particle fixes: pairing (cost) already replayed on all tables; charge split gains merged class 41 -> 54 % (interior),
+   two-particle overall ~73.7 -> ~76.5 %; exact for both A runs from the existing re-reco. Decide: re-pass sat_det3 + p2_det3
+   on condor (bundles + select=cost, split_corrob=charge; make_pass_dag.py pass --only ... --analysis-root <side tree>) or quote.
+2. Section 3.3 "35.8 vs 37.2 um/ns" mixes two estimators (time-series agent): same estimator +1.8 % (ladder) / +0.5 % (column).
+3. sps_setup: yaw sign and drift-arrow direction assumed.
+4. Where det_a_timeseries goes (main text vs appendix); its draft paragraph is in rerun/paper1_timeseries/report.html (cites a guessed \\cref label).
+5. chamber_stack: on hold; recommendation TikZ from spec.py.
+6. loss_gallery is 8.2 in tall at one display per row.
+7. Not synced to Overleaf.
+
+**Gotchas:** scratch inputs in /media/ucla/work/claude-jobs/1ccd2342/{evd,timeseries,deck} (regenerable; delete when Paper I figures are final).
+
 ## Paper I figure feedback: second pass (rename, displays, schematics, chamber-A figures) — updated 2026-11-03 (dylan-MS-7C84)
 
 **Resume:** Dylan picks a display style (deck appendix) and reviews the "for review" figures; replies are under each item of the hub note.
