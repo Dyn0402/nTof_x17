@@ -1,5 +1,31 @@
 # Handoff
 
+## Paper I figure feedback: round 4 (laptop) — updated 2026-11-03 (dylan-Yoga)
+
+**Resume:** Dylan reviews round 4 in the deck + note replies; two-track DAG (below) still to validate when it exits.
+
+**Done (commit 8f1957c3, deck redeployed):** all 31 note items Dylan added 15:27-16:37 answered with 💬 replies
+(written into the note file directly: the hub's /item/respond only finds top-level items, not nested "  - [ ]" ones).
+Highlights: evd.py draws each view in time since its own mesh crossing (mesh/cathode identical in X and Y, all displays);
+two_particle (b) 17907 restored, (c) 33974; chamber_stack names-only with numbers in the caption; sps_setup -> appendix
+(app:sps, end of A3); new appendices A4 (efficiency definition: eff_vs_radius + residuals) and A5 (timing details,
+timing_driftscan); radius.py now uses the circle like the budget (5 mm: 95.12 -> 94.98 %, quoted numbers unchanged);
+det4_stripes = map with R boxed + patches R2-R6 (rerun/paper1_figs/sps_patches.py, results/sps_patches.json);
+variants for Dylan to pick: hv_scan_single, readout_layout_allpads.
+
+**Open / for Dylan:** hv_scan single vs 4 panels; bench_setup scale key placement (right of labels, could drop);
+sps_setup drift-window side + yaw sign still assumed; two_velocities cut at 2000 ns (he said ~1900);
+"rises by 11 pt between 1.6 and 5 mm" (A4) is ~10.4 pt on the coarse grid; R not "typical" in X (200-215 band 40-50 um worse).
+
+**Gotchas:**
+- Compiling on the laptop: no TeX here; build on lxplus with CVMFS TeX Live:
+  `rsync` papers/paper1 to /eos/user/d/dneff/scratch/paper1_build, then
+  `export PATH=/cvmfs/sft.cern.ch/lcg/external/texlive/2026/bin/x86_64-linux:$PATH; latexmk -pdf main.tex` (42 pages, clean).
+  /usr/bin texlive on lxplus lacks siunitx/cleveref.
+- Laptop dylan-cern-site was 11 commits behind; pull before add-note.py --deploy. A stash with old generated
+  hub/index.html, notes/index.html, sw.js is left there (stash@{0}); drop it if nothing in it matters.
+- ~/work_data/claude-jobs/pairfix now on the laptop too (all desktop work dirs mirrored).
+
 ## Paper I figure feedback: round 3 + chamber A two-track re-pass — updated 2026-11-03 (dylan-MS-7C84)
 
 **Resume:** on the laptop: check condor DAG ~/x17rerun/pass_twotrack (chamber A two-track re-pass), validate, update two-particle numbers.
