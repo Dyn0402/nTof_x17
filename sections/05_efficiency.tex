@@ -88,7 +88,7 @@ view, not attached to the muon; (ii) two segments in one view and, in the other,
 in projection: wider than a single track (median 15--25 strips against 12), carrying the charge of both, or placed
 between them within the 12\,mm seed gap; (iii) a clean single-track muon in both views plus a separate deposit, which
 together trip the discharge veto (${>}50$ strips). Everything else stays in the sample and counts against the chamber.}
-\tbw{\textbf{Result.} Over the full active area (Runs 1 and 2, 28\,453 tracks):
+\tbw{\textbf{Result.} Over the full active area (Runs 1 and 2, 28\,467 tracks):
 $\varepsilon_\mathrm{single}=94.8\pm0.1$\,(stat)$^{+0.6}_{-0.5}$\,($R$)\,\%; in the interior 95.7\,\%. Interior
 losses (4.3\,\%): $\delta$-rays 2.5 (below), discharges 0.5, noise bands 0.2, fits off with no flag 0.3, second deposits
 not particle-like 0.2, fits right in angle but far from the reference 0.2, edge of the other coordinate 0.15. The chamber hardware itself (discharges, noise bands) accounts for 0.7\,\%; the rest is the
@@ -123,28 +123,31 @@ and 220--230 at SNR\,$>$\,6, with chip-wide ringing.}
     \hline
     selection & Runs 1+2 \\
     \hline
-    all tracks, multi-track credit & $95.22\pm0.13$ \\
+    all tracks, multi-track credit & $95.31\pm0.13$ \\
     single as flagged by chamber~A (biased) & $97.01\pm0.11$ \\
-    single, (i) removed only & $95.20\pm0.13$ \\
-    \textbf{single, (i)--(iii) removed} & $\mathbf{95.96\pm0.12}$ \\
-    single, $\delta$-ray deposits also removed & $96.78\pm0.11$ \\
-    with an independent second particle & $95.8\pm0.9$ \\
+    single, (i) removed only & $95.28\pm0.13$ \\
+    \textbf{single, (i)--(iii) removed} & $\mathbf{95.92\pm0.12}$ \\
+    single, $\delta$-ray deposits also removed & $96.73\pm0.11$ \\
+    with an independent second particle & $95.9\pm0.8$ \\
     \hline
   \end{tabular}
 \end{table}
 
 \subsection{Chamber~A: two particles in the chamber}\label{sec:pairing}
-\tbw{\textbf{Efficiency.} 3.2\,\% of tracks (945 of 29\,298, full area) come with a second particle in chamber~A. The muon is
-reconstructed in 73.7\,\% of them, and the losses are all in the two harder configurations
+\tbw{\textbf{Efficiency.} 3.2\,\% of tracks (931 of 29\,398, full area) come with a second particle in chamber~A. The muon is
+reconstructed in 77.0\,\% of them, and the losses are all in the two harder configurations
 (\texttt{rerun/effbudget/single/single\_track\_area.py}):
-(i) two separate segments in both views (620 events): 95.5\,\%, as efficient as with one particle;
-(ii) two segments in one view, merged into one in the other projection (232): 44\,\%;
+(i) two separate segments in both views (662 events): 95.6\,\%, as efficient as with one particle;
+(ii) two segments in one view, merged into one in the other projection (176): 47\,\%;
 (iii) a clean muon plus a separate deposit elsewhere in the plane, which together exceed the discharge veto (93): 1\,\%.
-These are fair two-particle events and count as losses where the muon is not recovered.}
+These are fair two-particle events and count as losses where the muon is not recovered. The classes are those of the
+chamber~A two-track re-pass (below): events whose merged projection the joint fit now splits and whose second pair is
+charge-matched have moved from (ii) to (i) (620 to 662, 232 to 176), so the 47\,\% of (ii) is of what is left unsplit and
+understates the gain; on a fixed set it is 41.0 to 53.8\,\% (below).}
 \begin{figure}[t]
   \centering
   \includegraphics[width=\linewidth]{two_particle}
-  \caption{\tbw{Chamber~A events with a second particle in the chamber, one real event per configuration (Run~1; both views, strip position against drift time, amplitude on one linear scale normalised to the ADC full scale; reference track solid black, fits dashed: magenta the first track, brown the second, dotted a fitted candidate the pass did not keep; grey lines: mesh and cathode). Each title gives the fraction of such events in which the muon is reconstructed within 5\,mm of the reference (binomial errors; full active area, Runs 1 and 2; one particle: 94.8\,\%). (a) Two particles separate in both views: both fitted, the muon found as often as alone. (b) Two columns 63\,mm apart in X, merged into one broad column in Y: the Y fit lies between the two and does not follow the reference track (a second X candidate, dotted, was not kept). (c) A straight muon (left in X, right in Y) and a separate wide, curled deposit, not a track, which together exceed 50 strips: the trigger is vetoed as a discharge and nothing is fitted. Pass 1, before the two-track and veto changes.}}
+  \caption{\tbw{Chamber~A events with a second particle in the chamber, one real event per configuration (Run~1; both views, strip position against drift time, amplitude on one linear scale normalised to the ADC full scale; reference track solid black, fits dashed: magenta the first track, brown the second, dotted a fitted candidate the pass did not keep; grey lines: mesh and cathode). Each title gives the fraction of such events in which the muon is reconstructed within 5\,mm of the reference (binomial errors; full active area, Runs 1 and 2; one particle: 94.8\,\%; chamber~A two-track re-pass). (a) Two particles separate in both views: both fitted, the muon found as often as alone. (b) Two columns 63\,mm apart in X, merged into one broad column in Y: the joint fit now splits the Y column in two (magenta and brown; dotted, the single merged fit it replaces). The track within 5\,mm of the reference at the mesh counts as the muon, but here it is paired with the other particle's X segment and its angle differs from the reference's. (c) A straight muon (left in X, right in Y) and a separate wide, curled deposit, not a track, which together exceed 50 strips: the trigger is vetoed as a discharge and nothing is fitted.}}
   \label{fig:twoparticle}
 \end{figure}
 \tbw{\textbf{Overlap in one projection.} The reconstruction is built for it: a joint two-track fit offers a merged
@@ -157,7 +160,7 @@ child need be plausible; the 4-pitch separation floor kept) recovers the muon in
 events (from 41.0\,\%), with correct X/Y pairing in 36.4\,\% (from 20.5\,\%), and splits no clean single muon on any of the
 five chambers (\texttt{rerun/effbudget/single/MERGED\_PROJECTION\_2026-11-02.md}). The rest fail the geometric guards:
 the two children share almost no depth (one track cut in half) or lie within the floor.}
-\analysis{MERGED}{charge-corroborated split on main (28ac36a0), bench switch xy\_pairing.split\_corrob = charge; needs waveforms, so the 44\,\% in \cref{fig:twoparticle} stays until the next bench re-pass}
+\analysis{MERGED}{charge-corroborated split on main (28ac36a0), bench switch xy\_pairing.split\_corrob = charge; chamber~A (Runs 1 and 2) re-reconstructed from the waveforms with it on (code 6f380442, EOS Analysis\_pass1\_twotrack): credit on the 195 interior merged events 80 to 105, no track lost, single-track efficiency 95.96 to 95.92\,\% (class membership, not a loss of muons); the vetoed class, A1 classes and the other chambers are pass 1}
 \tbw{\textbf{The discharge veto.} Configuration (iii), the large $\delta$-rays and the edge-zone losses all come from
 dropping every event with more than 50 strips over threshold. A rescue that re-seeds such events from their clean
 clusters (track-sized clusters only, rail samples censored, a one-particle gate on the result) recovers muons, but they
