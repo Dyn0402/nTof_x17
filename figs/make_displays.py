@@ -5,9 +5,9 @@
     .venv/bin/python papers/paper1/figs/make_displays.py gallery --out DIR         # colour map x normalisation (deck appendix)
     options: --style reds|greens|fire|jet (default evd.DEFAULT), --norm full|event|adc (default evd.OPT)
     .venv/bin/python papers/paper1/figs/make_displays.py sheet --ids 1,2,3 --out DIR  # contact sheet, to pick events
-    common: --root <paper1_eff copy> --ana <Analysis_pass1 copy> --eos-run-dir <june_tests run dir copy>
+    common: --tree tt|p1 or --root <paper1_eff copy> --ana <Analysis_pass1 copy> --eos-run-dir <june_tests run dir copy>
 
-Data (Run 1 = sat_det3, pass 1): the reference rays of the efficiency budget (<root>/budget/<rel>/rays_det3.parquet),
+Data (Run 1 = sat_det3; default tree 'tt' = the two-track re-pass, --tree p1 = pass 1): the reference rays of the efficiency budget (<root>/budget/<rel>/rays_det3.parquet),
 the pass's fits (<ana>/<rel>/wft/events.parquet and events.candidates.parquet), rr1 waveforms (pedestal + common mode
 as the reconstruction reads them; a1_displays.read_waveforms).  Fits drawn: the pass's tracks (track_id 0 'first',
 >0 'second') and, where a figure asks, the candidates it did not keep (track_id -1).
@@ -28,8 +28,10 @@ import evd  # noqa: E402
 
 KEY = 'sat_det3'
 LOCAL = os.environ.get('WORK_DATA', '/media/ucla/work') + '/claude-jobs/17c92c46-displays'
-DEF_ROOT = os.environ.get('WORK_DATA', '/media/ucla/work') + '/paper1_figs'
-DEF_ANA = os.path.join(LOCAL, 'Analysis_pass1')
+WD = os.environ.get('WORK_DATA', '/media/ucla/work')
+#: two trees: 'tt' = the two-track re-pass of the chamber A golden runs (the paper's, since 2026-11-03), 'p1' = pass 1
+TREES = {'tt': (WD + '/claude-jobs/twotrack/paper1_eff_twotrack', WD + '/claude-jobs/twotrack/Analysis_pass1_twotrack'),
+         'p1': (WD + '/paper1_figs', os.path.join(LOCAL, 'Analysis_pass1'))}
 DEF_EOS = os.path.join(LOCAL, 'june_tests', 'mx17_det3_saturday_scan_6-27-26')
 
 #: the gallery (deck appendix): the same events in every colour map x normalisation
@@ -50,6 +52,8 @@ class Data:
         self.K = pd.read_parquet(os.path.join(wdir, 'events.candidates.parquet'))
         self.v_mm = float(json.load(open(os.path.join(wdir, 'calib_bundle', 'bundle.json')))['v_drift']) * 1e-3
         self.PM, _ = a1.posmap(row)
+        rp = os.path.join(root, 'a1', rel, 'recat.parquet')
+        self.recat = pd.read_parquet(rp).recat if os.path.exists(rp) else None   # the A1 class of every interior ray
         self._wf = {}
 
     def waveforms(self, ids):
@@ -191,6 +195,8 @@ def loss_displays(D, out, keys=None):
     for c, (fid, title, e) in picks.items():
         if keys and fid not in keys:
             continue
+        if D.recat is not None and D.recat.get(e) != c:
+            print(f'WARNING {fid}: event {e} is {D.recat.get(e)!r} in this tree, not {c!r}', flush=True)
         cands = 'none' if c.startswith('spark') else 'tracks'
         evd.OPT['mark_sat'] = c in ('far:FIT_SAT',)
         single(D.event(e, cands, split=30.0 if c in A1_BREAK else NOBRK), os.path.join(out, 'a1', fid))
@@ -227,7 +233,9 @@ def figures(D, out, only):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('mode', choices=['figures', 'gallery', 'sheet'])
-    ap.add_argument('--root', default=DEF_ROOT); ap.add_argument('--ana', default=DEF_ANA)
+    ap.add_argument('--tree', default='tt', choices=list(TREES), help='tt (default): two-track re-pass; p1: pass 1')
+    ap.add_argument('--root', default=None, help='<paper1_eff[_twotrack]> (default: from --tree)')
+    ap.add_argument('--ana', default=None, help='<Analysis_pass1[_twotrack]> (default: from --tree)')
     ap.add_argument('--eos-run-dir', default=DEF_EOS)
     ap.add_argument('--out', default=os.path.join(HERE, 'out'))
     ap.add_argument('--only', default='')
@@ -240,7 +248,7 @@ def main():
     ps.use()
     if a.style or a.norm:
         evd.set_style(a.style, **({'norm': a.norm} if a.norm else {}))
-    D = Data(a.root, a.ana, a.eos_run_dir)
+    D = Data(a.root or TREES[a.tree][0], a.ana or TREES[a.tree][1], a.eos_run_dir)
     if a.mode == 'gallery':
         gallery(D, a.out)
     elif a.mode == 'sheet':

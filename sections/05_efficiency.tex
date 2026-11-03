@@ -21,17 +21,17 @@ fault); flat in position and angle. Equivalently the X/Y charge ratio of one tra
 (the whole chamber: the edge cut changes the efficiency by ${\le}0.9$\,pt, so the headline numbers use the full area
 and \cref{sec:edge} studies the edges). Detected: both views fitted, ${\le}2$ competing strips per view, and the
 reconstructed track within $R$ of the reference ray at the mesh. When the chamber reconstructs several tracks, the event is
-detected if one of them is the reference track (multi-track credit; this is the default number). Nothing is removed from the denominator: tracks far from the reference with the right angle (0.20\,\%) are only half
+detected if one of them is the reference track (multi-track credit; this is the default number). Nothing is removed from the denominator: tracks far from the reference with the right angle (0.16\,\%) are only half
 explained by muons scattering between the reference doublets, so they count as losses with everything else we cannot pin on
 the reference.}
 \tbw{\textbf{The radius.} We use $R=5$\,mm, the knee of $\varepsilon(R)$: nine core $\sigma$ of the residual at the mesh,
 where the accidental rate (event mixing) is 0.07\,\%, 70$\times$ below the inefficiency; $R\in[4,8]$\,mm moves the
-efficiency by $-0.5/{+0.6}$\,pt (systematic). A muon is found if the candidate nearest to the reference ray in each view,
+efficiency by $-0.5/{+0.7}$\,pt (systematic). A muon is found if the candidate nearest to the reference ray in each view,
 whichever the reconstruction ranks first, is within $R$. The definition, the choice of $R$ and the full residual
 distributions are in \cref{app:effdef}.}
 \tbw{\textbf{Area.} Chamber~A, Runs 1 and 2: full active area / interior (${\ge}30$\,mm from the $x$ sides, ${\ge}8$\,mm from
-the $y$ sides) / ${\ge}30$\,mm from every side: production pick 91.5 / 92.3 / 92.3\,\%; single-track 94.8 / 95.7 /
-95.5\,\%. The angles need the interior (\cref{sec:edge}); the efficiency does not.}
+the $y$ sides) / ${\ge}30$\,mm from every side: production pick 91.5 / 92.3 / 92.3\,\%; single-track (defined below) 94.8 / 95.7 /
+95.8\,\%. The angles need the interior (\cref{sec:edge}); the efficiency does not.}
 
 \subsection{Efficiency maps of the five chambers}
 \tbw{Maps (8\,mm disk) of all five chambers on their golden runs. Interior efficiency (production pick; full-area values to re-quote): A 92.6, B 90.3, C 74.4,
@@ -88,10 +88,11 @@ view, not attached to the muon; (ii) two segments in one view and, in the other,
 in projection: wider than a single track (median 15--25 strips against 12), carrying the charge of both, or placed
 between them within the 12\,mm seed gap; (iii) a clean single-track muon in both views plus a separate deposit, which
 together trip the discharge veto (${>}50$ strips). Everything else stays in the sample and counts against the chamber.}
-\tbw{\textbf{Result.} Over the full active area (Runs 1 and 2, 28\,467 tracks):
-$\varepsilon_\mathrm{single}=94.8\pm0.1$\,(stat)$^{+0.6}_{-0.5}$\,($R$)\,\%; in the interior 95.7\,\%. Interior
-losses (4.3\,\%): $\delta$-rays 2.5 (below), discharges 0.5, noise bands 0.2, fits off with no flag 0.3, second deposits
-not particle-like 0.2, fits right in angle but far from the reference 0.2, edge of the other coordinate 0.15. The chamber hardware itself (discharges, noise bands) accounts for 0.7\,\%; the rest is the
+\tbw{\textbf{Result.} Over the full active area (Runs 1 and 2: 29\,398 reference tracks, of which 931 come with a second particle in the chamber
+(\cref{sec:pairing}); the 28\,467 \emph{single-track} reference tracks left, which are all the rays but the second-particle events):
+$\varepsilon_\mathrm{single}=94.8\pm0.1$\,(stat)$^{+0.7}_{-0.5}$\,($R$)\,\%; in the interior 95.7\,\%. Interior
+losses (4.3\,\%): $\delta$-rays 2.7 (below), discharges 0.5, noise bands 0.1, fits off with no flag 0.4, second deposits
+not particle-like 0.2, fits right in angle but far from the reference 0.2, edge of the other coordinate 0.2. The chamber hardware itself (discharges, noise bands) accounts for 0.6\,\%; the rest is the
 reconstruction of a muon accompanied by its own $\delta$-ray. The extra 0.9\,pt lost over the full area is the edge
 response (\cref{sec:edge}).}
 \tbw{\textbf{$\delta$-rays: one population, three outcomes by size.} Median strips over threshold: a clean muon 12; a
@@ -106,7 +107,7 @@ and 220--230 at SNR\,$>$\,6, with chip-wide ringing.}
 \begin{figure}[t]
   \centering
   \includegraphics[width=\linewidth]{loss_budget}
-  \caption{\tbw{Where the chamber~A single-track inefficiency goes, over the full active area (Runs 1 and 2, 28\,453 tracks, 5.2\,\% lost), by class with Poisson errors, grouped under $\delta$-rays, the chamber itself, the reconstruction, and the edges. The largest single class is the edge zone, where tracks exceed the 50-strip discharge veto.}}
+  \caption{\tbw{Where the chamber~A single-track inefficiency goes, over the full active area (Runs 1 and 2, the 28\,467 single-track reference tracks of the full area, 5.2\,\% lost), by class with Poisson errors, grouped under $\delta$-rays, the chamber itself, the reconstruction, and the edges. The largest single class is the edge zone, where tracks exceed the 50-strip discharge veto.}}
   \label{fig:lossbudget}
 \end{figure}
 \begin{figure}[t]
@@ -117,7 +118,7 @@ and 220--230 at SNR\,$>$\,6, with chip-wide ringing.}
 \end{figure}
 \begin{table}[h]
   \centering\small
-  \caption{\tbw{Chamber~A efficiency in the interior, $R=5$\,mm, by selection (\texttt{rerun/effbudget/single}); full-area values in the text.}}
+  \caption{\tbw{Chamber~A efficiency in the interior, $R=5$\,mm, by selection (\texttt{rerun/effbudget/single}); full-area values in the text. Interior reference tracks: 26\,542 (26\,442 with the reference and geometry classes out, the first row; 25\,603 in the (i)--(iii) sample, the fourth).}}
   \label{tab:single}
   \begin{tabular}{lr}
     \hline
@@ -125,9 +126,9 @@ and 220--230 at SNR\,$>$\,6, with chip-wide ringing.}
     \hline
     all tracks, multi-track credit & $95.31\pm0.13$ \\
     single as flagged by chamber~A (biased) & $97.01\pm0.11$ \\
-    single, (i) removed only & $95.28\pm0.13$ \\
-    \textbf{single, (i)--(iii) removed} & $\mathbf{95.92\pm0.12}$ \\
-    single, $\delta$-ray deposits also removed & $96.73\pm0.11$ \\
+    single, (i) removed only & $95.30\pm0.13$ \\
+    \textbf{single, (i)--(iii) removed} & $\mathbf{95.94\pm0.12}$ \\
+    single, $\delta$-ray deposits also removed & $96.75\pm0.11$ \\
     with an independent second particle & $95.9\pm0.8$ \\
     \hline
   \end{tabular}
@@ -160,7 +161,7 @@ child need be plausible; the 4-pitch separation floor kept) recovers the muon in
 events (from 41.0\,\%), with correct X/Y pairing in 36.4\,\% (from 20.5\,\%), and splits no clean single muon on any of the
 five chambers (\texttt{rerun/effbudget/single/MERGED\_PROJECTION\_2026-11-02.md}). The rest fail the geometric guards:
 the two children share almost no depth (one track cut in half) or lie within the floor.}
-\analysis{MERGED}{charge-corroborated split on main (28ac36a0), bench switch xy\_pairing.split\_corrob = charge; chamber~A (Runs 1 and 2) re-reconstructed from the waveforms with it on (code 6f380442, EOS Analysis\_pass1\_twotrack): credit on the 195 interior merged events 80 to 105, no track lost, single-track efficiency 95.96 to 95.92\,\% (class membership, not a loss of muons); the vetoed class, A1 classes and the other chambers are pass 1}
+\analysis{MERGED}{charge-corroborated split on main (28ac36a0), bench switch xy\_pairing.split\_corrob = charge; chamber~A (Runs 1 and 2) re-reconstructed from the waveforms with it on (code 6f380442, EOS Analysis\_pass1\_twotrack): credit on the 195 interior merged events 80 to 105, no track lost, single-track efficiency 95.96 to 95.94\,\% (class membership, not a loss of muons); the vetoed class, A1 classes and the other chambers are pass 1}
 \tbw{\textbf{The discharge veto.} Configuration (iii), the large $\delta$-rays and the edge-zone losses all come from
 dropping every event with more than 50 strips over threshold. A rescue that re-seeds such events from their clean
 clusters (track-sized clusters only, rail samples censored, a one-particle gate on the result) recovers muons, but they
@@ -170,9 +171,9 @@ losses (\texttt{rerun/effbudget/single/DISCHARGE\_VETO\_2026-11-02.md}). The cle
 would be worth rescuing alone (29 right, 4 wrong on B/A) if it could be told from a shower without the reference.}
 \tbw{\textbf{Pairing the views.} Two particles give two segments per view and two possible X/Y pairings; the wrong
 one makes two ghost tracks. The views share no coordinate, but they read the same avalanche charge at the same drift
-times, so the reconstruction pairs them by the charge balance and the charge-arrival time (Paper~II). On 552 real
+times, so the reconstruction pairs them by the charge balance and the charge-arrival time (Paper~II). On 567 real
 two-particle cosmic events where the reference marks one particle in both views, the pairing is right in
-$98.0\pm0.6$\,\% (charge alone: 95.7\,\%; 100\,\% when the two charges differ by more than a factor 1.65, 96\,\% when they
+$97.7\pm0.6$\,\% (charge alone: 95.6\,\%; 100\,\% when the two charges differ by more than a factor 1.65, 95\,\% when they
 are similar). This is the feasibility demonstration for pairs at n\_TOF. The production reconstruction makes the same choice (the
 matching with the lowest summed pairing cost, then the coincidence gate per pair) and pairs the two-particle events
 correctly on every chamber: A 95.9\,\%, B 96.8\,\%, C 92.2\,\%, D 90.1\,\%, E 94.0\,\%
@@ -180,11 +181,11 @@ correctly on every chamber: A 95.9\,\%, B 96.8\,\%, C 92.2\,\%, D 90.1\,\%, E 94
 \begin{figure}[t]
   \centering
   \includegraphics[width=\linewidth]{xy_pairing}
-  \caption{\tbw{X/Y charge ratio $\ln(q_X/q_Y)$ of the true (reference-tagged) and the swapped pairings of 552 real two-particle events; grey, the single-track $\pm1\sigma$ band. The pairing that minimises the charge-balance mismatch with the single-track value is the true one in 95.7\,\% of the events (charge only), and in 98.0\,\% when the difference in charge-arrival times between the views is added (charge + time).}}
+  \caption{\tbw{X/Y charge ratio $\ln(q_X/q_Y)$ of the true (reference-tagged) and the swapped pairings of 567 real two-particle events; grey, the single-track $\pm1\sigma$ band. The pairing that minimises the charge-balance mismatch with the single-track value is the true one in 95.6\,\% of the events (charge only), and in 97.7\,\% when the difference in charge-arrival times between the views is added (charge + time).}}
   \label{fig:pairing}
 \end{figure}
 \tbw{The production reconstruction makes the same choice: it selects the X/Y matching with the lowest summed pairing
-cost, then applies the usual coincidence gate to each pair. On the same 552 events it pairs $96.7\pm0.8$\,\% correctly
+cost, then applies the usual coincidence gate to each pair. On the same 567 events it pairs $96.6\pm0.8$\,\% correctly
 (re-reconstructed from the waveforms; \texttt{rerun/effbudget/single/PAIRING\_FIX\_2026-11-02.md}). An earlier selection,
 which let a beam-tuned plausibility flag decide which pairs survived, managed 80\,\%.}
 \analysis{PAIRFIX}{pairing fix on main (743d6d31, b5ae07c8); refreshed cost-mode tables for all 157 bench rows in Analysis\_pass1/<rel>/wft/pairing\_cost/}
