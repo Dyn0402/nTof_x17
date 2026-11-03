@@ -1,5 +1,27 @@
 # Handoff
 
+## Paper I figure feedback: second pass (rename, displays, schematics, chamber-A figures) — updated 2026-11-03 (dylan-MS-7C84)
+
+**Resume:** Dylan picks a display style (deck appendix) and reviews the "for review" figures; replies are under each item of the hub note.
+
+**Done (on main; deck https://dylan-neff.web.cern.ch/notes/mx17-paper1-figures.html, appendix = display styles):**
+- **M3 -> "the reference"**: all sections (03_setups introduces it once), figure text via `ps.public` (bench schematic keeps M3: `ps.KEEP_GID`), manifest titles.
+- **Runs 1+2 merged** (section 3.3 gives the agreement numbers; only v differs, refitted per run); tab:single one column; eff_vs_radius and angle_resolution summed.
+- **Event displays**: `papers/paper1/figs/evd.py` (style) + `make_displays.py` (figures / gallery / sheet). New figures evd_showcase, two_particle (displays + efficiency), loss_gallery; all A1 displays redrawn. Default style 'navy' until Dylan chooses (`evd.DEFAULT`, `evd.OPT`).
+- tpc_principle (`make_tpc_principle.py`, uses make_principle.py's replay cache), chamber_stack (spec.py), readout_layout (gerbers, `figs/data/readout_gerber_extract.npz`), bench_setup (wide) in `papers/paper1/figs/`.
+- angle_resolution (`rerun/paper1_res/angle_resolution.py`), appendix A3 (currents_vs_hv_all, tracking_perf_all, timing_all); edge_turnon --phys re-run; det4 2D map; hv_metrics 3x2; gas_drying, attachment (time axis), new attachment_charge; xy_pairing.
+
+**Open / for Dylan:**
+1. Display style choice; loss_band keep or drop; attachment (b) O2 band: drop?
+2. readout_layout assumes local x,y = gerber x,y (no mirror): verify orientation (passivation sides, connector edge).
+3. currents fit constant (0.012 +- 0.038 uA) disagrees with the visible ~0.2 uA floor; README says "no measurable constant part".
+4. two_particle numbers are pre-fix pass 1 (merged-projection / veto fixes).
+5. Not synced to Overleaf (`papers/overleaf.sh sync paper1`).
+
+**Gotchas:**
+- Display inputs: `/media/ucla/work/claude-jobs/17c92c46-displays` (Run 1 only) + `/media/ucla/work/paper1_figs`; gallery/contact sheets in `/media/ucla/work/claude-jobs/77eb854f/evd/`; agent inputs in `.../77eb854f/{gas,edge,angres,regen}`. Delete when Paper I figures are final.
+- `figures/gas_vE_timing.pdf` is still a stale unused copy with M3 text.
+
 ## Paper I figure feedback: renaming and the harder items — updated 2026-11-03 (dylan-MS-7C84)
 
 **Resume:** Read the 💬 replies under "Paper I Figure Feedback" (hub notes, archive/); next: readout-board figure choice, width sweep, principle/bench rework.
