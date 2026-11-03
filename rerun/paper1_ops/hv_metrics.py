@@ -109,15 +109,22 @@ def main():
     df = per_track(load(a.rows), a.events, a.rays)
     ps.use()
     col = ps.DET_COLOR['det3']
-    fig, ax2d = ps.fig_for('full', nrows=2, ncols=3, height=4.3, sharex=True)
+    # 3 x 2, one shared HV axis (ticks on the bottom row only). Every panel's quantity has its own marker shape; the
+    # X/Y panels draw X filled / Y open (ps.VIEW_LS) in that shape, so a shape names the quantity, fill names the view.
+    fig, ax2d = ps.fig_for('full', nrows=3, ncols=2, height=5.4, sharex=True)
     axs = ax2d.ravel()
     V = df.resist_V.to_numpy()
-    sm = dict(color=col, marker='o', ms=3, lw=1.0)
-    op = dict(color=col, marker='o', ms=3, mfc='white', ls='--', lw=0.9)
+    ms = 3.6
+    leg = dict(fontsize=ps.BASE_PT * 0.72, handlelength=1.6, borderpad=0.3, labelspacing=0.25)
+
+    def ser(ax, x, y, e, mk, filled=True, c=col, ls='-', **kw):
+        return ax.errorbar(x, y, yerr=e, color=c, marker=mk, ms=ms, lw=0.9, ls=ls, mfc=c if filled else 'white',
+                           mew=0.9, elinewidth=0.8, capsize=0, **kw)
+
     # (a) gain proxy: median fitted charge (log: the gain is exponential in V) and the saturated fraction
     ax = axs[0]
-    ax.errorbar(V, df.q50, yerr=df.q50_err, label='median charge $q_X+q_Y$', **sm)
-    ax.set_yscale('log'); ax.set_ylim(400, 1.2e5); ax.set_ylabel('median track charge [ADC]')
+    ser(ax, V, df.q50, df.q50_err, 'D', label='median charge $q_X+q_Y$')
+    ax.set_yscale('log'); ax.set_ylim(400, 3e5); ax.set_ylabel('median track\ncharge [ADC]')
     lo = df.resist_V <= 465                       # no saturation yet: the exponential fit
     b = np.polyfit(df.resist_V[lo], np.log2(df.q50[lo]), 1)
     vv = np.linspace(420, 490, 50)
@@ -125,39 +132,40 @@ def main():
     ax.text(0.04, 0.95, f'$\\times2$ per {1 / b[0]:.1f} V', transform=ax.transAxes, va='top',
             fontsize=ps.BASE_PT * 0.75, color=ps.INK)
     t = ax.twinx(); t.grid(False); t.spines['right'].set_visible(True)
-    t.plot(V, 100 * df.f_sat, color=ps.ACCENT, marker='s', ms=2.6, lw=0.9, ls='-')
-    t.set_ylim(0, 105); t.set_ylabel('saturated tracks [%]', color=ps.ACCENT, labelpad=2)
+    t.plot(V, 100 * df.f_sat, color=ps.ACCENT, marker='*', ms=ms + 2, lw=0.9, ls='-')
+    t.set_ylim(0, 105); t.set_ylabel('saturated\ntracks [%]', color=ps.ACCENT, labelpad=2)
     t.tick_params(axis='y', colors=ps.ACCENT)
     # (b) efficiency and discharge loss
     ax = axs[1]
-    ax.errorbar(V, df.eff_ig, yerr=df.eff_ig_err, label='interior efficiency', **sm)
-    ax.plot(V, df.loss_discharge_pct, label='lost to a discharge', **op)
-    ax.set_ylim(0, 100); ax.set_ylabel('fraction of M3 tracks [%]')
-    ax.legend(loc='center left', fontsize=ps.BASE_PT * 0.72, handlelength=1.5)
+    ser(ax, V, df.eff_ig, df.eff_ig_err, 's', label='interior efficiency')
+    ax.plot(V, df.loss_discharge_pct, color=col, marker='s', ms=ms, mfc='white', ls='--', lw=0.9, mew=0.9,
+            label='lost to a discharge')
+    ax.set_ylim(0, 100); ax.set_ylabel('reference tracks [%]')
+    ax.legend(loc='center left', **leg)
     # (c) time
     ax = axs[2]
     k = df.sigma_xy.notna()
-    ax.errorbar(V[k], df.sigma_xy[k], yerr=df.sigma_xy_err[k], label=r'$(t_X-t_Y)/\sqrt{2}$', **sm)
-    ax.errorbar(V[k], df.sigma_evt[k], yerr=df.sigma_evt_err[k], label='event time', **op)
+    ser(ax, V[k], df.sigma_xy[k], df.sigma_xy_err[k], 'P', label=r'$(t_X-t_Y)/\sqrt{2}$')
+    ser(ax, V[k], df.sigma_evt[k], df.sigma_evt_err[k], 'P', filled=False, ls='--', label='event time')
     ax.set_ylim(0, 120); ax.set_ylabel(r'time $\sigma$ ($s_{68}$) [ns]')
-    ax.legend(loc='upper right', fontsize=ps.BASE_PT * 0.72, handlelength=1.5)
-    # (d) angle resolution, (e) angle scale, (f) position core
-    for ax, q, lab, lim in ((axs[3], 's68', r'angle $s_{68}$ [deg]', (0, 1.5)),
-                            (axs[4], 'scale', r'angle scale: fit vs M3 $\tan$', (0.9, 1.1)),
-                            (axs[5], 'pos_core', 'position core at mesh [mm]', (0, 0.8))):
+    ax.legend(loc='upper right', **leg)
+    # (d) angle resolution, (e) angle scale, (f) position core: one marker shape each, X filled / Y open
+    for ax, q, lab, lim, mk in ((axs[3], 's68', r'angle $s_{68}$ [deg]', (0, 1.5), 'o'),
+                                (axs[4], 'scale', 'angle scale\n(fit / reference tan)', (0.9, 1.1), '^'),
+                                (axs[5], 'pos_core', 'position core\nat mesh [mm]', (0, 0.8), 'v')):
         for v in 'xy':
-            ax.errorbar(V, df[f'{q}_{v}'], yerr=df[f'{q}_{v}_err'], color=col, marker='o', ms=3,
-                        ls=ps.VIEW_LS[v], lw=1.0, mfc=col if v == 'x' else 'white', label=v.upper())
+            ser(ax, V, df[f'{q}_{v}'], df[f'{q}_{v}_err'], mk, filled=(v == 'x'), ls=ps.VIEW_LS[v], label=v.upper())
         ax.set_ylabel(lab); ax.set_ylim(*lim)
-        ax.legend(loc='lower left', fontsize=ps.BASE_PT * 0.75, ncol=2)
+        ax.legend(loc='lower left', ncol=2, **leg)
     axs[4].axhline(1.0, color=ps.MUTED, lw=0.7, zorder=0)
     for ax in axs:
         ax.axvline(GOLDEN_V, color=ps.ACCENT, lw=0.8, ls=':', zorder=0)
         ax.set_xlim(418, 532)
-    for ax in axs[3:]:
+    for ax in axs[4:]:
         ax.set_xlabel('resist HV [V]')
-    axs[1].text(GOLDEN_V - 2, 4, 'Runs 1, 2', color=ps.ACCENT, ha='right', fontsize=ps.BASE_PT * 0.75)
+    axs[1].text(GOLDEN_V - 2, 14, 'Runs 1, 2', color=ps.ACCENT, ha='right', fontsize=ps.BASE_PT * 0.75)
     ps.panel_labels(axs)
+    fig.get_layout_engine().set(h_pad=0.07, w_pad=0.05)
     ps.save(fig, os.path.join(a.out, 'figures', 'hv_metrics'), data=df)
     flat = df[(df.resist_V >= 425) & (df.resist_V <= 505)]
     summ = dict(run=RUN, n_rows=int(len(df)),

@@ -193,6 +193,10 @@ def tracking_perf(R):
         lead = d in ('det3', 'det4')
         for p in ('x', 'y'):
             B = [b for b in o['views'][p]['arms'][arm]['by_angle'] if b['n'] >= 50]
+            if d == 'det3' and os.path.exists(os.path.join(RES, 'angle_resolution.json')):
+                # chamber A: Runs 1 + 2 summed, as in the main-text angle_resolution figure (angle_resolution.py)
+                B = [dict(lo=b['lo'], hi=b['hi'], n=b['n'], s68=b['s68'], s68_err=b['s68'] / np.sqrt(2 * b['n']))
+                     for b in json.load(open(os.path.join(RES, 'angle_resolution.json')))[p]['by_angle']]
             c = [0.5 * (b['lo'] + b['hi']) + (0.4 if p == 'y' else -0.4 if lead else 0) for b in B]
             kw = ps.det(d, view=p)
             kw.update(ms=4.5 if d == 'det3' else 3.2, capsize=0, elinewidth=1.0)
@@ -212,7 +216,7 @@ def tracking_perf(R):
     for h_ in hd:
         h_.set_label(h_.get_label())
     ps.legend_above(fig, hd + ps.view_handles(), ncol=7, handlelength=2.2)
-    ps.save(fig, os.path.join(HERE, 'figures', 'tracking_perf'), data=pd.DataFrame(rows))
+    ps.save(fig, os.path.join(HERE, 'figures', 'tracking_perf_all'), data=pd.DataFrame(rows))
 
 
 def gas_vE(R):
@@ -487,11 +491,11 @@ if __name__ == '__main__':
     _ap = argparse.ArgumentParser(description=__doc__.split('\n')[0])
     _ap.add_argument('--rows', help='directory of the per-row json (default results/rows; on EOS '
                      'cosmic_bench/x17rerun/paper1_res/results_18efcd0d/rows)')
-    _ap.add_argument('--only', choices=['tracking_perf'], help='make this paper figure only (no report)')
+    _ap.add_argument('--only', choices=['tracking_perf', 'tracking_perf_all'], help='make this paper figure only (no report)')
     _a = _ap.parse_args()
     if _a.rows:
         RES_ROWS = _a.rows
-    if _a.only == 'tracking_perf':
+    if _a.only in ('tracking_perf', 'tracking_perf_all'):
         tracking_perf(load_rows())
     else:
         main()

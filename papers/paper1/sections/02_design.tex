@@ -60,14 +60,14 @@ where the resistive strips are terminated?}
 
 \begin{figure}[t]
   \centering
-  \includegraphics[width=0.75\linewidth]{chamber_stack}
-  \caption{\tbw{The layers of an MX17 chamber, separated along the drift axis, with a muon and its drifting ionisation. The readout side is the as-built board (Geant4 geometry and gerbers): 0.68\,mm L4 pads on a 0.78\,mm grid over the L5 (Y) and L6 (X) strips of the same pitch, and above them the screen-printed resistive strips (550\,\textmu m on a 0.80\,mm pitch). The window shown is ${\approx}44\times34$\,mm of the 400\,mm chamber at the real pitch; thicknesses along the drift axis are exaggerated, not to a common scale, and the mesh weave is schematic.}}
+  \includegraphics[width=\linewidth]{chamber_stack}
+  \caption{\tbw{Cross-section of an MX17 chamber through the centre of the active area ($z$ vertical). (a) The whole chamber, $z$ to scale: Mylar window, 5\,mm gas gap, drift cathode, the 30\,mm (nominal) drift gap with an inclined muon whose ionisation electrons drift to the mesh, and the readout board on Rohacell. The drift cathode is at $-HV_\mathrm{drift}$ and the mesh at ground. (b) The amplification region and the readout board at 30 times the scale of (a) ($z$ stretched 2.3 times against $x$): the mesh, the 150\,\textmu m amplification gap with an avalanche, the resistive strips at $+HV_\mathrm{resist}$, the insulator, the 0.68\,mm L4 pads on a 0.78\,mm pitch, and the L5 (Y) and L6 (X) strips to which alternate pads are connected by vias. $\dagger$: values assumed or not yet confirmed. The mesh weave is schematic; the pillars (\O\,0.6\,mm on a 4.68\,mm grid) are not in the cut.}}
   \label{fig:stack}
 \end{figure}
 \begin{figure}[t]
   \centering
-  \includegraphics[width=0.8\linewidth]{readout_layout}
-  \caption{\tbw{Readout board: pad pattern, X/Y routing and the dead bands.}}
+  \includegraphics[width=\linewidth]{readout_layout}
+  \caption{\tbw{Readout board, top view (detector-local frame, from the production gerbers). (a) $512\times512$ pads of 0.68\,mm on a 0.78\,mm pitch cover $399.4\times399.4$\,mm$^2$. The Y strips (L5, green) run along $y$ to two connectors on the $+y$ edge and the X strips (L6, orange) along $x$ to two connectors on the $+x$ edge. The resistive strips (dashed outline: the deposit) run along $y$ and are passivated over 18.0\,mm (low $y$) and 18.7\,mm (high $y$) at their ends (hatched), leaving a measured efficient area of $399.4\times359.9$\,mm$^2$; the $x$ sides are not passivated. (b) A pad window: each pad is connected by a via to a Y strip or an X strip in a checkerboard pattern, so every strip collects every second pad along its length. (c) The fan-out of the Y strips to one of the connector blocks (300 contact pads each). Only the strips with copper on their own layer are drawn; the others leave the layer by a via to L7.}}
   \label{fig:readout}
 \end{figure}
 

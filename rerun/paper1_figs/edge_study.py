@@ -27,7 +27,7 @@ import numpy as np
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.abspath(os.path.join(HERE, '..', '..'))
 sys.path.insert(0, REPO)
-from common.mx17_active_area import TRUE_ACTIVE_BY_DET  # noqa: E402
+from common.mx17_active_area import TRUE_ACTIVE_BY_DET, STRIP_MAX_MM  # noqa: E402
 
 GOLD = {  # golden row per chamber: run/subrun under the colsum and bundle roots
     'mx17_2': 'mx17_det2_det3_overnight_6-22-26/long_run',
@@ -41,6 +41,10 @@ G0 = 30.0            # nominal drift gap [mm] (T14 effective gap; only the ratio
 NSIG_MIN = 5
 TRIM = 0.2
 D_EDGES = np.array([0, 5, 10, 15, 20, 30, 45, 60, 90, 130, 200])
+# --phys (Paper I edge_turnon, 2026-11-03): profiles against the distance to the PHYSICAL edge of the strip plane, the
+# box distance plus the measured passivation on the y sides, from 0 mm; centroids up to PHYS_SLACK outside the box are kept.
+D_EDGES_PHYS = np.array([0, 5, 10, 15, 20, 25, 30, 40, 50, 60, 90, 130, 200])
+PHYS_SLACK = 20.0
 SIDES = ('x_lo', 'x_hi', 'y_lo', 'y_hi')
 NB = 50
 
@@ -63,7 +67,7 @@ def poly(c, U, W):
             + c.get('kuw', 0) * U * W)
 
 
-def table(path, det, bundle):
+def table(path, det, bundle, dmin=-2.0):
     z = np.load(path, allow_pickle=True)
     one = lambda p: z[f'{p}_has'] & (z[f'{p}_nsig'] >= NSIG_MIN) & (z[f'{p}_ncl'] == 1) & np.isfinite(z[f'{p}_T'])
     ok = one('x') & one('y') & ~z['x_sat'] & ~z['y_sat']
@@ -71,10 +75,12 @@ def table(path, det, bundle):
     b = TRUE_ACTIVE_BY_DET[det]
     dd = np.stack([xc - b['x'][0], b['x'][1] - xc, yc - b['y'][0], b['y'][1] - yc])
     side = np.argmin(dd, axis=0); d = dd.min(axis=0)
-    ok &= d >= -2.0                                           # centroid inside the box (2 mm slack)
+    ok &= d >= dmin                                           # centroid inside the box (2 mm slack)
     U, W = (xc - 200.0) / 100.0, (yc - 200.0) / 100.0
     h = poly(bundle['bow']['h'], U, W)
-    return dict(T=0.5 * (z['x_T'] + z['y_T'])[ok], Tx=z['x_T'][ok], Ty=z['y_T'][ok], q=0.5 * (z['x_q'] + z['y_q'])[ok],
+    shift = np.array([0.0, 0.0, b['y'][0], STRIP_MAX_MM - b['y'][1]])      # physical edge = box edge - passivation
+    dp = d + shift[side]
+    return dict(dp=dp[ok], T=0.5 * (z['x_T'] + z['y_T'])[ok], Tx=z['x_T'][ok], Ty=z['y_T'][ok], q=0.5 * (z['x_q'] + z['y_q'])[ok],
                 ns=0.5 * (z['x_nsig'] + z['y_nsig'])[ok].astype(float), d=d[ok], side=side[ok], h=h[ok], xc=xc[ok],
                 yc=yc[ok], n_all=int(len(ok)))
 
@@ -91,13 +97,14 @@ def fit_bow(T, h, sel):
     return dict(Tc=float(Tc), c=float(c), c_err=float(np.sqrt(cov[1, 1]) / Tc), n=int(k.sum()))
 
 
-def profile(v, d, side, rng, sides=None):
+def profile(v, d, side, rng, sides=None, edges=None):
+    edges = D_EDGES if edges is None else edges
     out = []
-    for i in range(len(D_EDGES) - 1):
-        s = (d >= D_EDGES[i]) & (d < D_EDGES[i + 1])
+    for i in range(len(edges) - 1):
+        s = (d >= edges[i]) & (d < edges[i + 1])
         if sides is not None:
             s &= np.isin(side, sides)
-        out.append(dict(d_lo=float(D_EDGES[i]), d_hi=float(D_EDGES[i + 1]), n=int(s.sum()), m=tmean(v[s]),
+        out.append(dict(d_lo=float(edges[i]), d_hi=float(edges[i + 1]), n=int(s.sum()), m=tmean(v[s]),
                         e=tmean_err(v[s], rng)))
     return out
 
@@ -106,17 +113,25 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--colsum-root', required=True); ap.add_argument('--bundle-root', required=True)
     ap.add_argument('--out', default=os.path.join(HERE, 'results', 'edge_study.json'))
+    ap.add_argument('--phys', action='store_true', help='distance to the physical edge, from 0 mm (writes the *_phys json)')
+    ap.add_argument('--dets', nargs='*', default=None, help='golden-row keys to run (default all)')
     ap.add_argument('--figs', default=os.path.join(HERE, 'figures'))
     a = ap.parse_args()
     rng = np.random.default_rng(7)
     res = {}
     for det, row in GOLD.items():
+        if a.dets and det not in a.dets:
+            continue
         cs = glob.glob(os.path.join(a.colsum_root, '**', row, det, 'fa', 'colsum.npz'), recursive=True)
         bj = glob.glob(os.path.join(a.bundle_root, '**', row, det, 'wft', 'calib_bundle', 'bundle.json'), recursive=True)
         if not cs or not bj:
             print(det, 'missing', cs, bj); continue
         B = json.load(open(bj[0]))
-        C = table(cs[0], det, B)
+        C = table(cs[0], det, B, dmin=-PHYS_SLACK if a.phys else -2.0)
+        Cw = C
+        if a.phys:                          # every old field is computed on the old selection (centroid >= -2 mm); only prof_phys uses Cw
+            k = C['d'] >= -2.0
+            C = {kk: (v[k] if isinstance(v, np.ndarray) else v) for kk, v in Cw.items()}
         inn = C['d'] >= 30
         bow = fit_bow(C['T'], C['h'], np.ones(len(C['T']), bool))
         bow_in = fit_bow(C['T'], C['h'], inn)
@@ -136,6 +151,9 @@ def main():
                  prof_Tx=profile(C['Tx'], C['d'], C['side'], rng), prof_Ty=profile(C['Ty'], C['d'], C['side'], rng),
                  prof_q=profile(C['q'], C['d'], C['side'], rng), prof_ns=profile(C['ns'], C['d'], C['side'], rng),
                  prof_h=profile(C['h'], C['d'], C['side'], rng))
+        if a.phys:
+            r['prof_T_side_phys'] = {SIDES[s]: profile(Cw['T'], Cw['dp'], Cw['side'], rng, [s], D_EDGES_PHYS) for s in range(4)}
+            r['n_clean_phys'] = int(len(Cw['T']))
         # T map, 25 mm cells
         e = np.arange(0, 400.1, 25.0)
         ix, iy = np.digitize(C['xc'], e) - 1, np.digitize(C['yc'], e) - 1

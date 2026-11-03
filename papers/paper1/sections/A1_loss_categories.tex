@@ -1,13 +1,13 @@
 \section{Where the inefficiency goes: loss categories}\label{app:losses}
 \sectionstate{partial}{\texttt{rerun/effbudget} (ladder) + \texttt{rerun/outliers/classify.py} (classes) + \texttt{rerun/satstudy} (re-categorised budget \texttt{summarize.recat}, displays \texttt{appendix\_figs.py}, recovery tests); note \texttt{notes/mx17-det3-loss-categories}. Fractions are on the PRE-PASS golden table (\texttt{final\_phys}, row \texttt{sat\_det3}): the re-processing pass tables (RERUN\_PLAN \S11) did not exist on 2026-10-26 --- re-derive there}
-\intent{Every M3 track crossing the chamber~A interior that is not detected, followed to the one place it ends up: one real
+\intent{Every reference track crossing the chamber~A interior that is not detected, followed to the one place it ends up: one real
 event display per class, the fraction of tracks lost to it, its mechanism, and whether a reference-free change to the
 reconstruction recovers it (tested by re-running the reconstruction, not argued). Dylan 2026-10-26: a full appendix.}
 
 \begin{table}[h]
   \centering\small
-  \caption{chamber~A interior, \requote{6\,451} M3 tracks (one clean reference ray through the interior), \requote{91.18\,\%}
-  detected (both views fitted, $|r|\le5$\,mm from M3, $\le2$ competing strips per view). Every lost track is in exactly
+  \caption{chamber~A interior, \requote{6\,451} reference tracks (one clean reference ray through the interior), \requote{91.18\,\%}
+  detected (both views fitted, $|r|\le5$\,mm from the reference, $\le2$ competing strips per view). Every lost track is in exactly
   one class; first matching class wins, in the order of the table. ``Multi-particle'' = chamber~A alone sees $\ge2$
   particle-like clusters (signal $\le$ one drift column) in a view.}
   \label{tab:losses}
@@ -16,7 +16,7 @@ reconstruction recovers it (tested by re-running the reconstruction, not argued)
     class (Fig.) & lost [\%] & recoverable without the reference? \\
     \hline
     noise band on a strip patch (\ref{fig:loss_band}) & \requote{1.43} & partly: hits flat over the window dropped, 145\,$\to$\,196 of 252 band events \\
-    second particle, M3 one fitted, view cut (\ref{fig:loss_multi_m3picked}) & \requote{1.01} & yes, if a view with two tracks is kept (multi-track credit) \\
+    second particle, reference particle fitted, view cut (\ref{fig:loss_multi_m3picked}) & \requote{1.01} & yes, if a view with two tracks is kept (multi-track credit) \\
     second particle, the other one fitted (\ref{fig:loss_multi_otherpicked}) & \requote{1.26} & no: needs a rule to choose the triggering track \\
     second particle, merged in projection (\ref{fig:loss_multi_merged}) & \requote{0.57} & partly: joint two-track fit, 8/37 \\
     ``spark'': discharge (\ref{fig:loss_spark_discharge}) & \requote{0.50} & no \\
@@ -26,7 +26,7 @@ reconstruction recovers it (tested by re-running the reconstruction, not argued)
     saturated $\delta$ blob, fit pulled off (\ref{fig:loss_satblob}) & \requote{0.81} & no: neither censoring nor a track\,+\,compact-deposit fit (\requote{71}\,$\to$\,\requote{74}\,\% of saturated views agree) \\
     fit off, no other flag (\ref{fig:loss_fit}) & \requote{0.34} & no \\
     head-on: 2-strip cluster, never seeded (\ref{fig:loss_headon}) & \requote{0.26} & yes: head-on rule, 17/17, 0 fakes on 742 empty triggers \\
-    position tail, mostly bent M3 tracks (\ref{fig:loss_postail}) & \requote{0.22} & no (reference) \\
+    position tail, mostly bent reference tracks (\ref{fig:loss_postail}) & \requote{0.22} & no (reference) \\
     edge of the other coordinate (\ref{fig:loss_edge}) & \requote{0.19} & no (geometry) \\
     second deposit, not particle-like (\ref{fig:loss_multi_deposit}) & \requote{0.17} & no \\
     other (cuts, charge elsewhere) & \requote{0.08} & --- \\
@@ -37,23 +37,23 @@ reconstruction recovers it (tested by re-running the reconstruction, not argued)
 \tbw{One paragraph per class: mechanism, how it was identified, the recovery test.}
 
 Each display (Figs.~\ref{fig:loss_band}--\ref{fig:loss_multi_deposit}) shows one real chamber~A event of the class in both
-views: strip position against drift time, the amplitude of every sample above 4\,\% of the view's maximum, the M3
+views: strip position against drift time, the amplitude of every sample above 4\,\% of the view's maximum, the reference
 track extrapolated through the drift gap (dashed) and the production fit (solid). The event is the one used in the
 loss-category note where it has one, otherwise picked by eye from six random events of the class.
 
 \newcommand{\lossfig}[2]{\begin{figure}[p]\centering\includegraphics[width=\textwidth]{#1}\caption{#2}\label{fig:#1}\end{figure}}
 \lossfig{loss_band}{Noise band: a whole-window baseline offset on a contiguous patch of strips (here the y view, right), seen in x and y together; the track itself is clean, the view is lost to the competing-cluster cut.}
-\lossfig{loss_multi_m3picked}{Second particle: the M3 particle is fitted, but a separate particle in the same view makes the view fail the competing-cluster cut.}
+\lossfig{loss_multi_m3picked}{Second particle: the reference particle is fitted, but a separate particle in the same view makes the view fail the competing-cluster cut.}
 \lossfig{loss_multi_otherpicked}{Second particle: production fits the other, brighter particle.}
 \lossfig{loss_multi_merged}{Second particle within the 12\,mm seed gap in one projection: the two tracks are merged and the fit lies between them.}
 \lossfig{loss_spark_discharge}{``Spark'' (more than 50 strips above the seeding floor): a discharge, whole chips light up and ring.}
-\lossfig{loss_spark_muonother}{``Spark'': a clean muon on M3 plus an unrelated deposit elsewhere in the plane.}
+\lossfig{loss_spark_muonother}{``Spark'': a clean muon on the reference plus an unrelated deposit elsewhere in the plane.}
 \lossfig{loss_spark_shower}{``Spark'': a shower developing at the crossing.}
 \lossfig{loss_delta}{$\delta$-ray: a sideways deposit from the track pulls the straight-line fit.}
-\lossfig{loss_satblob}{Saturated $\delta$ blob: a faint MIP line and a saturated deposit on the ADC rail (amber outline: samples $\ge$\,3550, censored; sky-blue outline: samples on the bottom rail after the clip, fitted as data). The fit tilts towards the deposit. Censoring at each channel's own rail ($4095-$pedestal$-$CM) and the bottom rail, or adding one point-like deposit to the forward model, moves agreement with M3 on 350 saturated views from \requote{71.1} to at most \requote{73.7}\,\% (most of it from a multi-start fit alone); with the track pinned to M3 the same model fits worse in \requote{93}\,\% of the failures: the deposit is a short $\delta$ track over 5--10 strips, not a point (\texttt{rerun/satstudy/satblob.py}).}
+\lossfig{loss_satblob}{Saturated $\delta$ blob: a faint MIP line and a saturated deposit on the ADC rail (amber outline: samples $\ge$\,3550, censored; sky-blue outline: samples on the bottom rail after the clip, fitted as data). The fit tilts towards the deposit. Censoring at each channel's own rail ($4095-$pedestal$-$CM) and the bottom rail, or adding one point-like deposit to the forward model, moves agreement with the reference on 350 saturated views from \requote{71.1} to at most \requote{73.7}\,\% (most of it from a multi-start fit alone); with the track pinned to the reference the same model fits worse in \requote{93}\,\% of the failures: the deposit is a short $\delta$ track over 5--10 strips, not a point (\texttt{rerun/satstudy/satblob.py}).}
 \lossfig{loss_fit}{Fit off with no second particle-like cluster or saturation flagged (outlier class FIT).}
-\lossfig{loss_headon}{Fit failed in one view: the X view is fitted on M3, but in Y the track lies beside a patch of strips with a whole-window baseline offset near the passivated end and no Y fit is returned. This is the only such track on pass 1. The head-on class of the table (a two-strip x cluster whose third strip is below the 10\,\% relative floor, never seeded) is recovered by the pass's head-on seeding, so no head-on loss is left to display.}
-\lossfig{loss_postail}{Position tail: the fit agrees with the charge, M3 does not (about two thirds are tracks bent between the M3 doublets).}
+\lossfig{loss_headon}{Fit failed in one view: the X view is fitted on the reference, but in Y the track lies beside a patch of strips with a whole-window baseline offset near the passivated end and no Y fit is returned. This is the only such track on pass 1. The head-on class of the table (a two-strip x cluster whose third strip is below the 10\,\% relative floor, never seeded) is recovered by the pass's head-on seeding, so no head-on loss is left to display.}
+\lossfig{loss_postail}{Position tail: the fit agrees with the charge, the reference does not (about two thirds are tracks bent between the reference doublets).}
 \lossfig{loss_edge}{Edge of the other coordinate.}
 \lossfig{loss_multi_deposit}{A second deposit that is not particle-like.}
 

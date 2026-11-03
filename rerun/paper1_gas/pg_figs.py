@@ -164,63 +164,56 @@ def vE():
 
 def drying():
     """Paper I §6 (2026-11-02): the bench gas dries over a night.  Water on 6-26 from the anchored M3 ladder of det6 and
-    det7 (attachment-blind; k from the attachment-free rows) through Magboltz; (b) the excess over each chamber's
-    afternoon plateau, det6's scaled by the fitted ratio, to show the one time shape; (c) det3 on 6-27: the same water
-    at every field of the drift scan (timing v).
+    det7 (attachment-blind; k from the attachment-free rows) through Magboltz; (a) the anchored velocity k v_lad, (b) its water, (c) the excess over each chamber's
+    afternoon plateau, det6's scaled by the fitted ratio, to show the one time shape.
     Checklist pass 2026-11-02: full width, no titles, (a)-(c) labels, one legend above; the grey band (golden rows),
     r and det3's 0.97 % are in the caption."""
     import pandas as pd
     from matplotlib.lines import Line2D
     ps = _ps()
+    import matplotlib.pyplot as plt
     A, S = D['att_626'], D['att_626']['shared']
-    fig, axs = ps.fig_for('full', height=2.45, ncols=3, gridspec_kw=dict(width_ratios=[1.35, 1.1, 0.75]))
+    # 2026-11-03 (Dylan): drop the det3 per-field panel; left = what is measured (anchored reference-ladder velocity)
+    # over the inferred water (Magboltz inversion), same time axis; right = the excess over plateau, one time shape.
+    fig = plt.figure(figsize=(6.1, 3.1), layout='constrained')
+    gs = fig.add_gridspec(2, 2, width_ratios=[1.45, 1.0])
+    axv = fig.add_subplot(gs[0, 0]); axw = fig.add_subplot(gs[1, 0], sharex=axv); axe = fig.add_subplot(gs[:, 1])
     rows = []
-    ax = axs[0]
-    for a in axs[:2]:
-        a.axvspan(6.0, 10.33, color=ps.GRID, lw=0, zorder=0)
+    for a in (axv, axw, axe):
+        a.axvspan(6.0, 10.33, color='#c9ced6', alpha=0.55, lw=0, zorder=0)       # golden rows, 06:00-10:20
     for det in ('det6', 'det7'):
         W = A[det]['water']
         t = np.array([w['t'] - T626 for w in W]); y = np.array([w['water'] for w in W])
         el = y - np.array([w['water_lo'] for w in W]); eh = np.array([w['water_hi'] for w in W]) - y
-        ax.errorbar(t, y, yerr=[el, eh], fmt=ps.DET_MARKER[det], ms=2.8, lw=0.6, color=ps.color(det), label=det)
-        ax.axhline(S['plateau_water'][det], color=ps.color(det), lw=0.7, ls='--', zorder=1)
+        v = np.array([w['v_true'] for w in W]); ve = np.array([w['v_err'] for w in W])
+        axv.errorbar(t, v, yerr=ve, fmt=ps.DET_MARKER[det], ms=2.8, lw=0.6, color=ps.color(det))
+        axw.errorbar(t, y, yerr=[el, eh], fmt=ps.DET_MARKER[det], ms=2.8, lw=0.6, color=ps.color(det))
+        axw.axhline(S['plateau_water'][det], color=ps.color(det), lw=0.7, ls='--', zorder=1)
         for i in range(len(t)):
-            rows.append(dict(panel='a', det=det, hours_626=t[i], water=y[i], lo=y[i] - el[i], hi=y[i] + eh[i]))
-    ax.set_xlabel('time on 6-26 (h)'); ax.set_ylabel('H$_2$O fraction (%)'); ax.set_ylim(0, 1.62); ax.set_xlim(0.5, 15.5)
-    ax = axs[1]
+            rows.append(dict(panel='a/b', det=det, hours_626=t[i], v_um_per_ns=v[i], v_err=ve[i], water=y[i],
+                             lo=y[i] - el[i], hi=y[i] + eh[i], E_Vcm=A[det]['E']))
+    axv.set_ylabel(r'drift velocity $v$ (µm/ns)')
+    axw.set_ylabel('H$_2$O fraction (%)'); axw.set_xlabel('time on 6-26 (h)'); axw.set_ylim(0, 1.62)
+    axw.set_xlim(0.5, 15.5)
+    plt.setp(axv.get_xticklabels(), visible=False)
     r = S['excess_ratio_det6_over_det7']
     for det, sc_ in (('det6', 1.0 / r), ('det7', 1.0)):
         W = A[det]['water']
         t = np.array([w['t'] - T626 for w in W])
         y = (np.array([w['water'] for w in W]) - S['plateau_water'][det]) * sc_
         e = 0.5 * (np.array([w['water_hi'] for w in W]) - np.array([w['water_lo'] for w in W])) * sc_
-        ax.errorbar(t, y, yerr=e, fmt=ps.DET_MARKER[det], ms=2.8, lw=0.6, color=ps.color(det))
+        axe.errorbar(t, y, yerr=e, fmt=ps.DET_MARKER[det], ms=2.8, lw=0.6, color=ps.color(det))
         for i in range(len(t)):
-            rows.append(dict(panel='b', det=det, hours_626=t[i], excess_scaled=y[i], err=e[i]))
-    ax.text(0.95, 0.93, f'det6 ÷ {r:.2f}', transform=ax.transAxes, ha='right', va='top', color=ps.color('det6'))
-    ax.axhline(0, color=ps.MODEL, lw=0.8)
-    ax.set_xlabel('time on 6-26 (h)'); ax.set_ylabel('H$_2$O above plateau (%)'); ax.set_xlim(0.5, 15.5)
-    ax = axs[2]
-    sc = D['scan']
-    w0, (wlo, whi) = sc['fixed']['water'], sc['fixed']['water_68']
-    ax.axhspan(wlo, whi, color=ps.MODEL, alpha=0.12, lw=0)
-    ax.axhline(w0, color=ps.MODEL, lw=1.0)
-    P = sorted((p for p in D['points'] if p['det'] == 'det3' and p['arm'] == 'in30' and 'saturday_scan' in p['key']
-                and 'water' in p), key=lambda p: p['E'])
-    x = np.array([p['E'] for p in P]); y = np.array([p['water'] for p in P])
-    lo_ = np.array([p['water_lo'] if np.isfinite(p['water_lo']) else p['water'] for p in P])
-    hi_ = np.array([p['water_hi'] if np.isfinite(p['water_hi']) else p['water'] for p in P])
-    ax.errorbar(x, y, yerr=[y - lo_, hi_ - y], fmt='o', ms=4, color=ps.color('det3'), zorder=5)
-    for i in range(len(x)):
-        rows.append(dict(panel='c', det='det3', E=x[i], water=y[i], lo=lo_[i], hi=hi_[i]))
-    ax.set_ylim(0, 1.62); ax.set_xlim(150, 420)
-    ax.set_xlabel(r'drift field $E$ (V/cm)'); ax.set_ylabel('H$_2$O fraction (%)')
-    hs = [Line2D([], [], ls='', marker=ps.DET_MARKER[d], color=ps.color(d), label=lab)
-          for d, lab in (('det6', 'det6, 6-26'), ('det7', 'det7, 6-26'), ('det3', 'det3, 6-27'))]
+            rows.append(dict(panel='c', det=det, hours_626=t[i], excess_scaled=y[i], err=e[i]))
+    axe.text(0.95, 0.93, f'det6 ÷ {r:.2f}', transform=axe.transAxes, ha='right', va='top', color=ps.color('det6'))
+    axe.axhline(0, color=ps.MODEL, lw=0.8)
+    axe.set_xlabel('time on 6-26 (h)'); axe.set_ylabel('H$_2$O above plateau (%)'); axe.set_xlim(0.5, 15.5)
+    from matplotlib.patches import Patch
+    hs = [Line2D([], [], ls='', marker=ps.DET_MARKER[d], color=ps.color(d), label=d) for d in ('det6', 'det7')]
     hs += [Line2D([], [], color=ps.MUTED, ls='--', lw=0.7, label='afternoon plateau'),
-           Line2D([], [], color=ps.MODEL, lw=1.0, label='one-water fit')]
-    ps.legend_above(fig, hs, ncol=5)
-    ps.panel_labels(axs)
+           Patch(fc='#c9ced6', alpha=0.55, label='golden rows (06:00-10:20)')]
+    ps.legend_above(fig, hs, ncol=4)
+    ps.panel_labels([axv, axw, axe])
     ps.save(fig, os.path.join(OUT, 'gas_drying'), data=pd.DataFrame(rows))
 
 

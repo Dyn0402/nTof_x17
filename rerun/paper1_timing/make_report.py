@@ -53,7 +53,7 @@ def jload(name):
 
 
 def fig_paper(m, amp, sps):
-    """The paper figure in the house style (papers/paper_style.py): det3 leads (dark blue, heavy, on top), det4 grey;
+    """The appendix figure timing_all (all five chambers) in the house style (papers/paper_style.py): det3 leads (dark blue, heavy, on top), det4 grey;
     one chamber legend above the panels, in-panel legends only for what the line style means."""
     import sys
     sys.path.insert(0, os.path.join(HERE, '..', '..', 'papers'))
@@ -127,7 +127,40 @@ def fig_paper(m, amp, sps):
         Line2D([], [], color=ps.INK, marker='o', ls='-', label='event time'),
         Line2D([], [], color=ps.INK, marker='o', mfc='white', ls='--', label=r'$(X-Y)/\sqrt{2}$')]
     ps.legend_above(fig, h, ncol=7, columnspacing=0.9, handlelength=2.0)
-    ps.save(fig, os.path.join(F, 'timing'), data=pd.DataFrame(csv_rows))
+    ps.save(fig, os.path.join(F, 'timing_all'), data=pd.DataFrame(csv_rows))
+
+
+def fig_main(m, amp):
+    """The main-text figure `timing`: chamber A only (Dylan 2026-11-03; all chambers are timing_all, appendix).
+    (a) event time and the uncorrelated part (X-Y)/sqrt2 against the resist HV of the 6-27 scan; (b) the uncorrelated
+    part against the early signal amplitude, the bench curve of the same chamber."""
+    import sys
+    sys.path.insert(0, os.path.join(HERE, '..', '..', 'papers'))
+    import paper_style as ps
+    from matplotlib.lines import Line2D
+    ps.use()
+    fig, ax = ps.fig_for('full', height=2.3, nrows=1, ncols=2)
+    d = 'mx17_3'; rows = []
+    run, dv = HV_RUNS[d]
+    s = m[(m.det == d) & (m.run == run) & (m.n >= 150) & (m.cls != 'skeptical') & (m.drift_V == dv)]
+    s = s.groupby('resist_V').agg(evt=('sigma_evt', 'median'), xy=('sigma_xy', 'median')).reset_index()
+    a = ax[0]
+    a.plot(s.resist_V, s.evt, **ps.det('det3', view='x', ms=3.5))
+    a.plot(s.resist_V, s.xy, **ps.det('det3', view='y', ms=3.5))
+    rows += [dict(panel='a', x=r.resist_V, sigma_evt=r.evt, sigma_xy=r.xy) for r in s.itertuples()]
+    a.set_xlabel('resist HV [V]'); a.set_ylabel(r'$\sigma$ (s68) [ns]'); a.set_ylim(0, 120)
+    a.legend(handles=[Line2D([], [], color=ps.color('det3'), marker='o', ls='-', label='event time'),
+                      Line2D([], [], color=ps.color('det3'), marker='o', mfc='white', ls='--', label=r'$(X-Y)/\sqrt{2}$')],
+             loc='upper right')
+    a = ax[1]
+    b = amp['bench'][d]['bins']
+    a.plot([x['amp'] for x in b], [x['sigma_xy'] for x in b], **ps.det('det3', ms=3.5))
+    rows += [dict(panel='b', x=x['amp'], sigma_xy=x['sigma_xy']) for x in b]
+    a.set_xscale('log'); a.set_yscale('log'); a.set_ylim(10, 300)
+    a.set_yticks([10, 20, 50, 100, 200]); a.set_yticklabels(['10', '20', '50', '100', '200']); a.minorticks_off()
+    a.set_xlabel('early amplitude, X + Y [ADC]'); a.set_ylabel(r'$(X-Y)/\sqrt{2}$ (s68) [ns]')
+    ps.panel_labels(ax)
+    ps.save(fig, os.path.join(F, 'timing'), data=pd.DataFrame(rows))
 
 
 def fig_angle():
@@ -176,7 +209,7 @@ def table(df, cols, fmt=None):
 def main():
     m = load()
     amp = jload('amplitude.json'); sps = jload('sps_timing.json'); ang = jload('angle.json'); t0p = jload('t0_position.json')
-    fig_paper(m, amp, sps); fig_angle(); ds = fig_drift(m)
+    fig_paper(m, amp, sps); fig_main(m, amp); fig_angle(); ds = fig_drift(m)
     rows = pd.read_csv(os.path.join(R, 'rows.csv'))
     g = []
     for d in ('mx17_2', 'mx17_3', 'mx17_7', 'mx17_6', 'mx17_4'):
@@ -217,7 +250,7 @@ def main():
          'The trigger adds nothing measurable on those runs (cov(start, end) ≈ 0), but ≈ 40–60 ns on the 6-23 / 6-24 runs (det4). '
          'At SPS (det4, CF₄, 14 µm/ns) the same estimator gives 160–200 ns per view (ZS): the low-amplitude end of the bench curve, '
          'not a measurement of the intrinsic floor.</div>',
-         '<h2>The paper figure</h2><img src="figures/timing.png">',
+         '<h2>The paper figure (chamber A)</h2><img src="figures/timing.png">','<h2>Appendix figure, all chambers</h2><img src="figures/timing_all.png">',
          '<p>(a) mesh-HV scans; (b) the uncorrelated part against the early amplitude, bench and SPS; (c) the golden rows split '
          'into event time, the part common to both views and X−Y/√2, with the trigger term where cov(start, end) &gt; 0.</p>',
          '<h2>Golden rows (M3-matched single tracks)</h2>',

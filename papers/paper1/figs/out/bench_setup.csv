@@ -1,0 +1,9 @@
+element,z_mm,width_mm,z_measured
+scintillator,-95,600,False
+scintillator,1405,600,False
+M3,24,500,True
+M3,144,500,True
+M3,1185,500,True
+M3,1302,500,True
+MX17 bottom slot,232,400,True
+MX17 top slot,702,400,True

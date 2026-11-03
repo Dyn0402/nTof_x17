@@ -21,10 +21,12 @@ import pandas as pd
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.abspath(os.path.join(HERE, '..', '..')))
-from common.mx17_active_area import TRUE_ACTIVE_BY_DET  # noqa: E402
+from common.mx17_active_area import TRUE_ACTIVE_BY_DET, STRIP_MAX_MM  # noqa: E402
 from edge_study import GOLD, SHORT  # noqa: E402
 
 D_EDGES = np.array([-10, -5, 0, 5, 10, 15, 20, 30, 45, 60, 90, 200])
+# --phys: bins of the distance to the PHYSICAL edge of the strip plane (box distance + the measured passivation on the y sides)
+D_EDGES_PHYS = np.array([0, 5, 10, 15, 20, 25, 30, 40, 50, 60, 90, 200])
 SIDES = ('x_lo', 'x_hi', 'y_lo', 'y_hi')
 
 
@@ -45,16 +47,18 @@ def load(det, rays_root, ang_root):
     px, py = R.mesh_x + 15 * R.tan_x, R.mesh_y + 15 * R.tan_y
     dd = np.stack([px - b['x'][0], b['x'][1] - px, py - b['y'][0], b['y'][1] - py])
     R['d'] = dd.min(axis=0); R['side'] = np.argmin(dd, axis=0)
+    R['dp'] = R.d + np.array([0.0, 0.0, b['y'][0], STRIP_MAX_MM - b['y'][1]])[R.side]
     R['det'] = R.cat_xy_5 == 'detected'
     return R
 
 
-def prof(R, side, col, fn):
+def prof(R, side, col, fn, phys=False):
+    E, dcol = (D_EDGES_PHYS, 'dp') if phys else (D_EDGES, 'd')
     out = []
-    for i in range(len(D_EDGES) - 1):
-        s = (R.side == side) & (R.d >= D_EDGES[i]) & (R.d < D_EDGES[i + 1])
+    for i in range(len(E) - 1):
+        s = (R.side == side) & (R[dcol] >= E[i]) & (R[dcol] < E[i + 1])
         v = R.loc[s, col]
-        out.append(dict(d_lo=float(D_EDGES[i]), d_hi=float(D_EDGES[i + 1]), n=int(s.sum()),
+        out.append(dict(d_lo=float(E[i]), d_hi=float(E[i + 1]), n=int(s.sum()),
                         m=float(fn(v)) if s.sum() >= 15 else float('nan')))
     return out
 
@@ -64,9 +68,13 @@ def main():
     ap.add_argument('--rays-root', required=True); ap.add_argument('--angles-root', required=True)
     ap.add_argument('--out', default=os.path.join(HERE, 'results', 'edge_angles.json'))
     ap.add_argument('--figs', default=os.path.join(HERE, 'figures'))
+    ap.add_argument('--phys', action='store_true', help='profiles against the physical-edge distance (key *_phys per side); no figures')
+    ap.add_argument('--dets', nargs='*', default=None)
     a = ap.parse_args()
     res = {}
     for det in GOLD:
+        if a.dets and det not in a.dets:
+            continue
         try:
             R = load(det, a.rays_root, a.angles_root)
         except IndexError:
@@ -77,13 +85,18 @@ def main():
                         dtx=prof(R, k, 'dt_x', np.nanmedian), dty=prof(R, k, 'dt_y', np.nanmedian),
                         s68x=prof(R, k, 'dt_x', s68), s68y=prof(R, k, 'dt_y', s68),
                         resx=prof(R, k, 'res_x', np.nanmedian), resy=prof(R, k, 'res_y', np.nanmedian))
+            if a.phys:
+                P = lambda col, fn: prof(R, k, col, fn, phys=True)
+                r[s].update(eff_phys=P('det', np.mean), dtx_phys=P('dt_x', np.nanmedian), dty_phys=P('dt_y', np.nanmedian),
+                            s68x_phys=P('dt_x', s68), s68y_phys=P('dt_y', s68))
         inn = R.d >= 30
         r['interior'] = dict(eff=float(R.det[inn].mean()), dtx=float(np.nanmedian(R.dt_x[inn])), dty=float(np.nanmedian(R.dt_y[inn])),
                              s68x=s68(R.dt_x[inn]), s68y=s68(R.dt_y[inn]))
         res[SHORT[det]] = r
     os.makedirs(os.path.dirname(a.out), exist_ok=True)
     json.dump(res, open(a.out, 'w'), indent=1, default=float)
-    figures(res, a.figs)
+    if not a.phys:
+        figures(res, a.figs)
 
 
 def figures(res, outdir):

@@ -2,7 +2,8 @@
 <style>body{font-family:sans-serif;max-width:1150px;margin:auto;line-height:1.45}table{border-collapse:collapse;font-size:13px;margin:8px 0}td,th{border:1px solid #ccc;padding:3px 6px;text-align:right}th{background:#eee}img{max-width:100%}.v{background:#eef6ee;padding:10px;border-left:4px solid #2e7d32}</style></head><body>
 <h1>Paper I §7 — chamber timing from the waveforms (pass 1)</h1>
 <div class="v"><b>Verdict.</b> On a cosmic muon the chamber gives its own event time to <b>σ ≈ 40–46 ns</b> (det2, det3, det7; 1.4–1.7 mm of drift), from the start of the charge column, at any track angle. Of that, ≈ 22–28 ns per view is not shared by the two views (noise, sampling) and falls with the signal size (roughly as amplitude<sup>−0.7</sup>); ≈ 35–40 ns is common to X and Y — the arrival of the first electrons next to the mesh — and sets the floor. The trigger adds nothing measurable on those runs (cov(start, end) ≈ 0), but ≈ 40–60 ns on the 6-23 / 6-24 runs (det4). At SPS (det4, CF₄, 14 µm/ns) the same estimator gives 160–200 ns per view (ZS): the low-amplitude end of the bench curve, not a measurement of the intrinsic floor.</div>
-<h2>The paper figure</h2><img src="figures/timing.png">
+<h2>The paper figure (chamber A)</h2><img src="figures/timing.png">
+<h2>Appendix figure, all chambers</h2><img src="figures/timing_all.png">
 <p>(a) mesh-HV scans; (b) the uncorrelated part against the early amplitude, bench and SPS; (c) the golden rows split into event time, the part common to both views and X−Y/√2, with the trigger term where cov(start, end) &gt; 0.</p>
 <h2>Golden rows (M3-matched single tracks)</h2>
 <table><tr><th>chamber</th><th>row</th><th>n</th><th>sigma_evt</th><th>sigma_xy</th><th>sigma_common</th><th>trigger</th><th>v</th><th>evt_mm</th><th>xy_mm</th></tr>

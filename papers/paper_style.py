@@ -110,11 +110,34 @@ _DET_RE = re.compile(r'\b(?:det|mx17_)([23467])\b')
 _RUN_RE = re.compile(r'\b(sat_det3|p2_det3)\b')
 
 
+_M3_RE = re.compile(r'\bM3\b')
+_MATH_RE = re.compile(r'(\$[^$]*\$)')
+#: gid that exempts a Text from ``publicise`` (the bench schematic names the M3 planes; nothing else should).
+KEEP_GID = 'ps-keep'
+
+
+def _ref(text: str) -> str:
+    """'M3' -> the reference (Dylan 2026-11-03: the paper says 'reference', M3 only in the bench description).
+    Inside mathtext 'M3' -> 'ref'; outside, 'Reference' at the start of a string, 'reference' inside it, and a bare
+    'M3' label -> 'reference'."""
+    if 'M3' not in text:
+        return text
+    parts = _MATH_RE.split(text)
+    out = []
+    for i, part in enumerate(parts):
+        if part.startswith('$') and part.endswith('$') and len(part) > 1:
+            out.append(_M3_RE.sub('ref', part))
+        else:
+            out.append(_M3_RE.sub(lambda m: 'Reference' if (i == 0 and m.start() == 0) else 'reference', part))
+    return ''.join(out)
+
+
 def public(text: str, legend: bool = False) -> str:
     """Rewrite internal names in a figure string. In a legend, 'det3' -> 'A'; elsewhere 'Chamber A' at the start
-    of the string and 'chamber A' inside it. Golden-row keys -> 'Run 1' / 'Run 2'."""
+    of the string and 'chamber A' inside it. Golden-row keys -> 'Run 1' / 'Run 2'. 'M3' -> 'reference'."""
     if not PUBLIC_NAMES or not text:
         return text
+    text = _ref(text)
     text = _RUN_RE.sub(lambda m: RUN[m.group(1)], text)
 
     def rep(m):
@@ -138,7 +161,7 @@ def publicise(fig) -> None:
             legend_texts.add(id(t))
             t.set_text(public(t.get_text(), legend=True))
     for t in fig.findobj(Text):
-        if id(t) not in legend_texts:
+        if id(t) not in legend_texts and t.get_gid() != KEEP_GID:
             new = public(t.get_text())
             if new != t.get_text():
                 t.set_text(new)

@@ -96,7 +96,7 @@ def sps(tel_dir, prefixes):
     dety = np.isfinite(ey) & (np.abs(ey - Py) < 3.0)
     return dict(x=profile(Px, detx, nmin=20), y=profile(Py, dety, nmin=20), n=int(len(d)), cx=cx.tolist(), cy=cy.tolist(),
                 x_range=[float(np.nanpercentile(Px, 1)), float(np.nanpercentile(Px, 99))],
-                y_range=[float(np.nanpercentile(Py, 1)), float(np.nanpercentile(Py, 99))])
+                y_range=[float(np.nanpercentile(Py, 1)), float(np.nanpercentile(Py, 99))], Px=Px, Py=Py, detx=detx)
 
 
 def live_of(p):
@@ -158,7 +158,7 @@ def main():
     prof = [pd.DataFrame(dict(set='bench g_det4', x_mm=cb, eff=pb, n=nb))]
     from matplotlib.lines import Line2D
     lo, hi = min(r['x_range'][0] for r in res['sps'].values()), max(r['x_range'][1] for r in res['sps'].values())
-    # (a) the bench over the whole chamber; (b) the SPS beam spot (shaded in (a)), bench and both SPS runs overlaid
+    # Old two-row version (whole chamber + zoom), kept as det4_stripes_profiles
     fig, axs = pst.fig_for('full', height=4.0, nrows=2, ncols=1)
     bstyle = dict(where='mid', color=pst.color('det4'), lw=1.0)
     axs[0].step(cb, 100 * pb, **bstyle)
@@ -173,12 +173,46 @@ def main():
     axs[1].set_xlim(lo - 3, hi + 3)
     for ax in axs:
         ax.set_ylabel('X-view efficiency [%]'); ax.set_ylim(0, 105); ax.set_yticks([0, 50, 100])
-    for ax in axs:
         ax.set_xlabel(r'$x$ in the det4 strip frame [mm]')
     pst.panel_labels(axs)
     h = [Line2D([], [], color=pst.color('det4'), lw=2.5, label='bench (cosmic muons, M3)')]
     h += [Line2D([], [], color=gas_col[nm], lw=2.5, label='SPS ' + gas_lbl[nm]) for nm in S]
     pst.legend_above(fig, h, ncol=3, handlelength=1.6)
+    pst.publicise(fig)
+    pst.save(fig, os.path.join(HERE, 'figures', 'det4_stripes_profiles'), data=pd.concat(prof, ignore_index=True))
+
+    # The paper figure (2026-11-03, Dylan): (a) 2-D X-view efficiency map of chamber E at SPS (run 63, uRWELL telescope
+    # tracks) with the box of the tracks the 1-D profile takes; (b) the 1-D profile, bench and SPS overlaid.
+    from matplotlib.patches import Rectangle
+    s63 = S['run63 flat700 (CF4)']
+    bx, by = s63['x_range'], s63['y_range']
+    MB = 4.0                                                    # map bin [mm]
+    pad = 8.0
+    xe = np.arange(bx[0] - pad, bx[1] + pad + MB, MB); ye = np.arange(by[0] - pad, by[1] + pad + MB, MB)
+    Hn, _, _ = np.histogram2d(s63['Px'], s63['Py'], bins=[xe, ye])
+    Hd, _, _ = np.histogram2d(s63['Px'][s63['detx']], s63['Py'][s63['detx']], bins=[xe, ye])
+    Em = np.where(Hn >= 8, Hd / np.maximum(Hn, 1), np.nan)
+    fig, (a0, a1) = pst.fig_for('full', height=2.5, nrows=1, ncols=2, gridspec_kw=dict(width_ratios=[1, 1.35]))
+    im = a0.pcolormesh(xe, ye, 100 * Em.T, vmin=0, vmax=100, cmap='viridis', rasterized=True)
+    a0.add_patch(Rectangle((bx[0], by[0]), bx[1] - bx[0], by[1] - by[0], fill=False, ec=pst.ACCENT, lw=1.3))
+    a0.set_aspect('equal'); a0.set_xlabel(r'$x$ [mm]'); a0.set_ylabel(r'$y$ [mm]')
+    cb_ = fig.colorbar(im, ax=a0, fraction=0.05, pad=0.02); cb_.set_label('efficiency [%]')
+    bstyle = dict(where='mid', color=pst.color('det4'), lw=1.6, alpha=0.7)
+    a1.step(cb[zb], 100 * pb[zb], **bstyle)
+    for nm, s in S.items():
+        cs, ps, ns = s['x']; win = (cs >= s['x_range'][0]) & (cs <= s['x_range'][1])
+        a1.step(cs[win], 100 * ps[win], where='mid', lw=1.0, color=gas_col[nm])
+    a1.set_xlim(lo - 3, hi + 3); a1.set_ylim(0, 105); a1.set_yticks([0, 50, 100])
+    a1.set_xlabel(r'$x$ [mm]'); a1.set_ylabel('X-view efficiency [%]')
+    pst.panel_labels([a0, a1])
+    pst.legend_above(fig, h, ncol=3, handlelength=1.6)
+    mapdf = pd.DataFrame([dict(x_mm=(xe[i] + xe[i + 1]) / 2, y_mm=(ye[j] + ye[j + 1]) / 2, n=Hn[i, j], eff=Em[i, j])
+                          for i in range(len(xe) - 1) for j in range(len(ye) - 1)])
+    prof.append(mapdf.assign(set='map run63'))
+    pst.publicise(fig)
+    fig.savefig(a.fig, dpi=300)                              # the paper copy (pdf)
+    pst.save(fig, os.path.join(HERE, 'figures', 'det4_stripes'), data=pd.concat(prof, ignore_index=True))
+    return
     pst.publicise(fig)
     fig.savefig(a.fig, dpi=300)                              # the paper copy (pdf)
     pst.save(fig, os.path.join(HERE, 'figures', 'det4_stripes'), data=pd.concat(prof, ignore_index=True))

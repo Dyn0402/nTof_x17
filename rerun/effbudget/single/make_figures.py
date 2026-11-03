@@ -44,20 +44,24 @@ def _steps(ax, edges, vals, **kw):
 
 
 def eff_vs_radius():
-    """Both golden rows (line style); multi-track credit filled, production pick open; accidentals on the right axis."""
+    """Chamber A's two golden runs merged (counts summed, binomial errors): any reconstructed track within R of the
+    reference ray (filled) vs the track the reconstruction keeps (open); accidentals (event mixing) on the right axis."""
     d = json.load(open(os.path.join(RES, 'radius.json')))
     fig, ax = ps.fig_for(6.1, aspect=0.45)  # 2026-11-03: full page width, lower
     ax2 = ax.twinx(); ax2.grid(False); ax2.spines['right'].set_visible(True)
-    rows = []
-    for key in ('sat_det3', 'p2_det3'):
-        r = d[key]; R = np.array(r['radii']); n = r['n']
-        e, c = np.array(r['eff']), np.array(r['credit'])
-        ee, ce = [100 * np.sqrt(q / 100 * (1 - q / 100) / n) for q in (e, c)]
-        ax.errorbar(R, c, yerr=ce, color=D3, ls=ROWLS[key], marker='o', ms=3.0, lw=1.2, zorder=5)
-        ax.errorbar(R, e, yerr=ee, color=D3, ls=ROWLS[key], marker='o', ms=3.0, mfc='white', lw=0.9, zorder=4)
-        ax2.plot(R, r['accidental'], ls=ROWLS[key], color=ps.MUTED, marker='^', ms=2.6, lw=0.8)
-        rows += [dict(row=key, n=n, R_mm=x, eff=a, eff_err=ae, credit=b, credit_err=be, accidental=f)
-                 for x, a, ae, b, be, f in zip(R, e, ee, c, ce, r['accidental'])]
+    R = np.array(d['sat_det3']['radii'])
+    keys = ('sat_det3', 'p2_det3')
+    n = sum(d[k]['n'] for k in keys)
+    # counts = fraction x n of each run (the stored percentages are means over that run's n rays); sum, then divide
+    kc = {q: sum(np.array(d[k][q]) / 100 * d[k]['n'] for k in keys) for q in ('eff', 'credit')}
+    ka = sum(np.array(d[k]['accidental']) / 100 * d[k]['n'] for k in keys)
+    e, c, acc = (100 * kc['eff'] / n, 100 * kc['credit'] / n, 100 * ka / n)
+    ee, ce = [100 * np.sqrt(q / 100 * (1 - q / 100) / n) for q in (e, c)]
+    ax.errorbar(R, c, yerr=ce, color=D3, marker='o', ms=3.0, lw=1.2, zorder=5)
+    ax.errorbar(R, e, yerr=ee, color=D3, marker='o', ms=3.0, mfc='white', lw=0.9, zorder=4)
+    ax2.plot(R, acc, color=ps.MUTED, marker='^', ms=2.6, lw=0.8)
+    rows = [dict(n=n, R_mm=x, eff=a, eff_err=ae, credit=b, credit_err=be, accidental=f)
+            for x, a, ae, b, be, f in zip(R, e, ee, c, ce, acc)]
     ax.axvline(5.0, color=ps.ACCENT, lw=0.8, ls=':', zorder=1)
     ax.text(5.6, 63, '$R$ = 5 mm', color=ps.ACCENT, ha='left', fontsize=ps.BASE_PT * 0.85)
     ax2.text(15, 1.15, 'accidental', color=ps.MUTED, ha='center', fontsize=ps.BASE_PT * 0.85)
@@ -65,11 +69,10 @@ def eff_vs_radius():
     ax.set_xlabel('matching radius $R$ at the mesh [mm]'); ax.set_ylabel('efficiency [%]')
     ax2.set_ylabel('accidental match [%]', color=ps.MUTED); ax2.set_ylim(0, 5)
     ax2.tick_params(axis='y', colors=ps.MUTED)
-    h = [Line2D([], [], color=D3, marker='o', ms=3.0, lw=1.2, label='multi-track credit'),
-         Line2D([], [], color=D3, marker='o', ms=3.0, mfc='white', lw=0.9, label='production pick'),
-         Line2D([], [], color=ps.INK, ls=ROWLS['sat_det3'], lw=0.9, label=ROWLAB['sat_det3']),
-         Line2D([], [], color=ps.INK, ls=ROWLS['p2_det3'], lw=0.9, label=ROWLAB['p2_det3'])]
-    ax.legend(handles=h, loc='center right', bbox_to_anchor=(0.99, 0.50), fontsize=ps.BASE_PT * 0.8)  # 2026-11-03: legend off the curves (top left is on the multi-track curve)
+    h = [Line2D([], [], color=D3, marker='o', ms=3.0, lw=1.2, label='any reconstructed track within $R$'),
+         Line2D([], [], color=D3, marker='o', ms=3.0, mfc='white', lw=0.9, label='the track the reconstruction keeps, within $R$'),
+         Line2D([], [], color=ps.MUTED, marker='^', ms=2.6, lw=0.8, label='unrelated track within $R$ (right axis)')]
+    ax.legend(handles=h, loc='center right', bbox_to_anchor=(0.99, 0.50), fontsize=ps.BASE_PT * 0.8)  # 2026-11-03: legend off the curves
     ps.save(fig, os.path.join(OUT, 'eff_vs_radius'), data=pd.DataFrame(rows))
 
 
@@ -131,16 +134,16 @@ def xy_pairing():
     rs = np.mean([ref[k]['reference']['lq_rsig'] for k in ('sat_det3', 'p2_det3')])
     true = np.r_[E.lq_true_m, E.lq_true_o]; swap = np.r_[E.lq_swap_1, E.lq_swap_2]
     fig, ax = ps.fig_for(W_MID, aspect=0.62)
-    b = np.linspace(-2.5, 2.5, 101)
+    b = np.linspace(-2.5, 2.5, 101)   # bins unchanged (0.05); the axis shows +-1.9
     ax.axvspan(med - rs, med + rs, color=ps.MUTED, alpha=0.25, lw=0, zorder=0, label=r'single tracks, $\pm1\sigma$')
     ax.hist(true, b, histtype='step', color=D3, lw=1.3, label='true pairing (M3-tagged)')
     ax.hist(swap, b, histtype='step', color=ps.ACCENT, lw=1.0, label='swapped pairing')
     ax.set_xlabel(r'$\ln(q_X/q_Y)$ of an X/Y segment pair'); ax.set_ylabel('segment pairs / 0.05')
     ok = ref['pooled']['all']
-    ax.text(0.02, 0.97, f"{ok['n']} events, correct pairing\n{100 * ok['charge_time']['frac']:.1f} % "
-            f"(charge alone {100 * ok['charge']['frac']:.1f} %)",
+    ax.text(0.02, 0.97, f"{ok['n']} two-particle events\ncorrectly paired:\n{100 * ok['charge_time']['frac']:.1f} % charge + time\n"
+            f"{100 * ok['charge']['frac']:.1f} % charge only",
             transform=ax.transAxes, va='top', fontsize=ps.BASE_PT * 0.85, color=ps.INK)
-    ax.set_xlim(-2.5, 2.5); ax.set_ylim(0, 1.3 * ax.get_ylim()[1]); ax.legend(loc='upper right')
+    ax.set_xlim(-1.9, 1.9); ax.set_ylim(0, 1.3 * ax.get_ylim()[1]); ax.legend(loc='upper right')
     ps.save(fig, os.path.join(OUT, 'xy_pairing'), data=pd.DataFrame(dict(lq_true=pd.Series(true), lq_swap=pd.Series(swap))))
 
 
@@ -225,5 +228,5 @@ def two_particle():
 if __name__ == '__main__':
     os.makedirs(OUT, exist_ok=True)
     ps.use()
-    eff_vs_radius(); residuals(); xy_pairing(); loss_budget(); two_particle()
+    eff_vs_radius(); residuals(); xy_pairing(); loss_budget()   # two_particle: made by papers/paper1/figs now; not regenerated here
     print('wrote', OUT)

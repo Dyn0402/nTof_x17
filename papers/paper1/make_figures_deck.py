@@ -379,6 +379,43 @@ def s_a1(D, F, man):
             short='A1 displays')
 
 
+EVD_GALLERY = Path(os.environ.get('EVD_GALLERY', '/media/ucla/work/claude-jobs/77eb854f/evd/gallery'))
+EVD_PAGES = [  # (file stem, claim, what to look at)
+    ('style_navy', 'A: white to navy (the paper default for now)', 'The 11-02 colours, now in ADC on one scale for both views.'),
+    ('style_magma', 'B: magma (white, yellow, red, black)', 'High contrast; faint charge reads well; fits drawn blue.'),
+    ('style_grey', 'C: grey data, coloured lines', 'The lines pop most; the data recede; prints well in black and white.'),
+    ('style_viridis', 'D: viridis', 'Perceptually uniform; yellow for low charge can look washed out on white.'),
+    ('style_dark', 'E: dark background, inferno', 'The most striking on screen; heavy in print and for a journal page.'),
+    ('ref_dashed', 'Reference track: dashed with a halo (default)', 'Thicker than the fits; black in A.'),
+    ('ref_band', 'Reference track: translucent band + thin line', 'Marks the reference without covering the data.'),
+    ('ref_ticks', 'Reference track: thin line + arrowheads outside the gap', 'Points at where the reference enters and leaves.'),
+    ('gamma_0p5', 'Colour scale sqrt(ADC)', 'Faint charge brighter; the MIP core saturates the scale.'),
+    ('spaced', 'Views separated by a small gap', 'For comparison with the abutting default.'),
+    ('zoomed', 'Zoomed to the charge (depth not to the strip scale)', 'The default draws depth and strips on one mm scale where the window allows.'),
+]
+
+
+def s_evd_styles(D):
+    """Appendix: event-display style candidates (Dylan 11-03: test a few, put them in the appendix, I choose)."""
+    pages = [(f, c, w) for f, c, w in EVD_PAGES if (EVD_GALLERY / f'{f}.png').exists()]
+    if not pages:
+        return
+    body = (sd.title('Appendix: event-display styles to choose from',
+                     'Same four chamber A events in each style (made by papers/paper1/figs/make_displays.py gallery)')
+            + sd.col(*[sd.p(f'<b>{c}</b> &nbsp; <span style="color:{sd.MUT}">{w}</span>', 22) for f, c, w in pages], gap=6))
+    D.slide('evd_index', body, '<p>Fixed in every style (from your 11-02 feedback): fits thin and dashed; the reference '
+            'track heavier; ADC on one colour scale for both views (not each view to its own maximum); X and Y views '
+            'touching; a view with two particles far apart drawn as a broken axis; mesh and cathode marked; depth and '
+            'strip position on one mm scale where the window allows. The choice is one line in papers/paper1/figs/evd.py '
+            '(DEFAULT, OPT).</p>', short='Display styles')
+    for f, c, w in pages:
+        im = Image.open(EVD_GALLERY / f'{f}.png').convert('RGB')
+        im.thumbnail((1500, 1500))
+        b = io.BytesIO(); im.save(b, 'PNG', optimize=True)
+        body = sd.title(c, w) + sd.img(b.getvalue(), w=1100, h=int(1100 * im.size[1] / im.size[0]) if im.size[1] / im.size[0] < 0.62 else 680)
+        D.slide(f'evd_{f}', body, f'<p><code>{EVD_GALLERY}/{f}.png</code></p>', short=f)
+
+
 def s_unused(D, F, man):
     used = {f['name'] for f in F}
     rows = [[f'<code>{k}</code>', e.get('state', ''), sd.esc(e.get('title', ''))[:110]] for k, e in man.items() if k not in used]
@@ -451,7 +488,7 @@ def main():
     for f in F:
         if not f['name'].startswith('loss_'):
             s_figure(D, f, man, log)
-    s_a1(D, F, man); s_unused(D, F, man); s_close(D)
+    s_a1(D, F, man); s_unused(D, F, man); s_close(D); s_evd_styles(D)
     D.write(a.out, note_meta=dict(title='MX17 Paper I: figure review',
                                   summary='Every Paper I figure in paper order: status, verdict and what to fix; one palette, '
                                           'six missing figures, the order of work.',

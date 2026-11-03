@@ -156,7 +156,10 @@ def fig():
 
     def tint(c, f):                    # f = 0: white, 1: the colour
         return tuple(1 - f * (1 - x) for x in to_rgb(c))
-    shade = dict(zip(map(str, STACK_V), [tint(c3, f) for f in (0.35, 0.58, 0.8, 1.0)]))
+    # Dylan 2026-11-03: field colours are a sequential map that is no chamber's colour (viridis, truncated so the
+    # lightest still shows on white); dark = low field
+    cmap = plt.get_cmap('viridis')
+    shade = dict(zip(map(str, STACK_V), [cmap(f) for f in (0.0, 0.3, 0.58, 0.82)]))
     # checklist pass 2026-11-02: full width, no panel titles, (a)-(c) labels, one field legend above the panels
     fig, axs = ps.fig_for('full', height=2.55, ncols=3, gridspec_kw=dict(width_ratios=[1.25, 1.1, 0.85]))
     rows = []
@@ -177,7 +180,7 @@ def fig():
             rows.append(dict(panel='a', drift_V=int(Vd), E=F['E'], t_ns=t[i], stack=y[i], err=e[i], model=m[i],
                              col_start_ns=t0, col_end_ns=t1))
     ax.set_xlim(-250, 2750); ax.set_ylim(-0.1, 1.12)
-    ax.set_xlabel(r'time after the leading edge $t$ (ns)'); ax.set_ylabel('strip-sum signal (normalised)')
+    ax.set_xlabel(r'time after leading edge $t$ (ns)'); ax.set_ylabel('strip-sum signal (normalised)')
 
     ax = axs[1]
     for Vd in map(str, STACK_V):
@@ -191,7 +194,7 @@ def fig():
         tt = np.linspace(-0.4, 0.4, 3)
         ax.plot(tt, L['v_ang'] * tt, '-', color=shade[Vd], lw=1.0, zorder=4)
     ax.set_xlim(-0.42, 0.42)
-    ax.set_xlabel(r'M3 slope $\tan\theta_{\mathrm{M3}}$'); ax.set_ylabel(r'fitted $w - w_0$ (µm/ns)')
+    ax.set_xlabel(r'reference slope $\tan\theta_{\mathrm{ref}}$'); ax.set_ylabel(r'fitted $w - w_0$ (µm/ns)')
     ax.legend(ps.view_handles(color=ps.MUTED), ['X', 'Y'], loc='lower right')
 
     ax = axs[2]
@@ -199,14 +202,14 @@ def fig():
     E = [D['fields'][v]['E'] for v in map(str, STACK_V)]
     g = [D['fields'][v]['gap'] for v in map(str, STACK_V)]
     ge = [D['fields'][v]['gap_err'] for v in map(str, STACK_V)]
-    hb = ax.axhspan(G['gap'] - G['err'], G['gap'] + G['err'], color=c3, alpha=0.18, lw=0, zorder=1)
-    ax.axhline(G['gap'], color=c3, lw=1.0, zorder=2)
-    hh = ax.axhspan(GAP_REF - GAP_REF_ERR, GAP_REF + GAP_REF_ERR, fc='none', hatch='////', ec=ps.MUTED, lw=0, zorder=2)
+    hb = ax.axhspan(G['gap'] - G['err'], G['gap'] + G['err'], color=ps.INK, alpha=0.15, lw=0, zorder=1)
+    ax.axhline(G['gap'], color=ps.INK, lw=1.0, zorder=2)
+    hh = ax.axhspan(GAP_REF - GAP_REF_ERR, GAP_REF + GAP_REF_ERR, fc='none', hatch='////', ec=ps.ACCENT, lw=0, zorder=2)
     for x, y, e, Vd in zip(E, g, ge, map(str, STACK_V)):
         ax.errorbar(x, y, yerr=e, fmt='o', ms=4, color=shade[Vd], zorder=5)
         rows.append(dict(panel='c', drift_V=int(Vd), E=x, gap_mm=y, err=e, v_ang=D['fields'][Vd]['v_ang'],
                          v_timing=D['fields'][Vd]['v_timing'], T_ns=D['fields'][Vd]['T']))
-    ax.legend([hb, hh], ['mean', 'strip extent'], loc='upper left', handlelength=1.4)
+    ax.legend([hb, hh], ['mean of the four', r'geometric gap $L/\tan\theta$'], loc='upper left', handlelength=1.4)
     ax.set_xlim(150, 420); ax.set_ylim(21.5, 34)
     ax.set_xlabel(r'drift field $E$ (V/cm)'); ax.set_ylabel(r'gap $g = v\,T$ (mm)')
     hs = [Line2D([], [], color=shade[Vd], marker='o', ms=3.5,

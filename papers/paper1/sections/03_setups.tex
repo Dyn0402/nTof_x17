@@ -4,14 +4,14 @@
 June 2026) and the SPS H4 beam (uRWELL telescope, chamber~E only, including the 25.6\textdegree{} rotation).}
 
 \subsection{Cosmic bench}
-\tbw{Scintillator trigger, four M3 reference planes, two test slots. M3 recipe ($\chi^2<1.0$, $N_\mathrm{clus}=4$).
+\tbw{Scintillator trigger, four M3 tracking planes, two test slots. The four M3 planes form the bench's reference telescope; we call a track reconstructed in them (one cluster per plane, $N_\mathrm{clus}=4$, $\chi^2<1.0$) the \emph{reference track} and its extrapolation to the chamber under test the \emph{reference ray}, and drop the M3 name from here on.
 DREAM readout, sampling, window. Gas and flow.}
 \askDylan{Gas per setup: bench Ar/iC$_4$H$_{10}$ 95/5? SPS runs with Ar/CF$_4$/iC$_4$H$_{10}$ 88/10/2? Which runs enter the paper?}
 
 \begin{figure}[t]
   \centering
-  \includegraphics[width=0.69\linewidth]{bench_setup}
-  \caption{\tbw{The Saclay cosmic bench, side view ($z$ positions to scale; slab thicknesses and horizontal sizes not). The readout is triggered by the coincidence of the top and bottom scintillators ($60\times60$\,cm); the four M3 planes ($50\times50$\,cm, $z=24$, 144, 1185, 1302\,mm) reconstruct each muon independently of the chamber under test. Test slots at $z=232$ and 702\,mm; chamber~A ran in the top slot for Runs 1 and 2 (\cref{sec:datasets}).}}
+  \includegraphics[width=\linewidth]{bench_setup}
+  \caption{\tbw{The Saclay cosmic bench, side view ($z$ to scale; the transverse direction drawn at 0.7 of the $z$ scale, slab thicknesses exaggerated). The readout is triggered by the coincidence of the top and bottom scintillators ($60\times60$\,cm). The four M3 reference planes ($50\times50$\,cm; $z=24$, 144, 1185, 1302\,mm) reconstruct each muon independently of the chamber under test, over a lever arm of 1278\,mm. The two test slots are at $z=232$ and 702\,mm; chamber~A ran in the top slot for Runs 1 and 2. Scintillator positions are schematic.}}
   \label{fig:bench}
 \end{figure}
 
@@ -43,7 +43,12 @@ to the SPS instead. Chamber A is the subject of this paper; B--E show what varie
 Each chamber's bench numbers come from its \emph{golden run}, its long run at fixed HV (\cref{tab:datasets}); these
 ran at 490--495\,V, 10--65\,V above the HV the scans later showed to be best (\cref{sec:operation}). Chamber A has two, taken back to back on the night of 27--28 June at the same HV and in the
 same slot: \textbf{Run~1}, the long run that closed its HV and drift scans, and \textbf{Run~2}, the overnight run
-that followed. They are summed unless a figure shows them separately.}
+that followed. We treat them as one data set (10\,h, 28\,453 tracks over the full active area): taken apart they
+agree on everything this paper measures (interior efficiency $95.43\pm0.26$ / $95.15\pm0.15$\,\%, angle $s_{68}$
+0.975 / 0.991\textdegree{} in X and 0.896 / 0.901\textdegree{} in Y, position core at the mesh 0.50 / 0.51\,mm in X,
+uncorrelated time 22.4 / 22.2\,ns). The one difference is the drift velocity, 35.8 against 37.2\,\textmu m/ns, as
+the gas dried through the night (\cref{sec:gas}); the calibration was made on Run~1 and applied to Run~2 with only
+$v$ refitted. Where a figure needs a single event it is from Run~1.}
 \begin{table}[t]
   \centering
   \caption{\tbw{The chambers and their bench golden runs (Ar/iC$_4$H$_{10}$ 95/5 with water, \cref{sec:gas}).
