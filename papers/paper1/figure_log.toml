@@ -983,3 +983,15 @@ change = "Saturated-blob test re-run on the re-pass (Run 1, 350 saturated + 150 
 date = "2026-11-03"
 fig = "two_particle"
 change = "Dylan: keep 17907 for (b) ('very clear there in Y that there are two merged tracks'); alternatives 16344 / 1242 / 30746 / 2444 not used."
+
+[[entry]]
+date = "2026-11-03"
+fig = "bow_profiles"
+status = "for review"
+change = "Redrawn from the 2-D fit (same estimator as the text): quadratic surface along x and y through the centre for X and Y strips, one panel per chamber, pooled dish with a band of combined error (bootstrap + four-term scatter/2). Producer rerun/paper1_res/bow_2d_fig.py. Depths B 1.87+-0.24, A 1.31+-0.22, E 1.69+-0.22, C 1.76+-0.18, D 1.68+-0.23 mm."
+
+[[entry]]
+date = "2026-11-03"
+fig = "bow_closure"
+status = "for review"
+change = "Redrawn from the 2-D fit with bootstrap error bars; r_f 0.52-1.00 on all ten views (C X 0.87; the 1-D version read 1.9). Text: Y-view steeper tilt explained (~3/4 from the dish being ~1.4x deeper along y, rest window-dependent; Y_TILT_2026-11-03.md), Y gain quoted as an empirical held-out gain; n_TOF sentence matches the plan (bow carried by channel); column-duration claim requoted from the final tables."

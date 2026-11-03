@@ -18,25 +18,31 @@ the position residual to $\tan\theta\,h(u,w)$ with $h$ a quadratic surface of th
 transverse speed to a quadratic surface plus a ladder term, for each view (the two-dimensional fit of
 \texttt{fb\_bow\_maps/xcheck.py}; the dish depth pools its four curvature terms, \texttt{summary.py}). Both views see a dish in both directions
 (Fig.~\ref{fig:bowprof}): the centre lies $1.3$--$1.9$\,mm below a point 150\,mm out
-(B $1.87\pm0.18$, A $1.31\pm0.20$, E $1.69\pm0.20$, C $1.76\pm0.15$, D $1.68\pm0.22$\,mm), i.e.\ a mean curvature of
-$1.2$--$1.7\times10^{-4}$\,mm$^{-1}$. The errors are statistical (bootstrap, inflated by the scatter of the four terms). The four
-terms of one chamber, two per view, scatter by $0.3$--$0.4$\,mm at 150\,mm, which is the realistic uncertainty of a single depth.
+(B $1.87\pm0.24$, A $1.31\pm0.22$, E $1.69\pm0.22$, C $1.76\pm0.18$, D $1.68\pm0.23$\,mm), i.e.\ a mean curvature of
+$1.2$--$1.7\times10^{-4}$\,mm$^{-1}$. Each error combines, in quadrature, the bootstrap error of the pooled depth ($0.06$--$0.11$\,mm)
+and the standard error of the mean of the four terms (their scatter divided by $\sqrt4$, $0.17$--$0.22$\,mm). The four terms of one chamber, two
+per view, scatter by $0.3$--$0.4$\,mm at 150\,mm, which is the uncertainty of a single term. They share the telescope and the board, so the
+combined error is a floor, and a bow common to the reference planes is not in it (below).
 The X strips read $1.2$--$1.8$\,mm and the Y strips $1.5$--$1.9$\,mm; neither view is deeper on every chamber
 (Y deeper on A, B, C; X deeper on D, E). Along $y$ the dish is $0.15$--$0.7$\,mm deeper than along $x$ on all five chambers
-(at 150\,mm, $1.7$--$2.1$ against $1.0$--$1.8$\,mm), a difference of the size of the scatter that we do not claim as an
-anisotropy. The figure shows the binned one-dimensional profiles of the same data; along the own axis of each view these are
-distorted by edge truncation of wide clusters and give a larger and less stable X/Y split than the pooled fit.
+(at 150\,mm, $1.7$--$2.1$ against $1.0$--$1.8$\,mm; a mean ratio of curvatures of 1.4, range 1.0--1.6). This is a measured tendency, not a claim of
+anisotropy of the board: the drift-tilt ramp below, which does not depend on the telescope's depth, points the same way, but with five chambers
+the two are only weakly correlated ($r=0.57$) and a bow of the reference planes along $y$ could contribute to the position route. The figure draws the
+fitted quadratic surface itself, along both axes through the centre, for each view, with the pooled dish and its combined error; no binned points are
+shown. The dish is not a pure parabola: the drift-tilt gradient depends on the part of the chamber fitted (below), so the quadratic is a description of the
+central region.
 (ii)~\emph{Drift tilt.} If drift lines leave the mesh normal to its surface, charge produced at height $d$ arrives
 displaced by $d\,\partial h/\partial x$, so the fitted transverse speed acquires an offset
 $w_0 = v\,r_f\,\partial h/\partial x$ with $r_f$ between $1/2$ (flat cathode) and 1 (cathode bowed with the board).
 For a dish, $w_0$ must rise linearly across the chamber. It does, in all ten chamber views: the gradient is
-$2.1$--$4.3$\,\textmu m/ns per m on the X strips and $3.3$--$7.7$\,\textmu m/ns per m on the Y strips (a ramp of $\pm0.3$ to
+$2.1$--$4.3$\,\textmu m/ns per m on the X strips and $3.2$--$7.7$\,\textmu m/ns per m on the Y strips (each good to $0.1$--$0.2$; a ramp of $\pm0.3$ to
 $\pm1.2$\,\textmu m/ns over $\pm150$\,mm), and the ratio of the measured gradient to the one predicted from the mesh curvature of the
-same view is $r_f = 0.52$--$1.00$ on all ten views, inside the physical range. (Fig.~\ref{fig:bowclos} uses the
-one-dimensional profile estimator instead: $r_f=0.6$--$1.1$ on nine views and $1.9$ on chamber~C\,X, whose binned profile has half the
-curvature of the two-dimensional fit.) The Y strips read a steeper ramp than the X strips by a factor $1.2$--$2.1$ on every
-chamber, a feature of the fit's Y view rather than of the board, so the $r_f$ of the X views ($0.52$--$0.91$) are the safer ones. The
-sign of this relation is predicted by the geometry, not fitted.
+same view is $r_f = 0.52$--$1.00$ on all ten views ($\pm0.05$--$0.18$, statistical), inside the physical range (Fig.~\ref{fig:bowclos}). The Y strips read a steeper ramp than the X strips by a factor
+$1.2$--$2.1$ on every chamber. About three quarters of the excess (in the logarithm) follows from the dish being deeper along $y$ than along $x$ by a mean
+factor 1.4, as the position route also finds; the rest depends on the fitted window (restricting the fit to the central 200\,mm lowers the ratio to
+$0.8$--$0.9$ on A and B, because it is the X gradient that falls short in the outer 100\,mm). A difference of the ladder scale between the views (below $4\,\%$),
+the $\tan\theta$ distribution and an extra $\tan\theta$ term (below $5\,\%$) and the cluster-width gradient do not produce it. We therefore do not use the X--Y
+ratio as a measurement of anything, and quote $r_f$ for the two views together. The sign of this relation is predicted by the geometry, not fitted.
 (iii)~\emph{Narrowest cluster.} The cluster of strips above threshold is narrowest for the track running along the
 local drift lines, at $\tan\theta = -w_0/v$. This uses amplitudes only, with no hit times and no fitted angle; the
 narrowest-cluster slope drifts across the chamber with the predicted sign on 10/10 views and beyond $2\sigma$ on 8/10
@@ -54,17 +60,30 @@ A plane-scale error of the telescope that could produce the $w_0$ ramp would lea
 chamber; the measured residual scale is below 0.13\,\%. A position-dependent $t_0$ bias would vanish when every track is
 moved to a fixed trigger latency; $94$--$104$\,\% of the curvature survives. Fringe fields at the frame decay within
 $\sim$10\,mm of the edges, while the ramp is linear over 300\,mm. A bow of the reference planes would shift tracks by
-$\tan\theta\, g(x,y)$ and can mimic $h$, but cannot produce $w_0$ or move the narrowest cluster; a common telescope
-contribution to the depth cannot be excluded and limits the depth to \requote{$0.5$--$1.3$} times the quoted value.
-The column duration, which should lengthen where the gap deepens, does not resolve the effect: its X and Y readings of
-the same column differ by more than the 1--2\,mm expected.
+$\tan\theta\, g(x,y)$ and can mimic $h$, but cannot produce $w_0$ or move the narrowest cluster. Only the part of the
+plane bows that a straight line through the four planes absorbs (a dish common to all planes, or one growing along $z$)
+reaches the chamber, and the plane-to-plane residuals see it only through their $\tan^3\theta$ non-linearity. That test
+bounds the reference's contribution to $h$ at the upper slot ($z=702$\,mm, next to the reference centroid) to
+$+0.4\pm0.2$\,mm at 150\,mm (cut-to-cut range $-0.2$ to $+0.4$\,mm; $\le0.7$\,mm at $2\sigma$), so the quoted depth is
+$0.5$--$1.4$ times the chamber's own for chamber~A and $0.6$--$1.4$ times for the others. Requiring in addition that the
+cathode follow between none and all of the mesh bow ($r_f\in[1/2,1]$ on the X views of the four upper-slot chambers) narrows
+the reference's contribution to $\lesssim0.4$\,mm, with the caveat that the cathode is not required by physics to sag less
+than the mesh. The lower slot is not bounded independently, because a bow growing along $z$ cannot be separated from the
+planes' own angle response; chamber~A's depths in the two slots differ by only $0.05\pm0.28$\,mm
+(\texttt{fb\_bow\_maps/ref\_bow\_bound.py}, one run with per-plane clusters).
+The column duration, which should lengthen where the gap deepens, does not resolve the effect. Fitting the same quadratic surface to the
+$5\times5$ cell maps of the end-of-column time and reading its curvature at 150\,mm as an equivalent depth ($v$ times the duration; positive when the
+centre columns are longer), chamber~B follows the dish ($+1.3$ to $+2.9$\,mm on both views; $+0.7$ to $+1.1$ from the $t_0$-free
+$u_{90}-u_{50}$), and so does chamber~A on its X strips ($+1.2$, $+1.8$) but not on its Y strips ($+0.2\pm0.7$, $-0.1\pm0.7$); chamber~C has the
+opposite sign ($-2.5$ to $-4.2$\,mm: centre columns shorter), and chambers D and E are zero or of mixed sign within errors of $0.5$--$1.4$\,mm. The cell values scatter by
+$1$--$35$ times their statistical errors ($\chi^2$/dof of the surface), so the route neither confirms nor excludes the dish.
 
 \paragraph{Stability.}
 Nineteen bench runs were reconstructed with each chamber's own calibration and their own alignment: other subruns of
 the same night, other nights (B after a remount, A and E on other days), both bench slots (A at $z=702$ and
 $232$\,mm) and other drift and mesh voltages. All nineteen give their chamber's dish depth within $2\sigma$ of the chamber's
 error-weighted mean (largest deviation $1.8\sigma$; 18 of 19 when each run is compared with the mean of the others).
-The lowest is chamber~A on 6-25 in the lower slot ($0.97\pm0.15$\,mm against a chamber~A mean of $1.25\pm0.08$\,mm), while
+The lowest is chamber~A on 6-25 in the lower slot ($0.97\pm0.15$\,mm against a chamber~A mean of $1.25\pm0.08$\,mm; run-to-run errors are statistical), while
 chamber~A in the same lower slot on 6-23 reads $1.46\pm0.15$\,mm, so the slot does not set the depth. The twelve runs with a statistical error below
 $0.25$\,mm scatter by 9\,\% rms around their chamber's mean. The drift-tilt shape measured on one run, applied to the others with only the rigid tilt
 re-measured, recovers a median 85\,\% of the angular-resolution gain of each run's own map (24 views; the 6-17 chamber~B and
@@ -80,23 +99,28 @@ overpressure and up to $\sim$1\,mm from a mesh laminated under 10\,N/cm: the mea
 The bow enters the reconstruction only through the conversion of the fitted transverse speed into an angle and through
 the height of the track point. A per-chamber surface (static shape) plus the per-run rigid tilt, validated by two-fold
 cross-validation on held-out tracks of the final reconstruction, improves the angular resolution by a median of 16\,\% (3--29\,\% per view;
-14--25\,\% on the Y views); the
+14--25\,\% on the Y views, 2--29\,\% on the X views, of which only chamber~C gains more than 9\,\%). It removes whatever position-dependent ramp each view has, so
+the larger Y gain follows from its steeper ramp, which the position data explain only in part; it is an empirical held-out gain, not a demonstration of the bow on Y. The
 shape predicted from positions alone, with two numbers fitted to the angles, recovers 15\,\%. On chamber~C the steep-track
 bias ($0.3<|\tan\theta|<0.45$) falls from $-0.9^\circ/-1.1^\circ$ (X/Y) to $-0.65^\circ/-0.8^\circ$. Subtracting
-$h\tan\theta$ improves the position residual by 5--18\,\%. Because the load depends on mounting and the chambers
-stand vertical at n\_TOF, the bench surface is not transferred to the beam data without an in-situ measurement.
+$h\tan\theta$ improves the position residual by 5--18\,\%. The beam reconstruction carries each chamber's bench bow block over unchanged
+(chambers A--D: the bench and n\_TOF channel-to-strip maps are identical, so it carries by channel), and the quadratic reaches about $5$\,mm at the plate
+corners, beyond the range fitted on the bench. The load depends on mounting, and the chambers stand vertical at n\_TOF, where the gravity part of the
+load acts in the plane of the board rather than across it, so the carried surface is an assumption about the chambers, not a measurement of them at
+n\_TOF. Bow-on against bow-off is to be compared on the A--C cosmic line of run~149 and on the capsule focus with existing beam data; no result exists yet.
+Chamber~B, which has no field-shaping ring at n\_TOF, is not used for angles.
 \askDylan{Is a direct flatness measurement of a spare board (or the photographs of the opened chambers) available to
 quote alongside? No new data are needed for the text as it stands.}
 
 \begin{figure}[t]
   \centering
   \includegraphics[width=\linewidth]{bow_profiles}
-  \caption{\tbw{Mesh height across the chamber from position residuals against the reference track slope, (a) X strips and (b) Y strips of the five chambers, relative to the fitted parabola's value at the centre. Golden bench rows; chamber~A heavy.}}
+  \caption{\tbw{Mesh height across the chamber from position residuals against the reference track slope, relative to its centre, one panel per chamber: the quadratic surface of the two-dimensional fit of the final reconstruction, evaluated along $x$ (thick) and $y$ (thin) through the centre, for the X strips (solid) and the Y strips (dashed), with the rigid tilt removed. Dotted: the pooled dish; band: its combined error (bootstrap and the scatter of the four terms). Golden bench rows.}}
   \label{fig:bowprof}
 \end{figure}
 \begin{figure}[t]
   \centering
   \includegraphics[width=0.48\linewidth]{bow_closure}
-  \caption{\tbw{Measured drift-tilt gradient (of $w_0$ across the chamber) against the gradient predicted from the mesh curvature measured with positions ($v\,h''$), in \textmu m/ns per m. Dashed: drift lines tilted fully with the mesh ($r_f=1$); dotted: flat cathode ($r_f=1/2$). Filled: X strips; open: Y strips.}}
+  \caption{\tbw{Measured drift-tilt gradient (of $w_0$ across the chamber) against the gradient predicted from the mesh curvature measured with positions ($v\,h''$), both from the two-dimensional fit, in \textmu m/ns per m, with bootstrap errors. Dashed: drift lines tilted fully with the mesh ($r_f=1$); dotted: flat cathode ($r_f=1/2$). Filled: X strips; open: Y strips.}}
   \label{fig:bowclos}
 \end{figure}
