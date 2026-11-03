@@ -1,5 +1,35 @@
 # Handoff
 
+## Paper I figure feedback: simple/aesthetic items done, the rest open — updated 2026-11-03 (dylan-MS-7C84)
+
+**Resume:** Read the 💬 replies under "Paper I Figure Feedback" (hub notes, archive/); next: the figures not yet touched.
+
+**Goal:** Work through Dylan's note `~/.claude-hub/notes/dylan/archive/Paper I Figure Feedback.md` (figure-by-figure feedback). Answers go as hidden 💬 replies under each to-do (`POST /api/notes/dylan/item/respond`, see ~/workspace README "Responses").
+
+**Done (pushed to main; deck live at dylan-neff.web.cern.ch/notes/mx17-paper1-figures.html):**
+- "micro-TPC" -> "TPC" in main.tex/sections/figures.toml.
+- Full page width (6.1 in drawn, includegraphics at linewidth, lower height): hv_scan (a,b side by side), currents_vs_hv, eff_vs_radius, charge_balance.
+- hv_scan: discharges linear, 100 % line, det4 star dropped, caption lines vs stars. currents_vs_hv: y linear. eff_vs_radius: linear R, legend centre right. charge_balance: x = f, inset (median f, core sigma, SD). efficiency_map: small panels share axes.
+- 15 replies written in the note; figure_log.toml has 2026-11-03 entries; deck republished.
+
+**Not done (all replied to in the note where relevant):**
+1. Other figures still at 0.68-0.95 linewidth: do a width/height sweep.
+2. Detector renaming (det2/3 -> public names): needs Dylan's naming; do as one pass at the end.
+3. Dataset section labelling the two det3 runs (Run A / B) and cleaning legends.
+4. Placeholders: chamber_stack, readout_layout, sps_setup.
+5. Dead-time figure: drop from main text (appendix), quote upper bound in text.
+6. Residuals: Gaussian fit to (a), pick cut (~3 sigma), explain (b) bump (accidentals?); defend 200 um vs 5000 um acceptance.
+7. Efficiency maps: stronger outline, show passivation on det3 (needs layout drawing), add the det7 veil (X ch 0-255) to the caption.
+8. Second eff-vs-discharge plots: det3 looks on plateau at 430 V; why run at 490 V?
+9. currents_vs_hv still busy: Dylan decides det3-only / appendix / text.
+10. TPC principle and bench schematic rework (wider, less text); microtpc_principle file/ID names still say micro.
+
+**Gotchas:**
+- Producers need EOS inputs: fetched to `$WORK_DATA/paper1_figs/{spark,tel_gain,sps_gain,hits_gain,v1,maps,report,budget}` (~170 MB; delete when finished, regenerable). No xrdcp on the desktop: `pip install xrootd` into a throwaway venv and use the python API (a fetch script did dirlist + CopyProcess).
+- Run producers with `--out <scratch>` then copy pdf/png/csv into the repo, then `.venv/bin/python papers/make_figures.py paper1 --only <ids>`; `make_figures.py` in rerun/effbudget/single rewrites five figures at once (deterministic).
+- dylan-cern-site's default branch is `master`, NOT main: publish with `git push origin master`. `add-note.py <html> --slug mx17-paper1-figures --force --deploy` redeploys the deck; I accidentally advanced origin/main there once (harmless ff).
+- Check "micro-TPC" text inside `papers/paper1/figs/make_principle.py` before the next principle-figure rebuild.
+
 ## n_TOF pass 1: reprocess the n_TOF tracks on the final chain — updated 2026-11-02 (dylan-MS-7C84)
 
 **Resume:** pre-freeze studies for the n_TOF pass; next: pinned-t0 on all 12 staged run_149 sub-runs, then tan_max + Q7 scan.
