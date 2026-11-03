@@ -27,8 +27,8 @@ import a1_displays as a1  # noqa: E402
 import evd  # noqa: E402
 
 KEY = 'sat_det3'
-LOCAL = '/media/ucla/work/claude-jobs/17c92c46-displays'
-DEF_ROOT = '/media/ucla/work/paper1_figs'
+LOCAL = os.environ.get('WORK_DATA', '/media/ucla/work') + '/claude-jobs/17c92c46-displays'
+DEF_ROOT = os.environ.get('WORK_DATA', '/media/ucla/work') + '/paper1_figs'
 DEF_ANA = os.path.join(LOCAL, 'Analysis_pass1')
 DEF_EOS = os.path.join(LOCAL, 'june_tests', 'mx17_det3_saturday_scan_6-27-26')
 

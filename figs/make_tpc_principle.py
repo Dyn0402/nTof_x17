@@ -28,7 +28,7 @@ sys.path[:0] = [HERE, os.path.join(HERE, '..', '..')]
 import evd  # noqa: E402
 import paper_style as ps  # noqa: E402
 
-CACHE = '/media/ucla/work/claude-jobs/17c92c46-displays/principle'
+CACHE = os.environ.get('WORK_DATA', '/media/ucla/work') + '/claude-jobs/17c92c46-displays/principle'
 
 
 def sketch(ax, g, v_mm, t0, tlim, tan=0.45):

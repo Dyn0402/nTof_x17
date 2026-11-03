@@ -379,7 +379,7 @@ def s_a1(D, F, man):
             short='A1 displays')
 
 
-EVD_GALLERY = Path(os.environ.get('EVD_GALLERY', '/media/ucla/work/claude-jobs/1ccd2342/evd/gallery'))
+EVD_GALLERY = Path(os.environ.get('EVD_GALLERY', os.environ.get('WORK_DATA', '/media/ucla/work') + '/claude-jobs/1ccd2342/evd/gallery'))
 #: colour map -> (claim, what to look at); each is shown in both normalisations (EVD_NORMS)
 EVD_MAPS = [
     ('reds', 'White to red (the paper default)', 'Strongest contrast for the black reference and the blue fit; prints well; faint charge reads as pink.'),
