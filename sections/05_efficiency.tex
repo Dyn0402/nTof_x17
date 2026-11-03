@@ -17,12 +17,12 @@ fault); flat in position and angle. Equivalently the X/Y charge ratio of one tra
 \end{figure}
 
 \subsection{What ``detected'' means}\label{sec:detected}
-\tbw{Denominator: one clean M3 ray ($\chi^2<1$, four clusters) whose footprint lies inside the measured active area
+\tbw{Denominator: one clean reference ray ($\chi^2<1$, four clusters) whose footprint lies inside the measured active area
 (the whole chamber: the edge cut changes the efficiency by ${\le}0.9$\,pt, so the headline numbers use the full area
 and \cref{sec:edge} studies the edges). Detected: both views fitted, ${\le}2$ competing strips per view, and the
-reconstructed track within $R$ of the M3 ray at the mesh. When the chamber reconstructs several tracks, the event is
-detected if one of them is the M3 track (multi-track credit; this is the default number). Nothing is removed from the denominator: tracks far from M3 with the right angle (0.20\,\%) are only half
-explained by muons scattering between the M3 doublets, so they count as losses with everything else we cannot pin on
+reconstructed track within $R$ of the reference ray at the mesh. When the chamber reconstructs several tracks, the event is
+detected if one of them is the reference track (multi-track credit; this is the default number). Nothing is removed from the denominator: tracks far from the reference with the right angle (0.20\,\%) are only half
+explained by muons scattering between the reference doublets, so they count as losses with everything else we cannot pin on
 the reference.}
 \tbw{\textbf{The radius.} $\varepsilon(R)$ has two regimes (\cref{fig:effradius}): the resolution core, steep up to
 ${\sim}4$\,mm; then a slow rise of 0.1--0.2\,pt per mm out to 40\,mm. We use $R=5$\,mm, the knee, where the
@@ -30,28 +30,28 @@ accidental rate (event mixing) is 0.07\,\%, below the statistical error and 70$\
 $R\in[4,8]$\,mm moves the efficiency by $-0.5/{+0.6}$\,pt (systematic).}
 \tbw{\textbf{Why 5\,mm and not a few $\sigma$ of the resolution.} The residual at the mesh is not the chamber's
 resolution: a Gaussian fit to its core (\cref{fig:residuals}a, $|r|<1.5$\,mm) gives $\sigma=0.55\pm0.02$ (X) and
-$0.53\pm0.03$\,mm (Y), of which the chamber contributes ${\sim}0.12$\,mm (\cref{sec:posres}); the rest is the M3
+$0.53\pm0.03$\,mm (Y), of which the chamber contributes ${\sim}0.12$\,mm (\cref{sec:posres}); the rest is the reference
 pointing at the chamber (0.24/0.21\,mm) and the multiple scattering of soft cosmic muons. And its tails are not
-Gaussian: only 94/92\,\% (X/Y) of the fitted tracks lie within 3$\sigma$ of M3, 98\,\% within 5\,mm. A cut at
+Gaussian: only 94/92\,\% (X/Y) of the fitted tracks lie within 3$\sigma$ of the reference, 98\,\% within 5\,mm. A cut at
 3$\sigma$ (${\approx}1.6$\,mm) would count 11\,pt of tracks the chamber did find, on the right particle, as losses,
 mixing the reference's resolution tails into the efficiency. The efficiency asks whether the chamber saw the muon;
 how well it measured it is the resolution (\cref{sec:tracking}). Between 1.6 and 5\,mm the efficiency rises by 11\,pt
 while the accidental rate stays below 0.07\,\%, so those tracks are the muon, measured less well.}
-\tbw{\textbf{What lies beyond 5\,mm} (\cref{fig:residuals}b). The grey curve is the distance to another event's M3
+\tbw{\textbf{What lies beyond 5\,mm} (\cref{fig:residuals}b). The grey curve is the distance to another event's reference
 ray, scaled as if every fit were unrelated to its muon: an unrelated fit lands mostly ${>}40$\,mm away. The data have
 7 tracks there against 16\,300 for that hypothesis, so at most ${\sim}0.05$\,\% of fits are unrelated, and they
 contribute ${<}1$ of the 244 tracks at 10--20\,mm. The shoulder from 5 to 20\,mm is therefore correlated with the
-muon: fits pulled by its $\delta$-rays and saturated blobs, a secondary fitted instead of the muon, and bent M3 tracks
+muon: fits pulled by its $\delta$-rays and saturated blobs, a secondary fitted instead of the muon, and bent reference tracks
 (the classes of \cref{app:losses}). We cut before it.}
 \begin{figure}[t]
   \centering
   \includegraphics[width=\linewidth]{eff_vs_radius}
-  \caption{\tbw{Chamber~A efficiency against the matching radius at the mesh. Filled: multi-track credit; open: production pick; solid: Run~1, dashed: Run~2; binomial errors. Grey (right axis): the accidental match rate from event mixing. Vertical line: $R=5$\,mm.}}
+  \caption{\tbw{Chamber~A efficiency (Runs 1 and 2 combined) against the matching radius $R$ at the mesh. Filled: the muon counts as found if any reconstructed track candidate lies within $R$ of the reference ray in each view. Open: only the track the reconstruction keeps counts. Grey, right axis: the probability that an unrelated track (the chamber's fit of another event) falls within $R$ of a given reference ray. Dotted: $R=5$\,mm.}}
   \label{fig:effradius}
 \end{figure}
 \begin{figure}[t]
   \centering
-  \includegraphics[width=0.95\linewidth]{residuals}
+  \includegraphics[width=\linewidth]{residuals}
   \caption{\tbw{The full chamber~A residual distributions behind \cref{fig:effradius}, Runs 1 and 2 summed: (a) per view at the mesh (0.25\,mm bins), (b) radial, with the distance to another event's ray (event mixing, scaled to the same number of fits: what the data would be if every fit were unrelated to its muon). Black in (a): a Gaussian fit to the core ($|r|<1.5$\,mm), $\sigma=0.55$ (X) / 0.53\,mm (Y). Dotted: $R=5$\,mm. The 5--20\,mm shoulder is correlated with the muon, not accidental: the data have 7 tracks beyond 40\,mm where unrelated fits would put 16\,300.}}
   \label{fig:residuals}
 \end{figure}
@@ -70,34 +70,34 @@ overlaid (\cref{fig:effhv}): chamber~A reaches its plateau before discharges cos
 discharges before they reach it.}
 \begin{figure}[t]
   \centering
-  \includegraphics[width=0.95\linewidth]{efficiency_map}
+  \includegraphics[width=\linewidth]{efficiency_map}
   \caption{\tbw{Detection-efficiency maps (8\,mm disk on a 2\,mm grid; plateau pools of rows): (a) chamber~A, (b)--(e) chambers B--E, on the same scale. Golden-run interior efficiency: A 92.6\,\% (pool of 30 rows, 70\,470 rays), B 90.3\,\% (14 rows), C 74.4\,\% (13 rows), D 68.0\,\% (21 rows), E 40.9\,\% (golden run only). Solid box: active area; white dashed: interior (30\,mm from the $x$ sides, 8\,mm from the $y$ sides); hatched on (a): the passivated strip ends (18.0 and 18.7\,mm), outside the active area. (d) Chamber~D's X channels 0--255 ($x<199.3$\,mm, left of the dotted line) are veiled: an X readout fault there, so only channels 256--511 are quoted. Blank: outside the active area or fewer than 15 rays.}}
   \label{fig:effmap}
 \end{figure}
 \begin{figure}[t]
   \centering
-  \includegraphics[width=0.95\linewidth]{eff_vs_hv_discharge}
-  \caption{\tbw{Interior detection efficiency (filled) and the fraction of M3 tracks lost to discharges (open) against the resist HV: (a) chamber~A (6-27 scan, 1000\,V drift), (b) chamber~C and (c) chamber~D (6-26 scan, 700\,V drift). Shaded: the efficiency plateau (within 1\,pt of the maximum). Chamber~A holds 91--94\,\% from 425 to 500\,V while its discharge loss stays below 1\,\% up to 490\,V; chamber~C and chamber~D already lose 1.5--2.4\,\% to discharges at their efficiency maximum and fall from there.}}
+  \includegraphics[width=\linewidth]{eff_vs_hv_discharge}
+  \caption{\tbw{Interior detection efficiency (filled) and the fraction of reference tracks lost to discharges (open) against the resist HV: (a) chamber~A (6-27 scan, 1000\,V drift), (b) chamber~C and (c) chamber~D (6-26 scan, 700\,V drift). Shaded: the efficiency plateau (within 1\,pt of the maximum). Chamber~A holds 91--94\,\% from 425 to 500\,V while its discharge loss stays below 1\,\% up to 490\,V; chamber~C and chamber~D already lose 1.5--2.4\,\% to discharges at their efficiency maximum and fall from there.}}
   \label{fig:effhv}
 \end{figure}
 \tbw{\textbf{What the HV buys on chamber~A: time, not efficiency.} Across its 6-27 scan (\cref{fig:hvmetrics}) the
 gain grows by a factor 13 from 425 to 490\,V: the median fitted track charge doubles every 18.8\,V (fitted below
 465\,V, where no track saturates), and the fraction of tracks with a strip at the ADC rail rises from 0 to 30\,\%.
 Over the same range the efficiency (90--94\,\%), the angle resolution ($s_{68}$ 0.91--1.03\textdegree{} X,
-0.80--0.96\textdegree{} Y), the angle scale (fitted against M3 $\tan$: 0.99--1.02 in both views, up to 510\,V) and
-the position residual core at the mesh (0.43--0.56\,mm, M3 pointing included) are flat. The time resolution is not:
+0.80--0.96\textdegree{} Y), the angle scale (fitted against the reference $\tan$: 0.99--1.02 in both views, up to 510\,V) and
+the position residual core at the mesh (0.43--0.56\,mm, reference pointing included) are flat. The time resolution is not:
 the uncorrelated part $(t_X-t_Y)/\sqrt2$ falls from 109\,ns at 425\,V to 23\,ns at 490\,V, the event time from 105 to
 42\,ns. In a TPC time is depth: at $v\approx35$\,\textmu m/ns that is 3.9\,mm against 0.8\,mm.}
 \tbw{\textbf{Why the angle does not need the gain and the time does.} The two come from different parts of the
 signal. The time is read from the start of the charge column (\cref{sec:timing}), the first electrons, made next to
 the mesh: a small part of the signal, whose timing degrades as it nears the noise. The angle is fitted to the whole
 column, every strip and every sample. Two measurements show it. Track by track, pooling the scan points below
-510\,V and keeping unsaturated tracks, the angle residual to M3 does not depend on the track's charge
+510\,V and keeping unsaturated tracks, the angle residual to the reference does not depend on the track's charge
 ($s_{68}$ 0.82--0.94\textdegree{} in X and 0.72--0.87\textdegree{} in Y over the ten charge deciles, a factor 17
 in charge, with no rise at low charge), while the time resolution of tracks binned the same way falls with the early
 amplitude as noise over slope (\cref{fig:timing}b). The fit's own angle error does not move either (median
 $\sigma_{\tan}$ 0.014--0.021 at every HV up to 510\,V), and the angle scale does not move with the gain, so a lower gain adds no
-tilt. Two limits: the $s_{68}$ includes the M3 angle error and the scattering, which could hide a small change in the
+tilt. Two limits: the $s_{68}$ includes the reference angle error and the scattering, which could hide a small change in the
 chamber's own term; and it holds down to 425\,V, $1/13$ of the operating gain, below which the scan does not go.}
 \askDylan{The bench runs used 490\,V; the scans support any HV from ${\sim}460$\,V up for efficiency. Is timing
 (depth, $t_0$) the argument we want to make for 490\,V, or was it chosen for gain margin at n\_TOF? Note the noise floor
@@ -105,14 +105,14 @@ doubled there (23 July), which would favour margin, but we have no n\_TOF HV sca
 \begin{figure}[t]
   \centering
   \includegraphics[width=\linewidth]{hv_metrics}
-  \caption{\tbw{Chamber~A against the resist HV (6-27 scan, 1000\,V drift; 630--700 M3-matched tracks per point up to 505\,V). (a) Gain proxies: median fitted charge $q_X+q_Y$ (log scale; dotted, the exponential fitted below 465\,V) and, right axis, the tracks with a strip at the ADC rail. (b) Interior efficiency and the tracks lost to a discharge. (c) Time resolution: the uncorrelated part $(t_X-t_Y)/\sqrt2$ (filled) and the event time (open), not measured above 505\,V. (d) Angle resolution $s_{68}$, (e) angle scale (slope of the fitted against the M3 $\tan$), (f) core of the position residual at the mesh (M3 pointing and scattering included); X filled, Y open. Dotted: 490\,V, the HV of Runs 1 and 2.}}
+  \caption{\tbw{Chamber~A against the resist HV (6-27 scan, 1000\,V drift; 630--700 reference-matched tracks per point up to 505\,V). (a) Gain proxies: median fitted charge $q_X+q_Y$ (diamonds, log scale; dotted, the exponential fitted below 465\,V) and, right axis, the fraction of tracks with a strip at the ADC rail (stars). (b) Interior efficiency (filled) and the tracks lost to a discharge (open). (c) Time resolution: the uncorrelated part $(t_X-t_Y)/\sqrt2$ (filled) and the event time (open), not measured above 505\,V. (d) Angle resolution $s_{68}$, (e) angle scale (slope of the fitted against the reference $\tan$), (f) core of the position residual at the mesh (reference pointing and scattering included); X filled, Y open, one marker shape per quantity. Dotted vertical line: 490\,V, the HV of Runs 1 and 2.}}
   \label{fig:hvmetrics}
 \end{figure}
 \analysis{EFFHV}{build eff\_vs\_hv\_discharge from the hv\_scan rows (rerun/paper1\_ops + effbudget)}
 
 \subsection{Chamber~A: single-track efficiency}\label{sec:single}
 \tbw{\textbf{The selection.} A ``single-track'' sample selected by chamber~A itself is biased: a failure that looks like two
-tracks would leave the sample by its own failure. An external tag does not help on the bench: M3 sees a second straight
+tracks would leave the sample by its own failure. An external tag does not help on the bench: reference sees a second straight
 track in 2 of the 276 events where chamber~A sees two particles, because those particles are local (soft electrons and
 secondaries at large angles). We use the two views instead: a real second particle is ionisation in the gas, seen in both
 views with the same charge (the X/Y charge ratio of one particle is known to 6\,\%). An event leaves the single-track
@@ -124,13 +124,13 @@ together trip the discharge veto (${>}50$ strips). Everything else stays in the 
 \tbw{\textbf{Result.} Over the full active area (Runs 1 and 2, 28\,453 tracks):
 $\varepsilon_\mathrm{single}=94.8\pm0.1$\,(stat)$^{+0.6}_{-0.5}$\,($R$)\,\%; in the interior 95.7\,\%. Interior
 losses (4.3\,\%): $\delta$-rays 2.5 (below), discharges 0.5, noise bands 0.2, fits off with no flag 0.3, second deposits
-not particle-like 0.2, fits right in angle but far from M3 0.2, edge of the other coordinate 0.15. The chamber hardware itself (discharges, noise bands) accounts for 0.7\,\%; the rest is the
+not particle-like 0.2, fits right in angle but far from the reference 0.2, edge of the other coordinate 0.15. The chamber hardware itself (discharges, noise bands) accounts for 0.7\,\%; the rest is the
 reconstruction of a muon accompanied by its own $\delta$-ray. The extra 0.9\,pt lost over the full area is the edge
 response (\cref{sec:edge}).}
 \tbw{\textbf{$\delta$-rays: one population, three outcomes by size.} Median strips over threshold: a clean muon 12; a
 compact saturated blob 19 (the fit is pulled off, 0.9\,\%); a $\delta$ along the track 34 (the fit is pulled beyond
 5\,mm, 0.9\,\%); a large branching deposit 67 (0.7--0.9\,\%), which trips the discharge veto (${>}50$ strips) so that no
-fit is attempted. None of them shows extra activity in the M3 planes above or below chamber~A (0.49/0.47 extra clusters per event for the largest
+fit is attempted. None of them shows extra activity in the reference planes above or below chamber~A (0.49/0.47 extra clusters per event for the largest
 deposits, 0.56/0.72 for detected muons, 1.55/1.46 for events with an independent second particle): the deposit is
 made in chamber~A's own gas, cathode or window, by the muon. Their rate is consistent in order of magnitude with knock-on
 electrons ${\gtrsim}0.1$\,MeV (${\sim}1$--1.5\,\% of muons). They are counted as losses: a TPC that measures a
@@ -138,24 +138,30 @@ straight track has to cope with the $\delta$-rays it makes. Real discharges are 
 and 220--230 at SNR\,$>$\,6, with chip-wide ringing.}
 \begin{figure}[t]
   \centering
-  \includegraphics[width=0.95\linewidth]{loss_budget}
+  \includegraphics[width=\linewidth]{loss_budget}
   \caption{\tbw{Where the chamber~A single-track inefficiency goes, over the full active area (Runs 1 and 2, 28\,453 tracks, 5.2\,\% lost), by class with Poisson errors, grouped under $\delta$-rays, the chamber itself, the reconstruction, and the edges. The largest single class is the edge zone, where tracks exceed the 50-strip discharge veto.}}
   \label{fig:lossbudget}
+\end{figure}
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{loss_gallery}
+  \caption{\tbw{Six of the loss classes of \cref{fig:lossbudget}, one real chamber~A event each (Run~1; both views, one colour scale in ADC; reference track dashed black, fit dashed vermillion, a second fitted track amber; grey lines: mesh and cathode). (a) A second particle, and the reconstruction keeps the other one. (b) A second particle merged with the muon in projection. (c) A $\delta$-ray pulls the straight-line fit. (d) A saturated $\delta$ blob tilts the fit. (e) A discharge: whole chips light up and ring. (f) A shower at the crossing. Every class, with its fraction: \cref{app:losses}.}}
+  \label{fig:lossgallery}
 \end{figure}
 \begin{table}[h]
   \centering\small
   \caption{\tbw{Chamber~A efficiency in the interior, $R=5$\,mm, by selection (\texttt{rerun/effbudget/single}); full-area values in the text.}}
   \label{tab:single}
-  \begin{tabular}{lrr}
+  \begin{tabular}{lr}
     \hline
-    selection & Run~1 & Run~2 \\
+    selection & Runs 1+2 \\
     \hline
-    all tracks, multi-track credit & $95.43\pm0.26$ & $95.15\pm0.15$ \\
-    single as flagged by chamber~A (biased) & $97.14\pm0.21$ & $96.97\pm0.12$ \\
-    single, (i) removed only & $95.45\pm0.26$ & $95.13\pm0.15$ \\
-    \textbf{single, (i)--(iii) removed} & $\mathbf{96.24\pm0.24}$ & $\mathbf{95.87\pm0.14}$ \\
-    single, $\delta$-ray deposits also removed & $96.91\pm0.22$ & $96.74\pm0.13$ \\
-    with an independent second particle & $94.5\pm2.0$ & $96.1\pm0.9$ \\
+    all tracks, multi-track credit & $95.22\pm0.13$ \\
+    single as flagged by chamber~A (biased) & $97.01\pm0.11$ \\
+    single, (i) removed only & $95.20\pm0.13$ \\
+    \textbf{single, (i)--(iii) removed} & $\mathbf{95.96\pm0.12}$ \\
+    single, $\delta$-ray deposits also removed & $96.78\pm0.11$ \\
+    with an independent second particle & $95.8\pm0.9$ \\
     \hline
   \end{tabular}
 \end{table}
@@ -170,22 +176,21 @@ reconstructed in 73.7\,\% of them, and the losses are all in the two harder conf
 These are fair two-particle events and count as losses where the muon is not recovered.}
 \begin{figure}[t]
   \centering
-  \includegraphics[width=0.68\linewidth]{two_particle}
-  \caption{\tbw{Chamber~A events with a second particle in the chamber, by configuration: the fraction in which the muon is reconstructed within 5\,mm of M3, with binomial errors (full active area, Runs 1 and 2; pass 1, before the two-track and veto changes).}}
+  \includegraphics[width=\linewidth]{two_particle}
+  \caption{\tbw{Chamber~A events with a second particle in the chamber, one real event per configuration (Run~1; both views, strip position against drift time, one colour scale; reference track dashed black, fits dashed) and, right, the fraction of such events in which the muon is reconstructed within 5\,mm of the reference (binomial errors; full active area, Runs 1 and 2; dotted: one particle, 94.8\,\%). (a) Two particles separate in both views: both fitted, the muon found as often as alone. (b) Separate in X, merged in projection in Y: the Y fit is pulled between the two columns. (c) A muon (right in X, left in Y) and a low-energy electron curling through the gap: together more than 50 strips, so the trigger is vetoed as a discharge and nothing is fitted. Pass 1, before the two-track and veto changes.}}
   \label{fig:twoparticle}
 \end{figure}
 \begin{figure}[t]
   \centering
   \includegraphics[width=\linewidth]{display_two_separate}
-  \caption{\tbw{Two particles separate in both views (about 105\,mm apart in X, 70\,mm in Y), each fitted as its own track
-  (vermillion: first, coinciding with M3; amber: second). M3 dashed.}}
+  \caption{\tbw{Two particles separate in both views (about 105\,mm apart in X, 70\,mm in Y; broken axes), each fitted as its own track (vermillion: first, coinciding with the reference; amber: second). Reference dashed black.}}
   \label{fig:disp_two}
 \end{figure}
 \begin{figure}[t]
   \centering
   \includegraphics[width=\linewidth]{display_merged_projection}
-  \caption{\tbw{Two particles separate in X and merged in projection in Y. In X the M3 particle (dashed) and a second
-  segment 63\,mm away are both found; the pass keeps the second (solid) and fits the M3 one only as a candidate it does
+  \caption{\tbw{Two particles separate in X and merged in projection in Y. In X the reference particle (dashed) and a second
+  segment 63\,mm away are both found; the pass keeps the second (solid) and fits the reference particle only as a candidate it does
   not keep (dotted). In Y the two columns lie within the 12\,mm seed gap and are fitted as one track, pulled between
   them.}}
   \label{fig:disp_merged}
@@ -193,8 +198,7 @@ These are fair two-particle events and count as losses where the muon is not rec
 \begin{figure}[t]
   \centering
   \includegraphics[width=\linewidth]{display_muon_deposit}
-  \caption{\tbw{A clean muon on the M3 track (dashed) and a separate deposit ${\sim}150$\,mm away in both views. Together
-  they put more than 50 strips above the seeding floor, so the trigger is vetoed as a discharge and no fit is made.}}
+  \caption{\tbw{A muon on the reference track (dashed; right in X, left in Y) and, 40--80\,mm away, a low-energy electron that curls through the gap. Together they put more than 50 strips above the seeding floor, so the trigger is vetoed as a discharge and no fit is made.}}
   \label{fig:disp_deposit}
 \end{figure}
 \tbw{\textbf{Overlap in one projection.} The reconstruction is built for it: a joint two-track fit offers a merged
@@ -218,7 +222,7 @@ would be worth rescuing alone (29 right, 4 wrong on B/A) if it could be told fro
 \tbw{\textbf{Pairing the views.} Two particles give two segments per view and two possible X/Y pairings; the wrong
 one makes two ghost tracks. The views share no coordinate, but they read the same avalanche charge at the same drift
 times, so the reconstruction pairs them by the charge balance and the charge-arrival time (Paper~II). On 552 real
-two-particle cosmic events where M3 marks one particle in both views, the pairing is right in
+two-particle cosmic events where the reference marks one particle in both views, the pairing is right in
 $98.0\pm0.6$\,\% (charge alone: 95.7\,\%; 100\,\% when the two charges differ by more than a factor 1.65, 96\,\% when they
 are similar). This is the feasibility demonstration for pairs at n\_TOF. The production reconstruction makes the same choice (the
 matching with the lowest summed pairing cost, then the coincidence gate per pair) and pairs the two-particle events
@@ -226,8 +230,8 @@ correctly on every chamber: A 95.9\,\%, B 96.8\,\%, C 92.2\,\%, D 90.1\,\%, E 94
 (\texttt{rerun/effbudget/single/PAIRING\_FIX\_2026-11-02.md}).}
 \begin{figure}[t]
   \centering
-  \includegraphics[width=0.68\linewidth]{xy_pairing}
-  \caption{\tbw{X/Y charge ratio $\ln(q_X/q_Y)$ of the true (M3-tagged) and the swapped pairings of 552 real two-particle events; grey, the single-track $\pm1\sigma$ band.}}
+  \includegraphics[width=\linewidth]{xy_pairing}
+  \caption{\tbw{X/Y charge ratio $\ln(q_X/q_Y)$ of the true (reference-tagged) and the swapped pairings of 552 real two-particle events; grey, the single-track $\pm1\sigma$ band. The pairing that minimises the charge-balance mismatch with the single-track value is the true one in 95.7\,\% of the events (charge only), and in 98.0\,\% when the difference in charge-arrival times between the views is added (charge + time).}}
   \label{fig:pairing}
 \end{figure}
 \tbw{The production reconstruction makes the same choice: it selects the X/Y matching with the lowest summed pairing
@@ -264,6 +268,6 @@ one-track-cut-in-half splits). A joint fit of both views at once, using the char
 is the route beyond that.}
 \tbw{Together these bound what the named improvements could add at ${\approx}4$\,pt (A single-track efficiency over the
 full area from 94.8 towards ${\approx}98.8\,\%$); the remaining 0.7\,pt of reconstruction losses (fits off with nothing
-flagged, non-particle second deposits, right-angle tracks far from M3) have no identified cause. The hardware alone
+flagged, non-particle second deposits, right-angle tracks far from the reference) have no identified cause. The hardware alone
 would allow 99.4\,\%.}
 

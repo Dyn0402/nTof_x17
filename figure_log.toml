@@ -448,3 +448,151 @@ date = "2026-11-03"
 fig = "hv_metrics"
 status = "for review"
 change = "Six panels. New (a) gain proxy: median fitted track charge (log; x2 per 18.8 V below 465 V) and the tracks with a saturated strip (0 -> 30 % at 490 V); new (e) angle scale (fit vs M3 tan, 0.99-1.02 up to 510 V: no tilt). The 'presumably' sentence is replaced by measurements: angle s68 flat across a x17 range of per-track charge, fit's own angle error flat, timing falls with early amplitude."
+
+[[entry]]
+date = "2026-11-03"
+fig = "*"
+change = "M3 renamed 'the reference' everywhere: paper text (section 3 introduces the M3 telescope as the reference once), figure text (ps.public rewrites 'M3' -> 'reference', mathtext -> 'ref'; the bench schematic keeps the M3 name via ps.KEEP_GID), manifest titles."
+
+[[entry]]
+date = "2026-11-03"
+fig = "*"
+change = "Chamber A Runs 1 and 2 treated as one data set (they agree on efficiency, angle, position, time; only v differs, 35.8 vs 37.2 um/ns, refitted per run). tab:single now one Runs 1+2 column; eff_vs_radius summed."
+
+[[entry]]
+date = "2026-11-03"
+fig = "*"
+change = "Event displays: one module papers/paper1/figs/evd.py + producer make_displays.py for every display (ADC on one scale for both views, thin dashed fits, heavier reference, views touching, broken axes for far-apart particles, mesh/cathode lines, depth to the strip scale where possible). Style candidates in the deck appendix."
+
+[[entry]]
+date = "2026-11-03"
+fig = "tpc_principle"
+status = "for review"
+change = "New (replaces microtpc_principle): full-width row, a minimal sketch on the same vertical scale as the data (t = t0 + z/v), data and model of event 7884 X in the display style."
+
+[[entry]]
+date = "2026-11-03"
+fig = "evd_showcase"
+status = "for review"
+change = "New: four chamber A events (muon, delta ray, muon + curling electron, two particles) after the principle figure."
+
+[[entry]]
+date = "2026-11-03"
+fig = "chamber_stack"
+status = "for review"
+change = "Replaced the 3D render with a 2D technical cross-section from docs/detector_spec/spec.py (dagger = assumed values)."
+
+[[entry]]
+date = "2026-11-03"
+fig = "readout_layout"
+status = "for review"
+change = "Made from the production gerbers: pads, X/Y strips, fan-out, connectors, passivated y ends, pad-via checkerboard zoom. Orientation assumes local = gerber axes."
+
+[[entry]]
+date = "2026-11-03"
+fig = "bench_setup"
+status = "for review"
+change = "Rewritten wide and short (z horizontal, 6.0 x 2.1 in); same numbers."
+
+[[entry]]
+date = "2026-11-03"
+fig = "currents_vs_hv"
+status = "for review"
+change = "Main text: chamber A only, y linear, plus a zoom of the ~0.2 uA leakage floor. All boards -> currents_vs_hv_all (appendix A3)."
+
+[[entry]]
+date = "2026-11-03"
+fig = "hv_metrics"
+status = "for review"
+change = "3x2 layout with a shared HV axis; one marker shape per quantity, X filled / Y open."
+
+[[entry]]
+date = "2026-11-03"
+fig = "two_particle"
+status = "for review"
+change = "Now one real event per configuration next to the efficiency (95.5 / 44.4 / 1.1 %). Muon+deposit event 5423."
+
+[[entry]]
+date = "2026-11-03"
+fig = "display_muon_deposit"
+status = "for review"
+change = "Event 36603 -> 5423: a muon and a separate curling low-energy electron (clearer than two particles)."
+
+[[entry]]
+date = "2026-11-03"
+fig = "display_two_separate"
+status = "for review"
+change = "evd.py style, broken axes."
+
+[[entry]]
+date = "2026-11-03"
+fig = "display_merged_projection"
+status = "for review"
+change = "evd.py style, broken axes."
+
+[[entry]]
+date = "2026-11-03"
+fig = "loss_gallery"
+status = "for review"
+change = "New main-text gallery of six loss classes (A1 picks)."
+
+[[entry]]
+date = "2026-11-03"
+fig = "angle_resolution"
+status = "for review"
+change = "New main result: chamber A, Runs 1+2: 2D fitted vs reference angle and median deviation with +-s68 band; s68 0.99/0.90 deg. All chambers -> tracking_perf_all (appendix A3)."
+
+[[entry]]
+date = "2026-11-03"
+fig = "timing"
+status = "for review"
+change = "Chamber A only; all chambers -> timing_all (appendix A3)."
+
+[[entry]]
+date = "2026-11-03"
+fig = "edge_turnon"
+status = "for review"
+change = "Distance to the physical edge on all four sides, from 0 mm (re-run with --phys); passivation start marked."
+
+[[entry]]
+date = "2026-11-03"
+fig = "det4_stripes"
+status = "for review"
+change = "(a) 2D efficiency map of E at SPS with the selection box; (b) bench + SPS profiles."
+
+[[entry]]
+date = "2026-11-03"
+fig = "two_velocities"
+status = "for review"
+change = "Field colours viridis; 'strip extent' -> 'geometric gap L/tan(theta)'."
+
+[[entry]]
+date = "2026-11-03"
+fig = "gas_drying"
+status = "for review"
+change = "(c) dropped; left column: measured drift velocity over Magboltz-inverted water on one time axis; right: excess over plateau."
+
+[[entry]]
+date = "2026-11-03"
+fig = "attachment"
+status = "for review"
+change = "x = run time (axis break); bands visible and labelled; the O2 band is a det6 early-night estimate, not like-for-like (consider dropping)."
+
+[[entry]]
+date = "2026-11-03"
+fig = "attachment_charge"
+status = "for review"
+change = "New: strip-sum signal vs drift time, A on the bench flat, E at SPS falling (CF4 and CO2), with gas-fit models with/without O2."
+
+[[entry]]
+date = "2026-11-03"
+fig = "xy_pairing"
+status = "for review"
+change = "x range +-1.9; in-plot text says charge + time 98.0 % / charge only 95.7 %, explained in the caption."
+
+[[entry]]
+date = "2026-11-03"
+fig = "eff_vs_radius"
+status = "for review"
+change = "Runs 1+2 summed; legend: any track within R / the track the reconstruction keeps / unrelated track."
+

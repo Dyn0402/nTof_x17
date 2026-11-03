@@ -10,22 +10,22 @@ Calibration: the physical RC kernel of~\cite{paperII}; numbers from the from-scr
 0.56--0.65\textdegree{} on clean events is measured and bounded but not identified.}
 
 \subsection{Intrinsic position resolution on the bench}\label{sec:posres}
-\tbw{The residual to M3 (core 430--620\,\textmu m) holds three terms: the chamber, the M3 pointing $P$ (0.21--0.28\,mm), and
-scattering between the M3 doublets, which grows with the M3 $\chi^2$ of the matching coordinate. Extrapolating the
+\tbw{The residual to the reference (core 430--620\,\textmu m) holds three terms: the chamber, the reference pointing $P$ (0.21--0.28\,mm), and
+scattering between the reference doublets, which grows with the reference $\chi^2$ of the matching coordinate. Extrapolating the
 near-normal core width to $\chi^2\to0$ removes the scattering (A $\sigma_0=274\pm16$ / $237\pm18$\,\textmu m, X/Y), and
 subtracting $P$ in quadrature leaves the chamber: A $126\pm34$ (X) and $116\pm36$\,\textmu m (Y), B $163\pm29$ and
 $176\pm21$\,\textmu m (\cref{fig:posres}). The subtraction dominates the uncertainty: $\pm10$\,\% on $P$ moves chamber~A X to
 58--164 and Y to 67--147\,\textmu m. Quoted: ${\sim}120\pm60$\,\textmu m for chamber~A near normal incidence.}
 \begin{figure}[t]
   \centering
-  \includegraphics[width=0.95\linewidth]{bench_position_res}
-  \caption{\tbw{(a) Chamber~A residual core width for near-normal tracks ($|\theta|<5$\textdegree) against the mean M3 $\chi^2$ of each quintile of the matching coordinate, with $\sigma^2$ linear in $\chi^2$ extrapolated to $\chi^2\to0$; lines, the M3 pointing $P_X=243$ and $P_Y=207$\,\textmu m. (b) Chamber term $\sqrt{\sigma_0^2-P^2}$ against the assumed $P$: A $126\pm34$ / $116\pm36$\,\textmu m, B $163\pm29$ / $176\pm21$\,\textmu m (X/Y, stat); band, chamber~E at SPS in region R (120--138\,\textmu m); grey band, $\pm10$\,\% on $P$.}}
+  \includegraphics[width=\linewidth]{bench_position_res}
+  \caption{\tbw{(a) Chamber~A residual core width for near-normal tracks ($|\theta|<5$\textdegree) against the mean reference $\chi^2$ of each quintile of the matching coordinate, with $\sigma^2$ linear in $\chi^2$ extrapolated to $\chi^2\to0$; lines, the reference pointing $P_X=243$ and $P_Y=207$\,\textmu m. (b) Chamber term $\sqrt{\sigma_0^2-P^2}$ against the assumed $P$: A $126\pm34$ / $116\pm36$\,\textmu m, B $163\pm29$ / $176\pm21$\,\textmu m (X/Y, stat); band, chamber~E at SPS in region R (120--138\,\textmu m); grey band, $\pm10$\,\% on $P$.}}
   \label{fig:posres}
 \end{figure}
 \begin{figure}[t]
   \centering
-  \includegraphics[width=0.95\linewidth]{tracking_perf}
-  \caption{\tbw{Angular resolution against the M3 track angle, X (solid) and Y (dashed), per 5\textdegree{} bin; $\sigma_\theta$ is the $s_{68}$, half the width of the central 68\,\% of the angle residual to M3. (a) chambers A--D; (b) chamber~E on its own scale.}}
+  \includegraphics[width=\linewidth]{angle_resolution}
+  \caption{\tbw{Angular resolution of chamber~A (Runs 1 and 2 summed, 25\,400 reference-matched single tracks per view). (a) Fitted angle $\theta_\mathrm{fit}$ from the waveform forward-model reconstruction against the reference angle $\theta_\mathrm{ref}$, X and Y views together; dashed, $\theta_\mathrm{fit}=\theta_\mathrm{ref}$; empty bins white. (b) Median of $\theta_\mathrm{fit}-\theta_\mathrm{ref}$ in 2\textdegree{} bins of $\theta_\mathrm{ref}$, X (solid, filled) and Y (dashed, open); the band and lines mark $\pm s_{68}$ per bin ($s_{68}$: the 68th percentile of $|\theta_\mathrm{fit}-\theta_\mathrm{ref}-\mathrm{median}|$). Over the whole sample $s_{68}=0.99$\textdegree{} (X) and 0.90\textdegree{} (Y), the median residual is below 0.03\textdegree{}, and neither changes with angle across the reference acceptance (${\sim}20$\textdegree). All chambers: \cref{fig:trackperf_all}.}}
   \label{fig:trackperf}
 \end{figure}
 
@@ -51,7 +51,7 @@ $f$ range 112--153, stat $\pm7$) and $\sigma_Y=120$\,\textmu m (89--136, $\pm9$)
 so this is a cross-check, not the headline.}
 \begin{figure}[t]
   \centering
-  \includegraphics[width=0.95\linewidth]{sps_resolution}
+  \includegraphics[width=\linewidth]{sps_resolution}
   \caption{\tbw{Chamber~E at SPS H4 in region R (X 150--160 $\times$ Y 222--246\,mm, run 63, Ar/CF$_4$/iC$_4$H$_{10}$, 700\,V). (a) X at mid-gap and (b) Y at the mesh: residuals to the uRWELL telescope for all tracks ($\sigma$ 263 / 254\,\textmu m) and for tracks with a 2-strip back-plane cluster (176 / 145\,\textmu m), with Gaussian cores. (c) Chamber~E resolution after subtracting the telescope pointing against the back-plane resolution $f$ (X solid, Y dashed); shaded, the measured $f=0.266$ [0.254, 0.284]; chamber~E X 138 (112--153) $\pm7$ and Y 120 (89--136) $\pm9$\,\textmu m; model-free upper bounds X $\le153\pm6$, Y $\le145\pm6$\,\textmu m.}}
   \label{fig:spsres}
 \end{figure}
