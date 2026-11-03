@@ -24,9 +24,9 @@ EB = os.path.join(REPO, 'rerun', 'effbudget', 'pass1')
 sys.path[:0] = [EB, REPO, os.path.join(REPO, 'papers')]
 import fine_maps as fm  # noqa: E402
 import paper_style as ps  # noqa: E402
-from common.mx17_active_area import TRUE_ACTIVE_BY_DET  # noqa: E402
+from common.mx17_active_area import TRUE_ACTIVE_BY_DET, STRIP_MIN_MM, STRIP_MAX_MM  # noqa: E402
 
-DETS = ('det3', 'det2', 'det4', 'det6', 'det7')     # det3 first (the large panel)
+DETS = ps.DETS     # public order A..E; det3 = A first (the large panel)
 EDGE_X, EDGE_Y = 30.0, 8.0                           # interior: from the x sides / from the passivated y sides
 DET7_X_SPLIT = 199.3                                 # det7 X ch 0-255 | 256-511 boundary at mid-gap [mm]
 
@@ -34,7 +34,6 @@ DET7_X_SPLIT = 199.3                                 # det7 X ch 0-255 | 256-511
 def main():
     import matplotlib; matplotlib.use('Agg'); import matplotlib.pyplot as plt
     from matplotlib.patches import Rectangle
-    from matplotlib.gridspec import GridSpec
     ap = argparse.ArgumentParser()
     ap.add_argument('--root', required=True)
     ap.add_argument('--out', default=os.path.join(REPO, 'papers', 'paper1', 'figures', 'efficiency_map.pdf'))
@@ -44,16 +43,23 @@ def main():
     T = pd.read_csv(os.path.join(EB, 'results', 'rows.csv'))
     pools = json.load(open(os.path.join(EB, 'results', 'map_pools.json')))
 
-    fig = plt.figure(figsize=(ps.WIDTH['full'], 3.25), layout='constrained')
-    # Dylan 2026-11-03: the four small panels share their x and y axes (labels on the outer edges only, panels touching)
-    gs = GridSpec(1, 3, figure=fig, width_ratios=[2, 2.04, 0.07])
-    gin = gs[0, 1].subgridspec(2, 2, wspace=0.03, hspace=0.03)
-    a2 = fig.add_subplot(gin[0, 0])
-    a4 = fig.add_subplot(gin[0, 1], sharey=a2)
-    a6 = fig.add_subplot(gin[1, 0], sharex=a2)
-    a7 = fig.add_subplot(gin[1, 1], sharex=a4, sharey=a6)
-    axes = {'det3': fig.add_subplot(gs[0, 0]), 'det2': a2, 'det4': a4, 'det6': a6, 'det7': a7}
-    cax = fig.add_subplot(gs[0, 2])
+    # 2026-11-03: axes placed by hand (inches). Constrained layout + equal aspect squeezed the small panels once their
+    # tick numbers were back (sharing an axis had blanked them). Small panels share x/y and nearly touch (Dylan 11-03).
+    W, H = ps.WIDTH['full'], 3.25
+    fig = plt.figure(figsize=(W, H))
+    B0, BIG, TGAP, CGAP = 0.45, 2.45, 0.24, 0.16      # bottom, big-panel side, room for a small panel's title, column gap
+    S = (BIG - TGAP) / 2                              # small-panel side
+    XB, XS = 0.50, 0.50 + BIG + 0.36                  # left edges: big panel, small block
+
+    def at(x, y, w, h, **kw):
+        return fig.add_axes([x / W, y / H, w / W, h / H], **kw)
+    a2 = at(XS, B0 + S + TGAP, S, S)
+    a4 = at(XS + S + CGAP, B0 + S + TGAP, S, S, sharey=a2)
+    a6 = at(XS, B0, S, S, sharex=a2)
+    a7 = at(XS + S + CGAP, B0, S, S, sharex=a4, sharey=a6)
+    # small panels in public order B C / D E (det2 det6 / det7 det4)
+    axes = {'det3': at(XB, B0, BIG, BIG), 'det2': a2, 'det6': a4, 'det7': a6, 'det4': a7}
+    cax = at(XS + 2 * S + CGAP + 0.10, B0, 0.09, BIG)
     cmap = plt.get_cmap('viridis').copy(); cmap.set_bad('white')
     summ, csv = {}, []
     for i, d in enumerate(DETS):
@@ -69,16 +75,25 @@ def main():
         m = np.where(inside, m, np.nan)
         im = ax.imshow(100 * m.T, origin='lower', extent=[e[0], e[-1], e[0], e[-1]], vmin=0, vmax=100, cmap=cmap,
                        interpolation='nearest', rasterized=True)
+        # 2026-11-03 (Dylan): stronger outlines
         ax.add_patch(Rectangle((b['x'][0], b['y'][0]), b['x'][1] - b['x'][0], b['y'][1] - b['y'][0], fill=False,
-                               ec=ps.INK, lw=0.7))
+                               ec=ps.INK, lw=1.3 if big else 1.0, zorder=5))
         ax.add_patch(Rectangle((b['x'][0] + EDGE_X, b['y'][0] + EDGE_Y), b['x'][1] - b['x'][0] - 2 * EDGE_X,
-                               b['y'][1] - b['y'][0] - 2 * EDGE_Y, fill=False, ec='w', lw=0.8, ls='--'))
+                               b['y'][1] - b['y'][0] - 2 * EDGE_Y, fill=False, ec='w', lw=1.2 if big else 0.9,
+                               ls='--', zorder=5))
+        if big:              # the passivated strip ends (measured, common.mx17_active_area): hatched bands
+            for y0, y1 in ((STRIP_MIN_MM, b['y'][0]), (b['y'][1], STRIP_MAX_MM)):
+                ax.add_patch(Rectangle((b['x'][0], y0), b['x'][1] - b['x'][0], y1 - y0, fc='none', ec=ps.MUTED,
+                                       hatch='////', lw=0, zorder=2))
+            ax.text(200, (b['y'][1] + STRIP_MAX_MM) / 2, 'passivated', ha='center', va='center',
+                    fontsize=ps.BASE_PT * 0.75, color=ps.INK, zorder=6,
+                    bbox=dict(fc='white', ec='none', pad=0.6))
         if d == 'det7':      # X ch 0-255 are not quoted: veil them
             ax.add_patch(Rectangle((b['x'][0], b['y'][0]), DET7_X_SPLIT - b['x'][0], b['y'][1] - b['y'][0],
                                    fc='white', ec='none', alpha=0.55, zorder=3))
             ax.axvline(DET7_X_SPLIT, color=ps.INK, ls=':', lw=0.8, zorder=4)
         q = G.eff_ig
-        ax.text(0, 1.02, rf'$\mathbf{{({chr(97 + i)})}}$ {d}', transform=ax.transAxes, ha='left', va='bottom',
+        ax.text(0, 1.02, rf'$\mathbf{{({chr(97 + i)})}}$ Chamber {ps.name(d)}', transform=ax.transAxes, ha='left', va='bottom',
                 fontsize=ps.BASE_PT, color=ps.INK)
         ax.set_xlim(-10, 410); ax.set_ylim(-10, 410); ax.set_aspect('equal'); ax.grid(False)
         for sp in ('top', 'right'):
@@ -88,20 +103,19 @@ def main():
             ax.set_xlabel(r'$x$ at mid-gap [mm]'); ax.set_ylabel(r'$y$ at mid-gap [mm]')
         else:
             ax.set_xticks([0, 200, 400]); ax.set_yticks([0, 200, 400])
-            if d in ('det6', 'det7'):
+            if d in ('det7', 'det4'):
                 ax.set_xlabel(r'$x$ [mm]')
-            if d in ('det2', 'det6'):
-                ax.set_ylabel(r'$y$ [mm]')
-        if d in ('det4', 'det7'):
-            ax.set_yticklabels([])
-        if d in ('det2', 'det4'):
-            ax.set_xticklabels([])
+        if d in ('det6', 'det4'):
+            ax.tick_params(labelleft=False)
+        if d in ('det2', 'det6'):
+            ax.tick_params(labelbottom=False)
         summ[d] = dict(rows=len(rows), rays=int(len(R)), golden=pools[d]['golden'], golden_eff_ig=float(q))
         k = np.isfinite(m)
         csv.append(pd.DataFrame(dict(det=d, x_mm=X[k], y_mm=Y[k], eff=m[k], n_rays_disk=n[k])))
     cb = fig.colorbar(im, cax=cax)
     cb.set_label('detection efficiency [%]'); cb.outline.set_linewidth(0.6)
     os.makedirs(os.path.dirname(a.out), exist_ok=True)
+    ps.publicise(fig)
     fig.savefig(a.out, dpi=300)                                            # the paper copy (pdf, map raster 300 dpi)
     ps.save(fig, os.path.join(HERE, 'figures', 'efficiency_map'))
     # the plotted maps (2 mm grid, inside the active area), gzipped: ~150k pixels

@@ -289,7 +289,7 @@ def fig_balance(golden, ev, figdir, paper_out=None):
     import pandas as pd
     sys.path.insert(0, os.path.join(REPO, 'papers'))
     import paper_style as ps
-    order = ['mx17_3', 'mx17_2', 'mx17_4', 'mx17_6', 'mx17_7']
+    order = [d.replace('det', 'mx17_') for d in ps.DETS]  # public order A..E (2026-11-03)
     # Dylan 2026-11-03: x axis in f = Q_X/(Q_X+Q_Y) (0.5 = balanced), inset with the per-chamber f (median, core sigma, SD)
     bins = np.linspace(0.30, 0.70, 49)
     tab = dict(bin_lo=bins[:-1], bin_hi=bins[1:])
@@ -325,9 +325,9 @@ def fig_balance(golden, ev, figdir, paper_out=None):
             ins.errorbar(i, med, yerr=cs, color=st['color'], lw=2.2, zorder=3)
             ins.errorbar(i, med, yerr=err, color='white', lw=0.5, capsize=0, zorder=4, marker='o', ms=2.6,
                          mfc=st['color'], mec='white', mew=0.3)
-        ins.set_xticks(range(len(summ))); ins.set_xticklabels([x[0].replace('det', '') for x in summ])
+        ins.set_xticks(range(len(summ))); ins.set_xticklabels([ps.name(x[0]) for x in summ])
         ins.set_xlim(-0.6, len(summ) - 0.4); ins.set_ylim(0.3, 0.7)
-        ins.set_ylabel('$f$', labelpad=1); ins.set_xlabel('det', labelpad=1)
+        ins.set_ylabel('$f$', labelpad=1); ins.set_xlabel('chamber', labelpad=1)
         ins.tick_params(labelsize=ps.BASE_PT * 0.7, length=2, pad=1)
         ins.xaxis.label.set_size(ps.BASE_PT * 0.75); ins.yaxis.label.set_size(ps.BASE_PT * 0.75)
         ins.grid(False)

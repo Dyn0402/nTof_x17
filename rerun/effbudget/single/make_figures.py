@@ -26,8 +26,8 @@ from matplotlib.lines import Line2D  # noqa: E402
 
 RES, OUT = os.path.join(HERE, 'results'), os.path.join(HERE, 'figures')
 D3 = ps.DET_COLOR['det3']
-ROWLS = {'p2_det3': '-', 'sat_det3': '--'}
-ROWLAB = {'p2_det3': '6-27 long run', 'sat_det3': '6-27 Saturday long run'}
+ROWLS = {'sat_det3': '-', 'p2_det3': '--'}     # Run 1 solid, Run 2 dashed (2026-11-03)
+ROWLAB = dict(ps.RUN)                          # public names: sat_det3 = Run 1, p2_det3 = Run 2 (time order)
 W_MID = 4.3            # in (printed width of the single-panel figures)
 
 
@@ -49,7 +49,7 @@ def eff_vs_radius():
     fig, ax = ps.fig_for(6.1, aspect=0.45)  # 2026-11-03: full page width, lower
     ax2 = ax.twinx(); ax2.grid(False); ax2.spines['right'].set_visible(True)
     rows = []
-    for key in ('p2_det3', 'sat_det3'):
+    for key in ('sat_det3', 'p2_det3'):
         r = d[key]; R = np.array(r['radii']); n = r['n']
         e, c = np.array(r['eff']), np.array(r['credit'])
         ee, ce = [100 * np.sqrt(q / 100 * (1 - q / 100) / n) for q in (e, c)]
@@ -67,8 +67,8 @@ def eff_vs_radius():
     ax2.tick_params(axis='y', colors=ps.MUTED)
     h = [Line2D([], [], color=D3, marker='o', ms=3.0, lw=1.2, label='multi-track credit'),
          Line2D([], [], color=D3, marker='o', ms=3.0, mfc='white', lw=0.9, label='production pick'),
-         Line2D([], [], color=ps.INK, ls='-', lw=0.9, label=ROWLAB['p2_det3']),
-         Line2D([], [], color=ps.INK, ls='--', lw=0.9, label=ROWLAB['sat_det3'])]
+         Line2D([], [], color=ps.INK, ls=ROWLS['sat_det3'], lw=0.9, label=ROWLAB['sat_det3']),
+         Line2D([], [], color=ps.INK, ls=ROWLS['p2_det3'], lw=0.9, label=ROWLAB['p2_det3'])]
     ax.legend(handles=h, loc='center right', bbox_to_anchor=(0.99, 0.50), fontsize=ps.BASE_PT * 0.8)  # 2026-11-03: legend off the curves (top left is on the multi-track curve)
     ps.save(fig, os.path.join(OUT, 'eff_vs_radius'), data=pd.DataFrame(rows))
 

@@ -10,6 +10,9 @@ Import from any producer:
     ps.save(fig, out_dir / 'name', data=df)    # name.pdf + name.png + name.csv
 
 Rules it encodes:
+* **Public chamber names** A-E (``NAME``; det3=A, det2=B, det6=C, det7=D, det4=E) and det3's golden rows Run 1/2
+  (``RUN``): ``save`` rewrites internal names in every text of the figure. Call ``publicise(fig)`` before a plain
+  ``fig.savefig``.
 * **One colour per chamber, everywhere** (Okabe-Ito, colour-blind safe). det3, the paper's chamber, is the darkest and
   is drawn on top with a heavier line; det4 (the defective chamber) is grey and drawn underneath.
 * Views: X solid, Y dashed (``ps.VIEW_LS``). Gas: CO2 / CF4 mixtures have their own two colours (``ps.GAS``), never a
@@ -27,7 +30,14 @@ from pathlib import Path
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 
-DETS = ('det2', 'det3', 'det4', 'det6', 'det7')
+#: Public chamber names (Dylan 2026-11-03): the n_TOF arm letters, and E for det4 (bench + SPS only). Every figure
+#: shows these; internal keys (det3, sat_det3, ...) stay in code, tables and CSVs. ``save`` rewrites any det name left
+#: in a figure's text, so producers need not change their own labels. PS_INTERNAL_NAMES=1 turns that off.
+NAME = {'det3': 'A', 'det2': 'B', 'det6': 'C', 'det7': 'D', 'det4': 'E'}
+#: The two det3 golden rows, in time order (6-27 evening; overnight to 6-28 08:48).
+RUN = {'sat_det3': 'Run 1', 'p2_det3': 'Run 2'}
+PUBLIC_NAMES = os.environ.get('PS_INTERNAL_NAMES', '') != '1'
+DETS = ('det3', 'det2', 'det6', 'det7', 'det4')     # public order A..E
 #: The palette (2026-11-02). Keyed by bench chamber; n_TOF arms map A=det3, B=det2, C=det6, D=det7.
 DET_COLOR = {'det2': '#56B4E9', 'det3': '#0b3d91', 'det4': '#999999', 'det6': '#E69F00', 'det7': '#CC79A7'}
 DET_MARKER = {'det2': 's', 'det3': 'o', 'det4': 'v', 'det6': '^', 'det7': 'D'}
@@ -73,7 +83,8 @@ def det(name, view=None, line=True, **kw) -> dict:
     d = str(name).lower().replace('mx17_', 'det')
     d = ARM_TO_DET.get(str(name), d)
     c = DET_COLOR[d]
-    out = dict(color=c, marker=DET_MARKER[d], zorder=DET_ZORDER[d], label=d + (f' {view.upper()}' if view else ''))
+    out = dict(color=c, marker=DET_MARKER[d], zorder=DET_ZORDER[d],
+               label=_pubname(d) + (f' {view.upper()}' if view else ''))
     if line:
         out.update(lw=DET_LW[d], ls=VIEW_LS.get(view, '-'))
     if view is not None and not VIEW_FILL.get(view, True):
@@ -85,6 +96,64 @@ def det(name, view=None, line=True, **kw) -> dict:
 def color(name) -> str:
     d = ARM_TO_DET.get(str(name), str(name).lower().replace('mx17_', 'det'))
     return DET_COLOR[d]
+
+
+def _pubname(d) -> str:
+    """Public name of a chamber ('det3', 'mx17_3', 'A' -> 'A'); the internal key when PS_INTERNAL_NAMES=1."""
+    d = ARM_TO_DET.get(str(d), str(d).lower().replace('mx17_', 'det'))
+    return NAME.get(d, d) if PUBLIC_NAMES else d
+
+
+name = _pubname
+
+_DET_RE = re.compile(r'\b(?:det|mx17_)([23467])\b')
+_RUN_RE = re.compile(r'\b(sat_det3|p2_det3)\b')
+
+
+def public(text: str, legend: bool = False) -> str:
+    """Rewrite internal names in a figure string. In a legend, 'det3' -> 'A'; elsewhere 'Chamber A' at the start
+    of the string and 'chamber A' inside it. Golden-row keys -> 'Run 1' / 'Run 2'."""
+    if not PUBLIC_NAMES or not text:
+        return text
+    text = _RUN_RE.sub(lambda m: RUN[m.group(1)], text)
+
+    def rep(m):
+        letter = NAME['det' + m.group(1)]
+        if legend:
+            return letter
+        return ('Chamber ' if m.start() == 0 else 'chamber ') + letter
+    return _DET_RE.sub(rep, text)
+
+
+def publicise(fig) -> None:
+    """Apply ``public`` to every text in ``fig``: titles, labels, annotations, legends, fixed tick labels."""
+    if not PUBLIC_NAMES:
+        return
+    from matplotlib.legend import Legend
+    from matplotlib.text import Text
+    from matplotlib.ticker import FixedFormatter
+    legend_texts = set()
+    for leg in fig.findobj(Legend):
+        for t in leg.get_texts():
+            legend_texts.add(id(t))
+            t.set_text(public(t.get_text(), legend=True))
+    for t in fig.findobj(Text):
+        if id(t) not in legend_texts:
+            new = public(t.get_text())
+            if new != t.get_text():
+                t.set_text(new)
+    from matplotlib.ticker import FuncFormatter
+    from matplotlib.category import StrCategoryFormatter
+    for ax in fig.axes:
+        for axis in (ax.xaxis, ax.yaxis):
+            fmt = axis.get_major_formatter()
+            if isinstance(fmt, FixedFormatter):
+                fmt.seq = [public(str(x), legend=True) for x in fmt.seq]
+            elif isinstance(fmt, (FuncFormatter, StrCategoryFormatter)) and not getattr(fmt, '_ps_public', False):
+                # set_xticklabels on a FixedLocator and categorical axes give these: wrap them
+                new = FuncFormatter(lambda x, pos=None, f=fmt: public(str(f(x, pos)), legend=True))
+                new._ps_public = True
+                axis.set_major_formatter(new)
 
 
 def lbl(s: str) -> str:
@@ -99,6 +168,7 @@ def save(fig, path, data=None, png=True, dpi=None) -> Path:
     Raster artists inside the PDF (imshow/pcolormesh with rasterized=True) are written at ``dpi`` (default 300)."""
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
+    publicise(fig)
     fig.savefig(path.with_suffix('.pdf'), dpi=dpi or 300)
     if png:
         fig.savefig(path.with_suffix('.png'), dpi=200)

@@ -179,6 +179,7 @@ def main():
     h = [Line2D([], [], color=pst.color('det4'), lw=2.5, label='bench (cosmic muons, M3)')]
     h += [Line2D([], [], color=gas_col[nm], lw=2.5, label='SPS ' + gas_lbl[nm]) for nm in S]
     pst.legend_above(fig, h, ncol=3, handlelength=1.6)
+    pst.publicise(fig)
     fig.savefig(a.fig, dpi=300)                              # the paper copy (pdf)
     pst.save(fig, os.path.join(HERE, 'figures', 'det4_stripes'), data=pd.concat(prof, ignore_index=True))
 

@@ -1,7 +1,7 @@
 \section{Test setups}\label{sec:setups}
 \sectionstate{ready}{\texttt{mx\_june\_cosmic\_qa/MICROTPC\_RUNBOOK.md}; \texttt{sps\_beam\_test\_26/analysis/README.md}; \texttt{mpgd26} renders}
 \intent{The two setups and what each can measure: the Saclay cosmic bench (M3 reference tracking, all five chambers,
-June 2026) and the SPS H4 beam (uRWELL telescope, det4 only, including the 25.6\textdegree{} rotation).}
+June 2026) and the SPS H4 beam (uRWELL telescope, chamber~E only, including the 25.6\textdegree{} rotation).}
 
 \subsection{Cosmic bench}
 \tbw{Scintillator trigger, four M3 reference planes, two test slots. M3 recipe ($\chi^2<1.0$, $N_\mathrm{clus}=4$).
@@ -11,17 +11,17 @@ DREAM readout, sampling, window. Gas and flow.}
 \begin{figure}[t]
   \centering
   \includegraphics[width=0.69\linewidth]{bench_setup}
-  \caption{\tbw{The Saclay cosmic bench, side view ($z$ positions to scale; slab thicknesses and horizontal sizes not). The readout is triggered by the coincidence of the top and bottom scintillators ($60\times60$\,cm); the four M3 planes ($50\times50$\,cm, $z=24$, 144, 1185, 1302\,mm) reconstruct each muon independently of the chamber under test. Test slots at $z=232$ and 702\,mm; det3 ran in the top slot on its golden rows (6-27).}}
+  \caption{\tbw{The Saclay cosmic bench, side view ($z$ positions to scale; slab thicknesses and horizontal sizes not). The readout is triggered by the coincidence of the top and bottom scintillators ($60\times60$\,cm); the four M3 planes ($50\times50$\,cm, $z=24$, 144, 1185, 1302\,mm) reconstruct each muon independently of the chamber under test. Test slots at $z=232$ and 702\,mm; chamber~A ran in the top slot for Runs 1 and 2 (\cref{sec:datasets}).}}
   \label{fig:bench}
 \end{figure}
 
 \subsection{SPS H4 beam}
-\tbw{Only det4 went to the SPS: the test (late July -- early August 2026; exact dates to fill from the run log) ran while det2, det3, det6 and det7 were installed at
+\tbw{Only chamber~E went to the SPS: the test (late July -- early August 2026; exact dates to fill from the run log) ran while chambers A--D were installed at
 n\_TOF, so the one chamber not needed there, with its known non-amplifying stripes (\cref{sec:det4}), was the one
-available. Beam, uRWELL references, det4 position, runs used (HV, drift field, gas, rotation).}
+available. Beam, uRWELL references, chamber~E position, runs used (HV, drift field, gas, rotation).}
 \tbw{\textbf{Role in this paper: a cross-check.} Every headline number comes from the cosmic bench (efficiency, angles,
 the intrinsic position resolution with the reference subtracted, the drift velocity and the gas). The SPS data confirm
-the position resolution in a beam (det4's working region, 138/120\,\textmu m) and the angle scale at a known angle
+the position resolution in a beam (chamber~E's working region, 138/120\,\textmu m) and the angle scale at a known angle
 (column $v$ 0.981 $\pm$ 0.03 of tan 25.4\textdegree), and measure the charge footprint at normal incidence.}
 \askDylan{Dylan 2026-11-02: SPS reads as a cross-check; it may move to an appendix or out, depending on the referee.
 Keep as a short section for now?}
@@ -31,3 +31,33 @@ Keep as a short section for now?}
   \caption{\tbw{The SPS H4 setup.}}
   \label{fig:sps}
 \end{figure}
+
+\subsection{Chambers and data sets}\label{sec:datasets}
+% Public names (Dylan 2026-11-03). Internal keys, for the analysis code and logbooks:
+%   A = det3 (mx17_3), B = det2 (mx17_2), C = det6 (mx17_6), D = det7 (mx17_7), E = det4 (mx17_4).
+%   Run 1 = sat_det3 (mx17_det3_saturday_scan_6-27-26/long_run_resist_490V_drift_1000V, 6-27 ~22:40 to 6-28 01:30)
+%   Run 2 = p2_det3  (mx17_det3_p2_det1_overnight_6-27-26/long_run_p2_det1_sanity_check, 6-28 01:33 to 08:48)
+\tbw{Five chambers were tested on the bench. We call them A--E. Chambers A--D later ran together at n\_TOF and keep
+these names in the companion paper; chamber E, whose readout board has non-amplifying strips (\cref{sec:det4}), went
+to the SPS instead. Chamber A is the subject of this paper; B--E show what varies from one board to the next.
+Each chamber's bench numbers come from its \emph{golden run}, a long run at the operating point its HV scan selected
+(\cref{tab:datasets}). Chamber A has two, taken back to back on the night of 27--28 June at the same HV and in the
+same slot: \textbf{Run~1}, the long run that closed its HV and drift scans, and \textbf{Run~2}, the overnight run
+that followed. They are summed unless a figure shows them separately.}
+\begin{table}[t]
+  \centering
+  \caption{\tbw{The chambers and their bench golden runs (Ar/iC$_4$H$_{10}$ 95/5 with water, \cref{sec:gas}).
+  Slot: top $z=702$\,mm, bottom $z=232$\,mm (\cref{fig:bench}).}}
+  \label{tab:datasets}
+  \begin{tabular}{lllll}
+    \hline
+    chamber & bench golden run & slot & resist / drift HV & also used at \\
+    \hline
+    A & Run 1: 27 June, evening; Run 2: night of 27--28 June & top & 490 / 1000\,V & n\_TOF \\
+    B & night of 22--23 June & top & 495 / 1000\,V & n\_TOF \\
+    C & night of 26--27 June & bottom & 495 / 700\,V & n\_TOF \\
+    D & night of 26--27 June & top & 495 / 700\,V & n\_TOF \\
+    E & 24 June, day & top & 495 / 600\,V & SPS H4 \\
+    \hline
+  \end{tabular}
+\end{table}

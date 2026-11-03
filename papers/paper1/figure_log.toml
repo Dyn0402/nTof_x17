@@ -388,3 +388,27 @@ date = "2026-11-03"
 fig = "efficiency_map"
 status = "for review"
 change = "The four small panels share x and y axes and touch (labels on the outer edges only)."
+
+[[entry]]
+date = "2026-11-03"
+fig = "ALL"
+status = "for review"
+change = "Public chamber names in every figure and the text: A = det3, B = det2, C = det6, D = det7 (the n_TOF arm letters), E = det4. Chamber A's two golden runs are Run 1 (sat_det3, 6-27 evening) and Run 2 (p2_det3, the overnight run that followed). paper_style.save rewrites any internal name left in a figure (ps.NAME, ps.RUN; PS_INTERNAL_NAMES=1 turns it off); legends in A-E order. New section 3.3 'Chambers and data sets' with the golden-run table. All figures regenerated; numbers unchanged (CSVs differ only in row/column order)."
+
+[[entry]]
+date = "2026-11-03"
+fig = "efficiency_map"
+status = "for review"
+change = "Small panels in A-E order (B C / D E); tick numbers restored on them (sharing an axis had blanked them) with axes placed by hand; stronger active-area and interior outlines; chamber A's passivated strip ends hatched (18.0 / 18.7 mm, common.mx17_active_area); caption explains the veiled half of chamber D (X ch 0-255, readout fault) and the hatching."
+
+[[entry]]
+date = "2026-11-03"
+fig = "charge_balance"
+status = "for review"
+change = "Inset x axis is the chamber letter (was the det number); A-E order."
+
+[[entry]]
+date = "2026-11-03"
+fig = "eff_vs_radius"
+status = "for review"
+change = "Line styles: Run 1 solid, Run 2 dashed (legend says Run 1 / Run 2, was '6-27 long run' / '6-27 Saturday long run')."
