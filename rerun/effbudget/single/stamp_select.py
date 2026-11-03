@@ -17,6 +17,8 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('bundle')
     ap.add_argument('--select', default='cost', choices=['gate', 'cost'])
+    ap.add_argument('--split-corrob', default=None, choices=['count', 'charge'],
+                    help="also set xy_pairing['split_corrob'] (MERGED_PROJECTION_2026-11-02.md; bench = 'charge')")
     g = ap.add_mutually_exclusive_group(required=True)
     g.add_argument('--out')
     g.add_argument('--in-place', action='store_true')
@@ -30,13 +32,22 @@ def main():
         sys.exit(f'{a.bundle}: no xy_pairing calibration, select has no effect')
     old = b['xy_pairing'].get('select')
     b['xy_pairing']['select'] = a.select
+    old_sc = b['xy_pairing'].get('split_corrob')
+    if a.split_corrob:
+        b['xy_pairing']['split_corrob'] = a.split_corrob
     check_xy_pairing(b['xy_pairing'], where=p)
     b.setdefault('provenance', {}).setdefault('edits', []).append(dict(
         what=f"xy_pairing select {old!r} -> {a.select!r}", by='rerun/effbudget/single/stamp_select.py',
         why='rerun/effbudget/single/PAIRING_FIX_2026-11-02.md', when=datetime.date.today().isoformat(),
         source=os.path.abspath(a.bundle)))
     json.dump(b, open(p, 'w'), indent=1)
-    print(f'{p}: select {old!r} -> {a.select!r}')
+    if a.split_corrob:
+        b['provenance']['edits'].append(dict(
+            what=f"xy_pairing split_corrob {old_sc!r} -> {a.split_corrob!r}", by='rerun/effbudget/single/stamp_select.py',
+            why='rerun/effbudget/single/MERGED_PROJECTION_2026-11-02.md', when=datetime.date.today().isoformat(),
+            source=os.path.abspath(a.bundle)))
+        json.dump(b, open(p, 'w'), indent=1)
+    print(f'{p}: select {old!r} -> {a.select!r}' + (f', split_corrob {old_sc!r} -> {a.split_corrob!r}' if a.split_corrob else ''))
 
 
 if __name__ == '__main__':
