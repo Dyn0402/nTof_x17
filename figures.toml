@@ -326,17 +326,17 @@ note = "Redone 2026-11-02 on decision A + B (11-01): rerun/sps_region/results/re
 [fig.bow_profiles]
 title = "Mesh height across the chamber from position residuals vs reference slope, X and Y strips, five chambers"
 state = "current"
-source = "rerun/paper1_res/figures/bow_profiles.pdf"
-note = "Pass 1 golden rows (2026-10-31), fb_bow_maps' estimator unchanged, v(t) arm (w read at one v). The audit-table version is rerun/model_audit/followups/fb_bow_maps/figures/bow_profiles.pdf. Restyled 2026-11-02 (paper_style): palette, det3 heavy on top, X solid / Y dashed open. Checklist pass 2026-11-02: full width (6.1 in drawn, 6.22 in PDF), fonts embedded; titles -> (a) X / (b) Y, legend above, x 0-400 mm, y -1.5 to 4.5 mm. Numbers unchanged. 2026-11-03 (two-track): chamber A golden rows from Analysis_pass1_twotrack + x17rerun/paper1_eff_twotrack. det3 curvature X 80.0->82.5, Y 139.8->137.0 per km; r_f X 1.108->1.066, Y 0.710->0.741. Text of 08b_bow.tex quotes the 2-D estimator (fb_bow_maps xcheck.py + summary.py, re-run on the final tables by final_tables.py; results_final/); the figure is the 1-D profile estimator. They agree on the dish and tilt sign; r_f for C X is 1.9 in 1-D and 0.87 in 2-D."
-producer = ".venv/bin/python rerun/paper1_res/bow_pass1.py plot  # det3 built on lxplus: bow_pass1.py build --only det3 --pass-root .../Analysis_pass1_twotrack --eff-root .../x17rerun/paper1_eff_twotrack (x17rerun/bow_pass1_twotrack); other chambers pass 1"
+source = "rerun/paper1_res/figures/bow_profiles_2d.pdf"
+note = "2026-11-03: drawn from the 2-D fit (fb_bow_maps xcheck.py on the final tables, the same estimator the text of 08b quotes); depth errors = bootstrap + four-term scatter/2 (summary_paper.json). The earlier 1-D binned-profile version (bow_pass1.py plot, bow_profiles.pdf / bow_closure.pdf) is kept as files but no longer used."
+producer = ".venv/bin/python rerun/paper1_res/bow_2d_fig.py summary && .venv/bin/python rerun/paper1_res/bow_2d_fig.py plot  # reads rerun/model_audit/followups/fb_bow_maps/results_final (final_tables.py build/run/gate on the final tables; --results to override)"
 
 [fig.bow_closure]
 appendix_candidate = "Dylan 2026-11-02: keep in the body for now; maybe move to an appendix later (see how the paper reads)"
 title = "Measured drift-tilt gradient vs the one predicted by the position-route curvature"
 state = "current"
-source = "rerun/paper1_res/figures/bow_closure.pdf"
-note = "Pass 1 golden rows (2026-10-31), v(t) arm; the pass arm is rerun/paper1_res/figures/bow_closure_pass.pdf. Restyled 2026-11-02 (paper_style): palette; axis labels in words (measured drift-tilt gradient vs the one predicted from the mesh curvature, um/ns per m); reference lines named (cathode follows the mesh r_f = 1, flat cathode r_f = 1/2). Checklist pass 2026-11-02: half width (3.0 in drawn, 3.1 in PDF), fonts embedded; redrawn at half width, r_f lines labelled on the plot, compact legend above. Numbers unchanged. 2026-11-03 (two-track): chamber A golden rows from Analysis_pass1_twotrack + x17rerun/paper1_eff_twotrack. det3 curvature X 80.0->82.5, Y 139.8->137.0 per km; r_f X 1.108->1.066, Y 0.710->0.741. Text of 08b_bow.tex quotes the 2-D estimator (fb_bow_maps xcheck.py + summary.py, re-run on the final tables by final_tables.py; results_final/); the figure is the 1-D profile estimator. They agree on the dish and tilt sign; r_f for C X is 1.9 in 1-D and 0.87 in 2-D."
-producer = ".venv/bin/python rerun/paper1_res/bow_pass1.py plot  # det3 built on lxplus: bow_pass1.py build --only det3 --pass-root .../Analysis_pass1_twotrack --eff-root .../x17rerun/paper1_eff_twotrack (x17rerun/bow_pass1_twotrack); other chambers pass 1"
+source = "rerun/paper1_res/figures/bow_closure_2d.pdf"
+note = "2026-11-03: drawn from the 2-D fit (fb_bow_maps xcheck.py on the final tables, the same estimator the text of 08b quotes); depth errors = bootstrap + four-term scatter/2 (summary_paper.json). The earlier 1-D binned-profile version (bow_pass1.py plot, bow_profiles.pdf / bow_closure.pdf) is kept as files but no longer used."
+producer = ".venv/bin/python rerun/paper1_res/bow_2d_fig.py summary && .venv/bin/python rerun/paper1_res/bow_2d_fig.py plot  # reads rerun/model_audit/followups/fb_bow_maps/results_final (final_tables.py build/run/gate on the final tables; --results to override)"
 
 # --- 9 det4 stripes -----------------------------------------------------------
 
