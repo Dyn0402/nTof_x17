@@ -122,6 +122,7 @@ FIGURES = {
     'sps_hero':      dict(kind='sps', view='hero', mx17=False),
     'sps_hero_mx17': dict(kind='sps', view='hero', mx17=True),
     'sps_side':      dict(kind='sps', view='side', mx17=False),
+    'sps_side_mx17': dict(kind='sps', view='side', mx17=True),    # Paper I (2026-11-03): with chamber E
     'sps_beam':      dict(kind='sps', view='beam', mx17=False),
     # the two headline bench configurations: two MX17 chambers, and two P2 fans
     'bench_hero':    dict(kind='bench', view='hero', slots=('mx17', 'mx17')),

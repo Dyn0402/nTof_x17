@@ -117,7 +117,7 @@ SPS_STATIONS = [
     Station('P2_MID',           630.0,  'p2',   'P2 BASKET  MID'),
     Station('P2_OUT',           940.0,  'p2',   'P2 BASKET  OUT'),
     Station('mx17_E',           1155.0, 'mx17',
-            'MX17 "Detector E"\nyawed 25.6 deg', yaw=25.64),
+            'MX17 chamber E\nyawed 25.6 deg', yaw=25.64),
     Station('EIC_uRWELL_back',  1370.0, 'urwell',
             'EIC uRWELL\n(back reference)'),
 ]

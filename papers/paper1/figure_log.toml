@@ -430,3 +430,15 @@ date = "2026-11-03"
 fig = "hv_metrics"
 status = "for review"
 change = "New: chamber A against the resist HV, 6-27 scan: efficiency + discharge loss, angle s68, position core, time resolution. Answers 'why 490 V when A is on plateau at 430 V': efficiency, angle and position are flat 425-505 V; only timing improves (109 -> 23 ns). Text + askDylan on whether timing or n_TOF gain margin is the argument."
+
+[[entry]]
+date = "2026-11-03"
+fig = "chamber_stack"
+status = "for review"
+change = "Was a placeholder: now the mpgd26 exploded chamber render (deck version, no title band), downsampled to a 0.5 MB raster PDF at 0.75 linewidth. Caption states the window size, exaggerated z thicknesses and schematic mesh."
+
+[[entry]]
+date = "2026-11-03"
+fig = "sps_setup"
+status = "for review"
+change = "Was a placeholder: now the mpgd26 SPS side render with chamber E (new sps_side_mx17 entry; label 'MX17 chamber E'), title/footer cropped. Caption: chamber E z = 1155 mm is the run-config nominal, not a survey. Candidate for the appendix."

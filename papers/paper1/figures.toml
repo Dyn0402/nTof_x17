@@ -11,11 +11,11 @@
 # --- 1 Introduction / 2 Design ------------------------------------------------
 
 [fig.chamber_stack]
-title = "MX17 module cross-section: window, drift, mesh, resistive strips, pad/strip readout"
-state = "placeholder"
-section_state = "partial"
-note = "Draw from docs/detector_spec/spec.py (the same numbers as the spec page and the Geant4 geometry). Several layers are still assumed: Stephan's answers to the spec-page questions fix them."
-producer = "python3 docs/detector_spec/build_page.py  # needs a PDF export of the side view"
+title = "MX17 chamber layer stack, exploded along the drift axis, with a muon and its drifting ionisation"
+state = "current"
+source = "papers/paper1/figs/out/chamber_stack.pdf"
+producer = "cd mpgd26 && ../.venv/bin/python make_chamber.py --theme light  # then the slide copy figures/chamber_exploded_slide.png -> 1830 px JPEG-in-PDF (PIL, quality 90) at papers/paper1/figs/out/chamber_stack.pdf"
+note = "2026-11-03: was a placeholder; now the mpgd26 exploded render (deck version, no title band). Renders headless here in ~10 s. Raster (pyvista); paper copy downsampled to 0.5 MB. Mesh weave schematic, z thicknesses exaggerated (caption says so). Several layer values still wait on Stephan (docs/detector_spec)."
 
 [fig.readout_layout]
 title = "Readout board: 512 x 512 pads on 0.78 mm pitch routed to X (L6) and Y (L5) strips; dead bands"
@@ -40,15 +40,11 @@ producer = "cd mx_june_cosmic_qa/engineer_package && ../../.venv/bin/python make
 note = "Swap for the mpgd26 bench_side render when its inputs are on this machine. Restyled 2026-11-02 (paper_style): z labels of the M3 planes (24, 144, 1185, 1302 mm) and the test-slot chamber centres (232, 702 mm, det_center_coords); det3 golden-row slot marked (top, z = 702: run_config.json of mx17_det3_p2_det1_overnight_6-27-26 and mx17_det3_saturday_scan_6-27-26); title moved to the caption. Checklist pass 2026-11-02: 4.3 in drawn (4.4 in PDF), fonts embedded; labels shortened, footer note removed, z axis to scale (vertical compressed), ps.save + geometry CSV. Numbers unchanged."
 
 [fig.sps_setup]
-appendix_candidate = "Dylan 2026-11-02: keep in the body for now; maybe move to an appendix later (see how the paper reads)"
 title = "SPS H4: uRWELL references and chamber E on the rail"
-state = "placeholder"
-section_state = "ready"
-source = "mpgd26/figures/sps_side_light_labelled.pdf"
-producer = "cd mpgd26 && ../.venv/bin/python make_figures.py"
-note = "The mpgd26 render exists as a script; its inputs are listed in mpgd26/slides/HANDOFF_offline_rebuild.md."
-
-# --- 4 Operation --------------------------------------------------------------
+state = "current"
+source = "papers/paper1/figs/out/sps_setup.pdf"
+producer = "cd mpgd26 && ../.venv/bin/python make_figures.py --theme light --only sps_side_mx17  # then crop the title/caption bands (y 0.10-0.875) and save 1830 px JPEG-in-PDF to papers/paper1/figs/out/sps_setup.pdf"
+note = "2026-11-03: was a placeholder. mpgd26 side render with MX17 (new FIGURES entry sps_side_mx17; label now 'MX17 chamber E'). Renders headless here. Caveat in the caption: chamber E z = 1155 mm is the run-config nominal (flagged PLACEHOLDER in mpgd26/geometry.py). Candidate for the appendix (Dylan)."
 
 [fig.hv_scan]
 title = "HV scans of chambers A-D: interior efficiency and discharges per trigger"
