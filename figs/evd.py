@@ -151,7 +151,7 @@ def window(ev, view, pad=8.0, min_half=10.0, split=30.0, pad_frac=0.08, tlim=Non
     return [(0.5 * (lo + hi), max(0.5 * (hi - lo) * (1 + 2 * pad_frac) + pad, min_half)) for lo, hi in segs]
 
 
-def cells(ax, W, P, cen, half, vmax, frac=None, scale=1.0):
+def cells(ax, W, P, cen, half, vmax, frac=None, scale=1.0, dt=0.0):
     """The strip x sample cells of one view within |P - cen| < half.  Colour = W / scale on a linear scale
     0 .. vmax / scale (``scale`` = 1: ADC, as make_tpc_principle.py calls it).  Samples below OPT['thr_adc'] ADC (or,
     if that is None, below ``frac`` x vmax) are not drawn, so zero is the white background."""
@@ -164,10 +164,10 @@ def cells(ax, W, P, cen, half, vmax, frac=None, scale=1.0):
         for k in range(W.shape[1]):
             val = W[i, k]
             if val >= S_SAT:
-                clip.append(Rectangle((P[i] - PITCH / 2, k * TS), PITCH, TS))
+                clip.append(Rectangle((P[i] - PITCH / 2, k * TS + dt), PITCH, TS))
             if val < thr:
                 continue
-            rects.append(Rectangle((P[i] - PITCH / 2, k * TS), PITCH, TS))
+            rects.append(Rectangle((P[i] - PITCH / 2, k * TS + dt), PITCH, TS))
             vals.append(val / scale)
     top = vmax / scale
     norm = PowerNorm(OPT['gamma'], 0, top) if OPT['gamma'] != 1 else Normalize(0, top)
@@ -198,12 +198,12 @@ def reference(ax, mesh, tan, t0, v, label='reference track'):
 FIT_LABEL = {'first': 'fit', 'second': 'fit, second track', 'candidate': 'fitted candidate, not kept'}
 
 
-def fit(ax, f, v, label=None):
+def fit(ax, f, v, label=None, dt=0.0):
     col = S['fit'] if f['role'] == 'first' else S['fit2']
     ls = (0, (1.2, 1.6)) if f['role'] == 'candidate' else (0, (4, 2))
     ts = np.array(sorted(ax.get_ylim()))               # 11-03 Dylan: like the reference, across the whole time axis
     lw = 1.4 if f['role'] == 'candidate' else 1.0      # dotted: a little heavier, so it reads on the reference
-    return _line(ax, f['p0'], f['w'], f['t0'], v, ts, color=col, lw=lw, ls=ls, zorder=6,
+    return _line(ax, f['p0'], f['w'], f['t0'] + dt, v, ts, color=col, lw=lw, ls=ls, zorder=6,
                  label=label or FIT_LABEL[f['role']], dash_capstyle='butt')
 
 
@@ -329,13 +329,17 @@ def draw(fig, gs, ev, wins=None, vmax=None, tlim=None, ylabel=True, zaxis=True, 
         last_of_view = k == len(segs) - 1 or segs[k + 1][0] != v
         ax.set_xlim(cen - half, cen + half)
         ax.set_ylim(*tlim)
-        pc = cells(ax, ev.W[v], ev.P[v], cen, half, vmax, scale=scale)
-        gap_lines(ax, ev.t0[v], ev.v_mm, label=(v == 'y' and last_of_view))
+        # 11-03 (Dylan): the mesh and cathode lines must sit at the same height in X and Y.  The two views have their own
+        # fitted t0 (they differ by tens of ns: separate FEUs / planes), so each view is drawn in time since ITS mesh
+        # crossing, shifted onto the common t0m (the mean, which the right-hand distance axis already used).
+        dt = t0m - ev.t0[v]
+        pc = cells(ax, ev.W[v], ev.P[v], cen, half, vmax, scale=scale, dt=dt)
+        gap_lines(ax, t0m, ev.v_mm, label=(v == 'y' and last_of_view))
         r = ev.ref.get(v)
         if r is not None and np.isfinite(r[0]):
-            reference(ax, r[0], r[1], ev.t0[v], ev.v_mm)
+            reference(ax, r[0], r[1], t0m, ev.v_mm)
         for f in sorted((f for f in ev.fits if f['view'] == v), key=lambda f: ['candidate', 'second', 'first'].index(f['role'])):
-            fit(ax, f, ev.v_mm)
+            fit(ax, f, ev.v_mm, dt=dt)
         for sname, sp in ax.spines.items():
             sp.set_visible(True)
             sp.set_color('#555555')

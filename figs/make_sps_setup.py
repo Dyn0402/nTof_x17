@@ -13,7 +13,7 @@ Geometry: mpgd26/geometry.py SPS_STATIONS = run_59/run_config.json det_center_co
   transverse x = y = 0 for all stations: nominal, never surveyed.
 The P2 BASKET sectors (z = 320, 630, 940) are left out on purpose.
 ASSUMPTIONS, not checked against the run config: the sign of the yaw (drawn so the chamber normal points away from the
-beam axis towards +x), and the sense of the drift arrow (cathode upstream, drift along the beam direction).
+beam axis towards +x), and the sides of the drift window (upstream) and readout PCB (downstream), i.e. drift along the beam direction.
 """
 import sys
 from pathlib import Path
@@ -68,14 +68,20 @@ for z in list(URW_Z.values()) + [E_Z]:
     ax.plot(z, 0, 'o', ms=2.6, color=ps.ACCENT, mec='white', mew=0.4, zorder=7)
 ax.text(ZL + 20, 28, 'SPS H4 beam', color=ps.ACCENT, fontsize=FS, fontstyle='italic', ha='left', va='bottom')
 
-# drift direction: normal to the chamber, from its centre
-p0 = c + n * 20; p1 = c + n * 175
-ax.annotate('', p1[::-1][::-1], p0, arrowprops=dict(arrowstyle='-|>', color=ps.INK, lw=0.9, mutation_scale=7,
-                                                    shrinkA=0, shrinkB=0), zorder=8)
+# angle to the beam
 ax.plot([E_Z, E_Z + 175], [0, 0], color=ps.MUTED, lw=0.5, ls=(0, (3, 2)), zorder=2)   # beam reference for the angle
 ax.add_patch(Arc((E_Z, 0), 120, 120, theta1=0, theta2=E_YAW, color=ps.INK, lw=LW, zorder=8))
 ax.text(E_Z + 55, -26, '25.6°', fontsize=FS * 0.95, color=ps.INK, ha='left', va='center')
-ax.text(*(p1 + np.array([8, 14])), 'drift direction', fontsize=FS, color=ps.INK, ha='left', va='bottom')
+
+# the two faces of chamber E: drift window upstream (front), readout PCB downstream (back).  ASSUMED sense (cathode
+# upstream, drift along the beam), as before.  Horizontal arrows at transverse x = XA, ending on the faces.
+XA = 90
+zf = lambda sgn: E_Z + (sgn * E_T / 2 - np.sin(th) * XA) / np.cos(th)
+arr = dict(arrowstyle='-|>', color=ps.INK, lw=0.9, mutation_scale=7, shrinkA=0, shrinkB=0)
+ax.annotate('', (zf(-1) - 3, XA), (zf(-1) - 130, XA), arrowprops=arr, zorder=8)
+ax.text(zf(-1) - 138, XA, 'drift window', fontsize=FS, color=ps.INK, ha='right', va='center')
+ax.annotate('', (zf(+1) + 3, XA), (zf(+1) + 130, XA), arrowprops=arr, zorder=8)
+ax.text(zf(+1) + 138, XA, 'readout PCB', fontsize=FS, color=ps.INK, ha='left', va='center')
 
 # labels
 ax.text(URW_Z['front'], -URW_W / 2 - 22, 'uRWELL reference\n(front)', fontsize=FS, color=ps.INK, ha='center',
@@ -88,11 +94,11 @@ ax.text(E_Z - 95, -E_W / 2 * np.cos(th) - 5, 'chamber E', fontsize=FS, color=ps.
 # z axis
 yz = -330
 ax.plot([0, URW_Z['back']], [yz, yz], color=ps.INK, lw=LW)
-for z, lab in ((0, '0'), (E_Z, '1155$^\\dagger$'), (URW_Z['back'], '1370')):
+for z, lab in ((0, '0'), (E_Z, '1155'), (URW_Z['back'], '1370')):
     ax.plot([z, z], [yz, yz + 14], color=ps.INK, lw=LW)
     ax.text(z, yz - 12, lab, fontsize=FS * 0.95, color=ps.INK, ha='center', va='top')
 ax.text(URW_Z['back'] + 40, yz + 4, '$z$ [mm]', fontsize=FS, color=ps.INK, ha='left', va='bottom')
-ax.text(ZL, yz + 4, 'plan view, to scale;\n$^\\dagger$ nominal, not surveyed', fontsize=FS * 0.95, color=ps.MUTED, ha='left', va='bottom',
+ax.text(ZL, yz + 4, 'plan view, to scale', fontsize=FS * 0.95, color=ps.MUTED, ha='left', va='bottom',
         linespacing=1.1)
 
 geom = pd.DataFrame([dict(element='uRWELL front', z_mm=0.0, yaw_deg=0.0, z_measured=True),

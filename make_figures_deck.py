@@ -127,6 +127,12 @@ REVIEW = {
     'display_merged_projection': ('polish', 'Two particles merged in one projection: the muon is pulled', ['New 11-02'], 'papers/paper1/figs/make_two_particle_displays.py.'),
     'display_muon_deposit': ('polish', 'A muon and a separate deposit trip the discharge veto', ['New 11-02'], 'papers/paper1/figs/make_two_particle_displays.py.'),
 }
+def is_a1(name):
+    """A1 loss displays shown together on one contact-sheet slide; loss_gallery (main text) and loss_band
+    (Dylan 11-03: its own figure) get their own slides."""
+    return name.startswith('loss_') and name not in ('loss_gallery', 'loss_band')
+
+
 A1_REVIEW = ('revise', 'Loss-class displays: real events, readable; titles use code names and one is mislabelled',
              ['Titles show internal codes (“far:DELTA”, “multi:m3_picked”): use the paper’s class names',
               'loss_headon shows a fit_failed event (head-on class ~0 on pass 1): caption no longer matches',
@@ -254,7 +260,7 @@ def chip(verdict, size=24):
 def verdict_of(name, state):
     if name in REVIEW:
         return REVIEW[name][0]
-    if name.startswith('loss_'):
+    if is_a1(name):
         return A1_REVIEW[0]
     return 'placeholder' if state == 'placeholder' else 'keep'
 
@@ -263,7 +269,7 @@ def verdict_of(name, state):
 # slides
 # --------------------------------------------------------------------------- #
 def s_cover(D, F, man, log=()):
-    body_figs = [f for f in F if not f['name'].startswith('loss_')]
+    body_figs = [f for f in F if not is_a1(f['name'])]
     st = [status_of(f['name'], log) for f in body_figs]
     n_rev = sum(x == 'for review' for x in st)
     n_acc = sum(x == 'accepted' for x in st)
@@ -284,7 +290,7 @@ def s_cover(D, F, man, log=()):
 def s_board(D, F, man, log=()):
     rows, cur = [], None
     for f in F:
-        if f['name'].startswith('loss_'):
+        if is_a1(f['name']):
             continue
         v = verdict_of(f['name'], man.get(f['name'], {}).get('state'))
         sec = f['stitle'] if f['stitle'] != cur else ''
@@ -360,7 +366,7 @@ def s_figure(D, f, man, log):
 
 
 def s_a1(D, F, man):
-    names = [f['name'] for f in F if f['name'].startswith('loss_')]
+    names = [f['name'] for f in F if is_a1(f['name'])]
     ims = [Image.open(pdf_png(n)).convert('RGB') for n in names if pdf_png(n)]
     w, h = ims[0].size
     cols = 4
@@ -489,7 +495,7 @@ def main():
     if MISSING:
         s_missing(D)
     for f in F:
-        if not f['name'].startswith('loss_'):
+        if not is_a1(f['name']):
             s_figure(D, f, man, log)
     s_a1(D, F, man); s_unused(D, F, man); s_close(D); s_evd_styles(D)
     D.write(a.out, note_meta=dict(title='MX17 Paper I: figure review',

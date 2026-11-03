@@ -11,7 +11,7 @@ Now one full-width row, three panels sharing one vertical axis (depth above the 
     readout strips below; the time of arrival measures the depth, t = t0 + z / v.
 (b) the X view of a real chamber A muon (Run 1 event 7884, pass 1): ADC per strip and 60 ns sample, with the
     reference track (dashed) and the fitted track;
-(c) the forward model at that fit, on the same colour scale.
+(c) the fit model (the forward model at that fit), on the same colour scale.
 
 The event and its model come from make_principle.py's replay cache (principle_<event>.pkl: the event replayed through
 wft.reco exactly as the pass ran it; the replay's w equals the pass table's).  Nothing here uses hit times.
@@ -48,17 +48,17 @@ def sketch(ax, g, v_mm, t0, tlim, tan=0.45):
     # below the mesh, enlarged: amplification gap (avalanche), resistive strips, insulator, readout strips
     for i in range(14):
         xc = X0 + 1.2 + i * 2.1
-        ax.add_patch(mp.Rectangle((xc - 0.8, z(-3.0)), 1.6, z(-2.2) - z(-3.0), fc='#7f8a99', ec='none', zorder=2))
-        ax.add_patch(mp.Rectangle((xc - 0.8, z(-5.6)), 1.6, z(-4.6) - z(-5.6), fc='#c98b2b', ec='none', zorder=2))
-    ax.text(X1 + 0.6, z(-2.6), 'resistive strips', va='center', ha='left', fontsize=7.5, color=ink)
-    ax.text(X1 + 0.6, z(-5.1), 'readout strips', va='center', ha='left', fontsize=7.5, color=ink)
-    ax.text(X0 - 0.6, z(-1.2), 'avalanche', va='center', ha='right', fontsize=6.5, color=mut)
+        ax.add_patch(mp.Rectangle((xc - 0.8, z(-3.6)), 1.6, z(-2.6) - z(-3.6), fc='#7f8a99', ec='none', zorder=2))
+        ax.add_patch(mp.Rectangle((xc - 0.8, z(-6.8)), 1.6, z(-5.6) - z(-6.8), fc='#c98b2b', ec='none', zorder=2))
+    ax.text(X1 + 0.6, z(-3.1), 'resistive strips', va='center', ha='left', fontsize=7.5, color=ink)
+    ax.text(X1 + 0.6, z(-6.2), 'readout strips', va='center', ha='left', fontsize=7.5, color=ink)
+    ax.text(X0 - 0.6, z(-1.5), 'avalanche', va='center', ha='right', fontsize=6.5, color=mut)
     # the muon: enters at the cathode, leaves at the mesh, tilted well beyond event 7884 (tan 0.17) so the drift lines of successive clusters separate
     xm = 6.0
     xs = lambda zz: xm + tan * zz
-    ax.annotate('', xy=(xs(-1.8), z(-1.8)), xytext=(xs(g + 5), z(g + 5)),
+    ax.annotate('', xy=(xs(-2.4), z(-2.4)), xytext=(xs(g + 6.6), z(g + 6.6)),
                 arrowprops=dict(arrowstyle='-|>', color=ps.ACCENT, lw=1.3, mutation_scale=9), zorder=5)
-    ax.text(xs(g + 4.2) + 0.9, z(g + 4.2), 'muon', color=ps.ACCENT, fontsize=7.5, va='center', ha='left')
+    ax.text(xs(g + 5.6) + 0.9, z(g + 5.6), 'muon', color=ps.ACCENT, fontsize=7.5, va='center', ha='left')
     # ionisation clusters and their drift down to the mesh
     rng = np.random.default_rng(3)
     for zz in np.linspace(2.5, g - 2.5, 7):
@@ -128,7 +128,7 @@ def main():
     vmax = max(float(np.percentile(W, 99.5)), 60.0)
     axd = fig.add_subplot(gs[0, 0])
     axm = fig.add_subplot(gs[0, -1], sharey=axd)
-    panels = ((axd, W, '(b) data'),) if stk else ((axd, W, '(b) data'), (axm, M, '(c) model at the fit'))
+    panels = ((axd, W, '(b) data'),) if stk else ((axd, W, '(b) data'), (axm, M, '(c) fit model'))
     for ax, A, title in panels:
         pc = evd.cells(ax, A, P, cen, half, vmax)
         evd.gap_lines(ax, t0, v_mm, label=False)
@@ -178,8 +178,8 @@ def main():
     if stk:
         for hh, ll in zip(*axm.get_legend_handles_labels()):
             h.setdefault(ll, hh)
-    axd.legend(list(h.values()), list(h.keys()), loc='upper left', fontsize=6.5, frameon=True, framealpha=0.9,
-               edgecolor='none', handlelength=2.2, borderpad=0.3)
+    axd.legend(list(h.values()), list(h.keys()), loc='lower right', fontsize=6.0, frameon=True, framealpha=0.9,
+               edgecolor='none', handlelength=1.5, borderpad=0.25, labelspacing=0.25)
     ps.save(fig, a.out)
     print('wrote', a.out)
 
