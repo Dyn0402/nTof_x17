@@ -80,20 +80,32 @@ discharges before they reach it.}
   \caption{\tbw{Interior detection efficiency (filled) and the fraction of M3 tracks lost to discharges (open) against the resist HV: (a) chamber~A (6-27 scan, 1000\,V drift), (b) chamber~C and (c) chamber~D (6-26 scan, 700\,V drift). Shaded: the efficiency plateau (within 1\,pt of the maximum). Chamber~A holds 91--94\,\% from 425 to 500\,V while its discharge loss stays below 1\,\% up to 490\,V; chamber~C and chamber~D already lose 1.5--2.4\,\% to discharges at their efficiency maximum and fall from there.}}
   \label{fig:effhv}
 \end{figure}
-\tbw{\textbf{What the HV buys on chamber~A: time, not efficiency.} Across its 6-27 scan (\cref{fig:hvmetrics})
-the efficiency (90--94\,\%), the angle resolution ($s_{68}$ 0.91--1.03\textdegree{} X, 0.80--0.96\textdegree{} Y)
-and the position residual core at the mesh (0.43--0.56\,mm, M3 pointing included) are flat from 425 to 505\,V. The
-time resolution is not: the uncorrelated part $(t_X-t_Y)/\sqrt2$ falls from 109\,ns at 425\,V to 23\,ns at 490\,V,
-the event time from 105 to 42\,ns. In a TPC time is depth: at $v\approx35$\,\textmu m/ns that is 3.9\,mm against
-0.8\,mm. The angle presumably survives a low gain because it comes from the slope over the whole drift column, which a coarse
-time scale shifts but does not tilt.}
+\tbw{\textbf{What the HV buys on chamber~A: time, not efficiency.} Across its 6-27 scan (\cref{fig:hvmetrics}) the
+gain grows by a factor 13 from 425 to 490\,V: the median fitted track charge doubles every 18.8\,V (fitted below
+465\,V, where no track saturates), and the fraction of tracks with a strip at the ADC rail rises from 0 to 30\,\%.
+Over the same range the efficiency (90--94\,\%), the angle resolution ($s_{68}$ 0.91--1.03\textdegree{} X,
+0.80--0.96\textdegree{} Y), the angle scale (fitted against M3 $\tan$: 0.99--1.02 in both views, up to 510\,V) and
+the position residual core at the mesh (0.43--0.56\,mm, M3 pointing included) are flat. The time resolution is not:
+the uncorrelated part $(t_X-t_Y)/\sqrt2$ falls from 109\,ns at 425\,V to 23\,ns at 490\,V, the event time from 105 to
+42\,ns. In a TPC time is depth: at $v\approx35$\,\textmu m/ns that is 3.9\,mm against 0.8\,mm.}
+\tbw{\textbf{Why the angle does not need the gain and the time does.} The two come from different parts of the
+signal. The time is read from the start of the charge column (\cref{sec:timing}), the first electrons, made next to
+the mesh: a small part of the signal, whose timing degrades as it nears the noise. The angle is fitted to the whole
+column, every strip and every sample. Two measurements show it. Track by track, pooling the scan points below
+510\,V and keeping unsaturated tracks, the angle residual to M3 does not depend on the track's charge
+($s_{68}$ 0.82--0.94\textdegree{} in X and 0.72--0.87\textdegree{} in Y over the ten charge deciles, a factor 17
+in charge, with no rise at low charge), while the time resolution of tracks binned the same way falls with the early
+amplitude as noise over slope (\cref{fig:timing}b). The fit's own angle error does not move either (median
+$\sigma_{\tan}$ 0.014--0.021 at every HV up to 510\,V), and the angle scale does not move with the gain, so a lower gain adds no
+tilt. Two limits: the $s_{68}$ includes the M3 angle error and the scattering, which could hide a small change in the
+chamber's own term; and it holds down to 425\,V, $1/13$ of the operating gain, below which the scan does not go.}
 \askDylan{The bench runs used 490\,V; the scans support any HV from ${\sim}460$\,V up for efficiency. Is timing
 (depth, $t_0$) the argument we want to make for 490\,V, or was it chosen for gain margin at n\_TOF? Note the noise floor
 doubled there (23 July), which would favour margin, but we have no n\_TOF HV scan to show it.}
 \begin{figure}[t]
   \centering
   \includegraphics[width=\linewidth]{hv_metrics}
-  \caption{\tbw{Chamber~A against the resist HV (6-27 scan, 1000\,V drift; 630--700 tracks per point up to 505\,V): (a) interior efficiency and the tracks lost to a discharge, (b) angle resolution $s_{68}$, (c) the core of the position residual at the mesh (M3 pointing and scattering included), X filled, Y open, (d) time resolution, the uncorrelated part $(t_X-t_Y)/\sqrt2$ (filled) and the event time (open), not measured above 505\,V. Dotted: 490\,V, the HV of Runs 1 and 2.}}
+  \caption{\tbw{Chamber~A against the resist HV (6-27 scan, 1000\,V drift; 630--700 M3-matched tracks per point up to 505\,V). (a) Gain proxies: median fitted charge $q_X+q_Y$ (log scale; dotted, the exponential fitted below 465\,V) and, right axis, the tracks with a strip at the ADC rail. (b) Interior efficiency and the tracks lost to a discharge. (c) Time resolution: the uncorrelated part $(t_X-t_Y)/\sqrt2$ (filled) and the event time (open), not measured above 505\,V. (d) Angle resolution $s_{68}$, (e) angle scale (slope of the fitted against the M3 $\tan$), (f) core of the position residual at the mesh (M3 pointing and scattering included); X filled, Y open. Dotted: 490\,V, the HV of Runs 1 and 2.}}
   \label{fig:hvmetrics}
 \end{figure}
 \analysis{EFFHV}{build eff\_vs\_hv\_discharge from the hv\_scan rows (rerun/paper1\_ops + effbudget)}
