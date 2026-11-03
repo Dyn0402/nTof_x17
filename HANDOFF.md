@@ -13,7 +13,7 @@
 - Efficiency map: A-E panels, hand-placed axes, stronger outlines, passivation hatched on A, D veil in caption.
 - Residuals: Gaussian core (0.55/0.53 mm); text defends R = 5 mm over 3 sigma; (b) shoulder is muon-correlated, not accidental (caption fixed).
 - Dead-time figure -> appendix A2 (`sections/A2_discharge_recovery.tex`); text quotes < 1.2 ms (95 % CL).
-- New `hv_metrics` figure (`rerun/paper1_ops/hv_metrics.py`): on A's scan only timing improves with HV; askDylan in §5 on the 490 V argument.
+- New `hv_metrics` figure (`rerun/paper1_ops/hv_metrics.py`, 6 panels): gain proxy (charge x13, saturation 0->30 %), efficiency, time, angle s68, angle scale, position. Only timing improves with HV; the low-gain angle claim is now measured (scale flat, angle flat vs per-track charge). askDylan in §5 on the 490 V argument.
 - chamber_stack and sps_setup from the mpgd26 renders (they render headless here: `make_chamber.py`, `make_figures.py --only sps_side_mx17`).
 
 **Not done:**
@@ -25,6 +25,7 @@
 
 **Gotchas:**
 - Producer inputs: `$WORK_DATA/paper1_figs/` and `/media/ucla/work/claude-jobs/17c92c46*` (displays, Analysis_pass1 copies, res rows, sps_audit tel). Regenerable from EOS; delete when Paper I figures are final.
+- hv_metrics inputs: the 18 HV-scan `events.parquet` in `/media/ucla/work/claude-jobs/80be5bfd/hvscan/` (from EOS Analysis_pass1).
 - Producers that call `fig.savefig` directly must call `ps.publicise(fig)` first (effmap, det4_stripes do).
 - `figures/gas_vE_timing.pdf` in papers/paper1 is an unused stale copy with det names (the paper includes gas_vE).
 - mpgd26 renders are gitignored (figures/); paper copies are downsampled PDFs in `papers/paper1/figs/out/`.
