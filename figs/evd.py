@@ -5,7 +5,9 @@ History: 11-02 feedback (fits thinner and dashed, reference obvious, one amplitu
 11-03 second pass (Dylan): keep the mesh and cathode lines; the reference a SOLID BLACK line running past them; fits
 thin, dashed, in a colour distinct from both the data and the reference; zero amplitude WHITE; a saturated (not dark)
 maximum; a linear amplitude scale, either normalised to the ADC full scale (4096) or to the largest amplitude in the
-event; one display (X and Y views together) per row; broken axes only where a figure asks for them.  This module is the
+event; one display (X and Y views together) per row; broken axes only where a figure asks for them.  11-03 third pass
+(Dylan's pick): jet with zero white, normalised to 4096; the dashed fits, like the reference, run across the whole time
+axis (past the mesh and cathode).  This module is the
 one place those choices live; the producers (make_displays.py, make_tpc_principle.py) only pick events and layouts.
 
 A display is two views side by side, sharing the drift-time axis, with no gap between them:
@@ -73,7 +75,7 @@ STYLES = {
     'jet': dict(cmap=_jet(), bg='white', ref='black', fit='#e600e6', fit2='#7a4a1e', gapc='#8f98a3',
                 label='jet (zero white)'),
 }
-DEFAULT = 'reds'
+DEFAULT = 'jet'                     # Dylan 11-03: jet, normalised to 4096 (OPT norm='full')
 S = dict(STYLES[DEFAULT])
 #: amplitude normalisations: 'full' = ADC / 4096 (every event on the same scale), 'event' = ADC / the event's largest
 #: sample (X and Y together), 'adc' = raw ADC (the 99.5 % quantile of the windows as the top of the scale)
@@ -199,9 +201,9 @@ FIT_LABEL = {'first': 'fit', 'second': 'fit, second track', 'candidate': 'fitted
 def fit(ax, f, v, label=None):
     col = S['fit'] if f['role'] == 'first' else S['fit2']
     ls = (0, (1.2, 1.6)) if f['role'] == 'candidate' else (0, (4, 2))
-    t1 = f['t0'] + GAP / v
+    ts = np.array(sorted(ax.get_ylim()))               # 11-03 Dylan: like the reference, across the whole time axis
     lw = 1.4 if f['role'] == 'candidate' else 1.0      # dotted: a little heavier, so it reads on the reference
-    return _line(ax, f['p0'], f['w'], f['t0'], v, [f['t0'], t1], color=col, lw=lw, ls=ls, zorder=6,
+    return _line(ax, f['p0'], f['w'], f['t0'], v, ts, color=col, lw=lw, ls=ls, zorder=6,
                  label=label or FIT_LABEL[f['role']], dash_capstyle='butt')
 
 
