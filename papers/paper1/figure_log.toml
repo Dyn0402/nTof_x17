@@ -734,3 +734,9 @@ date = "2026-11-03"
 fig = "det4_stripes"
 status = "for review"
 change = "Ar/CF4 green; numbers unchanged."
+
+[[entry]]
+date = "2026-11-03"
+fig = "*"
+status = "for review"
+change = "Dylan's pick: display style jet (zero white) normalised to 4096 (evd.DEFAULT = 'jet'); the dashed fits now run across the whole time axis like the solid black reference (past mesh and cathode); fits magenta (first) / brown (second, dotted = candidate not kept). All 17 display figures and tpc_principle(_stacked) regenerated; captions updated."
