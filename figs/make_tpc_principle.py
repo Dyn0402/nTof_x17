@@ -48,17 +48,16 @@ def sketch(ax, g, v_mm, t0, tlim, tan=0.45):
     # below the mesh, enlarged: amplification gap (avalanche), resistive strips, insulator, readout strips
     for i in range(14):
         xc = X0 + 1.2 + i * 2.1
-        ax.add_patch(mp.Rectangle((xc - 0.8, z(-3.6)), 1.6, z(-2.6) - z(-3.6), fc='#7f8a99', ec='none', zorder=2))
-        ax.add_patch(mp.Rectangle((xc - 0.8, z(-6.8)), 1.6, z(-5.6) - z(-6.8), fc='#c98b2b', ec='none', zorder=2))
-    ax.text(X1 + 0.6, z(-3.1), 'resistive strips', va='center', ha='left', fontsize=7.5, color=ink)
-    ax.text(X1 + 0.6, z(-6.2), 'readout strips', va='center', ha='left', fontsize=7.5, color=ink)
-    ax.text(X0 - 0.6, z(-1.5), 'avalanche', va='center', ha='right', fontsize=6.5, color=mut)
+        ax.add_patch(mp.Rectangle((xc - 0.8, z(-5.2)), 1.6, z(-3.4) - z(-5.2), fc='#7f8a99', ec='none', zorder=2))
+        ax.add_patch(mp.Rectangle((xc - 0.8, z(-10.4)), 1.6, z(-8.6) - z(-10.4), fc='#c98b2b', ec='none', zorder=2))
+    ax.text(X1 + 0.6, z(-4.3), 'resistive strips', va='center', ha='left', fontsize=7.5, color=ink)
+    ax.text(X1 + 0.6, z(-9.5), 'readout strips', va='center', ha='left', fontsize=7.5, color=ink)
     # the muon: enters at the cathode, leaves at the mesh, tilted well beyond event 7884 (tan 0.17) so the drift lines of successive clusters separate
     xm = 6.0
     xs = lambda zz: xm + tan * zz
-    ax.annotate('', xy=(xs(-2.4), z(-2.4)), xytext=(xs(g + 6.6), z(g + 6.6)),
+    ax.annotate('', xy=(xs(-2.6), z(-2.6)), xytext=(xs(g + 9.5), z(g + 9.5)),
                 arrowprops=dict(arrowstyle='-|>', color=ps.ACCENT, lw=1.3, mutation_scale=9), zorder=5)
-    ax.text(xs(g + 5.6) + 0.9, z(g + 5.6), 'muon', color=ps.ACCENT, fontsize=7.5, va='center', ha='left')
+    ax.text(xs(g + 8.0) + 0.9, z(g + 8.0), 'muon', color=ps.ACCENT, fontsize=7.5, va='center', ha='left')
     # ionisation clusters and their drift down to the mesh
     rng = np.random.default_rng(3)
     for zz in np.linspace(2.5, g - 2.5, 7):
@@ -73,7 +72,7 @@ def sketch(ax, g, v_mm, t0, tlim, tan=0.45):
     ax.text(X0 - 2.3, z(g / 2), f'$g$ = {g:.1f} mm', rotation=90, va='center', ha='right', fontsize=7.5, color=mut)
     ax.text(xs(g * 0.62) + 5.0, z(g * 0.62), r'$t = t_0 + z/v$', fontsize=8, color=ink, ha='left', va='center',
             bbox=dict(fc='white', ec='none', pad=1.0))
-    ax.set_xlim(X0 - 5.5, X1 + 13.5)  # (x range unchanged)
+    ax.set_xlim(X0 - 4.0, X1 + 19.5)   # room on the right so the labels clear (b)'s axis
     ax.set_ylim(*tlim)
     ax.axis('off')
 
@@ -119,8 +118,12 @@ def main():
     stk = a.variant == 'stacked'
     gs = outer[0, 1].subgridspec(1, 3 if stk else 2, wspace=0.06 if not stk else 0.6,
                                  width_ratios=[1, 0.06, 1.25] if stk else None)
-    axs_ = fig.add_subplot(outer[0, 0])
-    sketch(axs_, g, v_mm, t0, tlim)
+    bb = outer[0, 0].get_position(fig)
+    B0, B1 = 0.02, 0.985                           # (a) spans the whole figure height, like (b)/(c) with their labels
+    span = tlim[1] - tlim[0]
+    tl_a = (tlim[0] - (bb.y0 - B0) / bb.height * span, tlim[1] + (B1 - bb.y1) / bb.height * span)
+    axs_ = fig.add_axes([bb.x0, B0, bb.width, B1 - B0])
+    sketch(axs_, g, v_mm, t0, tl_a)
     m3 = r.get('m3') or {}
     cen = float(d['p0'] + d['w'] * 0.5 * g / v_mm)
     half = 9.0
@@ -160,7 +163,7 @@ def main():
     sec = axm.secondary_yaxis('right', functions=(lambda t: (t - t0) * v_mm, lambda zz: zz / v_mm + t0))
     sec.set_ylabel('$z$ above the mesh [mm]')
     sec.tick_params(direction='in', length=2.5)
-    axs_.set_title('(a)', loc='left', fontsize=8, pad=3)
+    axs_.text(0.0, 1.0, '(a)', transform=axs_.transAxes, fontsize=8, va='top', ha='left')
     if stk:
         cax = fig.add_subplot(gs[0, 1])
     else:

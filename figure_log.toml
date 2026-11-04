@@ -995,3 +995,33 @@ date = "2026-11-03"
 fig = "bow_closure"
 status = "for review"
 change = "Redrawn from the 2-D fit with bootstrap error bars; r_f 0.52-1.00 on all ten views (C X 0.87; the 1-D version read 1.9). Text: Y-view steeper tilt explained (~3/4 from the dish being ~1.4x deeper along y, rest window-dependent; Y_TILT_2026-11-03.md), Y gain quoted as an empirical held-out gain; n_TOF sentence matches the plan (bow carried by channel); column-duration claim requoted from the final tables."
+
+[[entry]]
+date = "2026-11-04"
+fig = "tpc_principle"
+status = "for review"
+change = "Dylan 11-04: (a) spans the full figure height like (b)/(c) with their labels (its own y range, extended so mesh and cathode stay level with the gap lines of (b)/(c)); muon drawn from higher, amplification stack larger; 'avalanche' label removed; sketch shifted left so 'resistive strips' clears (b)'s axis."
+
+[[entry]]
+date = "2026-11-04"
+fig = "chamber_stack"
+status = "for review"
+change = "Dylan 11-04: X strip solid; -HV_drift moved clear of the cathode; mesh label dropped in (a) (not resolved at that scale; (b) shows it), zoom box dashed so it doesn't read as a second object; board, Rohacell and back Mylar now run to the outer face of the gas frame (470 mm plates offset +15 mm end at -220 mm, flush, spec.py CAD); leaders cross the Al and end on a dot inside the named layer (window tip left of the muon entry). Al plate fixed: it was drawn as a 13 mm bar down the side of the Rohacell; per spec.py (CAD) it is 8 mm thick (Rohacell 5 mm) with a 402 mm aperture, so it is now a 19 mm-wide frame piece below the back Mylar, no Al behind the active area. Wall widths in proportion (flange 19.9, frame 15, plate 19 mm)."
+
+[[entry]]
+date = "2026-11-04"
+fig = "bench_setup"
+status = "for review"
+change = "Dylan 11-04: scale bars moved inside the drawing's own box (between the top-slot label and the top M3 planes); figure cut to its content, 4.9 in wide, included at natural size (no width=\\linewidth, so text stays at its drawn size)."
+
+[[entry]]
+date = "2026-11-04"
+fig = "charge_balance"
+status = "for review"
+change = "Dylan 11-04: x 0.40-0.70; inset moved left and widened so its left edge sits just right of chamber B's distribution. Inputs reproduced (v1 + two-track sat_det3 via charge_rows.py; histogram csv identical to the 11-03 build)."
+
+[[entry]]
+date = "2026-11-04"
+fig = "hv_scan_single"
+status = "for review"
+change = "Added at the end of the all-chambers appendix (fig:hv_single, with an askDylan) so it shows in the paper and the deck next to hv_scan; keep one."
