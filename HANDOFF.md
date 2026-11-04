@@ -1,18 +1,27 @@
 # Handoff
 
-## Paper I figures + numbers: feedback round 4, two-track re-pass everywhere, bow consistent — updated 2026-11-03 (dylan-Yoga)
+## Paper I figures + numbers: feedback round 5, readable draft, feedback-note drafting system — updated 2026-11-04 (dylan-MS-7C84)
 
-**Resume:** Dylan reviews main.pdf (44 pp, on Overleaf) + deck; answer his next note items; settle the open list below.
+**Resume:** Paper I moves to text: Dylan drafts sections in the hub note "Paper I Feedback"; translate on request, do its `- [ ]` items.
 
-**Goal:** Paper I (JINST, chamber A) publication-ready figures from Dylan's hub note `archive/Paper I Figure Feedback.md`
-(replies as 💬), every number on the final reconstruction.
+**Goal:** Paper I (JINST, chamber A) publication-ready: figures converging (note `archive/Paper I Figure Feedback.md`,
+done through round 5), text now written from Dylan's drafts in `archive/Paper I Feedback.md`.
 
-**11-04 (desktop):** draft made readable: 90 prose `\tbw` blocks unwrapped (only 14 real placeholders stay, dark grey
-"[To write: …]"), floats `[tbp]` + placeins[section] + relaxed float fractions (figures had all piled up on pp. 20-44),
-`\analysis` inline, captions small/bold labels; README macro table updated. Note round 5 done: tpc_principle,
-chamber_stack (back plate was wrong: 8 mm frame, 402 mm aperture), bench_setup (natural size 4.9 in), charge_balance,
-hv_metrics, hv_scan_single in App. C. Overleaf at 286be389, deck redeployed. Inputs on the desktop:
-$WORK_DATA/claude-jobs/e0990235/{charge/vtt (make_report.py --in), hvm/{rows,events,rays}} — delete when figures are final.
+**Drafting system (11-04):** `papers/note_outline.py paper1 --write` regenerates that note's headings (abstract,
+sections, subsections, figures by file id, tables; numbers = PDF, checked with `--aux`); text under a heading moves
+with it; renamed sections -> "Unplaced". In the note: `- [ ]` = Claude's task -> when done check `- [x]` + 💬 details;
+an unchecked item with a 💬 was reopened. Plain text = Dylan's draft -> translate into the .tex (rules: papers/README.md
+"The feedback note": pull Overleaf first, his claims only, numbers checked, \askDylan when unclear, 💬 where it went).
+Re-run note_outline.py after moving any section/figure (e.g. Dylan plans to move Fig. 2 evd_showcase later).
+The notes repo has no git remote (the hub syncs it): commit there, don't push.
+
+**Done 11-04 (desktop):** draft made readable: 90 prose `\tbw` blocks unwrapped (only 14 real placeholders stay, dark
+grey "[To write: …]"), floats `[tbp]` + placeins[section] + relaxed float fractions (figures had all piled up on
+pp. 20-44), `\analysis` inline, captions small/bold labels; README macro table updated. Figure note round 5 done:
+tpc_principle, chamber_stack (back plate was wrong: 8 mm frame, 402 mm aperture), bench_setup (natural size 4.9 in),
+charge_balance, hv_metrics, hv_scan_single in App. C (askDylan: keep it or hv_scan). Overleaf at 286be389, deck
+redeployed (dylan-cern-site 91d4386). Inputs on the desktop: $WORK_DATA/claude-jobs/e0990235/{charge/vtt
+(make_report.py --in), hvm/{rows,events,rays}} — delete when the figures are final.
 
 **Done (11-03, all on main, last e53900e7; Overleaf at 2d3e0eb1; deck https://dylan-neff.web.cern.ch/notes/mx17-paper1-figures.html):**
 - Feedback rounds 3-4: all note items answered (💬 written into the note file directly: the hub's /item/respond only
