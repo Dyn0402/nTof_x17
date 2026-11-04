@@ -53,7 +53,7 @@ MASK_ERAS = ('E1_pre_access', 'E2_post_access')
 
 
 def build(arm, out, src=None, v=None, k=20, sat=3550.0, bow=True, latency=None, t0_sigma=5.0, tan_max=None, kw=None,
-          n_samples=20, sample_ns=60.0, conditions=None, mask_era=None):
+          n_samples=20, sample_ns=60.0, conditions=None, mask_era=None, dp=None):
     from wft.calib import CalibrationBundle
     chamber, row = GOLDEN[arm]
     src = src or os.path.join(PASS1, row, 'wft', 'calib_bundle')
@@ -92,6 +92,10 @@ def build(arm, out, src=None, v=None, k=20, sat=3550.0, bow=True, latency=None, 
         cal.hot = {p: [int(c) for c in m['planes'][p]['hot']] for p in ('x', 'y')}
     else:
         rec['channel_layer'] = 'bench dead list carried (no n_TOF mask: study bundle, not for the pass)'
+    if dp is not None:
+        rec['Dp'] = dict(bench=cal.hyper.get('Dp'), ntof=float(dp),
+                         source='rerun/ntof/tests/model_checks/FINDINGS.md (A stack; C, D Magboltz 90/10 at the in-situ v)')
+        cal.hyper = dict(cal.hyper, Dp=float(dp))
     cal.v_drift = float(v if v is not None else V_START[arm])
     if kw:
         rec['kw'] = dict(bench=dict(cal.kw), ntof=dict(kw), source='in-situ A-C cosmic line (ac_line.py ratio x bench kw)')
@@ -123,7 +127,8 @@ def build(arm, out, src=None, v=None, k=20, sat=3550.0, bow=True, latency=None, 
         prov['kept_t0_prior'] = 'n_TOF latency measured in situ (rerun/ntof), not the bench one'
     else:
         rec['t0'] = 'free'
-    rec['not_revalidated'] = 'Dp (bench 95/5 value; n_TOF gas 90/10), template (bench X template, 20-sample window), kw'
+    rec['not_revalidated'] = ('template (bench X template, 20-sample window; checked at n_TOF 11-04, holds)' +
+                              ('' if dp is not None else '; Dp (bench 95/5 value; n_TOF gas 90/10)'))
     cal.run_key = f'ntof/{arm}'
     cal.conditions = dict(conditions or {}, n_samples=int(n_samples), sample_ns=float(sample_ns))
     if mask_era is not None:
@@ -151,10 +156,11 @@ def main():
     ap.add_argument('--tan-max', type=float, default=None, help='candidate |tan| limit for this dataset (registry tan_max)')
     ap.add_argument('--mask-era', default=None, choices=MASK_ERAS,
                     help='n_TOF channel layer of this registry mask_era (replaces the bench dead list); required for the pass')
+    ap.add_argument('--dp', type=float, default=None, help='n_TOF 90/10 Dp (replaces the bench 95/5 value)')
     a = ap.parse_args()
     build(a.arm, a.out, a.src, a.v, a.k, a.sat, not a.no_bow, a.latency, a.t0_sigma, a.tan_max,
           kw=(dict(zip('xy', map(float, a.kw.split(',')))) if a.kw else None),
-          conditions=dict(gas='Ar/Iso 90/10', latency=27), mask_era=a.mask_era)
+          conditions=dict(gas='Ar/Iso 90/10', latency=27), mask_era=a.mask_era, dp=a.dp)
 
 
 if __name__ == '__main__':
