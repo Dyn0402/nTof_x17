@@ -470,3 +470,56 @@ A failing arm is held, as on the bench.
 - **Remaining before the bundles freeze:** the pin decision (above); the tan_max scan with Q7 (pairing select +
   two-track guards) on beam overlay pairs and capsule pointing; D's beam events (column start at the grid edge); B and
   D v/kw routes (D wall, cosmics without a line); Dp for 90/10; the template residual check; sat 3550 vs 3700.
+
+### 11-04: the pre-freeze studies (one session, four parallel studies + condor)
+- **Inputs for the pass are complete.** Campaign rr1_cm0 hits on the fa80c06 decodes: 3,937 / 3,937 acquisitions
+  (condor 4616842, `rerun/ntof/rehit/rehit_pass1.sub`, `CM_MODES=0`; the per-FEU + combined hits are ~184 GB on EOS for
+  runs ≥ 100). Every acquisition in scope now has `decoded_root_fa80c06/` and `combined_hits_root_rr1_cm0/`.
+- **P6 tooling exists and is validated** (`rerun/ntof/condor/`): one job per (acquisition, arm); the job stages only the
+  arm's two FEU files from `decoded_root_fa80c06` (as `decoded_root`) and the rr1_cm0 combined hits (as
+  `combined_hits_root`), runs `ntof_reco.py --tag` from a frozen code archive with the lock venv, and writes
+  `run_<r>_<sub>_<tag>_<arm>.{parquet,candidates,splits,meta}` to EOS. Full scope = 15,748 jobs. Dry run (code
+  `89478e52`, run_145 + run_149, A + C, 300 events per tag): 4 / 4 ok, and the condor output is **bit-identical** to the
+  desktop on the same acquisition (582 / 582 candidates, every field). Caveat: the χ²/dof quality-flag median is per
+  table, so per acquisition (~10³ tracks) rather than per sub-run. Known flake: EOS FUSE I/O errors loading the lock
+  venv's scipy `.so` files on a few jobs (Q7 cluster); `max_retries 2` covers it, and the ledger must check presence.
+- **P2 channel layer done** (`rerun/ntof/channel_layer/`, README + report.html): eight masks, (A, B, C, D) × (E1 = before
+  the 27 July access, E2 = after); registry column `mask_era`; `ntof_bundle.py --mask-era`. Dead x/y E2: A 1/35,
+  B 8/24, C 38/21, D 154/61 (+ D hot 20/21). The bench lists carry poorly (A's bench mask is bench-electronics; C-x
+  210–219 fire at n_TOF and are released). New: A-y connector 8 gains 23 shorts after the access; D's "hot cells" are
+  beam-induced (wildcard, not censored). **Tested:** on the A–C line the mask is neutral (Δ68 −0.02 ± 0.03° A,
+  +0.02 ± 0.04° C, 15 of 1,909 lines lost); on beam (run_145) it removes 4.4 % of A's tracks, almost all non-pointing
+  (pointing fraction 32.9 → 34.0 %, pointing tracks −1 %); C neutral.
+- **Q2 decided: pin t0, latency per trigger class** (`rerun/ntof/tests/t0pin/`; 12 run_149 sub-runs, A∧C hit-coincident
+  triggers only, 100 % of the earlier line events kept; kw measured on even sub-runs, scored on odd).
+  - Cosmic A–C line, ~1,850 lines (was ~160), held-out at each config's own scale, pinned vs free:
+    A 68 % residual 2.88 → 2.62° (−0.25 ± 0.08°), A-x tan −11 %; C 3.33 → 3.23° (−0.10 ± 0.09°); +6 % line events.
+  - **The beam trigger has its own latency:** free-fit prompt t0 + 10·ftst on run_145 sits +11 / +19 ns (A x/y) and
+    +17 / +26 ns (C) after the cosmic one. Beam latency files `bundles/latency_{A,C}_r145beam.json` (A 6.9 / 20.0,
+    C 52.4 / 52.5 ns). The ftst slope on beam is ~−7 ns per class, as on cosmics (the pin assumes −10: open, ≤ 15 ns
+    at ftst 5).
+  - Capsule pointing on the same run_145 tracks (matched by position): pinned (beam latency) vs free, paired DCA
+    −0.006 ± 0.008 mm (A), −0.06 ± 0.02 mm (C); pinned finds 3–5 % more pointing tracks; the pointing *fraction* is
+    lower because the pin also gates more non-pointing tracks. Beam latency beats cosmic latency on C (−0.075 ±
+    0.026 mm paired).
+  - So: pinned, σ 15 ns; beam rows take the beam latency, cosmic rows the cosmic one (bundle per trigger class).
+- **Model checks** (`rerun/ntof/tests/model_checks/FINDINGS.md`): template holds (A, C within 0.02 of peak of the
+  bench; D's peak excess is lateral), systematic 0.1° / 0.15 mm. **sat stays 3550** (the rail is 4095 − ped − CM, ~4080
+  on beam, ~3650–3750 on cosmics; 3700 misses more clips and buys back ~25 %; the per-sample rail is the real fix —
+  diff proposed for `wft_beam._windows_for_tag`, not applied). **Dp 90/10:** A 0.0245 ± 0.0014 (stack; bench ×1.2 det3
+  excess), C 0.0136 (Magboltz; the old 0.018 was never measured), D 0.0157 (Magboltz); `ntof_bundle.py --dp`.
+- **v2 candidate bundles (A, C):** pin + E2 mask + new Dp + kw carried under the pin. On the line, against free:
+  A −0.24 ± 0.07°, C −0.12 ± 0.11°; scale ratio train 0.996 / 1.000 (A), 1.008 / 1.009 (C): one more kw step
+  (A 0.976 / 0.965, C 1.009 / 1.000) is < 1 %, i.e. converged. C-y train vs test differs by ~1.5 % (0.992 vs 1.007
+  under v1k; 1.009 vs 1.016 under v2): sub-run to sub-run variation of C, consistent with C's drifting v; a per-sub-run v
+  for C is the open item.
+- **D and B** (`rerun/ntof/tests/d_b/FINDINGS.md`): **kw_D = 0.880 ± 0.014 (x) / 0.881 ± 0.010 (y), ± 0.03 syst** at
+  v 31.0, from B–D cosmic lines through cluster centroids (validated on A–C to ~1 %); D's timing v and angle scale differ
+  by 12 % (kw·v ≈ 27.3). **D on beam carries a ~360 ns (2.8 MHz) beam-gated oscillation** on 82–90 % of triggers
+  (from ~10 ms after the flash), which is why the beam box fit fails; it is not a window or latency offset. D's beam v is
+  not measurable and its beam angles are limited (stated limitation; a hum flag / sinusoid subtraction is the only
+  route, untested). B: positions only; its v moves no position (≤ 1.2 mm at the 95th pct via the bow term) but changes
+  B's efficiency through the raw-tan gate.
+- **Remaining before the bundles freeze:** Q7 + tan_max (running); build the pass bundles: (A, B, C, D) × (E1, E2) ×
+  (beam, cosmic latency) with v / kw / Dp above, D t0 free (no latency measured on D: its beam fits are oscillation-
+  dominated), B no angle; then N-G1 on run_145 + run_149 against is2_v2, and the full submission.
