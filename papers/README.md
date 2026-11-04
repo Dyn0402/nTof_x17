@@ -109,7 +109,9 @@ Run it with `--write` after any change that moves, adds or renames a section or 
 heading moves with it. Notes under a heading that no longer exists (a renamed section) go to a final "Unplaced"
 section, never deleted, and the script names them.
 
-**In the note:** `- [ ]` items are feedback or to-dos; answer under them with `  > 💬 claude · <date>: …`.
+**In the note:** `- [ ]` items are for Claude to do. When one is done, check it off (`- [x]`) and add
+`  > 💬 claude · <date>: …` under it with the details. An unchecked item that already has a 💬 was reopened by Dylan:
+read the line he added and do it again.
 Plain text under a section or subsection heading is Dylan's draft, written however it comes.
 
 **Translating a draft into paper text** (when Dylan asks for a section):
