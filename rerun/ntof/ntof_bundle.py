@@ -14,8 +14,8 @@ What carries, what is replaced, and why (each choice is written into the bundle'
       capsule focus).  Of the bow block the tilt (a_*), scale (s_*) and mesh-height (h_*) surfaces carry; the bench
       rigid tilt (w0_const_*) belongs to the bench mounting and is dropped with w0.
   replaced, x-y pairing
-      xy_pairing['select'] -> 'gate' (the bench golden rows carry 'cost': rerun/effbudget/single/PAIRING_FIX_2026-11-02.md)
-      xy_pairing['split_corrob'] -> 'count' (the bench carries 'charge': rerun/effbudget/single/MERGED_PROJECTION_2026-11-02.md)
+      xy_pairing['select'] -> 'cost' and ['split_corrob'] -> 'charge', set explicitly (the bench values; chosen for n_TOF on
+      beam overlay truth, rerun/ntof/tests/q7/FINDINGS.md, 11-05)
   dropped
       v_map (bench v(x,y) of one night), w0 (rigid tilt of the bench mounting), the bench t0_abs (the bench latency).
   replaced
@@ -102,17 +102,19 @@ def build(arm, out, src=None, v=None, k=20, sat=3550.0, bow=True, latency=None, 
         cal.kw = {p_: float(x) for p_, x in kw.items()}
     rec['v_drift'] = f'{cal.v_drift} um/ns ({"given" if v is not None else "V_START: is2 in-situ / wall / Magboltz"}); ' \
                      'NOT the column-duration measurement yet'
-    # x-y pairing: the bench golden rows pair first and gate after (xy_pairing select 'cost',
-    # rerun/effbudget/single/PAIRING_FIX_2026-11-02.md); n_TOF keeps the 'gate' selection its stage-3 products were
-    # made with until the change is shown right on beam, where 'plausible' is mostly the tan_max acceptance.
+    # x-y pairing: pair first by the pairing cost, gate after ('cost'), as on the bench. Decided 11-05 on beam overlay
+    # truth (rerun/ntof/tests/q7/FINDINGS.md): both members of a two-track overlay found and correctly paired 26 -> 61 %
+    # (A) / 25 -> 57 % (C) with 'charge' below, ghosts 0.24 -> 0.11 per overlay; single tracks and the A-C line unchanged.
     if cal.xy_pairing:
-        rec['xy_pairing_select'] = dict(source=cal.xy_pairing.get('select', 'gate'), ntof='gate')
-        cal.xy_pairing = dict(cal.xy_pairing, select='gate')
-        # two-track split corroboration: the bench lets a charge-corroborated split through with one plausible child
-        # (MERGED_PROJECTION_2026-11-02.md); on run_145 that rule would fire on 4 % (A) / 13 % (C) of beam events where
-        # the 'count' rule does not, with no two-particle truth on beam to say it is right -> n_TOF keeps 'count'
-        rec['xy_pairing_split_corrob'] = dict(source=cal.xy_pairing.get('split_corrob', 'count'), ntof='count')
-        cal.xy_pairing = dict(cal.xy_pairing, split_corrob='count')
+        rec['xy_pairing_select'] = dict(source=cal.xy_pairing.get('select', 'gate'), ntof='cost',
+                                        why='rerun/ntof/tests/q7/FINDINGS.md (beam overlay truth)')
+        cal.xy_pairing = dict(cal.xy_pairing, select='cost')
+        # two-track split corroboration: 'charge' lets a charge-corroborated split through with one plausible child
+        # (MERGED_PROJECTION_2026-11-02.md); on beam overlays it adds +5 pt both-correct over 'cost' alone and makes the
+        # in-acceptance efficiency independent of tan_max (q7/FINDINGS.md)
+        rec['xy_pairing_split_corrob'] = dict(source=cal.xy_pairing.get('split_corrob', 'count'), ntof='charge',
+                                              why='rerun/ntof/tests/q7/FINDINGS.md (beam overlay truth)')
+        cal.xy_pairing = dict(cal.xy_pairing, split_corrob='charge')
     cal.n_depth_bins = int(k)
     cal.sat_adc = float(sat)
     cal.tan_max = None if tan_max is None else float(tan_max)

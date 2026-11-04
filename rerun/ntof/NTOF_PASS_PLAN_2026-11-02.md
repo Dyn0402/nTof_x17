@@ -520,6 +520,14 @@ A failing arm is held, as on the bench.
   not measurable and its beam angles are limited (stated limitation; a hum flag / sinusoid subtraction is the only
   route, untested). B: positions only; its v moves no position (≤ 1.2 mm at the 95th pct via the bow term) but changes
   B's efficiency through the raw-tan gate.
-- **Remaining before the bundles freeze:** Q7 + tan_max (running); build the pass bundles: (A, B, C, D) × (E1, E2) ×
+- **Q7 decided (11-05, `rerun/ntof/tests/q7/FINDINGS.md`, report.html): `select='cost'`, `split_corrob='charge'`,
+  `plausible` keeps the raw tan_max, raw tan_max 0.6 confirmed.** Beam overlay truth (A 695 / C 783 overlays, steep
+  donors included): both members found and correctly paired 26 → 61 % (A), 25 → 57 % (C); accepted ghosts per overlay
+  0.24 → 0.11; the shallow member of a shallow+steep pair 36 → 71 / 68 %. Single tracks, the A–C line (1,647 → 1,645
+  lines, same residuals) and the capsule-pointing excess (A 1463 ± 69 → 1446, C 1206 ± 61 → 1201) do not move. With
+  cost + charge the in-acceptance efficiency is flat in tan_max; tracks above 0.6 carry no pointing excess; 1.0 and
+  column-window only add line mis-fits and +30–60 % CPU. Applied in `ntof_bundle.py` (explicit, with provenance). One
+  left-out acquisition (C `_006`, column window) resubmitted as condor 4617508; it cannot change the decision.
+- **Remaining before the bundles freeze:** build the pass bundles: (A, B, C, D) × (E1, E2) ×
   (beam, cosmic latency) with v / kw / Dp above, D t0 free (no latency measured on D: its beam fits are oscillation-
   dominated), B no angle; then N-G1 on run_145 + run_149 against is2_v2, and the full submission.

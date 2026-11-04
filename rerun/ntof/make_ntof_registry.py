@@ -164,9 +164,9 @@ def main():
             feu_min_rel = float(dec.bytes.min() / dec.bytes.median()) if len(dec) else float('nan')
             row['dec_feu_min_rel'] = round(feu_min_rel, 4)
             row['redecode'] = bool((ratio < 0.5 or feu_min_rel < 0.5) and row['fdf_gb'] > 0.01)
-            # candidate |tan| limit (bundle tan_max, Dylan 11-02: per dataset).  0.6 vs 1.0 on the run_149 A-C line
-            # (11-02, NTOF_PASS_PLAN §6): 1.0 changes no common event and adds ~4:1 wrong steep fits; 0.6, tentative
-            # until the full run_149 sample on the in-situ v re-checks it
+            # candidate |tan| limit (bundle tan_max, Dylan 11-02: per dataset): 0.6, confirmed 11-05 (rerun/ntof/tests/q7/
+            # FINDINGS.md): with cost + charge pairing the in-acceptance efficiency is flat in tan_max, beam tracks above
+            # 0.6 carry no capsule-pointing excess, and 1.0 / column-window only add mis-fits and +30-60 % CPU
             row['tan_max'] = 0.6
             row['excluded'] = bool(reasons)
             row['exclude_reason'] = '; '.join(reasons)

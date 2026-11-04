@@ -1,5 +1,7 @@
 # Note for the n_TOF re-processing: the bench X/Y pairing fix (2026-11-02)
 
+**Update 11-05: n_TOF now follows the bench (`select='cost'`, `split_corrob='charge'`), decided on beam overlay truth: `rerun/ntof/tests/q7/FINDINGS.md`. §2 below is the 11-02 state.**
+
 **For n_TOF this note changes nothing today.** The n_TOF pass keeps the X/Y track selection that every n_TOF product
 was made with (`select_tracks` mode `gate`). The bench switched to a new mode (`cost`), because there it pairs
 two-particle events correctly in 96 % of cases instead of 80 %. Whether n_TOF should follow is an open question, and
