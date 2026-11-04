@@ -95,3 +95,28 @@ markup. So:
 - Accept or reject Stephan's tracked changes in Overleaf before you pull.
 - Don't push repo edits to a section that still has pending tracked changes or comments. Edit that section
   in Overleaf instead. New figures are always safe to push.
+
+## The feedback note and drafting from it (Paper I, from 2026-11-04)
+
+Dylan's hub note `~/.claude-hub/notes/dylan/archive/Paper I Feedback.md` mirrors the paper's outline: one heading per
+section, subsection, figure and table, numbered as in the PDF (figures keyed by their file id, as in `figures.toml`).
+
+    .venv/bin/python papers/note_outline.py paper1            # dry run
+    .venv/bin/python papers/note_outline.py paper1 --write    # regenerate the headings (then commit ~/.claude-hub/notes)
+    .venv/bin/python papers/note_outline.py paper1 --aux <build>/main.aux   # also check numbers against a build
+
+Run it with `--write` after any change that moves, adds or renames a section or figure. Whatever is written under a
+heading moves with it. Notes under a heading that no longer exists (a renamed section) go to a final "Unplaced"
+section, never deleted, and the script names them.
+
+**In the note:** `- [ ]` items are feedback or to-dos; answer under them with `  > 💬 claude · <date>: …`.
+Plain text under a section or subsection heading is Dylan's draft, written however it comes.
+
+**Translating a draft into paper text** (when Dylan asks for a section):
+1. `overleaf.sh pull paper1` first; don't touch a section with pending tracked changes in Overleaf.
+2. Write the section in `sections/*.tex` from the draft: Dylan's content, order and claims, in paper prose. Add no
+   claims of our own. Every number is checked against its source (the result file named in `\sectionstate`, or
+   `rerun/PAPER1_NUMBERS_*.md`). If the draft and a source disagree, or the draft is unclear, use an `\askDylan{…}`
+   rather than guessing. Existing text the draft replaces is replaced; existing text it doesn't cover stays.
+3. Build, push to `origin main` and to Overleaf, then add a 💬 under the draft: where it went (file, section number)
+   and anything changed or questioned. Leave the draft in the note; Dylan deletes it when he's happy.
