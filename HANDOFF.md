@@ -7,6 +7,13 @@
 **Goal:** Paper I (JINST, chamber A) publication-ready figures from Dylan's hub note `archive/Paper I Figure Feedback.md`
 (replies as 💬), every number on the final reconstruction.
 
+**11-04 (desktop):** draft made readable: 90 prose `\tbw` blocks unwrapped (only 14 real placeholders stay, dark grey
+"[To write: …]"), floats `[tbp]` + placeins[section] + relaxed float fractions (figures had all piled up on pp. 20-44),
+`\analysis` inline, captions small/bold labels; README macro table updated. Note round 5 done: tpc_principle,
+chamber_stack (back plate was wrong: 8 mm frame, 402 mm aperture), bench_setup (natural size 4.9 in), charge_balance,
+hv_metrics, hv_scan_single in App. C. Overleaf at 286be389, deck redeployed. Inputs on the desktop:
+$WORK_DATA/claude-jobs/e0990235/{charge/vtt (make_report.py --in), hvm/{rows,events,rays}} — delete when figures are final.
+
 **Done (11-03, all on main, last e53900e7; Overleaf at 2d3e0eb1; deck https://dylan-neff.web.cern.ch/notes/mx17-paper1-figures.html):**
 - Feedback rounds 3-4: all note items answered (💬 written into the note file directly: the hub's /item/respond only
   finds top-level `- [ ]` items, not nested ones). Per-figure log `papers/paper1/figure_log.toml`.
