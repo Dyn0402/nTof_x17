@@ -8,21 +8,21 @@ June 2026) and the SPS H4 beam (uRWELL telescope, chamber~E only, including the 
 DREAM readout, sampling, window. Gas and flow.}
 \askDylan{Gas per setup: bench Ar/iC$_4$H$_{10}$ 95/5? SPS runs with Ar/CF$_4$/iC$_4$H$_{10}$ 88/10/2? Which runs enter the paper?}
 
-\begin{figure}[t]
+\begin{figure}[tbp]
   \centering
   \includegraphics[width=\linewidth]{bench_setup}
-  \caption{\tbw{The Saclay cosmic bench, side view, muons going down ($z$ drawn compressed to 0.35 of the transverse scale, as the small scale bars show; slab thicknesses exaggerated). The readout is triggered by the coincidence of the top and bottom scintillators ($60\times60$\,cm). The four M3 reference planes ($50\times50$\,cm; $z=24$, 144, 1185, 1302\,mm) reconstruct each muon independently of the chamber under test, over a lever arm of 1278\,mm. The two MX17 test slots are at $z=232$ and 702\,mm; chamber~A ran in the top slot for Runs 1 and 2. Scintillator positions are schematic.}}
+  \caption{The Saclay cosmic bench, side view, muons going down ($z$ drawn compressed to 0.35 of the transverse scale, as the small scale bars show; slab thicknesses exaggerated). The readout is triggered by the coincidence of the top and bottom scintillators ($60\times60$\,cm). The four M3 reference planes ($50\times50$\,cm; $z=24$, 144, 1185, 1302\,mm) reconstruct each muon independently of the chamber under test, over a lever arm of 1278\,mm. The two MX17 test slots are at $z=232$ and 702\,mm; chamber~A ran in the top slot for Runs 1 and 2. Scintillator positions are schematic.}
   \label{fig:bench}
 \end{figure}
 
 \subsection{SPS H4 beam}
-\tbw{Only chamber~E went to the SPS: the test (late July -- early August 2026; exact dates to fill from the run log) ran while chambers A--D were installed at
+Only chamber~E went to the SPS: the test (late July -- early August 2026; exact dates to fill from the run log) ran while chambers A--D were installed at
 n\_TOF, so the one chamber not needed there, with its known non-amplifying stripes (\cref{sec:det4}), was the one
-available. Beam, uRWELL references, chamber~E position, runs used (HV, drift field, gas, rotation).}
-\tbw{\textbf{Role in this paper: a cross-check.} Every headline number comes from the cosmic bench (efficiency, angles,
+available. Beam, uRWELL references, chamber~E position, runs used (HV, drift field, gas, rotation).
+\textbf{Role in this paper: a cross-check.} Every headline number comes from the cosmic bench (efficiency, angles,
 the intrinsic position resolution with the reference subtracted, the drift velocity and the gas). The SPS data confirm
 the position resolution in a beam (chamber~E's working region, 138/120\,\textmu m) and the angle scale at a known angle
-(column $v$ 0.981 $\pm$ 0.03 of tan 25.4\textdegree), and measure the charge footprint at normal incidence.}
+(column $v$ 0.981 $\pm$ 0.03 of tan 25.4\textdegree), and measure the charge footprint at normal incidence.
 \askDylan{Dylan 2026-11-02: SPS reads as a cross-check; it may move to an appendix or out, depending on the referee.
 Keep as a short section for now?}
 The setup (beam, the two uRWELL reference trackers, chamber~E yawed by 25.6\textdegree{}) is drawn in \cref{fig:sps} (\cref{app:sps}).
@@ -32,7 +32,7 @@ The setup (beam, the two uRWELL reference trackers, chamber~E yawed by 25.6\text
 %   A = det3 (mx17_3), B = det2 (mx17_2), C = det6 (mx17_6), D = det7 (mx17_7), E = det4 (mx17_4).
 %   Run 1 = sat_det3 (mx17_det3_saturday_scan_6-27-26/long_run_resist_490V_drift_1000V, 6-27 ~22:40 to 6-28 01:30)
 %   Run 2 = p2_det3  (mx17_det3_p2_det1_overnight_6-27-26/long_run_p2_det1_sanity_check, 6-28 01:33 to 08:48)
-\tbw{Five chambers were tested on the bench. We call them A--E. Chambers A--D later ran together at n\_TOF and keep
+Five chambers were tested on the bench. We call them A--E. Chambers A--D later ran together at n\_TOF and keep
 these names in the companion paper; chamber E, whose readout board has non-amplifying strips (\cref{sec:det4}), went
 to the SPS instead. Chamber A is the subject of this paper; B--E show what varies from one board to the next.
 Each chamber's bench numbers come from its \emph{golden run}, its long run at fixed HV (\cref{tab:datasets}); these
@@ -43,11 +43,11 @@ agree on everything this paper measures (interior efficiency (all tracks, multi-
 0.975 / 0.991\textdegree{} in X and 0.896 / 0.900\textdegree{} in Y, position core at the mesh 0.50 / 0.51\,mm in X,
 uncorrelated time 22.4 / 22.2\,ns). The one difference is the drift velocity, 35.8 against 37.2\,\textmu m/ns, as
 the gas dried through the night (\cref{sec:gas}); the calibration was made on Run~1 and applied to Run~2 with only
-$v$ refitted. Where a figure needs a single event it is from Run~1.}
-\begin{table}[t]
+$v$ refitted. Where a figure needs a single event it is from Run~1.
+\begin{table}[tbp]
   \centering
-  \caption{\tbw{The chambers and their bench golden runs (Ar/iC$_4$H$_{10}$ 95/5 with water, \cref{sec:gas}).
-  Slot: top $z=702$\,mm, bottom $z=232$\,mm (\cref{fig:bench}).}}
+  \caption{The chambers and their bench golden runs (Ar/iC$_4$H$_{10}$ 95/5 with water, \cref{sec:gas}).
+  Slot: top $z=702$\,mm, bottom $z=232$\,mm (\cref{fig:bench}).}
   \label{tab:datasets}
   \begin{tabular}{lllll}
     \hline

@@ -7,12 +7,22 @@
 \usepackage{lmodern}
 \usepackage{amsmath,amssymb}
 \usepackage{graphicx}
+\usepackage[font=small,labelfont=bf,margin=0.5em]{caption}
 \usepackage{booktabs}
 \usepackage{siunitx}
 \usepackage{authblk}
 \usepackage[hidelinks]{hyperref}
 \usepackage{cleveref}
+\usepackage[section]{placeins} % figures stay in their own section (no pile-up at the end)
 \usepackage{drafting}
+% Float placement: allow figure-heavy pages, so figures sit next to their text
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\bottomfraction}{0.7}
+\renewcommand{\textfraction}{0.1}
+\renewcommand{\floatpagefraction}{0.75}
+\setcounter{topnumber}{3}
+\setcounter{bottomnumber}{2}
+\setcounter{totalnumber}{4}
 % \draftnotesfalse   % uncomment for a clean read without notes
 
 \graphicspath{{figures/}}
@@ -65,7 +75,7 @@ references). Both publishers also ask for AI used \emph{in the research} to be d
 part of the reconstruction or of any measurement here, so we propose no methods text unless the editor asks
 (Dylan 2026-11-02: keep an open mind). Code release: Zenodo (CERN's free repository) would give the analysis code and
 its history a citable DOI; to decide. Wording to agree among all authors.}
-\tbw{This work made extensive use of Claude Code (Anthropic), an AI agent that writes and runs code, with the Claude
+This work made extensive use of Claude Code (Anthropic), an AI agent that writes and runs code, with the Claude
 Opus, Fable, Sonnet and Haiku models (versions 4.6--5.5), from November 2025 to the submission of this paper. We state
 its role in full because it was large. Under the direction of the authors it wrote most of the analysis software:
 the waveform reconstruction of the companion paper, the calibrations, and the efficiency, resolution, gas and timing
@@ -77,7 +87,7 @@ the results through independent cross-checks of each headline number, a complete
 data, event displays inspected by eye for every class of lost track, and Monte Carlo closure tests of the
 reconstruction. No data, measurement or figure was generated or altered by an image or language model: every figure is
 produced by a script from the recorded data. The code and its full history are available from the authors
-[repository / DOI]. The authors take full responsibility for the content of this paper.}
+[repository / DOI]. The authors take full responsibility for the content of this paper.
 
 \bibliographystyle{unsrt}
 \bibliography{refs}
