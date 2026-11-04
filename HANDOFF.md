@@ -64,75 +64,67 @@ redeployed (dylan-cern-site 91d4386). Inputs on the desktop: $WORK_DATA/claude-j
 - Deck: `WORK_DATA=~/work_data .venv/bin/python papers/paper1/make_figures_deck.py --out <html>` then
   `dylan-cern-site/scripts/add-note.py <html> --slug mx17-paper1-figures --force --deploy`.
 
-## n_TOF pass 1: reprocess the n_TOF tracks on the final chain — updated 2026-11-02 (dylan-MS-7C84)
+## n_TOF pass 1: reprocess the n_TOF tracks on the final chain — updated 2026-11-04 (dylan-MS-7C84)
 
-**Resume:** pre-freeze studies for the n_TOF pass; next: pinned-t0 on all 12 staged run_149 sub-runs, then tan_max + Q7 scan.
+**Resume:** every pre-freeze decision made; next: build the pass bundles, a pinned-t0 check of Q7, then N-G1 and submit.
 
 **Goal:** reconstruct every n_TOF trigger of ours with the pass-1 bench/SPS algorithm, calibrated in situ, with every
-n_TOF lesson in code or registry. The plan, the decisions and every result are in
-`rerun/ntof/NTOF_PASS_PLAN_2026-11-02.md`; §2 is the lessons checklist, §5 Dylan's decisions, §6 the findings.
+n_TOF lesson in code or registry. Plan, decisions and every result: `rerun/ntof/NTOF_PASS_PLAN_2026-11-02.md`
+(§5 Dylan's decisions, §6 findings; the 11-04 block is today's).
 
-**Done (11-02):**
-- **Plan and decisions.**
-  - Scope: production 36 runs + beam-off cosmics now; pre-production in a last pass.
-  - t0: pin it, but test first.
-  - Output: `july_beam/Analysis_pass1`.
-  - Bow block: carried to n_TOF.
-  - Angle limit `tan_max`: per dataset.
-  - A full re-decode was approved and is done.
-- **Registry** (`rerun/ntof/make_ntof_registry.py` → `ntof_registry.csv`): 3,937 acquisitions; one readout, HV and gas
-  setup throughout; `redecode` flags; `tan_max` 0.6.
-- **Re-decode with fa80c06:** 31,496 FEU files, 0 errors, in `<subrun>/decoded_root_fa80c06/` (condor 4612805). It
-  also covers four truncated EOS decodes (run_130 `_000` held 654 of 8,387 events) and a few fused triggers.
-- **Code:**
-  - `CalibrationBundle.tan_max` + `wft.reco.tan_max()`: bench/SPS unchanged, tests pass.
-  - `rerun/ntof/ntof_bundle.py`: pass-1 golden → n_TOF bundle, with options `--v --kw --latency --tan-max --no-bow`.
-  - `rerun/ntof/ntof_reco.py`: the driver, with `--seed hits|waveform`, `--hits-dir` and `--events`.
-  - `wft_beam` additions: `allow_bow`, `min_strips`, `acq_tag`, `hits_from_waveforms`.
-  - Scorers: `rerun/ntof/ac_line.py` (A–C cosmic line, scale ratio) and `capsule_point.py` (beam pointing).
-- **Results** (all in plan §6):
-  - **Seeding (Q4) decided: hits.** The old n_TOF hits are identical to the rr1 recipe. Waveform seeding adds only
-    non-pointing tracks, at 2–3× the CPU.
-  - **v in situ** (stacked column duration): A 38.6, C 28.1, D ~31 µm/ns; B not measurable.
-  - **kw in situ ≈ 1:** A 0.98/0.97, C 1.01/1.01. Held out on cos_0001 the scale closes at 0.99–1.01.
-  - **Angle limit:** 1.0 adds mostly wrong steep fits on the cosmic line and non-pointing tracks on beam, so 0.6 is
-    tentative. The two-sided search gives no gain at 5× the CPU.
-  - **t0 on cosmics:** trigger jitter ~13 ns against a free-fit t0 resolution of 47/72 ns. Pinned vs free, held out:
-    A angle residual −8 %, C neutral; not significant yet.
+**Done (11-04; earlier work in plan §6):**
+- **Inputs complete:** rr1_cm0 hits on the fa80c06 decodes for all 3,937 acquisitions (condor 4616842,
+  `rerun/ntof/rehit/rehit_pass1.sub`, `CM_MODES=0`).
+- **P6 condor tooling** `rerun/ntof/condor/` (`ntof_stage.sh`, `ntof.sub`, `make_ntof_jobs.py`): one job per
+  (acquisition, arm), 15,748 at full scope; output bit-identical to the desktop. Code archive `~/x17rerun/code_89478e52`.
+- **P2 channel layer** `rerun/ntof/channel_layer/` (agent): 8 masks (A–D × E1 pre-access / E2 post-access), registry
+  `mask_era`, `ntof_bundle.py --mask-era`. Neutral on the A–C line; on beam removes non-pointing A tracks.
+- **Q2 t0 decided: pin (σ 15 ns), latency per trigger class** (`rerun/ntof/tests/t0pin/`). Line, ~1,850 events: A
+  −0.25 ± 0.08°, C −0.10 ± 0.09°. Beam trigger latency is +11…+26 ns after the cosmic one
+  (`bundles/latency_{A,C}_r145beam.json`). On beam the pin points as well as free on the same tracks, +3–5 % pointing tracks.
+- **Model checks** `rerun/ntof/tests/model_checks/` (agent): template holds; sat stays 3550; Dp 90/10 A 0.0245,
+  C 0.0136, D 0.0157 (`ntof_bundle.py --dp`).
+- **D/B** `rerun/ntof/tests/d_b/` (agent): kw_D 0.880/0.881 ± 0.03 syst at v 31.0 (B–D centroid lines); D beam has a
+  ~360 ns beam-gated oscillation → D beam v not measurable, beam angles limited (stated limitation); B positions only.
+- **Q7 decided** `rerun/ntof/tests/q7/` (agent): `select='cost'`, `split_corrob='charge'`, raw tan_max 0.6 confirmed;
+  both-members-correct 26 → 61 % (A), 25 → 57 % (C), single tracks / A–C line / pointing unchanged. Applied in
+  `ntof_bundle.py`.
+- **v2 candidate bundles (A, C)** in `/media/ucla/work/ntof_pass1/bundles/`: v2 (cosmic latency) and v2b (beam
+  latency), pin + E2 mask + new Dp; kw converged (next step < 1 %). Built BEFORE Q7, so they still carry gate/count.
 
-**In progress / where it stopped:** nothing running (local or condor). No half-done edits.
+**In progress / where it stopped:**
+- Condor 4617508 (testmatch): the one Q7 acquisition left out (run_145 `_006` C, column-window config). It writes to
+  `/eos/experiment/ntof/data/x17/july_beam/Analysis_pass1/tests/q7_beam/out/colwin_charge_gate/run_145/stat090_0000/C/`.
+  It cannot change the Q7 decision; re-score with `rerun/ntof/tests/q7/q7_condor_merge.py` + `q7_real_score.py` if wanted.
+- Nothing else running. No half-done edits.
 
 **Next steps:**
-1. Pinned vs free on all 12 staged run_149 sub-runs (~2,000 A–C lines), with kw re-measured under the pin
-   (the scale moves 1–2 % when pinned). Then a beam-side t0 check.
-2. tan_max scan 0.5–1.0 together with Q7 (`xy_pairing['select']` gate vs cost, two-track plausibility guards; Paper I
-   session's fix 743d6d31, notes `rerun/ntof/NOTE_PAIRING_FIX_2026-11-02.md` and
-   `rerun/effbudget/single/MERGED_PROJECTION_2026-11-02.md`). Score on beam overlay pairs
-   (`sept26_prelim_analysis/intra_bench.py`) and capsule pointing.
-3. D's beam events: on beam, D's column-start fit sits at the edge of its range; on cosmics D is normal.
-4. B and D angle-scale routes (D wall on cosmics); Dp for 90/10; template residual check; sat 3550 vs 3700.
-5. Regenerate hits (rr1 recipe) on the full campaign, then the condor driver and DAG (P6), ledger, stage 3.
+1. Build the pass bundles with `ntof_bundle.py`: A (v 38.6, kw 0.976/0.965, Dp 0.0245), C (v 28.1, kw 1.009/1.000,
+   Dp 0.0136), D (v 31.0, kw 0.880/0.881, Dp 0.0157, t0 free), B (v 42.6, no angle) × `--mask-era` E1/E2 × latency
+   (cosmic `latency_*_r149.json` for cosmic rows, beam `latency_*_r145beam.json` for production rows); `--tan-max 0.6`.
+   Copy to EOS `july_beam/Analysis_pass1/bundles/`. Then make `--mask-era` required.
+2. Re-check under the pin (Q7 ran with free t0): A–C line (`tests/t0pin/score.py`) + pointing (`beam_score.py`,
+   `beam_common.py`) on the final A/C bundles; re-measure kw under cost+charge if the scale moves.
+3. `make_ntof_jobs.py`: choose the bundle per row by `mask_era` and `rclass` (beam vs cosmic latency); N-G1 on run_145
+   + run_149 against is2_v2 (plan §3); then the full submission (archive the code first, `lxstore status`), ledger, stage 3.
+4. Open, not blocking: C's angle scale varies ~1.5 % between sub-runs (per-sub-run v for C?); ftst slope on beam is −7
+   ns/class, the pin assumes −10; per-sample rail (`wft_beam._windows_for_tag` diff in model_checks/FINDINGS.md); D hum
+   flag / sinusoid subtraction (untested).
 
 **Gotchas / decisions:**
-- Every n_TOF pair or multi-track number is provisional until Q7 is decided.
-- Don't carry cosmic conclusions to beam without a beam check (Dylan).
-- The independent decoder audit doesn't understand n_TOF frames: it reports ~56 k "orphan" data runs and false
-  "incomplete" events on FEU 01/03. The C++ decode stands.
-- The D −210 ns "window offset" was withdrawn: it is beam-only, and D is normal on cosmics.
-- Bench and n_TOF channel → strip maps are identical on A–D, so dead lists and the bow carry by channel.
-- Compare seeding arms on fixed trigger sets (`--events`); `--limit-per-tag` picks different events per seed source.
-- CPU timing noise is ±25 % on identical work.
+- Condor: a few jobs fail with EOS FUSE I/O errors loading the lock venv's scipy `.so`; `max_retries 2` covers most;
+  the ledger must check every output is present.
+- Per-acquisition outputs: event ids run on within a sub-run but restart per sub-run; key merges on (sub-run, event).
+- Don't `pkill -f` a pattern that matches your own shell's command line (killed my batch twice, and an agent's).
+- Subagents can't write `.md` files here: their FINDINGS text came back in the report and was saved by hand.
+- Don't carry cosmic conclusions to beam without a beam check: the t0 latency is the example (beam trigger differs).
 
 **Key files & commands:**
-- Local test data (ucla, scratch, regenerable from EOS): `/media/ucla/work/ntof_pass1/`. It holds `runs/` (run_145 ×3
-  and run_149 ×12 sub-runs, fa80c06 decodes + hits), `bundles/` (v0, tm*, v1, v1k, v1kpin, latency json),
-  `bench_bundles/`, and the outputs `tanmax/`, `q4/`, `heldout/`, `colsum/`. Delete when the pass is done.
-- Reco: `.venv/bin/python rerun/ntof/ntof_reco.py --run 149 --subrun cosbounce_cos_0001 --arm A --bundle <b> --out <o>.parquet --base /media/ucla/work/ntof_pass1/runs --limit-per-tag 1500 --jobs 14`
-- Score: `.venv/bin/python rerun/ntof/ac_line.py --a A.parquet --c C.parquet --run-config /media/ucla/work/ntof_pass1/runs/run_149/run_config.json`
-- Column v: `rerun/model_audit/followups/gc_gas_time/ntof_colsum.py` (env `WFT_REPO`, `WFT_BEAM_BASE`), then the stacked
-  `colsum.GridFit` (the snippet is in plan §6).
-- lxplus jobs: `~/x17rerun/ntof/{decode_spot,redecode,rehit}`; records in
-  `/eos/experiment/ntof/data/x17/july_beam/Analysis_pass1/checks/`.
+- Submit: `ssh lxplus 'cd ~/x17rerun/ntof/pass1 && condor_submit ntof.sub code=$HOME/x17rerun/code_<c> jobfile=<f> flavour=workday'`
+- Jobs: `.venv/bin/python rerun/ntof/condor/make_ntof_jobs.py --bundles <eos>/bundles --out <eos>/out --runs 145 --arms AC [--extra "--events F"]`
+- Local data (ucla scratch, regenerable): `/media/ucla/work/ntof_pass1/` (`runs/`, `bundles/`, `t0pin/`, `q7/` 2.2 GB,
+  `channel_layer/`, `model_checks/`, `d_b/`). Test outputs on EOS under `july_beam/Analysis_pass1/tests/`.
+  Delete both when the pass is done.
 
 ## Paper I: det3 efficiency, two-particle reco, figures — updated 2026-11-02 (dylan-MS-7C84)
 
