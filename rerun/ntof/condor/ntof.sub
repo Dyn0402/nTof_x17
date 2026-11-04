@@ -1,0 +1,18 @@
+# n_TOF pass 1, one (acquisition, arm) per job: condor_submit ntof.sub code=<code dir> jobfile=<jobs.txt> [cpus=4] [mem=8000]
+# jobs.txt lines: <run> <subrun> <tag> <arm> <bundle dir> <out dir> [extra ntof_reco.py args]   (make_ntof_jobs.py)
+executable     = $ENV(HOME)/x17rerun/ntof/pass1/ntof_stage.sh
+arguments      = $(code) $(args)
+output         = log/$(Cluster).$(ProcId).out
+error          = log/$(Cluster).$(ProcId).err
+log            = log/ntof.log
+request_cpus   = $(cpus:4)
+request_memory = $(mem:8000)
+request_disk   = 4 GB
+environment    = "NTOF_JOBS=$(cpus:4) PYTHONDONTWRITEBYTECODE=1"
++JobFlavour    = "$(flavour:workday)"
+max_retries    = 2
+should_transfer_files = NO
+# a worker whose EOS FUSE mount times out reading the archive (pass1 10-30: all 18 status-126 failures)
+requirements   = (Machine != "b9g42p2031.cern.ch")
+max_materialize = 400
+queue args from $(jobfile)

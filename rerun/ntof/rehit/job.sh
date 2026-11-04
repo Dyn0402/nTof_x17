@@ -10,7 +10,7 @@ mkdir -p bin/decoder bin/waveform_analysis bin/feu_hit_combiner
 for k in 1 2 3 4 5; do cp $SOFT/decoder/decode bin/decoder/ && cp $SOFT/waveform_analysis/analyze_waveforms bin/waveform_analysis/ \
   && cp $SOFT/feu_hit_combiner/combine_feus_hits bin/feu_hit_combiner/ && break; sleep $((20*k)); done
 SOFT=$W/bin
-for M in 0 5; do
+for M in ${CM_MODES:-0 5}; do   # pass 1: CM_MODES=0 (the pass reads rr1_cm0 only; cm5 was the Q4 comparison)
   G=rr1_cm$M; HO=$SD/hits_root_$G; CO=$SD/combined_hits_root_$G; mkdir -p $HO $CO
   : > list_$M.txt
   for item in ${SPEC//;/ }; do

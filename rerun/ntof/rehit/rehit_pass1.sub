@@ -1,0 +1,15 @@
+# n_TOF pass 1: rr1_cm0 hits (Q4: the pass seeds from these) on every fa80c06 acquisition in scope.
+# jobs.txt from: python3 make_jobs.py subruns_pass1.txt jobs.txt   (on lxplus)
+executable   = job.sh
+arguments    = $(sd) $(fnum) $(spec)
+environment  = "CM_MODES=0"
+output       = log/$(ProcId).out
+error        = log/$(ProcId).err
+log          = log/rehit.log
+request_cpus = 1
+request_memory = 3000
++JobFlavour  = "longlunch"
+max_retries  = 2
+should_transfer_files = NO
+max_materialize = 400
+queue sd,fnum,spec from jobs.txt
