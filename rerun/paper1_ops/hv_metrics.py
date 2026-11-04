@@ -158,7 +158,7 @@ def main():
     for ax in axs[2:]:
         ax.set_xlabel('resist HV [V]')
     axs[1].text(GOLDEN_V - 2, 14, 'Runs 1, 2', color=ps.ACCENT, ha='right', fontsize=ps.BASE_PT * 0.75)
-    ps.panel_labels(axs)
+    ps.panel_labels(axs, x=-0.15)  # 2026-11-04 (Dylan): letters left of the tick-label column, clear of the numbers
     fig.get_layout_engine().set(h_pad=0.07, w_pad=0.05)
     ps.save(fig, os.path.join(a.out, 'figures', 'hv_metrics'), data=df)
 

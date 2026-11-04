@@ -1025,3 +1025,9 @@ date = "2026-11-04"
 fig = "hv_scan_single"
 status = "for review"
 change = "Added at the end of the all-chambers appendix (fig:hv_single, with an askDylan) so it shows in the paper and the deck next to hv_scan; keep one."
+
+[[entry]]
+date = "2026-11-04"
+fig = "hv_metrics"
+status = "for review"
+change = "Dylan 11-04: panel letters moved left of the tick-label column (x = -0.15 axes) so (b)-(d) clear the axis numbers. Data unchanged (csv identical)."
