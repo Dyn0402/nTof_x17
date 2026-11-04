@@ -48,11 +48,14 @@ def resid_angle(M, s, scale):
 
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument('--dir', default='/media/ucla/work/ntof_pass1/t0pin')
-    ap.add_argument('--out', default=None); a = ap.parse_args()
-    L = {lab: lines(a.dir, lab) for lab in CFG}
-    res = dict(subruns=sorted(L['v1k']['sub'].unique().tolist()))
+    ap.add_argument('--out', default=None)
+    ap.add_argument('--cfgs', default=','.join(CFG), help='configs; each compared with the first on common events')
+    a = ap.parse_args()
+    cfgs = a.cfgs.split(',')
+    L = {lab: lines(a.dir, lab) for lab in cfgs}
+    res = dict(subruns=sorted(L[cfgs[0]]['sub'].unique().tolist()))
     sc = {}
-    for lab in CFG:
+    for lab in cfgs:
         M = L[lab]; tr = M[M['sub'] % 2 == 0]; te = M[M['sub'] % 2 == 1]
         res[lab] = dict(n_line=int(len(M)), n_train=int(len(tr)), n_test=int(len(te)))
         sc[lab] = {}
@@ -65,28 +68,30 @@ def main():
                 res[lab][f'{arm}{ax}_ratio_train'] = r_tr
                 res[lab][f'{arm}{ax}_ratio_test'] = r_te
                 res[lab][f'{arm}{ax}_ratio_test_after'] = r_te[0] / r_tr[0]
-    # held-out comparison on common events
-    T = {lab: L[lab][L[lab]['sub'] % 2 == 1].set_index(['sub', 'event_id']) for lab in CFG}
-    common = T['v1k'].index.intersection(T['v1kpin'].index)
-    res['n_common_test'] = int(len(common))
+    # held-out comparison on common events, each config against the first
+    T = {lab: L[lab][L[lab]['sub'] % 2 == 1].set_index(['sub', 'event_id']) for lab in cfgs}
     rng = np.random.default_rng(1)
-    for s, arm in (('a', 'A'), ('c', 'C')):
-        R = {lab: resid_angle(T[lab].loc[common], s, sc[lab][arm]) for lab in CFG}
-        D = {lab: {ax: np.abs(T[lab].loc[common, f'tan{ax}_{s}'] / sc[lab][arm][ax] -
-                              T[lab].loc[common, f'true_tan{ax}_{s}']).to_numpy() for ax in 'xy'} for lab in CFG}
-        d68 = []
-        n = len(common)
-        for _ in range(2000):
-            i = rng.integers(0, n, n)
-            d68.append(np.percentile(R['v1kpin'][i], 68) - np.percentile(R['v1k'][i], 68))
-        out = dict(res68_free=float(np.percentile(R['v1k'], 68)), res68_pin=float(np.percentile(R['v1kpin'], 68)),
-                   d68_pin_minus_free=float(np.percentile(R['v1kpin'], 68) - np.percentile(R['v1k'], 68)),
-                   d68_err=float(np.std(d68)), frac_pin_better=float((R['v1kpin'] < R['v1k']).mean()))
-        for ax in 'xy':
-            out[f'tan{ax}_68_free'] = float(np.percentile(D['v1k'][ax], 68))
-            out[f'tan{ax}_68_pin'] = float(np.percentile(D['v1kpin'][ax], 68))
-        res[f'compare_{arm}'] = out
-    res['line_sep_med'] = {lab: float(L[lab]['sep_mm'].median()) for lab in CFG}
+    base = cfgs[0]
+    for lab in cfgs[1:]:
+        common = T[base].index.intersection(T[lab].index)
+        res[f'n_common_test_{lab}'] = int(len(common))
+        for s, arm in (('a', 'A'), ('c', 'C')):
+            R = {k: resid_angle(T[k].loc[common], s, sc[k][arm]) for k in (base, lab)}
+            D = {k: {ax: np.abs(T[k].loc[common, f'tan{ax}_{s}'] / sc[k][arm][ax] -
+                                T[k].loc[common, f'true_tan{ax}_{s}']).to_numpy() for ax in 'xy'} for k in (base, lab)}
+            n = len(common)
+            d68 = []
+            for _ in range(2000):
+                i = rng.integers(0, n, n)
+                d68.append(np.percentile(R[lab][i], 68) - np.percentile(R[base][i], 68))
+            out = dict(res68_base=float(np.percentile(R[base], 68)), res68=float(np.percentile(R[lab], 68)),
+                       d68=float(np.percentile(R[lab], 68) - np.percentile(R[base], 68)), d68_err=float(np.std(d68)),
+                       frac_better=float((R[lab] < R[base]).mean()))
+            for ax in 'xy':
+                out[f'tan{ax}_68_base'] = float(np.percentile(D[base][ax], 68))
+                out[f'tan{ax}_68'] = float(np.percentile(D[lab][ax], 68))
+            res[f'compare_{lab}_vs_{base}_{arm}'] = out
+    res['line_sep_med'] = {lab: float(L[lab]['sep_mm'].median()) for lab in cfgs}
     print(json.dumps(res, indent=1, default=float))
     if a.out:
         json.dump(res, open(a.out, 'w'), indent=1, default=float)
