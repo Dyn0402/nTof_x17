@@ -29,9 +29,9 @@ state in a box at the top of each section; when a state changes, change both.
 |---|---|---|
 | `\sectionstate{ready}{backed by …}` | coloured box | PAPER_PLAN state and where the result lives |
 | `\intent{…}` | grey italic | what the section must establish; delete when the prose exists |
-| `\tbw{…}` | grey `[…]` | placeholder prose ("to be written") |
+| `\tbw{…}` | dark grey `[To write: …]` | an outline of prose still to write. Drafted prose is plain text: once a paragraph is written, drop the `\tbw` (2026-11-04: prose wrapped in it rendered grey and made the draft hard to read) |
 | `\askStephan{…}`, `\askDylan{…}` | inline orange / cyan box | questions for a person; also listed on page 1 |
-| `\analysis{D3}{…}` | red margin note | analysis still to do, with its work-list id |
+| `\analysis{D3}{…}` | inline red box | analysis still to do, with its work-list id |
 | `\requote{1.15°}` | purple with RQ | a number that must be re-derived before it is quoted |
 
 `\draftnotesfalse` in `main.tex` hides all of them for a clean read.
@@ -51,6 +51,8 @@ To replace one: point `source` at the new file, set `state = "current"`, then
     .venv/bin/python papers/make_figures.py paper1 --only gas_vE   # one figure
     .venv/bin/python papers/make_figures.py paper1 --run           # run each `producer` first
     .venv/bin/python papers/make_figures.py all --list             # status table only
+
+Floats are `[tbp]` and `placeins` keeps them inside their section (`main.tex`); use `[tbp]`, not `[t]` or `[h]`, for new ones, or they pile up at the end of the document.
 
 A missing source falls back to a placeholder, so the paper always compiles. The reconstruction-basis rule
 applies: no position, angle or depth from `combined_hits` times may be `current`.

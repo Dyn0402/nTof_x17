@@ -4,35 +4,35 @@
 on cosmics for all five chambers, and the intrinsic resolution of chamber~E in the beam with the reference fitted out.}
 
 \subsection{Cosmic rays}
-\tbw{Chamber~A angular resolution ($s_{68}$, interior, golden runs): 0.99\textdegree{} (X) and 0.90\textdegree{} (Y); B
+Chamber~A angular resolution ($s_{68}$, interior, golden runs): 0.99\textdegree{} (X) and 0.90\textdegree{} (Y); B
 1.05/1.13\textdegree, C 1.26/1.51\textdegree, D 1.23/1.46\textdegree, E 2.41/2.08\textdegree{} (\cref{fig:trackperf}).
 Calibration: the physical RC kernel of~\cite{paperII}; numbers from the from-scratch pass 1. An unexplained remainder of
-0.56--0.65\textdegree{} on clean events is measured and bounded but not identified.}
+0.56--0.65\textdegree{} on clean events is measured and bounded but not identified.
 
 \subsection{Intrinsic position resolution on the bench}\label{sec:posres}
-\tbw{The residual to the reference (core 430--620\,\textmu m) holds three terms: the chamber, the reference pointing $P$ (0.21--0.28\,mm), and
+The residual to the reference (core 430--620\,\textmu m) holds three terms: the chamber, the reference pointing $P$ (0.21--0.28\,mm), and
 scattering between the reference doublets, which grows with the reference $\chi^2$ of the matching coordinate. Extrapolating the
 near-normal core width to $\chi^2\to0$ removes the scattering (A $\sigma_0=275\pm15$ / $236\pm18$\,\textmu m, X/Y), and
 subtracting $P$ in quadrature leaves the chamber: A $128\pm33$ (X) and $113\pm36$\,\textmu m (Y), B $163\pm29$ and
 $176\pm21$\,\textmu m (\cref{fig:posres}). The subtraction dominates the uncertainty: $\pm10$\,\% on $P$ moves chamber~A X to
-63--166 and Y to 62--145\,\textmu m. Quoted: ${\sim}120\pm60$\,\textmu m for chamber~A near normal incidence.}
-\begin{figure}[t]
+63--166 and Y to 62--145\,\textmu m. Quoted: ${\sim}120\pm60$\,\textmu m for chamber~A near normal incidence.
+\begin{figure}[tbp]
   \centering
   \includegraphics[width=\linewidth]{bench_position_res}
-  \caption{\tbw{(a) Chamber~A residual core width for near-normal tracks ($|\theta|<5$\textdegree) against the mean reference $\chi^2$ of each quintile of the matching coordinate, with $\sigma^2$ linear in $\chi^2$ extrapolated to $\chi^2\to0$; lines, the reference pointing $P_X=243$ and $P_Y=207$\,\textmu m. (b) Chamber term $\sqrt{\sigma_0^2-P^2}$ against the assumed $P$: A $128\pm33$ / $113\pm36$\,\textmu m, B $163\pm29$ / $176\pm21$\,\textmu m (X/Y, stat); band, chamber~E at SPS in region R (120--138\,\textmu m); grey band, $\pm10$\,\% on $P$.}}
+  \caption{(a) Chamber~A residual core width for near-normal tracks ($|\theta|<5$\textdegree) against the mean reference $\chi^2$ of each quintile of the matching coordinate, with $\sigma^2$ linear in $\chi^2$ extrapolated to $\chi^2\to0$; lines, the reference pointing $P_X=243$ and $P_Y=207$\,\textmu m. (b) Chamber term $\sqrt{\sigma_0^2-P^2}$ against the assumed $P$: A $128\pm33$ / $113\pm36$\,\textmu m, B $163\pm29$ / $176\pm21$\,\textmu m (X/Y, stat); band, chamber~E at SPS in region R (120--138\,\textmu m); grey band, $\pm10$\,\% on $P$.}
   \label{fig:posres}
 \end{figure}
-\begin{figure}[t]
+\begin{figure}[tbp]
   \centering
   \includegraphics[width=\linewidth]{angle_resolution}
-  \caption{\tbw{Angular resolution of chamber~A (Runs 1 and 2 summed, 25\,400 reference-matched single tracks per view). (a) Fitted angle $\theta_\mathrm{fit}$ from the waveform forward-model reconstruction against the reference angle $\theta_\mathrm{ref}$, X and Y views together (blue scale, logarithmic; empty bins white); dashed orange, $\theta_\mathrm{fit}=\theta_\mathrm{ref}$. (b) Angular resolution $s_{68}$ (the 68th percentile of $|\theta_\mathrm{fit}-\theta_\mathrm{ref}-\mathrm{median}|$) in 2\textdegree{} bins of $\theta_\mathrm{ref}$, X (solid, filled) and Y (dashed, open). Over the whole sample $s_{68}=0.99$\textdegree{} (X) and 0.90\textdegree{} (Y), the median residual is below 0.03\textdegree{}, and the resolution does not change with angle across the reference acceptance (${\sim}20$\textdegree). All chambers: \cref{fig:trackperf_all}.}}
+  \caption{Angular resolution of chamber~A (Runs 1 and 2 summed, 25\,400 reference-matched single tracks per view). (a) Fitted angle $\theta_\mathrm{fit}$ from the waveform forward-model reconstruction against the reference angle $\theta_\mathrm{ref}$, X and Y views together (blue scale, logarithmic; empty bins white); dashed orange, $\theta_\mathrm{fit}=\theta_\mathrm{ref}$. (b) Angular resolution $s_{68}$ (the 68th percentile of $|\theta_\mathrm{fit}-\theta_\mathrm{ref}-\mathrm{median}|$) in 2\textdegree{} bins of $\theta_\mathrm{ref}$, X (solid, filled) and Y (dashed, open). Over the whole sample $s_{68}=0.99$\textdegree{} (X) and 0.90\textdegree{} (Y), the median residual is below 0.03\textdegree{}, and the resolution does not change with angle across the reference acceptance (${\sim}20$\textdegree). All chambers: \cref{fig:trackperf_all}.}
   \label{fig:trackperf}
 \end{figure}
 
 \subsection{A measured X neighbour asymmetry}\label{sec:xasym}
 \intent{Report it as a property of the June boards, not a reconstruction artefact, with its size and what it does
 and does not affect.}
-\tbw{Every June resistive print shows an X-only field of unequal $\pm1$ neighbours: smooth over the board, fixed per
+Every June resistive print shows an X-only field of unequal $\pm1$ neighbours: smooth over the board, fixed per
 board, both signs, absent in Y. Chamber~A head-on: $a_Q=(Q_{-1}-Q_{+1})/(Q_{-1}+Q_{+1})=+0.165\pm0.019$, the excess a copy of
 the centre pulse $0.13\times$ its size, $\approx$110\,ns late (B $+0.08$, E $+0.08$, D $+0.19$, C $-0.02$).
 Excluded: electronics and connectors (it follows the board, not the FEU), copper/bus coupling ($\times$10 too weak),
@@ -41,17 +41,17 @@ the bulk pillars. Leading hypothesis, unproven: resistive-strip registration aga
 never obtained and the photographed film (761\,\textmu m) does not make the size. Effect: the production X position
 carries $K=-0.77\pm0.13$ times the raw centroid-bias map, $\le44$\,\textmu m (A) and $\le116$\,\textmu m (B) per
 50\,mm cell after the board mean; resolution unchanged within 5\,\textmu m after correction and re-alignment. The
-forward model of~\cite{paperII} is symmetric in X; the cost of that is quoted there.}
+forward model of~\cite{paperII} is symmetric in X; the cost of that is quoted there.
 \analysis{X1}{XASYM\_CONTINGENCY.md; cloud\_basics FINDINGS \S42--43; MX17\_Geant asym\_deck ledger}
 
 \subsection{Cross-check in the beam}
-\tbw{Chamber~E at SPS, in its working region R (X 150--160 $\times$ Y 222--246\,mm, run 63): $\sigma_X=138$\,\textmu m (telescope
+Chamber~E at SPS, in its working region R (X 150--160 $\times$ Y 222--246\,mm, run 63): $\sigma_X=138$\,\textmu m (telescope
 $f$ range 112--153, stat $\pm7$) and $\sigma_Y=120$\,\textmu m (89--136, $\pm9$), model-free upper bounds 153 and
 145\,\textmu m: consistent with the bench chamber term. Chamber~E runs at reduced gain over most of its board (\cref{sec:det4}),
-so this is a cross-check, not the headline.}
-\begin{figure}[t]
+so this is a cross-check, not the headline.
+\begin{figure}[tbp]
   \centering
   \includegraphics[width=\linewidth]{sps_resolution}
-  \caption{\tbw{Chamber~E at SPS H4 in region R (X 150--160 $\times$ Y 222--246\,mm, run 63, Ar/CF$_4$/iC$_4$H$_{10}$, 700\,V). (a) X at mid-gap and (b) Y at the mesh: residuals to the uRWELL telescope for all tracks ($\sigma$ 263 / 254\,\textmu m) and for tracks with a 2-strip back-plane cluster (176 / 145\,\textmu m), with Gaussian cores. (c) Chamber~E resolution after subtracting the telescope pointing against the back-plane resolution $f$ (X solid, Y dashed); shaded, the measured $f=0.266$ [0.254, 0.284]; chamber~E X 138 (112--153) $\pm7$ and Y 120 (89--136) $\pm9$\,\textmu m; model-free upper bounds X $\le153\pm6$, Y $\le145\pm6$\,\textmu m.}}
+  \caption{Chamber~E at SPS H4 in region R (X 150--160 $\times$ Y 222--246\,mm, run 63, Ar/CF$_4$/iC$_4$H$_{10}$, 700\,V). (a) X at mid-gap and (b) Y at the mesh: residuals to the uRWELL telescope for all tracks ($\sigma$ 263 / 254\,\textmu m) and for tracks with a 2-strip back-plane cluster (176 / 145\,\textmu m), with Gaussian cores. (c) Chamber~E resolution after subtracting the telescope pointing against the back-plane resolution $f$ (X solid, Y dashed); shaded, the measured $f=0.266$ [0.254, 0.284]; chamber~E X 138 (112--153) $\pm7$ and Y 120 (89--136) $\pm9$\,\textmu m; model-free upper bounds X $\le153\pm6$, Y $\le145\pm6$\,\textmu m.}
   \label{fig:spsres}
 \end{figure}

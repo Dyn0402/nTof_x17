@@ -27,8 +27,9 @@
 \newcommand{\askStephan}[1]{\todo[inline,color=orange!30,caption={Stephan: #1}]{\textbf{Stephan:} #1}}
 \newcommand{\askDylan}[1]{\todo[inline,color=cyan!20,caption={Dylan: #1}]{\textbf{Dylan:} #1}}
 % Analysis still to do (PAPER_PLAN work-list id first, e.g. \analysis{D3}{port timing to waveforms})
-\newcommand{\analysis}[2]{\todo[color=red!20,caption={#1: #2}]{\textbf{#1} #2}}
+% (inline, not in the margin: the margin is too narrow for these and they ran off the page)
+\newcommand{\analysis}[2]{\todo[inline,color=red!15,caption={#1: #2}]{\textbf{Analysis #1:} #2}}
 % A number that must be re-derived before it is quoted
 \newcommand{\requote}[1]{\ifdraftnotes\textcolor{st-requote}{#1\textsuperscript{\tiny RQ}}\else#1\fi}
-% Placeholder prose
-\newcommand{\tbw}[1]{\ifdraftnotes{\color{gray}[#1]}\fi}
+% Placeholder: an outline of prose still to write. Finished draft prose is plain text, not \tbw.
+\newcommand{\tbw}[1]{\ifdraftnotes{\color{gray!50!black}[\textit{To write:} #1]}\fi}

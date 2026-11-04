@@ -8,31 +8,31 @@ muon-induced (4--6$\times$), concentrated at the edges; no post-spark dead time.
 \askStephan{Expected gain curve and spark behaviour for this resistivity: does what we see match production tests?}
 
 \paragraph{Dark current.}
-\tbw{The resistive electrode draws a steady current far above the signal current. On chamber~A (alone on the bench,
+The resistive electrode draws a steady current far above the signal current. On chamber~A (alone on the bench,
 6-27): $I=(1.05\pm0.05)\,\text{\textmu A}\times2^{(V-490\,\text{V})/(13.3\pm0.3)\,\text{V}}$ (\cref{fig:currents}): it
 doubles every 13.3\,V while the gain doubles every 16.7\,V, so $I\propto G^{1.25}$, with no measurable ohmic part, and it
 does not depend on the drift field (100--1100\,V on the cathode: 1.03--1.11\,\textmu A). At the working point this is
 ${\sim}1$\,\textmu A, ${\sim}10^5$ times the cosmic signal current (${\sim}4$\,pA). It is therefore a gain-driven dark
 current of the amplification stage, with the same scaling as the noise bands ($G^{1.4-1.6}$, \cref{app:losses}) and the
 discharges. Across boards at 490\,V: C 0.45, E 0.58, A 0.29--1.14 (night to night), B 1.0--2.4, D
-6.0--6.4\,\textmu A (the chamber with the most discharges). The mechanism is not identified.}
-\begin{figure}[t]
+6.0--6.4\,\textmu A (the chamber with the most discharges). The mechanism is not identified.
+\begin{figure}[tbp]
   \centering
   \includegraphics[width=\linewidth]{currents_vs_hv}
-  \caption{\tbw{Resistive-electrode current of chamber~A against the resist HV, four bench nights (markers: 17, 22, 23 June overnight runs; 27 June HV scan). (a) Full range, linear scale; dashed: the fit to the 27 June scan, $I=1.05\,\text{\textmu A}\times2^{(V-490\,\text{V})/13.3\,\text{V}}$. (b) The same data below 485\,V: before the gain takes off the current is a leakage floor of about 0.2\,\textmu A (0.17\,\textmu A at 425\,V on the scan night, 0.2--0.3\,\textmu A on the other nights). All boards: \cref{fig:currents_all}.}}
+  \caption{Resistive-electrode current of chamber~A against the resist HV, four bench nights (markers: 17, 22, 23 June overnight runs; 27 June HV scan). (a) Full range, linear scale; dashed: the fit to the 27 June scan, $I=1.05\,\text{\textmu A}\times2^{(V-490\,\text{V})/13.3\,\text{V}}$. (b) The same data below 485\,V: before the gain takes off the current is a leakage floor of about 0.2\,\textmu A (0.17\,\textmu A at 425\,V on the scan night, 0.2--0.3\,\textmu A on the other nights). All boards: \cref{fig:currents_all}.}
   \label{fig:currents}
 \end{figure}
 
-\begin{figure}[t]
+\begin{figure}[tbp]
   \centering
   \includegraphics[width=\linewidth]{hv_scan}
-  \caption{\tbw{Resist-HV scans, one chamber per panel (A 6-27 and B 6-22 at 1000\,V drift, C and D 6-26 at 700\,V): interior detection efficiency (left axis, solid) and discharges per trigger (right axis, dashed, open; a discharge is a chip with ${\ge}8$ strips over 3000\,ADC). Shaded: the efficiency plateau (within 1\,pt of the maximum); stars: the long runs (E has no scan and is not shown). Chamber~A holds 91--94\,\% from 425 to 500\,V while its discharge loss (the fraction of reference tracks lost to a discharge) stays below 1\,\% up to 490\,V, so it reaches its plateau before discharges cost anything; chambers C and D already lose 1.5--2.4\,\% of the tracks to discharges at their efficiency maximum (480 and 430\,V) and fall from there.}}
+  \caption{Resist-HV scans, one chamber per panel (A 6-27 and B 6-22 at 1000\,V drift, C and D 6-26 at 700\,V): interior detection efficiency (left axis, solid) and discharges per trigger (right axis, dashed, open; a discharge is a chip with ${\ge}8$ strips over 3000\,ADC). Shaded: the efficiency plateau (within 1\,pt of the maximum); stars: the long runs (E has no scan and is not shown). Chamber~A holds 91--94\,\% from 425 to 500\,V while its discharge loss (the fraction of reference tracks lost to a discharge) stays below 1\,\% up to 490\,V, so it reaches its plateau before discharges cost anything; chambers C and D already lose 1.5--2.4\,\% of the tracks to discharges at their efficiency maximum (480 and 430\,V) and fall from there.}
   \label{fig:hv}
 \end{figure}
 
 \paragraph{Recovery after a discharge.}
-\tbw{A discharge costs no measurable dead time. The efficiency in the first bin we resolve, 0--3\,ms after a discharge,
+A discharge costs no measurable dead time. The efficiency in the first bin we resolve, 0--3\,ms after a discharge,
 is already $1.07\pm0.04$ of its value more than 1\,s later (chamber~A, 53 tracks), and the dead time fitted per
 discharge is compatible with zero on every chamber; for chamber~A it is below 1.2\,ms (95\,\% CL, $0.2\pm0.6$\,ms).
 The cosmic rate does not resolve the recovery itself, so we quote only this upper bound (details in
-\cref{app:recovery}).}
+\cref{app:recovery}).

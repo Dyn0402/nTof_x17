@@ -7,23 +7,23 @@ qualified. Most of this section is Stephan's: the production side is not in our 
 \subsection{Design choices}\label{sec:design_choices}
 \askStephan{Dylan (2026-11-02): the section is yours to write; these are the design points we think a reader needs, with
 what the data say about each. Keep, reword or drop as you see fit.}
-\tbw{\textbf{(1) Pads for an equal X/Y charge share.} The readout is a single plane of square pads, each routed to an X
+\textbf{(1) Pads for an equal X/Y charge share.} The readout is a single plane of square pads, each routed to an X
 or a Y strip, instead of two stacked strip layers, so that both views see the same charge. It worked: the X fraction of
 the charge is $f=0.485$ (A) and $0.513$ (B), with an event-to-event spread of 0.014--0.032 (D 0.116, its X
 readout fault). How much the balance matters for tracking is not measured; its only cost we know of is one more copper
-layer in the material budget.}
-\tbw{\textbf{(2) A resistive Micromegas in TPC mode.} The resistive layer spreads the charge and delays it: each strip's
+layer in the material budget.
+\textbf{(2) A resistive Micromegas in TPC mode.} The resistive layer spreads the charge and delays it: each strip's
 signal carries delayed copies of its neighbours' (${\sim}29\,\%$ at $\tau\approx47$\,ns to $\pm1$ strip). That compresses
 the drift-time ladder when strip times are used, and is the reason the reconstruction fits the waveforms with a
 charge-spreading model (Paper~II). For a TPC alone we might not choose it again. In a high-rate or harsh
 environment, however, it quenches discharges and keeps the chamber alive and live (no measurable dead time per discharge
-on the bench, \cref{sec:operation}), so on balance it may still be the right choice.}
-\tbw{\textbf{(3) Resistive strips rather than a uniform resistive layer.} A continuous resistive layer was tried
+on the bench, \cref{sec:operation}), so on balance it may still be the right choice.
+\textbf{(3) Resistive strips rather than a uniform resistive layer.} A continuous resistive layer was tried
 first: it came out with too low a resistance, and current flowed through ``hot spots''. Resistive strips with the
 strip ends passivated allowed a higher resistance and far less current. \emph{Stephan: the measured resistances and
 currents of the uniform-layer boards, if they exist.} The bench measures what the strip chambers draw: a gain-driven dark current of ${\sim}1$\,\textmu A at the working
-point (\cref{sec:operation}); the bench has no uniform-layer board of this batch to compare with.}
-\tbw{\textbf{(4) Strip direction and passivation.} The strips run along $y$ and end at the two $y$ edges, where their
+point (\cref{sec:operation}); the bench has no uniform-layer board of this batch to compare with.
+\textbf{(4) Strip direction and passivation.} The strips run along $y$ and end at the two $y$ edges, where their
 terminations are passivated (covered) over 18.0 and 18.7\,mm. \emph{Stephan: why the passivation is needed (the
 termination / HV connection at the strip ends, and discharges there?).} This removes ${\sim}10\,\%$ of the area
 (efficient area $399.4\times359.9$\,mm$^2$). The orientation was chosen mainly for where that loss falls: at the top and
@@ -31,7 +31,7 @@ bottom of the chamber, not on the sides that face the neighbouring chambers at n
 resolution across the strips (the charge spreads along them). The data show no significant difference, and on chamber~A
 the opposite: angle $s_{68}$ X/Y $0.98/0.90$\textdegree{} (A), $1.03/1.08$\textdegree{} (B); bench position residuals X/Y within
 12\,\textmu m of each other. The two $x$ sides are not passivated, and there the drift field fringes over 20--30\,mm,
-which biases the X angle and sets our 30\,mm fiducial (\cref{sec:edge}); the passivated sides are sharp.}
+which biases the X angle and sets our 30\,mm fiducial (\cref{sec:edge}); the passivated sides are sharp.
 
 \subsection{Chamber layout}
 \tbw{Entrance window and flange, 30\,mm drift gap, cathode, field cage. Active area; measured efficient area
@@ -58,16 +58,16 @@ Y strip (L5). Connectors, DREAM front-end, channel count.}
 \askStephan{We measure a $\sim$19\,mm dead band at each end of Y on every chamber. Is that the covered copper bus
 where the resistive strips are terminated?}
 
-\begin{figure}[t]
+\begin{figure}[tbp]
   \centering
   \includegraphics[width=\linewidth]{chamber_stack}
-  \caption{\tbw{Cross-section of an MX17 chamber through the centre of the active area ($z$ vertical, readout board at the bottom). The chamber is 440\,mm wide: in (a) $x$ is not to scale and the drawing is cut off on the right. (a) The whole chamber, $z$ to scale: Mylar window (60\,\textmu m), gas gap (5.0\,mm), drift cathode (50\,\textmu m kapton with 9\,\textmu m Cu$^\dagger$) at $-HV_\mathrm{drift}$, the drift gap (30.000\,mm, nominal) with an inclined muon whose ionisation electrons drift to the mesh at ground, the readout board (1.70\,mm), Rohacell (5\,mm), back Mylar (25\,\textmu m$^\dagger$) and the 8\,mm aluminium plate, open over a 402\,mm aperture behind the active area. (b) The boxed region at 30 times the scale of (a) in $z$, with $z$ stretched 2.2 times against $x$. Widths, pitches and thicknesses are to scale in their own direction: mesh$^\dagger$ (woven steel, 19\,\textmu m wire, 67\,\textmu m pitch; the weave is schematic and the pillars, \O\,0.6\,mm on a 4.68\,mm grid, are not in the cut); amplification gap, 150\,\textmu m, 33\,kV/cm at 490\,V; resistive strips$^\dagger$ at $+HV_\mathrm{resist}$, 550\,\textmu m wide on a 0.80\,mm pitch, 10\,\textmu m thick (their position against the pads is not known and is drawn arbitrarily); kapton$^\dagger$, 50\,\textmu m plus glue, 70.5\,\textmu m in all; pads (L4), 0.68\,mm on a 0.78\,mm pitch, 26\,\textmu m Cu$^\dagger$; Y strips (L5, green): a 98\,\textmu m bus in each gap between pad columns and a 0.5\,mm land where a pad is connected to it; X strip (L6, orange): the strip runs along the plane of the cut, and the shading is a schematic induced-charge profile under the avalanche; vias (0.10\,mm barrel, schematic) join alternate pads to the Y and X strips; FR4$^\dagger$, 264\,\textmu m per layer (the remaining copper layers are not drawn). $^\dagger$: assumed or not yet confirmed (detector specification).}}
+  \caption{Cross-section of an MX17 chamber through the centre of the active area ($z$ vertical, readout board at the bottom). The chamber is 440\,mm wide: in (a) $x$ is not to scale and the drawing is cut off on the right. (a) The whole chamber, $z$ to scale: Mylar window (60\,\textmu m), gas gap (5.0\,mm), drift cathode (50\,\textmu m kapton with 9\,\textmu m Cu$^\dagger$) at $-HV_\mathrm{drift}$, the drift gap (30.000\,mm, nominal) with an inclined muon whose ionisation electrons drift to the mesh at ground, the readout board (1.70\,mm), Rohacell (5\,mm), back Mylar (25\,\textmu m$^\dagger$) and the 8\,mm aluminium plate, open over a 402\,mm aperture behind the active area. (b) The boxed region at 30 times the scale of (a) in $z$, with $z$ stretched 2.2 times against $x$. Widths, pitches and thicknesses are to scale in their own direction: mesh$^\dagger$ (woven steel, 19\,\textmu m wire, 67\,\textmu m pitch; the weave is schematic and the pillars, \O\,0.6\,mm on a 4.68\,mm grid, are not in the cut); amplification gap, 150\,\textmu m, 33\,kV/cm at 490\,V; resistive strips$^\dagger$ at $+HV_\mathrm{resist}$, 550\,\textmu m wide on a 0.80\,mm pitch, 10\,\textmu m thick (their position against the pads is not known and is drawn arbitrarily); kapton$^\dagger$, 50\,\textmu m plus glue, 70.5\,\textmu m in all; pads (L4), 0.68\,mm on a 0.78\,mm pitch, 26\,\textmu m Cu$^\dagger$; Y strips (L5, green): a 98\,\textmu m bus in each gap between pad columns and a 0.5\,mm land where a pad is connected to it; X strip (L6, orange): the strip runs along the plane of the cut, and the shading is a schematic induced-charge profile under the avalanche; vias (0.10\,mm barrel, schematic) join alternate pads to the Y and X strips; FR4$^\dagger$, 264\,\textmu m per layer (the remaining copper layers are not drawn). $^\dagger$: assumed or not yet confirmed (detector specification).}
   \label{fig:stack}
 \end{figure}
-\begin{figure}[t]
+\begin{figure}[tbp]
   \centering
   \includegraphics[width=\linewidth]{readout_layout}
-  \caption{\tbw{Readout board, top view (detector-local frame, from the production gerbers). (a) $512\times512$ pads of 0.68\,mm on a 0.78\,mm pitch cover $399.4\times399.4$\,mm$^2$. The Y strips (L5, green) run along $y$ to two connectors on the $+y$ edge and the X strips (L6, orange) along $x$ to two connectors on the $+x$ edge. The resistive strips (dashed outline: the deposit) run along $y$ and are passivated over 18.0\,mm (low $y$) and 18.7\,mm (high $y$) at their ends (hatched), leaving a measured efficient area of $399.4\times359.9$\,mm$^2$; the $x$ sides are not passivated. (b) A pad window: each pad is connected by a via to a Y strip or an X strip in a checkerboard pattern, so every strip collects every second pad along its length. (c) The fan-out of the Y strips to one of the connector blocks (300 contact pads each). Only the strips with copper on their own layer are drawn; the others leave the layer by a via to L7.}}
+  \caption{Readout board, top view (detector-local frame, from the production gerbers). (a) $512\times512$ pads of 0.68\,mm on a 0.78\,mm pitch cover $399.4\times399.4$\,mm$^2$. The Y strips (L5, green) run along $y$ to two connectors on the $+y$ edge and the X strips (L6, orange) along $x$ to two connectors on the $+x$ edge. The resistive strips (dashed outline: the deposit) run along $y$ and are passivated over 18.0\,mm (low $y$) and 18.7\,mm (high $y$) at their ends (hatched), leaving a measured efficient area of $399.4\times359.9$\,mm$^2$; the $x$ sides are not passivated. (b) A pad window: each pad is connected by a via to a Y strip or an X strip in a checkerboard pattern, so every strip collects every second pad along its length. (c) The fan-out of the Y strips to one of the connector blocks (300 contact pads each). Only the strips with copper on their own layer are drawn; the others leave the layer by a via to L7.}
   \label{fig:readout}
 \end{figure}
 
