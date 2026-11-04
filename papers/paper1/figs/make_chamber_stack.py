@@ -9,7 +9,7 @@ ELEMENTS; status ok / cad / asm / open there; daggers = asm/open, in the caption
 (b) the amplification gap and readout board, z at KV in/mm (30x (a)) and x at KH in/mm (z stretched KV/KH against x).
 In (b) every width, pitch and thickness is to scale in its own direction (pad 0.68/0.78, resistive strip 550/800 um,
 Y bus 98 um, via land 0.5 mm, layer thicknesses); the via barrel (0.15 mm) and the woven mesh are schematic, the
-orange gradient on the X strip is a schematic charge profile.  Drawn in inches (one axes, data = inches).
+X strip is drawn solid.  Drawn in inches (one axes, data = inches).
 """
 import sys
 from pathlib import Path
@@ -75,22 +75,29 @@ R(XI0 - XW, ya(0.5), XI1, ya(0), MYL, lw=0.4)
 R(XI0, ya(0.25), XI1, ya(0.06), MYL, ec=MYL, lw=0.1)
 R(XI0, ya(mm['cat'][1]) - 0.003, XI1, ya(mm['cat'][0]) + 0.003, KAP, lw=0.4)
 line([XI0, XI1], [ya(mm['cat'][0]) + 0.004] * 2, c=CU, lw=1.4)
-for xa, xb in ((XI0 - XW, XI0),):                                  # left wall only: Al window flange, Al gas frame, Al plate
-    R(xa, ya(mm['flange'][1]), xb, ya(mm['flange'][0] + 0.5), AL)
-    R(xa, ya(mm['drift'][1]), xb, ya(mm['drift'][0]), AL)
-    R(xa, ya(mm['plate'][1]), xb, ya(mm['roh'][0]), AL)
+# left side only, widths in proportion to the frame (XW = its 15 mm wall; spec.py, CAD): Al window flange to its
+# 400.2 mm aperture (19.9 mm), Al gas frame (15 mm), Al support plate (8 mm thick) to its 402 mm aperture (19 mm):
+# no Al behind the active area.  Board, Rohacell and back Mylar are 470 mm plates offset +15 mm, so on this side they
+# end at -220 mm, flush with the frame's outer face (Dylan 2026-11-04).
+XO = XI0 - XW                                                      # outer face of the frame
+wmm = lambda w: XO + XW * w / 15.0
+R(XO, ya(mm['flange'][1]), wmm(19.9), ya(mm['flange'][0] + 0.5), AL)
+R(XO, ya(mm['drift'][1]), XI0, ya(mm['drift'][0]), AL)
+R(XO, ya(mm['plate'][1]), wmm(19.0), ya(mm['plate'][0]), AL)
 line([XI0, XI1], [ya(mm['drift'][1])] * 2, c=INK, lw=1.0)
-R(XI0, ya(mm['board'][1]), XI1, ya(mm['board'][0]), FR4, lw=0.5)
-R(XI0, ya(mm['roh'][1]), XI1, ya(mm['roh'][0]), ROH, lw=0.5)
-R(XI0, ya(mm['myl'][1]) - 0.003, XI1, ya(mm['myl'][0]) + 0.003, MYL, lw=0.4)
+R(XO, ya(mm['board'][1]), XI1, ya(mm['board'][0]), FR4, lw=0.5)
+R(XO, ya(mm['roh'][1]), XI1, ya(mm['roh'][0]), ROH, lw=0.5)
+R(XO, ya(mm['myl'][1]) - 0.003, XI1, ya(mm['myl'][0]) + 0.003, MYL, lw=0.4)
 LX = 1.00
-lab = [('Mylar window', 3.05, 0.03, XI0 - XW), ('gas gap', ya(2.6), 2.6, XI0 - XW),
-       ('cathode', ya(5.09) - 0.07, 5.09, XI0 - XW), ('drift gas', ya(14), 14, XI0),
-       ('mesh', 1.36, 35.12, XI0), ('readout board', 1.15, 36.1, XI0),
-       ('Rohacell', 0.94, 39.5, XI0), ('back Mylar', 0.73, 41.98, XI0), ('Al plate', 0.52, 46.0, XI0 - XW)]
+XIN = XI0 + 0.12                                                  # leader tips: inside the layer, past the Al
+lab = [('Mylar window', 3.05, 0.0, XIN + 0.06), ('gas gap', ya(2.6), 2.6, XIN),
+       ('cathode', ya(5.09) - 0.07, 5.09, XIN), ('drift gas', ya(14), 14, XIN),
+       ('readout board', 1.24, 36.1, XIN), ('Rohacell', 0.98, 39.5, XIN),
+       ('back Mylar', 0.75, 41.98, XIN), ('Al plate', 0.52, 46.0, wmm(9.5))]
 for s_, y, zz, xr in lab:
     T(LX, y, s_, ha='right', linespacing=1.0)
-    line([LX + 0.02, xr - 0.02], [y, ya(zz)], c=MUTED, lw=0.4, z=1)
+    line([LX + 0.02, xr], [y, ya(zz)], c=MUTED, lw=0.45, z=11)
+    ax.plot(xr, ya(zz), 'o', ms=1.6, color=MUTED, mew=0, zorder=11)
 # muon track, ionisation, electron drift
 xt = lambda y: 1.50 + 0.10 * (Y0 + 0.05 - y)
 ax.plot([xt(Y0 + 0.05), xt(ya(48))], [Y0 + 0.05, ya(48)], color=ps.ACCENT, lw=1.2, zorder=6)
@@ -103,13 +110,13 @@ for zz in (8, 12.5, 17, 21.5, 26, 30):
 T(xt(ya(28)) + 0.07, ya(27), 'e$^-$', ha='left', fs=FS, c=ps.DET_COLOR['det2'])
 arrow((XF0 - 0.12, ya(32)), (XF0 - 0.12, ya(8)), c=INK, lw=1.0, style='-|>', ms=7)
 T(XF0 - 0.20, ya(20), '$E_\\mathrm{drift}$', ha='center', rotation=90, fs=FS)
-T(XF0 - 0.02, ya(5.09) - 0.065, '$-HV_\\mathrm{drift}$', ha='right', fs=FS, c=INK)
+T(XF0 - 0.02, ya(5.09) - 0.13, '$-HV_\\mathrm{drift}$', ha='right', fs=FS, c=INK)
 # cut-off: fade to white on the right (the chamber continues)
 fade = np.zeros((2, 64, 4)); fade[..., :3] = 1.0; fade[..., 3] = np.linspace(0, 1, 64) ** 0.8
 ax.imshow(fade, extent=[XF0, XI1 + 0.01, ya(50.2), 3.07], aspect='auto', zorder=10, interpolation='bilinear')
 ax.set_xlim(0, W); ax.set_ylim(0, H)
-BZ = (XI0 - 0.03, ya(36.2) - 0.05, XF0 - 0.02, ya(34.6) + 0.04)
-R(BZ[0], BZ[1], BZ[2], BZ[3], 'none', ec=INK, lw=0.8, z=11)
+BZ = (XI0 + 0.02, ya(36.2) - 0.05, XF0 - 0.02, ya(34.6) + 0.04)
+R(BZ[0], BZ[1], BZ[2], BZ[3], 'none', ec=MUTED, lw=0.6, z=11, ls=(0, (3, 2)))
 
 # ====================================================================================================== (b)
 KV, KH = 1.55, 0.70                       # in / mm  (vertical z, horizontal x)
@@ -157,12 +164,9 @@ for i in range(4):
 for i in (0, 2):
     xbus = padx[i] - PITCH * KH / 2
     R(xbus, yl5[0], padx[i] + 0.25 * KH, yl5[1], YC, ec='none', z=4)
-# L6: the X strip runs along the cut: one band, shaded with a schematic induced-charge profile centred on the avalanche
+# L6: the X strip runs along the cut: one solid band (Dylan 2026-11-04: no charge-profile shading)
 xa_ = padx[1] - 0.10
-prof = np.exp(-0.5 * ((np.linspace(XB0, XB1, 400) - xa_) / (0.55 * KH)) ** 2)
-cm = np.zeros((2, 400, 4)); cm[..., :3] = matplotlib.colors.to_rgb(XC); cm[..., 3] = 0.22 + 0.78 * prof
-ax.imshow(cm, extent=[XB0, XB1, yb(zl['L6'][1]), yb(zl['L6'][0])], aspect='auto', zorder=4, interpolation='bilinear')
-ax.set_xlim(0, W); ax.set_ylim(0, H)
+R(XB0, yb(zl['L6'][1]), XB1, yb(zl['L6'][0]), XC, ec='none', z=4)
 # vias (schematic barrel 0.15 mm) from each pad to the land of its strip
 for i, x in enumerate(padx):
     if i % 2 == 0:

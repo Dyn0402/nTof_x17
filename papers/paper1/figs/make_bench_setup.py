@@ -41,10 +41,11 @@ M3_T, MX_T, SC_T = 10, 14, 12                                        # drawn thi
 M3_C, SC_C, OTHER_C, A_C = '#cfd8e3', '#f0d58c', '#b9c4d2', ps.DET_COLOR['det3']
 LW = 0.7
 
-W, H = 6.1, 2.55
+XL, XR, YB, YT = -640, 700, -95, 560                                 # x: transverse mm; y: ZC * z [mm]
+UPI = 1640 / 6.0                                                     # plot units per inch, the same in x and y
+AX_W, AX_H = (XR - XL) / UPI, 2.40                                   # 2026-11-04: cut to the content (no empty right margin)
+W, H = AX_W + 0.1, 2.55
 fig = plt.figure(figsize=(W, H))
-AX_W, AX_H = 6.0, 2.40
-XL, XR, YB, YT = -640, 1000, -95, 560                                # x: transverse mm; y: ZC * z [mm]
 ax = fig.add_axes([0.05 / W, 0.05 / H, AX_W / W, AX_H / H])
 ax.set_xlim(XL, XR); ax.set_ylim(YB, YT); ax.axis('off')
 Y = lambda z: ZC * z
@@ -94,8 +95,9 @@ for z in M3_Z + [SLOT_Z['bottom'], SLOT_Z['top']]:
             fontweight='bold' if z in SLOT_Z.values() else 'normal')
 ax.text(XTK, Y(1500), '$z$ [mm]', ha='right', va='center', fontsize=FS, color=ps.INK)
 
-# small scale bars (200 mm), tucked into the empty space right of the muon, above the top-slot label
-xs0, ys0, L = 760, 285, 200
+# small scale bars (200 mm), inside the drawing's own box: between the top-slot label and the top M3 planes
+# (Dylan 2026-11-04: fit it there or drop it)
+xs0, ys0, L = 385, Y(905), 200
 ax.plot([xs0, xs0 + L], [ys0, ys0], color=ps.INK, lw=1.0)
 ax.plot([xs0, xs0], [ys0, ys0 + ZC * L], color=ps.INK, lw=1.0)
 ax.text(xs0 + L / 2, ys0 - 10, '200 mm', ha='center', va='top', fontsize=FS * 0.9, color=ps.INK)

@@ -312,14 +312,14 @@ def fig_balance(golden, ev, figdir, paper_out=None):
             ax.stairs(h, bins, color=st['color'], lw=st['lw'], zorder=st['zorder'],
                       label=d)   # median / core sigma / n per chamber: results/summary.json golden[], quoted in the caption
         ax.axvline(0.5, color=ps.MUTED, lw=0.8, zorder=0)
-        ax.set_xlim(0.40, 0.80)  # 2026-11-03 (Dylan): from 0.4, room on the right for the inset
+        ax.set_xlim(0.40, 0.70)  # 2026-11-04 (Dylan): 0.40-0.70; inset just right of chamber B's distribution
         ax.set_xlabel(r'$f = Q_X/(Q_X+Q_Y)$')
         ax.set_ylabel('probability density')
         ax.set_ylim(0, max(np.max(v) for k, v in tab.items() if k.startswith('det')) * 1.22)
         ax.legend(loc='upper left', ncol=3, handlelength=1.4, columnspacing=1.0, fontsize=ps.BASE_PT * 1.1)
         # inset (right): median f per chamber with its standard error (error on the median, 1.2533 SD/sqrt(n));
         # Dylan 2026-11-03: no core-sigma / SD bars (they are in the caption)
-        ins = ax.inset_axes([0.70, 0.30, 0.28, 0.66])
+        ins = ax.inset_axes([0.625, 0.30, 0.355, 0.66])  # 2026-11-04: left edge just clear of chamber B
         ins.axhline(0.5, color=ps.MUTED, lw=0.7, ls='--', zorder=0)
         for i, (d, med, cs, sd, err, st) in enumerate(summ):
             ins.errorbar(i, med, yerr=err, color=st['color'], lw=1.0, capsize=2.0, capthick=0.9, zorder=3,
