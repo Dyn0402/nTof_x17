@@ -2,6 +2,7 @@
 """ntof_bundle.py -- P3 of NTOF_PASS_PLAN_2026-11-02: an n_TOF bundle from the chamber's pass-1 golden bundle.
 
     ntof_bundle.py <arm> --out DIR [--src DIR] [--v V] [--k K] [--sat 3550] [--no-bow] [--latency lat.json]
+                   [--mask-era E2_post_access]
 
 What carries, what is replaced, and why (each choice is written into the bundle's provenance):
 
@@ -46,10 +47,13 @@ GOLDEN = {
 #: (run_149 A-C cosmic line), D from its wall (1.525 x production raw at 42.6 -> ~28), B the Magboltz 90/10 prior
 V_START = {'A': 38.0, 'B': 42.6, 'C': 28.7, 'D': 28.0}
 BOW_DROP = ('w0_const_x', 'w0_const_y')
+#: n_TOF channel layer (P2, rerun/ntof/channel_layer/README.md): one mask per (arm, registry mask_era)
+MASKS = os.path.join(HERE, 'channel_layer', 'masks')
+MASK_ERAS = ('E1_pre_access', 'E2_post_access')
 
 
 def build(arm, out, src=None, v=None, k=20, sat=3550.0, bow=True, latency=None, t0_sigma=5.0, tan_max=None, kw=None,
-          n_samples=20, sample_ns=60.0, conditions=None):
+          n_samples=20, sample_ns=60.0, conditions=None, mask_era=None):
     from wft.calib import CalibrationBundle
     chamber, row = GOLDEN[arm]
     src = src or os.path.join(PASS1, row, 'wft', 'calib_bundle')
@@ -71,6 +75,23 @@ def build(arm, out, src=None, v=None, k=20, sat=3550.0, bow=True, latency=None, 
     else:
         rec['bow'] = 'dropped' if cal.bow else 'none in source'
         cal.bow = {}
+    # channel layer: the n_TOF mask of the row's era replaces the bench dead list (bench electronics faults do not
+    # carry; chamber faults are re-measured at n_TOF).  Optional only while the pre-freeze studies run; the pass
+    # bundles are built with it (NTOF_PASS_PLAN §6, 11-04).
+    if mask_era is not None:
+        if mask_era not in MASK_ERAS:
+            raise SystemExit(f'--mask-era must be one of {MASK_ERAS} (registry column mask_era)')
+        mp = os.path.join(MASKS, f'ntof_{arm}_{mask_era}.json')
+        m = json.load(open(mp))
+        rec['channel_layer'] = dict(file=os.path.relpath(mp, REPO), mask_era=mask_era,
+                                    bench_dead_replaced={p: list(cal.dead.get(p, [])) for p in ('x', 'y')},
+                                    bench_hot_replaced={p: list(cal.hot.get(p, [])) for p in ('x', 'y')},
+                                    n_dead={p: len(m['planes'][p]['dead']) for p in ('x', 'y')},
+                                    n_hot={p: len(m['planes'][p]['hot']) for p in ('x', 'y')})
+        cal.dead = {p: [int(c) for c in m['planes'][p]['dead']] for p in ('x', 'y')}
+        cal.hot = {p: [int(c) for c in m['planes'][p]['hot']] for p in ('x', 'y')}
+    else:
+        rec['channel_layer'] = 'bench dead list carried (no n_TOF mask: study bundle, not for the pass)'
     cal.v_drift = float(v if v is not None else V_START[arm])
     if kw:
         rec['kw'] = dict(bench=dict(cal.kw), ntof=dict(kw), source='in-situ A-C cosmic line (ac_line.py ratio x bench kw)')
@@ -105,6 +126,8 @@ def build(arm, out, src=None, v=None, k=20, sat=3550.0, bow=True, latency=None, 
     rec['not_revalidated'] = 'Dp (bench 95/5 value; n_TOF gas 90/10), template (bench X template, 20-sample window), kw'
     cal.run_key = f'ntof/{arm}'
     cal.conditions = dict(conditions or {}, n_samples=int(n_samples), sample_ns=float(sample_ns))
+    if mask_era is not None:
+        cal.conditions['mask_era'] = mask_era
     prov['ntof_bundle'] = rec
     cal.provenance = prov
     cal.save(out, note=f'n_TOF pass-1 bundle for arm {arm} from {chamber} ({row})')
@@ -126,10 +149,12 @@ def main():
     ap.add_argument('--t0-sigma', type=float, default=5.0)
     ap.add_argument('--kw', default=None, help='in-situ kw "x,y" (replaces the bench kw)')
     ap.add_argument('--tan-max', type=float, default=None, help='candidate |tan| limit for this dataset (registry tan_max)')
+    ap.add_argument('--mask-era', default=None, choices=MASK_ERAS,
+                    help='n_TOF channel layer of this registry mask_era (replaces the bench dead list); required for the pass')
     a = ap.parse_args()
     build(a.arm, a.out, a.src, a.v, a.k, a.sat, not a.no_bow, a.latency, a.t0_sigma, a.tan_max,
           kw=(dict(zip('xy', map(float, a.kw.split(',')))) if a.kw else None),
-          conditions=dict(gas='Ar/Iso 90/10', latency=27))
+          conditions=dict(gas='Ar/Iso 90/10', latency=27), mask_era=a.mask_era)
 
 
 if __name__ == '__main__':

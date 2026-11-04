@@ -66,7 +66,7 @@ def main():
                 res[lab][f'{arm}{ax}_ratio_test'] = r_te
                 res[lab][f'{arm}{ax}_ratio_test_after'] = r_te[0] / r_tr[0]
     # held-out comparison on common events
-    T = {lab: L[lab][L[lab]['sub'] % 2 == 1].set_index('event_id') for lab in CFG}
+    T = {lab: L[lab][L[lab]['sub'] % 2 == 1].set_index(['sub', 'event_id']) for lab in CFG}
     common = T['v1k'].index.intersection(T['v1kpin'].index)
     res['n_common_test'] = int(len(common))
     rng = np.random.default_rng(1)

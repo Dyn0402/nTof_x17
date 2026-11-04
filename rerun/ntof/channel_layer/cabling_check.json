@@ -1,0 +1,8718 @@
+{
+ "source": "rerun/ntof/channel_layer/cabling.py",
+ "map_csv": "mx17_m1_map.csv",
+ "arms": {
+  "A": {
+   "bench_run": "det3/mx17_det3_saturday_scan_6-27-26",
+   "bench_alias": "mx17_3",
+   "bench_feu": {
+    "x": 7,
+    "y": 8
+   },
+   "runs": {
+    "run_79": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_80": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_81": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_83": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_84": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_85": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_86": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_87": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_88": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_89": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_91": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_93": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_95": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_96": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_97": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_98": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_99": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_100": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_101": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_102": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_103": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_104": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_105": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_106": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_107": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_108": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_109": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_110": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_111": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_112": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_113": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_114": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_115": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_116": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_117": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_118": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_119": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_121": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_122": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_123": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_124": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_125": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_126": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_127": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_128": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_129": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_130": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_131": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_132": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_133": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_134": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_135": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_136": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_138": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_139": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_140": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_141": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_142": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_143": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_144": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_145": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_146": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_147": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_148": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_149": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_150": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_151": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_152": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_153": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_154": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_155": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_156": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_157": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_158": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_159": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_160": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_162": {
+     "feu": {
+      "x": 3,
+      "y": 4
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    }
+   },
+   "n_runs": 77,
+   "n_runs_identical": 77,
+   "ntof_feu": [
+    [
+     3,
+     4
+    ]
+   ],
+   "n_cabled": {
+    "x": 512,
+    "y": 512
+   }
+  },
+  "B": {
+   "bench_run": "det2_det3/mx17_det2_det3_overnight_6-22-26",
+   "bench_alias": "mx17_2",
+   "bench_feu": {
+    "x": 6,
+    "y": 8
+   },
+   "runs": {
+    "run_79": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_80": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_81": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_83": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_84": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_85": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_86": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_87": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_88": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_89": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_91": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_93": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_95": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_96": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_97": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_98": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_99": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_100": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_101": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_102": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_103": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_104": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_105": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_106": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_107": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_108": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_109": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_110": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_111": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_112": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_113": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_114": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_115": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_116": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_117": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_118": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_119": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_121": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_122": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_123": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_124": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_125": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_126": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_127": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_128": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_129": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_130": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_131": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_132": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_133": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_134": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_135": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_136": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_138": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_139": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_140": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_141": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_142": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_143": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_144": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_145": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_146": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_147": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_148": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_149": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_150": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_151": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_152": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_153": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_154": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_155": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_156": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_157": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_158": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_159": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_160": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_162": {
+     "feu": {
+      "x": 5,
+      "y": 6
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    }
+   },
+   "n_runs": 77,
+   "n_runs_identical": 77,
+   "ntof_feu": [
+    [
+     5,
+     6
+    ]
+   ],
+   "n_cabled": {
+    "x": 512,
+    "y": 512
+   }
+  },
+  "C": {
+   "bench_run": "det6_det7/mx17_det6_det7_overnight_6-26-26",
+   "bench_alias": "mx17_6",
+   "bench_feu": {
+    "x": 3,
+    "y": 4
+   },
+   "runs": {
+    "run_79": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_80": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_81": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_83": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_84": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_85": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_86": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_87": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_88": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_89": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_91": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_93": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_95": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_96": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_97": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_98": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_99": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_100": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_101": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_102": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_103": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_104": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_105": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_106": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_107": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_108": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_109": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_110": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_111": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_112": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_113": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_114": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_115": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_116": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_117": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_118": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_119": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_121": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_122": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_123": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_124": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_125": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_126": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_127": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_128": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_129": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_130": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_131": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_132": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_133": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_134": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_135": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_136": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_138": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_139": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_140": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_141": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_142": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_143": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_144": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_145": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_146": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_147": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_148": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_149": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_150": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_151": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_152": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_153": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_154": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_155": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_156": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_157": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_158": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_159": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_160": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_162": {
+     "feu": {
+      "x": 7,
+      "y": 8
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    }
+   },
+   "n_runs": 77,
+   "n_runs_identical": 77,
+   "ntof_feu": [
+    [
+     7,
+     8
+    ]
+   ],
+   "n_cabled": {
+    "x": 512,
+    "y": 512
+   }
+  },
+  "D": {
+   "bench_run": "det6_det7/mx17_det6_det7_overnight_6-26-26",
+   "bench_alias": "mx17_7",
+   "bench_feu": {
+    "x": 6,
+    "y": 8
+   },
+   "runs": {
+    "run_79": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_80": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_81": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_83": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_84": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_85": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_86": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_87": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_88": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_89": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_91": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_93": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_95": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_96": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_97": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_98": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_99": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_100": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_101": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_102": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_103": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_104": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_105": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_106": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_107": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_108": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_109": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_110": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_111": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_112": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_113": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_114": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_115": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_116": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_117": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_118": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_119": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_121": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_122": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_123": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_124": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_125": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_126": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_127": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_128": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_129": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_130": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_131": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_132": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_133": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_134": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_135": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_136": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_138": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_139": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_140": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_141": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_142": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_143": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_144": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_145": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_146": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_147": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_148": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_149": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_150": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_151": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_152": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_153": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_154": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_155": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_156": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_157": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_158": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_159": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_160": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    },
+    "run_162": {
+     "feu": {
+      "x": 1,
+      "y": 2
+     },
+     "n_diff": {
+      "x": 0,
+      "y": 0
+     },
+     "orientation": {
+      "x_1": "inverted",
+      "x_2": "inverted",
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "x_7": "inverted",
+      "x_8": "inverted",
+      "y_1": "inverted",
+      "y_2": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted",
+      "y_7": "inverted",
+      "y_8": "inverted"
+     }
+    }
+   },
+   "n_runs": 77,
+   "n_runs_identical": 77,
+   "ntof_feu": [
+    [
+     1,
+     2
+    ]
+   ],
+   "n_cabled": {
+    "x": 512,
+    "y": 512
+   }
+  }
+ }
+}

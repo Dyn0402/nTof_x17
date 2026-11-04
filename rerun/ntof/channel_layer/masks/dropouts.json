@@ -1,0 +1,21 @@
+[
+ {
+  "arm": "A",
+  "view": "x",
+  "connector": 8,
+  "channels": [
+   448,
+   511
+  ],
+  "era": "E1_pre_access",
+  "n_acq": 31,
+  "n_acq_era": 46,
+  "whole_era": false,
+  "runs": [
+   "79",
+   "81"
+  ],
+  "first": "2026-07-26 18:07",
+  "last": "2026-07-27 12:29"
+ }
+]

@@ -1,0 +1,476 @@
+{
+ "arm": "A",
+ "bench_chamber": "det3",
+ "mask_era": "E1_pre_access",
+ "n_acquisitions": 46,
+ "runs": [
+  "79",
+  "80",
+  "81"
+ ],
+ "n_events": 265583,
+ "channel_numbering": "n_TOF FEU channel (x FEU 3, y FEU 4); identical to the bench channel numbering of the chamber (cabling_check.json)",
+ "planes": {
+  "x": {
+   "feu": 3,
+   "dead": [
+    0,
+    54,
+    60,
+    448,
+    449,
+    450,
+    451,
+    452,
+    453,
+    454,
+    455,
+    456,
+    457,
+    458,
+    459,
+    460,
+    461,
+    462,
+    463,
+    464,
+    465,
+    466,
+    467,
+    468,
+    469,
+    470,
+    471,
+    472,
+    473,
+    474,
+    475,
+    476,
+    477,
+    478,
+    479,
+    480,
+    481,
+    482,
+    483,
+    484,
+    485,
+    486,
+    487,
+    488,
+    489,
+    490,
+    491,
+    492,
+    493,
+    494,
+    495,
+    496,
+    497,
+    498,
+    499,
+    500,
+    501,
+    502,
+    503,
+    504,
+    505,
+    506,
+    507,
+    508,
+    509,
+    510,
+    511
+   ],
+   "hot": [],
+   "n_dead": 67,
+   "components": {
+    "chamber_side": [],
+    "chamber_side_released": [],
+    "bench_carried": [],
+    "ntof_flank_dead": [],
+    "ntof_silent": [
+     448,
+     449,
+     450,
+     451,
+     452,
+     453,
+     454,
+     455,
+     456,
+     457,
+     458,
+     459,
+     460,
+     461,
+     462,
+     463,
+     464,
+     465,
+     466,
+     467,
+     468,
+     469,
+     470,
+     471,
+     472,
+     473,
+     474,
+     475,
+     476,
+     477,
+     478,
+     479,
+     480,
+     481,
+     482,
+     483,
+     484,
+     485,
+     486,
+     487,
+     488,
+     489,
+     490,
+     491,
+     492,
+     493,
+     494,
+     495,
+     496,
+     497,
+     498,
+     499,
+     500,
+     501,
+     502,
+     503,
+     504,
+     505,
+     506,
+     507,
+     508,
+     509,
+     510,
+     511
+    ],
+    "ntof_shorts": [
+     0
+    ],
+    "ntof_short_groups": [
+     [
+      44,
+      48,
+      49,
+      50,
+      51,
+      53,
+      54,
+      55,
+      56,
+      57,
+      59
+     ],
+     [
+      0,
+      2
+     ],
+     [
+      9,
+      11
+     ]
+    ],
+    "ntof_shorts_not_replicated": [
+     2,
+     9,
+     11,
+     44,
+     48,
+     49,
+     50,
+     51,
+     53,
+     54,
+     55,
+     56,
+     57,
+     59
+    ],
+    "dead_connectors": [
+     8
+    ],
+    "ntof_bands": [],
+    "hot": [
+     54,
+     60
+    ],
+    "near_osc": [],
+    "coupled": [],
+    "beam_occupancy_hot": [],
+    "weak_not_masked": [
+     22,
+     430
+    ]
+   },
+   "beam_occupancy_hot_evidence": {},
+   "hot_frequency": {
+    "21": 0.175,
+    "27": 0.125,
+    "54": 0.775,
+    "59": 0.05,
+    "60": 0.55
+   },
+   "bench": {
+    "census_dead_shorts": [
+     307,
+     398,
+     400
+    ],
+    "pass1_bundle_dead": [
+     307,
+     398,
+     400
+    ],
+    "dropped_electronics": [
+     307,
+     398,
+     400
+    ],
+    "dropped_healthy_at_ntof": [],
+    "f_at_ntof": {
+     "307": 0.968,
+     "398": 1.0,
+     "400": 0.884
+    }
+   },
+   "stats": {
+    "n_events": 265583,
+    "n_hot_votes": 40,
+    "n_short_acq": 46,
+    "n_judged": 446,
+    "median_occ": 0.02827
+   }
+  },
+  "y": {
+   "feu": 4,
+   "dead": [
+    39,
+    41,
+    42,
+    43,
+    44,
+    45,
+    47,
+    50,
+    53,
+    54,
+    55,
+    56,
+    57,
+    60,
+    62,
+    384,
+    386,
+    429,
+    431,
+    438,
+    440,
+    443,
+    444,
+    447,
+    483,
+    486,
+    489,
+    502,
+    503,
+    504,
+    505,
+    506
+   ],
+   "hot": [],
+   "n_dead": 32,
+   "components": {
+    "chamber_side": [
+     42,
+     43,
+     44,
+     50,
+     53,
+     54,
+     55,
+     56,
+     57,
+     60,
+     62
+    ],
+    "chamber_side_released": [],
+    "bench_carried": [],
+    "ntof_flank_dead": [
+     39,
+     42,
+     50,
+     429,
+     431,
+     444
+    ],
+    "ntof_silent": [],
+    "ntof_shorts": [
+     41,
+     45,
+     47,
+     384,
+     386,
+     438,
+     440,
+     443,
+     447,
+     483,
+     486,
+     489,
+     502,
+     503,
+     504,
+     505,
+     506
+    ],
+    "ntof_short_groups": [
+     [
+      41,
+      44,
+      45,
+      47
+     ],
+     [
+      438,
+      440,
+      443,
+      447
+     ],
+     [
+      483,
+      486,
+      489
+     ],
+     [
+      502,
+      504,
+      506
+     ],
+     [
+      40,
+      43
+     ],
+     [
+      384,
+      386
+     ],
+     [
+      488,
+      490
+     ],
+     [
+      503,
+      505
+     ]
+    ],
+    "ntof_shorts_not_replicated": [
+     40,
+     43,
+     44,
+     488,
+     490
+    ],
+    "dead_connectors": [],
+    "ntof_bands": [
+     [
+      449,
+      450,
+      451,
+      452,
+      453,
+      454,
+      455,
+      456,
+      457,
+      458,
+      459,
+      460,
+      461,
+      462,
+      463,
+      464,
+      465,
+      466,
+      467,
+      468,
+      469,
+      470
+     ],
+     [
+      46,
+      48,
+      51,
+      52,
+      53,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59,
+      60,
+      61,
+      62,
+      63
+     ]
+    ],
+    "hot": [],
+    "near_osc": [],
+    "coupled": [],
+    "beam_occupancy_hot": [],
+    "weak_not_masked": [
+     47,
+     49,
+     187,
+     189,
+     191,
+     361,
+     373,
+     378,
+     392,
+     396,
+     402,
+     439,
+     441,
+     505,
+     507
+    ]
+   },
+   "beam_occupancy_hot_evidence": {},
+   "hot_frequency": {},
+   "bench": {
+    "census_dead_shorts": [],
+    "pass1_bundle_dead": [
+     510
+    ],
+    "dropped_electronics": [
+     510
+    ],
+    "dropped_healthy_at_ntof": [],
+    "f_at_ntof": {
+     "510": 0.743
+    }
+   },
+   "stats": {
+    "n_events": 265583,
+    "n_hot_votes": 40,
+    "n_short_acq": 46,
+    "n_judged": 509,
+    "median_occ": 0.02173
+   }
+  }
+ },
+ "rule": "Mask eras (named here; the registry does not carry them yet: see README \"Proposed registry column\"):\n  E1_pre_access   access_epoch pre_access_27jul (run_79, run_80, run_81 up to the 27 July access): A-x connector 8\n                  (FEU 3 ch 448-511) electrically disconnected, A common mode x3.3\n  E2_post_access  every later acquisition of the pass-1 scope (run_83 ... run_162)\nAn acquisition in which a whole connector is silent that is live in the rest of its era is listed as a dropout\nepisode (dropouts.json); it would become its own era if any were found inside the pass-1 scope.",
+ "source": "rerun/ntof/channel_layer/make_masks.py"
+}

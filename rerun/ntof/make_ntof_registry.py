@@ -143,6 +143,8 @@ def main():
                        eos_dir=f'{EOS_RUNS}/run_{r.run}/{r.subrun}')
             row['noise_era'] = 'quiet' if r.run <= 67 else ('unplaced' if r.run == 68 else 'noisy')
             row['access_epoch'] = 'pre_access_27jul' if tt < ACCESS_END else 'post_access_27jul'
+            # n_TOF channel layer era (rerun/ntof/channel_layer/README.md): the 27 July access is the only boundary
+            row['mask_era'] = 'E1_pre_access' if row['access_epoch'] == 'pre_access_27jul' else 'E2_post_access'
             row['a_cm_x3'] = A_CM_START <= tt < ACCESS_END
             row['a_x_conn8_dead'] = A_CONN8_START <= tt < ACCESS_END
             reasons = []
@@ -180,7 +182,7 @@ def main():
                                     acq=('tag', 'size'), dec_TB=('dec_gb', lambda x: round(x.sum() / 1e3, 2))))
     print(reg[reg.excluded][['run', 'subrun', 'tag', 'exclude_reason']].to_string(index=False))
     print('truncated EOS decodes (redecode):', ok[ok.redecode][['run', 'subrun', 'tag', 'dec_fdf_ratio']].to_string(index=False))
-    for col in ('latency', 'n_samples', 'gas', 'noise_era', 'access_epoch', 'a_x_conn8_dead'):
+    for col in ('latency', 'n_samples', 'gas', 'noise_era', 'access_epoch', 'mask_era', 'a_x_conn8_dead'):
         print(col, ok[col].value_counts(dropna=False).to_dict())
     print('HV sets:', ok.groupby(['resist_A', 'resist_B', 'resist_C', 'resist_D',
                                    'drift_A', 'drift_B', 'drift_C', 'drift_D'], dropna=False).size().to_dict())

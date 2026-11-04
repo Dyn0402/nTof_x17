@@ -1,0 +1,281 @@
+{
+ "persist": 0.25,
+ "n_acq": {
+  "E1_pre_access": 46,
+  "E2_post_access": 1016
+ },
+ "masks": {
+  "A_E1_pre_access": {
+   "x": {
+    "n_dead": 67,
+    "n_hot_list": 0,
+    "chamber_side": 0,
+    "chamber_side_released": 0,
+    "bench_carried": 0,
+    "ntof_flank_dead": 0,
+    "ntof_silent": 64,
+    "ntof_shorts": 1,
+    "ntof_shorts_not_replicated": 14,
+    "hot": 2,
+    "near_osc": 0,
+    "coupled": 0,
+    "beam_occupancy_hot": 0,
+    "weak_not_masked": 2
+   },
+   "y": {
+    "n_dead": 32,
+    "n_hot_list": 0,
+    "chamber_side": 11,
+    "chamber_side_released": 0,
+    "bench_carried": 0,
+    "ntof_flank_dead": 6,
+    "ntof_silent": 0,
+    "ntof_shorts": 17,
+    "ntof_shorts_not_replicated": 5,
+    "hot": 0,
+    "near_osc": 0,
+    "coupled": 0,
+    "beam_occupancy_hot": 0,
+    "weak_not_masked": 15
+   }
+  },
+  "B_E1_pre_access": {
+   "x": {
+    "n_dead": 10,
+    "n_hot_list": 3,
+    "chamber_side": 3,
+    "chamber_side_released": 2,
+    "bench_carried": 4,
+    "ntof_flank_dead": 2,
+    "ntof_silent": 2,
+    "ntof_shorts": 3,
+    "ntof_shorts_not_replicated": 3,
+    "hot": 1,
+    "near_osc": 0,
+    "coupled": 0,
+    "beam_occupancy_hot": 3,
+    "weak_not_masked": 4
+   },
+   "y": {
+    "n_dead": 34,
+    "n_hot_list": 0,
+    "chamber_side": 3,
+    "chamber_side_released": 0,
+    "bench_carried": 10,
+    "ntof_flank_dead": 1,
+    "ntof_silent": 0,
+    "ntof_shorts": 22,
+    "ntof_shorts_not_replicated": 14,
+    "hot": 5,
+    "near_osc": 0,
+    "coupled": 0,
+    "beam_occupancy_hot": 0,
+    "weak_not_masked": 16
+   }
+  },
+  "C_E1_pre_access": {
+   "x": {
+    "n_dead": 41,
+    "n_hot_list": 0,
+    "chamber_side": 36,
+    "chamber_side_released": 0,
+    "bench_carried": 38,
+    "ntof_flank_dead": 21,
+    "ntof_silent": 2,
+    "ntof_shorts": 0,
+    "ntof_shorts_not_replicated": 29,
+    "hot": 1,
+    "near_osc": 0,
+    "coupled": 0,
+    "beam_occupancy_hot": 0,
+    "weak_not_masked": 0
+   },
+   "y": {
+    "n_dead": 15,
+    "n_hot_list": 0,
+    "chamber_side": 5,
+    "chamber_side_released": 0,
+    "bench_carried": 12,
+    "ntof_flank_dead": 4,
+    "ntof_silent": 0,
+    "ntof_shorts": 2,
+    "ntof_shorts_not_replicated": 17,
+    "hot": 0,
+    "near_osc": 0,
+    "coupled": 0,
+    "beam_occupancy_hot": 0,
+    "weak_not_masked": 10
+   }
+  },
+  "D_E1_pre_access": {
+   "x": {
+    "n_dead": 157,
+    "n_hot_list": 19,
+    "chamber_side": 63,
+    "chamber_side_released": 2,
+    "bench_carried": 112,
+    "ntof_flank_dead": 29,
+    "ntof_silent": 0,
+    "ntof_shorts": 68,
+    "ntof_shorts_not_replicated": 71,
+    "hot": 7,
+    "near_osc": 0,
+    "coupled": 15,
+    "beam_occupancy_hot": 11,
+    "weak_not_masked": 21
+   },
+   "y": {
+    "n_dead": 86,
+    "n_hot_list": 10,
+    "chamber_side": 8,
+    "chamber_side_released": 0,
+    "bench_carried": 13,
+    "ntof_flank_dead": 38,
+    "ntof_silent": 0,
+    "ntof_shorts": 38,
+    "ntof_shorts_not_replicated": 24,
+    "hot": 12,
+    "near_osc": 0,
+    "coupled": 0,
+    "beam_occupancy_hot": 10,
+    "weak_not_masked": 41
+   }
+  },
+  "A_E2_post_access": {
+   "x": {
+    "n_dead": 1,
+    "n_hot_list": 0,
+    "chamber_side": 0,
+    "chamber_side_released": 0,
+    "bench_carried": 0,
+    "ntof_flank_dead": 0,
+    "ntof_silent": 0,
+    "ntof_shorts": 0,
+    "ntof_shorts_not_replicated": 0,
+    "hot": 1,
+    "near_osc": 0,
+    "coupled": 0,
+    "beam_occupancy_hot": 0,
+    "weak_not_masked": 0
+   },
+   "y": {
+    "n_dead": 35,
+    "n_hot_list": 0,
+    "chamber_side": 11,
+    "chamber_side_released": 0,
+    "bench_carried": 0,
+    "ntof_flank_dead": 2,
+    "ntof_silent": 0,
+    "ntof_shorts": 23,
+    "ntof_shorts_not_replicated": 4,
+    "hot": 3,
+    "near_osc": 0,
+    "coupled": 0,
+    "beam_occupancy_hot": 0,
+    "weak_not_masked": 10
+   }
+  },
+  "B_E2_post_access": {
+   "x": {
+    "n_dead": 8,
+    "n_hot_list": 0,
+    "chamber_side": 4,
+    "chamber_side_released": 1,
+    "bench_carried": 4,
+    "ntof_flank_dead": 6,
+    "ntof_silent": 0,
+    "ntof_shorts": 4,
+    "ntof_shorts_not_replicated": 2,
+    "hot": 2,
+    "near_osc": 0,
+    "coupled": 0,
+    "beam_occupancy_hot": 0,
+    "weak_not_masked": 2
+   },
+   "y": {
+    "n_dead": 24,
+    "n_hot_list": 0,
+    "chamber_side": 3,
+    "chamber_side_released": 0,
+    "bench_carried": 10,
+    "ntof_flank_dead": 2,
+    "ntof_silent": 0,
+    "ntof_shorts": 12,
+    "ntof_shorts_not_replicated": 13,
+    "hot": 0,
+    "near_osc": 0,
+    "coupled": 0,
+    "beam_occupancy_hot": 0,
+    "weak_not_masked": 23
+   }
+  },
+  "C_E2_post_access": {
+   "x": {
+    "n_dead": 38,
+    "n_hot_list": 0,
+    "chamber_side": 26,
+    "chamber_side_released": 10,
+    "bench_carried": 26,
+    "ntof_flank_dead": 33,
+    "ntof_silent": 2,
+    "ntof_shorts": 3,
+    "ntof_shorts_not_replicated": 31,
+    "hot": 0,
+    "near_osc": 0,
+    "coupled": 0,
+    "beam_occupancy_hot": 0,
+    "weak_not_masked": 6
+   },
+   "y": {
+    "n_dead": 21,
+    "n_hot_list": 0,
+    "chamber_side": 5,
+    "chamber_side_released": 0,
+    "bench_carried": 12,
+    "ntof_flank_dead": 7,
+    "ntof_silent": 0,
+    "ntof_shorts": 7,
+    "ntof_shorts_not_replicated": 8,
+    "hot": 0,
+    "near_osc": 0,
+    "coupled": 0,
+    "beam_occupancy_hot": 0,
+    "weak_not_masked": 4
+   }
+  },
+  "D_E2_post_access": {
+   "x": {
+    "n_dead": 154,
+    "n_hot_list": 20,
+    "chamber_side": 60,
+    "chamber_side_released": 5,
+    "bench_carried": 109,
+    "ntof_flank_dead": 18,
+    "ntof_silent": 0,
+    "ntof_shorts": 76,
+    "ntof_shorts_not_replicated": 43,
+    "hot": 11,
+    "near_osc": 0,
+    "coupled": 5,
+    "beam_occupancy_hot": 16,
+    "weak_not_masked": 19
+   },
+   "y": {
+    "n_dead": 61,
+    "n_hot_list": 21,
+    "chamber_side": 4,
+    "chamber_side_released": 4,
+    "bench_carried": 9,
+    "ntof_flank_dead": 31,
+    "ntof_silent": 0,
+    "ntof_shorts": 28,
+    "ntof_shorts_not_replicated": 19,
+    "hot": 9,
+    "near_osc": 0,
+    "coupled": 0,
+    "beam_occupancy_hot": 21,
+    "weak_not_masked": 34
+   }
+  }
+ }
+}
