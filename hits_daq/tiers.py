@@ -166,7 +166,10 @@ def score(tan, tr):
     d = np.degrees(np.arctan(tan) - np.arctan(tr))
     o = {}
     s, b = s68(d)
+    fin = d[np.isfinite(d)]
     o['all'] = dict(n=int(np.isfinite(d).sum()), s68=s, bias=b, steep=steep(d, tr),
+                    sig_mad=float(1.4826 * np.median(np.abs(fin - np.median(fin)))) if len(fin) > 30 else None,
+                    s68_full=float(np.percentile(np.abs(fin - np.median(fin)), 68)) if len(fin) > 30 else None,
                     frac_in5=float(np.mean(np.abs(d[np.isfinite(tr)]) <= 5)) if np.isfinite(tr).any() else None)
     for lo, hi in zip(TBINS[:-1], TBINS[1:]):
         m = (np.abs(tr) >= lo) & (np.abs(tr) < hi)
