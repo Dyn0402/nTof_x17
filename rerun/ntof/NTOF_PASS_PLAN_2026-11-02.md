@@ -173,7 +173,9 @@ Each item names where it must live in the new chain. ✱ = not in any chain toda
     - It replaces the capsule-band k as the primary angle scale.
     - k (in-beam muons, capsule band), the run_149 A–C line and D's wall become independent checks.
   - **t0 latency** (if Q2 = pin): measure C at n_TOF per chamber and per latency setting (`measure_latency`), as on
-    the bench.
+    the bench. **A, C and D are treated alike (Dylan 11-05):** all three pinned, cosmic latency on cosmic rows and beam
+    latency on beam rows. D's cosmic latency is measured (run_149); D's beam latency is not measurable (oscillation)
+    and is D's cosmic latency + the mean beam-minus-cosmic offset of A and C (§6, 11-05). B: positions only, t0 free.
   - **kw (and w0 = 0):** from the beam-off cosmic A–C through-goers (the only geometric angle truth at n_TOF,
     `ntof_cosmics/insitu_calib.py`, kwmed rule). B and D have no partner line. D uses its wall on cosmics; B stays
     positions-only (no field-shaping ring).
@@ -244,6 +246,24 @@ A failing arm is held, as on the bench.
 - Retire `stage3_fullpass`, `stage3_is2_v2[_cf]`, the `kcal_*` sets and the is2 bundles with a RETIRE record. Keep
   them on EOS as references.
 
+**P7a. Drift velocity vs time, a standard pass product (Dylan 11-05)** — `rerun/ntof/vt/`
+- v does not enter the waveform fit (`gc_gas_time/REPORT.md`: ±10 % in v gives identical w), so v(t) is a table-level
+  correction and a gas monitor; nothing is refitted for it.
+- **A and C:** the model-free column duration T (`colsum.GridFit`, pass-1 X template) on clean single-cluster tracks of
+  the pass output, per sub-run and in 30-min bins, v = gap / T with the timing-free gaps. Over the whole campaign, beam
+  and cosmic rows separately (beam and cosmic samples differed by ~3 % on A: a selection systematic, kept apart).
+- **D:** from the beam-off cosmic runs (D's beam column is oscillation-dominated; its cosmic box fits work on the
+  fa80c06 decodes, 29.9–32). That gives D at the cosmic-run cadence over the six weeks, and an independent cosmic v
+  for A and C at the same times. **B:** no v (no box).
+- Cross-checks: the per-run capsule-band k (∝ 1/v; the old route, `gc_gas_time` C r = 0.97) and, where lines exist,
+  the per-sub-run A–C line scale.
+- Output: `vt_<arm>.parquet` (run, subrun, tag, t_start, t_end, v, err, n, trigger class) next to the stage-3 tables;
+  stage 3 joins it on (run, subrun, tag[, time bin]) and writes `tan_vt` beside `tan` (one v per chamber) so either can
+  be used. A campaign figure per chamber with HV changes, the 23 July clock change, the 27 July access and gas
+  events marked, in the pass `report.html`.
+- Caveat to state: T is gain-confounded (+18 % across a det3 mesh scan), so v(t) is quoted only at fixed HV; across an
+  HV change it is flagged, not interpreted.
+
 **P8. Docs**
 - `docs/PARAMETERS.md` n_TOF section.
 - n_TOF lessons into `rerun/history/timeline_data.py` (regenerate LESSONS.md).
@@ -254,7 +274,7 @@ A failing arm is held, as on the bench.
 
 ## 4. Known limitations to state, not to chase
 - **B:** no field-shaping ring, so no angle. Positions only, and ~13 % cosmic efficiency.
-- **B/D:** no within-run v route unless their column duration proves usable.
+- **B:** no v route (column not a box). **D:** v(t) only from the beam-off cosmic runs (P7a), not within beam runs.
 - **Template:** not measurable on the 20-sample window. It is carried from the bench (P3 check).
 - **Window:** 1.2 µs, so a column slower than ~24 µm/ns would be cut (C is closest).
 - **Busy planes:** multi-particle planes are not refitted (R16).
@@ -529,5 +549,33 @@ A failing arm is held, as on the bench.
   column-window only add line mis-fits and +30–60 % CPU. Applied in `ntof_bundle.py` (explicit, with provenance). One
   left-out acquisition (C `_006`, column window) resubmitted as condor 4617508; it cannot change the decision.
 - **Remaining before the bundles freeze:** build the pass bundles: (A, B, C, D) × (E1, E2) ×
-  (beam, cosmic latency) with v / kw / Dp above, D t0 free (no latency measured on D: its beam fits are oscillation-
-  dominated), B no angle; then N-G1 on run_145 + run_149 against is2_v2, and the full submission.
+  (beam, cosmic latency) with v / kw / Dp above, ~~D t0 free~~ D pinned (11-05 below), B no angle; then N-G1 on
+  run_145 + run_149 against is2_v2, and the full submission.
+
+### 11-05: D pinned like A and C; v(t) becomes a pass product (Dylan 11-05)
+- **Dylan: one t0 treatment for A, C and D unless there is a reason not to.** D was left free only because its beam
+  latency is not measurable. Checks: `rerun/ntof/tests/d_b/dpin_run.sh` (reco) + `dpin_score.py` (scores); bundles
+  `d_b/bundles/d2_D` (free), `d2pin_D` (cosmic latency), `d2pinb_D` (cosmic + borrowed beam offset), all v 31.0,
+  kw 0.880/0.881, Dp 0.0157, E2 mask, tan_max 0.6, cost + charge. Output `/media/ucla/work/ntof_pass1/d_b/reco_pin/`.
+- **D cosmic latency measured** (run_149, 12 sub-runs, same rule as A/C: iterated median of free t0 + 10·ftst on single
+  quality tracks): **x +18.3 ± 3.4, y +20.0 ± 2.2 ns** (n ≈ 1,050; ftst slope −8.8 / −5.8). `bundles/latency_D_r149.json`.
+- **D beam latency is not measurable by the free fit** (run_145: +65 / +150 ns, 110–125 ns wide, ftst slope +2: the
+  oscillation). Borrowing A/C's beam−cosmic offset (+14.3 / +22.5 ns) gives `bundles/latency_D_r145beam.json`
+  (x 32.6, y 42.5) — but **D's own-trigger late beam tracks pull the pinned t0 to −12 / −15 ns below it** (and only
+  −4 / −7 ns below the cosmic latency), i.e. D's beam data sit near D's cosmic latency, not cosmic + 18.
+- **Beam (run_145 `_000`, 1,500 triggers), free → pinned (borrowed beam lat.) → pinned (cosmic lat.):**
+  gated tracks 463 → 512 → 524; pointing < 15 mm 68 → 91 → 99 (frac 14.7 → 17.8 → 18.9 %); < 10 mm 50 → 61 → 70.
+  On the same tracks the DCA 68 % goes 15.8 → 13.1 mm (n < 10 mm 34 → 38 / 36 → 40); ok / quality fractions and χ²/dof
+  unchanged (own-trigger late χ²/dof x 6.7 → 5.6 / 5.5). **The pin helps D on beam**, and the cosmic latency does at
+  least as well as the borrowed offset.
+- **Cosmic kw under the pin (B–D centroid lines, strict B, miss < 60 mm):** free d2 0.983 ± 0.018 (x) / 1.009 ± 0.012
+  (y) — kw_D 0.880/0.881 still closes on the new bundle (new mask, Dp, cost + charge) — and pinned 0.970 ± 0.014 /
+  0.990 ± 0.018, the same −1…−2 % shift as A. **kw_D under the pin = 0.854 (x) / 0.872 (y)**, ± 0.03 syst unchanged.
+  Line residuals pinned vs free on the same lines: B–D 68 % tan 0.0343 → 0.0362 (x), 0.0349 → 0.0331 (y); A–D
+  0.0574 → 0.0540, 0.0635 → 0.0615: neutral to slightly better.
+- **Decision (proposed): D pinned, σ 15 ns, with D's measured cosmic latency on BOTH trigger classes** (beam data prefer
+  it; the borrowed offset is not a measurement). kw_D 0.854 / 0.872. Same σ and rule as A/C; the only difference is that
+  D's beam latency = its cosmic latency, stated with the evidence above. B stays positions-only, t0 free.
+- Not checked: one more kw iteration on the final D bundle (A converged at < 1 % on the next step); E1-era D.
+- **v(t):** added as P7a (§3). A/C from the pass output's column duration per sub-run / 30-min bin; D from the beam-off
+  cosmic runs; joined in stage 3 as `tan_vt` beside `tan`.

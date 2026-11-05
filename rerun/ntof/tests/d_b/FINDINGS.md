@@ -46,3 +46,10 @@ wall_kw/summary_D_v1.json, dbeam/stack_fits.csv, dbeam/d_beam_reco.csv, bd_cosmi
 - 12 of 87 cosmic sub-runs; the ringing detector is a heuristic; A–D partial-track placement validated only where it
   barely matters; B field-cage distortion unmeasured (central vs outer B agree within 0.02).
 - A's oscillation decays over 10–30 ms after the flash, like A's beam wall-scale transient (0.77 → 0.92): not followed up.
+
+## 4 D t0 pinned vs free (2026-11-05; `dpin_run.sh`, `dpin_score.py`; plan §6 11-05)
+- D cosmic latency (run_149): x +18.3 ± 3.4, y +20.0 ± 2.2 ns. D beam latency not measurable free (oscillation).
+- Beam run_145 `_000` (1,500): pointing < 15 mm 68 (free) → 91 (pin, cosmic + A/C beam offset) → 99 (pin, cosmic
+  latency); same-track DCA 68 % 15.8 → 13.1 mm; χ²/dof unchanged. Own-trigger beam tracks sit near the cosmic latency.
+- Cosmic B–D lines: kw closes free (0.983 / 1.009); under the pin 0.970 / 0.990 → kw_D 0.854 / 0.872.
+- Proposed: D pinned with its cosmic latency on both trigger classes, kw 0.854 / 0.872.
