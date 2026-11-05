@@ -1,0 +1,599 @@
+{
+ "sections": {
+  "1_kernel": "Signal formation: the sharing kernel",
+  "2_hits_fail": "Why hit times fail",
+  "3_model": "The forward model and its calibration",
+  "4_floor": "The physics floor",
+  "5_hits_vs_waveforms": "Hits against waveforms, same events",
+  "6_readout": "What a hit readout must record",
+  "7_known_angle": "A known angle in the beam",
+  "8_fleet": "Fleet performance",
+  "0_context": "Context: detector, displays, supporting studies",
+  "9_gaps": "Gaps: figures Paper II needs that do not exist yet"
+ },
+ "items": [
+  {
+   "section": "1_kernel",
+   "name": "kernel_forms",
+   "caption": "Head-on kernel, SPS run71 RAW (no zero suppression), X and Y: \u00b11..3 responses and time forms at 96/156/243 V/cm. \u00b11/lead 0.377 X, 0.390 Y; field-independent.",
+   "basis": "pass1 2026-11-01",
+   "rating": "A",
+   "producer": "rerun/paper1_spsfigs/make_figs.py --only kernel_forms",
+   "files": [
+    "kernel_forms.pdf"
+   ],
+   "src": "rerun/paper1_spsfigs/figures/kernel_forms.pdf"
+  },
+  {
+   "section": "1_kernel",
+   "name": "angled_kernel",
+   "caption": "Kernel survives the 25.4\u00b0 rotation (run63 flat700 vs rot25): X identical, Y carries the rotation.",
+   "basis": "pass1 2026-11-01",
+   "rating": "A",
+   "producer": "rerun/paper1_spsfigs/make_figs.py --only angled_kernel",
+   "files": [
+    "angled_kernel.pdf"
+   ],
+   "src": "rerun/paper1_spsfigs/figures/angled_kernel.pdf"
+  },
+  {
+   "section": "1_kernel",
+   "name": "sharing_schematic",
+   "caption": "Three-panel schematic: sharing cartoon, why a deep strip fires early, the S-shaped ladder distortion. Cartoon shows c1\u22480.5, c2 0.05\u20130.15: check against measured c2<c1.",
+   "basis": "schematic 2026-07-12",
+   "rating": "B",
+   "producer": "mx_june_cosmic_qa/engineer_package",
+   "files": [
+    "sharing_schematic.pdf"
+   ],
+   "src": "mx_june_cosmic_qa/stephan_cosmics/figures/03-charge-sharing-schematic.pdf"
+  },
+  {
+   "section": "1_kernel",
+   "name": "modelfree_ratio",
+   "caption": "Model-free \u00b12/\u00b11 charge ratio by plane, all five chambers: X \u2248 0.15\u20130.19, Y 0.36\u20130.54.",
+   "basis": "r06-era cosmics, Oct 2026",
+   "rating": "B",
+   "producer": "sps_beam_test_26/analysis/plane_ratio/make_report.py",
+   "files": [
+    "modelfree_ratio.png"
+   ],
+   "src": "/media/dylan/data/x17/cosmic_bench/plane_ratio/figures/modelfree_ratio.png"
+  },
+  {
+   "section": "1_kernel",
+   "name": "angled_stacks",
+   "caption": "Time stacks of centre/\u00b11/\u00b12 of the lead strip, X and Y, flat 233 V/cm vs 25.6\u00b0 142 V/cm.",
+   "basis": "ZS 2026-08-18",
+   "rating": "B",
+   "producer": "sps_beam_test_26/analysis/angled_kernel/make_figures.py",
+   "files": [
+    "angled_stacks.png"
+   ],
+   "src": "sps_beam_test_26/analysis/angled_kernel/figures/stacks.png"
+  },
+  {
+   "section": "1_kernel",
+   "name": "angled_ladder_bars",
+   "caption": "Y view, flat vs rotated: \u00b12/\u00b11 0.062 \u2192 0.28\u20130.30, cluster extent 3 \u2192 6\u20138 strips, delay asymmetry \u22128 \u2192 \u2212104\u2026\u2212120 ns. (File is named geometry.png but is NOT a geometry schematic.)",
+   "basis": "ZS 2026-08-18",
+   "rating": "B",
+   "producer": "angled_kernel/make_figures.py",
+   "files": [
+    "angled_ladder_bars.png"
+   ],
+   "src": "sps_beam_test_26/analysis/angled_kernel/figures/geometry.png"
+  },
+  {
+   "section": "1_kernel",
+   "name": "angled_width",
+   "caption": "Lateral rms vs drift depth at four fields: field-independent where diffusion would scale as E^-1/2.",
+   "basis": "ZS 2026-08-18",
+   "rating": "B",
+   "producer": "angled_kernel/make_figures.py",
+   "files": [
+    "angled_width.png"
+   ],
+   "src": "sps_beam_test_26/analysis/angled_kernel/figures/width.png"
+  },
+  {
+   "section": "1_kernel",
+   "name": "det3_charge_sharing_hits",
+   "caption": "Old hits-amplitude kernel on det3 vertical tracks (X 0.449/0.055, Y 0.519/0.152). Superseded by kernel_forms; kept as the \"before\".",
+   "basis": "hits 2026-07-18, superseded",
+   "rating": "C",
+   "producer": "engineer_package/make_hybrid_figures.py",
+   "files": [
+    "det3_charge_sharing_hits.pdf"
+   ],
+   "src": "mx_june_cosmic_qa/stephan_cosmics/figures/18-det3A-charge-sharing-measured.pdf"
+  },
+  {
+   "section": "1_kernel",
+   "name": "share_kernels_mpgd26",
+   "caption": "Production kernels per plane from the det3 bundle with the resistive-layer inset. Layout good, numbers are the R&D-era bundle.",
+   "basis": "rnd ~2026-08-17",
+   "rating": "C",
+   "producer": "mpgd26/make_share.py --only kernels",
+   "files": [
+    "share_kernels_mpgd26.png"
+   ],
+   "src": "papers/mpgd26_proceedings/figures/share_kernels.png"
+  },
+  {
+   "section": "2_hits_fail",
+   "name": "estimator_residual_curves",
+   "caption": "Per-strip time residual vs reference drift time, x and y, for matched-filter t50 and leading edge 20 %: +40 ns late at the mesh, \u2212100\u2026\u2212130 ns early at the cathode. The ladder compression, estimator-independent. det3.",
+   "basis": "rnd 2026-07-25 (hits timing vs M3)",
+   "rating": "A-",
+   "producer": "waveform_first_threading/05_estimator_compare.py: REMAKE on pass 1, all chambers (manifest: ladder_compression)",
+   "files": [
+    "estimator_residual_curves.png"
+   ],
+   "src": "mx_june_cosmic_qa/waveform_first_threading/report/main.pdf (embedded image 001; standalone PNG no longer on disk)"
+  },
+  {
+   "section": "2_hits_fail",
+   "name": "event_waveforms",
+   "caption": "Raw strip-waveform matrices (X and Y) of one det3 cosmic plus three single-strip pulses: later when deeper.",
+   "basis": "waveform 2026-07-18 display",
+   "rating": "A-",
+   "producer": "engineer_package/make_event_displays.py",
+   "files": [
+    "event_waveforms.pdf"
+   ],
+   "src": "mx_june_cosmic_qa/stephan_cosmics/event_displays/event_display_waveforms.pdf"
+  },
+  {
+   "section": "2_hits_fail",
+   "name": "event_raw_x_y",
+   "caption": "One det3 muon as strip \u00d7 sample matrices, X and Y, with the M3 reference track dashed.",
+   "basis": "rnd 2026-07-26",
+   "rating": "B",
+   "producer": "waveform_first_threading/02_explore.py",
+   "files": [
+    "event_raw_x_y.png"
+   ],
+   "src": "mx_june_cosmic_qa/waveform_first_threading/report/main.pdf (embedded image 000; standalone PNG no longer on disk)"
+  },
+  {
+   "section": "2_hits_fail",
+   "name": "unsharing_depth_bias",
+   "caption": "Signed hit-to-reference distance vs depth, 500 det3 muons: production ladder (+19 \u00b5m/mm) vs unshared (+2 \u00b5m/mm). The hits ladder fans out with depth.",
+   "basis": "hits 2026-07-18",
+   "rating": "A-",
+   "producer": "engineer_package/make_hybrid_figures.py",
+   "files": [
+    "unsharing_depth_bias.pdf"
+   ],
+   "src": "mx_june_cosmic_qa/stephan_cosmics/figures/09-det3A-unsharing-depth-bias.pdf"
+  },
+  {
+   "section": "2_hits_fail",
+   "name": "angle_bias_schematic",
+   "caption": "Why a hit-time slope is v(tan\u03b8 \u00b1 w/z_vis): cluster width = z tan\u03b8 + w. The z_vis logic is superseded by the column-duration view.",
+   "basis": "schematic 2026-07-12",
+   "rating": "B",
+   "producer": "engineer_package",
+   "files": [
+    "angle_bias_schematic.pdf"
+   ],
+   "src": "mx_june_cosmic_qa/stephan_cosmics/figures/04-angle-bias-schematic.pdf"
+  },
+  {
+   "section": "2_hits_fail",
+   "name": "event_3d_hits_vs_m3",
+   "caption": "3-D event display: X and Y hits against the M3 reference track (\u00b10.2 mm band).",
+   "basis": "hits 2026-07-18",
+   "rating": "B",
+   "producer": "engineer_package/make_event_displays_3d.py",
+   "files": [
+    "event_3d_hits_vs_m3.pdf"
+   ],
+   "src": "mx_june_cosmic_qa/stephan_cosmics/figures/07-det3A-event-3d-display.pdf"
+  },
+  {
+   "section": "2_hits_fail",
+   "name": "forward_fit_walkthrough",
+   "caption": "One muon through the fit step by step: slices, kernel, five waveforms, NNLS charge solve, \"does it work\" (10 images from the published note).",
+   "basis": "rnd Sept 2026",
+   "rating": "B",
+   "producer": "forward-fit-det3 make_figures.py",
+   "files": [
+    "forward_fit_walkthrough_01.png",
+    "forward_fit_walkthrough_02.png",
+    "forward_fit_walkthrough_03.png",
+    "forward_fit_walkthrough_04.png",
+    "forward_fit_walkthrough_05.png",
+    "forward_fit_walkthrough_06.png",
+    "forward_fit_walkthrough_07.png",
+    "forward_fit_walkthrough_08.png",
+    "forward_fit_walkthrough_09.png",
+    "forward_fit_walkthrough_10.png"
+   ],
+   "src": "published note forward-fit-det3"
+  },
+  {
+   "section": "3_model",
+   "name": "templates_perplane",
+   "caption": "Measured impulse templates, X vs Y, and the Y\u2212X difference (Y undershoot 4\u00d7 deeper).",
+   "basis": "rnd 2026-07-26",
+   "rating": "A-",
+   "producer": "waveform_first_threading/11_templates_perplane.py",
+   "files": [
+    "templates_perplane.png"
+   ],
+   "src": "mx_june_cosmic_qa/waveform_first_threading/report/main.pdf (embedded image 002; standalone PNG no longer on disk)"
+  },
+  {
+   "section": "3_model",
+   "name": "event_fit",
+   "caption": "One X-plane event: data, forward-model fit and residual in \u03c3 (fit 10.9\u00b0 vs M3 10.4\u00b0).",
+   "basis": "rnd 2026-07-26",
+   "rating": "A-",
+   "producer": "waveform_first_threading/10_display_calibrated.py",
+   "files": [
+    "event_fit.png"
+   ],
+   "src": "mx_june_cosmic_qa/waveform_first_threading/report/main.pdf (embedded image 003; standalone PNG no longer on disk)"
+  },
+  {
+   "section": "3_model",
+   "name": "vtension_resolution",
+   "caption": "Profiled \u03c7\u00b2(v) and the resolution of the v tension: 36.7 (fit) vs 34 (geometry).",
+   "basis": "rnd 2026-07-26",
+   "rating": "B",
+   "producer": "waveform_first_threading/27_vtension_figure.py",
+   "files": [
+    "vtension_resolution.png"
+   ],
+   "src": "mx_june_cosmic_qa/waveform_first_threading/report/main.pdf (embedded image 005; standalone PNG no longer on disk)"
+  },
+  {
+   "section": "3_model",
+   "name": "share_decompose",
+   "caption": "Four consecutive Y strips of one muon: fitted waveform split into own / \u00b11 / \u00b12 contributions vs data (20\u201342 % from neighbours). Best \"what the model does\" picture; remake on pass 1.",
+   "basis": "rnd ~2026-08-17",
+   "rating": "B",
+   "producer": "mpgd26/make_share.py --only decompose",
+   "files": [
+    "share_decompose.png"
+   ],
+   "src": "papers/mpgd26_proceedings/figures/share_decompose.png"
+  },
+  {
+   "section": "3_model",
+   "name": "bow_profiles",
+   "caption": "Chamber bow estimator on pass-1 golden rows (calibration-constant structure the model must carry).",
+   "basis": "pass1 2026-11-04",
+   "rating": "B",
+   "producer": "rerun/paper1_res/bow_pass1.py",
+   "files": [
+    "bow_profiles.pdf"
+   ],
+   "src": "rerun/paper1_res/figures/bow_profiles.pdf"
+  },
+  {
+   "section": "3_model",
+   "name": "bow_closure",
+   "caption": "Bow closure on pass-1 golden rows.",
+   "basis": "pass1 2026-11-04",
+   "rating": "B",
+   "producer": "rerun/paper1_res/bow_pass1.py",
+   "files": [
+    "bow_closure.pdf"
+   ],
+   "src": "rerun/paper1_res/figures/bow_closure.pdf"
+  },
+  {
+   "section": "3_model",
+   "name": "model_slides_diagrams",
+   "caption": "NOT copied (inline SVG): slides \"From a track to the strip waveforms in six steps\", \"Drift\", \"Y: RC line\", \"Electronics template\". Extract from cloud_basics/make_model_deck.py when redrawing the forward-model diagram.",
+   "basis": "schematic 2026-10-21",
+   "rating": "A (as diagrams)",
+   "producer": "sps_beam_test_26/analysis/cloud_basics/make_model_deck.py",
+   "files": [],
+   "src": "published note mx17-detector-model-slides"
+  },
+  {
+   "section": "3_model",
+   "name": "v_vs_E_gas",
+   "caption": "det3 forward-fit v(E) against refined Magboltz grids (Paper I gas topic; shows v comes from the fit, not a prior).",
+   "basis": "rnd 2026-07-26",
+   "rating": "C",
+   "producer": "waveform_first_threading/20_vE_figure.py",
+   "files": [
+    "v_vs_E_gas.png"
+   ],
+   "src": "mx_june_cosmic_qa/waveform_first_threading/report/main.pdf (embedded image 006; standalone PNG no longer on disk)"
+  },
+  {
+   "section": "4_floor",
+   "name": "floor_vs_angle_det3",
+   "caption": "det3 s68 vs angle: information limit 0.18\u00b0, noise-only 0.01\u00b0, perfect model 0.34\u00b0, 60 ns bins degrade past 20\u00b0, 20 ns flat; measured ~1\u00b0 on top.",
+   "basis": "toy 2026-10-27, bench",
+   "rating": "A",
+   "producer": "rerun/model_audit/ws_floor/make_figure.py",
+   "files": [
+    "floor_vs_angle_det3.png"
+   ],
+   "src": "rerun/model_audit/ws_floor/figures/floor_vs_angle_det3.png"
+  },
+  {
+   "section": "4_floor",
+   "name": "floor_breakdown_det3",
+   "caption": "One-effect-off breakdown at 5/20/35\u00b0: without diffusion 0.02\u20130.09\u00b0, so diffusion is the floor; noise negligible.",
+   "basis": "toy 2026-10-27",
+   "rating": "A",
+   "producer": "ws_floor/make_figure.py",
+   "files": [
+    "floor_breakdown_det3.png"
+   ],
+   "src": "rerun/model_audit/ws_floor/figures/floor_breakdown_det3.png"
+  },
+  {
+   "section": "4_floor",
+   "name": "floor_fleet",
+   "caption": "Floor vs measured X/Y for all five chambers (measured = pre-pass-1 audit tables).",
+   "basis": "toy 2026-10-27",
+   "rating": "B",
+   "producer": "ws_floor/make_figure.py",
+   "files": [
+    "floor_fleet.png"
+   ],
+   "src": "rerun/model_audit/ws_floor/figures/floor_fleet.png"
+  },
+  {
+   "section": "4_floor",
+   "name": "floor_bias_grid_det3",
+   "caption": "The 60 ns charge grid reads steep tracks too shallow (\u22120.23/\u22120.51\u00b0 at 30/40\u00b0); 20 ns is flat.",
+   "basis": "toy 2026-10-27",
+   "rating": "A",
+   "producer": "ws_floor/make_figure.py",
+   "files": [
+    "floor_bias_grid_det3.png"
+   ],
+   "src": "rerun/model_audit/ws_floor/figures/floor_bias_grid_det3.png"
+  },
+  {
+   "section": "4_floor",
+   "name": "angle_floor_deck",
+   "caption": "NOT copied (inline SVG): the 60 ns jump mechanism, realism ladder (31\u201346 % of measured), \"47\u201375 % of the variance is in nothing we simulated\". Producer: rerun/model_audit/followups/fd_floor_realism/make_floor_deck.py.",
+   "basis": "toy + pass1 refresh 2026-11-03",
+   "rating": "B",
+   "producer": "fd_floor_realism/make_floor_deck.py",
+   "files": [],
+   "src": "published note mx17-angle-floor"
+  },
+  {
+   "section": "5_hits_vs_waveforms",
+   "name": "fleet_H0_vs_W",
+   "caption": "Five chambers, same interior_good events: H0 hits vs W waveforms. Angle s68 (H0 2.0\u20132.6\u00b0 vs W 0.73\u20131.56\u00b0), position core \u03c3, efficiency within 5 mm. The only H0-vs-W figure on pass 1.",
+   "basis": "pass1 2026-10-31",
+   "rating": "A",
+   "producer": "rerun/paper1_floor/hits_arm.py",
+   "files": [
+    "fleet_H0_vs_W.pdf"
+   ],
+   "src": "rerun/paper1_floor/figures/fleet.pdf"
+  },
+  {
+   "section": "5_hits_vs_waveforms",
+   "name": "three_way_comparison",
+   "caption": "Per-event angle residual histograms and cumulative max line deviation over 29 mm, same 2000 det3 events: production ladder vs SOTA hybrid vs forward fit. July prototype of the tier table.",
+   "basis": "rnd 2026-07-26",
+   "rating": "A (flagship layout; remake with the H0\u2026W tiers on pass 1)",
+   "producer": "waveform_first_threading/09_three_way.py",
+   "files": [
+    "three_way_comparison.png"
+   ],
+   "src": "mx_june_cosmic_qa/waveform_first_threading/report/main.pdf (embedded image 004; standalone PNG no longer on disk)"
+  },
+  {
+   "section": "5_hits_vs_waveforms",
+   "name": "hybrid_angle_resolution",
+   "caption": "Hybrid (hits + unsharing) angular resolution vs angle and its head-on blind spot. SUPERSEDED; baseline for H1/H2 only.",
+   "basis": "hits 2026-07-18, superseded",
+   "rating": "C",
+   "producer": "engineer_package/make_hybrid_figures.py",
+   "files": [
+    "hybrid_angle_resolution.pdf"
+   ],
+   "src": "mx_june_cosmic_qa/stephan_cosmics/figures/16-det3A-hybrid-angular-resolution-vs-angle.pdf"
+  },
+  {
+   "section": "5_hits_vs_waveforms",
+   "name": "tier_diagram_note",
+   "caption": "NOT copied (inline SVG): slide \"Four hit tiers against the waveform fit, on the same events\" (H0/H1/H2a/H2b/H2c/W/V diagram). Reusable diagram; bars are July numbers.",
+   "basis": "rnd 2026-07",
+   "rating": "B",
+   "producer": "mx_june_cosmic_qa/make_paper_plan_deck.py",
+   "files": [],
+   "src": "published note mx17-detector-paper-status"
+  },
+  {
+   "section": "7_known_angle",
+   "name": "known_angle",
+   "caption": "det4 at 25.4\u00b0: inclined-view |tan| against the stage angle, three v treatments. 0.981 \u00b1 0.03 of the stage tan with the column-duration v (13 rows), 0.927 with the registry v.",
+   "basis": "pass1 2026-11-01",
+   "rating": "A",
+   "producer": "rerun/paper1_spsfigs/make_figs.py --only known_angle",
+   "files": [
+    "known_angle.pdf"
+   ],
+   "src": "rerun/paper1_spsfigs/figures/known_angle.pdf"
+  },
+  {
+   "section": "7_known_angle",
+   "name": "sps_resolution",
+   "caption": "det4 SPS residuals X/Y, 3-zone decomposition (Paper I figure; an intrinsic-resolution anchor for the telescope-free comparison).",
+   "basis": "pass1 2026-11-01",
+   "rating": "B",
+   "producer": "rerun/paper1_spsfigs/make_figs.py --only sps_resolution",
+   "files": [
+    "sps_resolution.pdf"
+   ],
+   "src": "rerun/paper1_spsfigs/figures/sps_resolution.pdf"
+  },
+  {
+   "section": "8_fleet",
+   "name": "tracking_perf_all",
+   "caption": "\u03c3\u03b8 vs |\u03b8_ref| per chamber, X solid/Y dashed: det3 0.87\u20131.0\u00b0 flat to 20\u00b0, det2 1.0\u20131.15\u00b0, det4 up to 2.9\u00b0.",
+   "basis": "pass1 2026-11-04",
+   "rating": "A",
+   "producer": "rerun/paper1_res/angle_resolution.py",
+   "files": [
+    "tracking_perf_all.pdf"
+   ],
+   "src": "rerun/paper1_res/figures/tracking_perf_all.pdf"
+  },
+  {
+   "section": "8_fleet",
+   "name": "angle_resolution",
+   "caption": "Angle resolution per calibration row.",
+   "basis": "pass1 2026-11-04",
+   "rating": "B",
+   "producer": "rerun/paper1_res/angle_resolution.py",
+   "files": [
+    "angle_resolution.pdf"
+   ],
+   "src": "rerun/paper1_res/figures/angle_resolution.pdf"
+  },
+  {
+   "section": "8_fleet",
+   "name": "bench_position_res",
+   "caption": "Bench position \u03c3 vs M3: core \u03c3 vs reference \u03c7\u00b2 and vs assumed pointing.",
+   "basis": "pass1 2026-11-04",
+   "rating": "B",
+   "producer": "rerun/paper1_floor/position_ms_fig.py",
+   "files": [
+    "bench_position_res.pdf"
+   ],
+   "src": "rerun/paper1_floor/figures/bench_position_res.pdf"
+  },
+  {
+   "section": "0_context",
+   "name": "microtpc_principle",
+   "caption": "Micro-TPC principle schematic (also Paper I).",
+   "basis": "schematic 2026-07-12",
+   "rating": "B",
+   "producer": "engineer_package",
+   "files": [
+    "microtpc_principle.pdf"
+   ],
+   "src": "mx_june_cosmic_qa/stephan_cosmics/figures/02-microtpc-principle-schematic.pdf"
+  },
+  {
+   "section": "0_context",
+   "name": "det3_loss_displays",
+   "caption": "Pass-1 waveform event displays by loss class (Paper I appendix): how to read a strip \u00d7 time display; seeder failure classes.",
+   "basis": "pass1 2026-10-31",
+   "rating": "B",
+   "producer": "rerun/paper1_figs/a1_displays.py",
+   "files": [
+    "det3_loss_displays.pdf"
+   ],
+   "src": "papers/paper1/figures/loss_gallery.pdf"
+  },
+  {
+   "section": "0_context",
+   "name": "xwidth_note",
+   "caption": "NOT copied (inline SVG, 15): the X-width excess: saturation, det3 remainder, closure toy. The model's main known mismatch.",
+   "basis": "rnd 2026-10-17",
+   "rating": "C",
+   "producer": "sps_beam_test_26/analysis/cloud_basics/make_xwidth_deck.py",
+   "files": [],
+   "src": "published note x-width-excess"
+  },
+  {
+   "section": "9_gaps",
+   "name": "ladder_compression_fleet",
+   "caption": "Ladder compression on pass 1 for all five chambers, with CFD / peak / leading-edge / matched-filter estimators and the implied-v-vs-angle line. det3 July exists only inside the report PDF.",
+   "basis": "",
+   "rating": "",
+   "producer": "manifest placeholder ladder_compression; R1",
+   "files": [],
+   "src": "None"
+  },
+  {
+   "section": "9_gaps",
+   "name": "forward_model_diagram",
+   "caption": "A forward-model diagram on the production (physical RC) model. mpgd26 share_cartoon/share_build exist only embedded in the talk note and use the R&D kernel.",
+   "basis": "",
+   "rating": "",
+   "producer": "mpgd26/make_share.py --only cartoon|build; cloud_basics model deck",
+   "files": [],
+   "src": "None"
+  },
+  {
+   "section": "9_gaps",
+   "name": "toy_floor_production",
+   "caption": "Floor/toy closure figure in paper style on pass 1 (ws_floor is the content; the manifest note \"electronics 0.02\u00b0, centroid jitter ~1\u00b0\" was WITHDRAWN 2026-10-27).",
+   "basis": "",
+   "rating": "",
+   "producer": "rerun/model_audit/ws_floor",
+   "files": [],
+   "src": "None"
+  },
+  {
+   "section": "9_gaps",
+   "name": "tiers_H1_H2abc",
+   "caption": "Tiers H1 (best per-strip estimator), H2a (slope remap), H2b (unsharing hybrid), H2c (forward fit on hit lists) on pass 1. Nothing computed; H2c is new work (R3).",
+   "basis": "",
+   "rating": "",
+   "producer": "R1\u2013R3, R5",
+   "files": [],
+   "src": "None"
+  },
+  {
+   "section": "9_gaps",
+   "name": "v_flatness_bias_vs_angle",
+   "caption": "Bias and implied-v vs angle, H0 vs W, on pass 1 (hits_arm.py has the H0 data; only s68, position, efficiency are plotted).",
+   "basis": "",
+   "rating": "",
+   "producer": "rerun/paper1_floor/hits_arm.py",
+   "files": [],
+   "src": "None"
+  },
+  {
+   "section": "9_gaps",
+   "name": "threshold_neighbours",
+   "caption": "Angular resolution vs hit threshold (3\u20137\u03c3) and \u00b11/\u00b12 neighbour readout, amplitude on/off (R4). No data; VMM emulation (V1) deferred.",
+   "basis": "",
+   "rating": "",
+   "producer": "R4",
+   "files": [],
+   "src": "None"
+  },
+  {
+   "section": "9_gaps",
+   "name": "known_angle_geometry",
+   "caption": "A real schematic of the rotated det4 in the beam. The manifest PNG is a Y-view bar chart. Mount angle quoted as 25.4/25.6/25.64\u00b0 in different places.",
+   "basis": "",
+   "rating": "",
+   "producer": "mpgd26/scenes_sps.py is a candidate",
+   "files": [],
+   "src": "None"
+  },
+  {
+   "section": "9_gaps",
+   "name": "seeder_performance_pass1",
+   "caption": "Seeder performance on pass 1 (the min-3 result and the 2-strip head-on rule exist only as note slides from 10-07 and 10-28).",
+   "basis": "",
+   "rating": "",
+   "producer": "two-track-limit and det3-loss-categories notes",
+   "files": [],
+   "src": "None"
+  },
+  {
+   "section": "9_gaps",
+   "name": "x_asymmetry_figure",
+   "caption": "X asymmetry (the symmetric model's main known mismatch): measured one-sided \u00b11 copy 0.13\u00d7, 114 ns late; cost \u22120.05\u00b0 overall, \u22130.19\u00b0 head-on. Numbers only (wft/xasym_maps.json).",
+   "basis": "",
+   "rating": "",
+   "producer": "cloud_basics/xasym_toy.py",
+   "files": [],
+   "src": "None"
+  }
+ ]
+}
