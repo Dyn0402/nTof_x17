@@ -12,7 +12,7 @@ set -eo pipefail
 echo "START $(date '+%F %T') host $(hostname)"
 # Lock venv (2026-10-21), not the LCG_105 view: same numpy/scipy/matplotlib pins as the desktop.
 unset PYTHONPATH
-source /eos/user/d/dneff/venvs/ntof-lock-cvmfs/bin/activate
+export PATH=$(/afs/cern.ch/user/d/dneff/bin/lockpy --prefix)/bin:$PATH  # lock venv staged into scratch (rerun/condor/lockpy)
 python3 -c "import numpy,scipy,matplotlib;print('numpy',numpy.__version__,
 'scipy',scipy.__version__,'matplotlib',matplotlib.__version__)"
 

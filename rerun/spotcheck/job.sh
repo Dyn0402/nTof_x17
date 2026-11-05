@@ -6,7 +6,7 @@ OUT=/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/spotcheck/decoded
 mkdir -p $OUT
 set +u; source /cvmfs/sft.cern.ch/lcg/views/LCG_110/x86_64-el9-gcc14-opt/setup.sh >/dev/null 2>&1; set -u
 DEC=$HOME/x17rerun/mm_strip_reconstruction/build/decoder/decode
-PY=/eos/user/d/dneff/venvs/ntof-lock-cvmfs/bin/python
+PY=/afs/cern.ch/user/d/dneff/bin/lockpy
 W=${_CONDOR_SCRATCH_DIR:-/tmp/$USER}/w; mkdir -p $W; cd $W
 for F in ${FEUS//./ }; do
   F2=$(printf %02d $F)

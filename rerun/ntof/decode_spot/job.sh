@@ -11,7 +11,7 @@ OUT=/eos/experiment/ntof/data/x17/july_beam/Analysis_pass1/checks/decode_spot
 for k in 1 2 3; do mkdir -p $OUT 2>/dev/null; [ -d $OUT ] && break; sleep 5; done
 set +u; source /cvmfs/sft.cern.ch/lcg/views/LCG_110/x86_64-el9-gcc14-opt/setup.sh >/dev/null 2>&1; set -u
 DEC=$HOME/x17rerun/mm_strip_reconstruction/build/decoder/decode
-PY=/eos/user/d/dneff/venvs/ntof-lock-cvmfs/bin/python
+PY=/afs/cern.ch/user/d/dneff/bin/lockpy
 TOOLS=$HOME/x17rerun/ntof/decode_spot
 W=${_CONDOR_SCRATCH_DIR:-/tmp/$USER}/ds_${RUN}_${TAG}; mkdir -p $W; cd $W
 # AFS times out under many parallel jobs (11-02, 'decode: Connection timed out'): copy the tools to scratch first

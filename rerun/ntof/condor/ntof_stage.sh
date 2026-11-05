@@ -4,7 +4,7 @@
 #  - stages from EOS only what the arm reads: run_config.json, the arm's two FEU files of this acquisition from
 #    decoded_root_fa80c06 (staged as decoded_root, rerun/inputs.py rule) and its rr1_cm0 combined hits (as
 #    combined_hits_root);
-#  - runs rerun/ntof/ntof_reco.py from the frozen code archive with the lock venv;
+#  - runs rerun/ntof/ntof_reco.py from the frozen code archive with the lock venv, staged into scratch by ~/bin/lockpy;
 #  - copies <out>/<run>_<subrun>_<tag>_<arm>.{parquet,candidates.parquet,splits.parquet,meta.json} to EOS and
 #    leaves nothing large in the scratch dir (condor copies it back to AFS otherwise).
 set -u
@@ -27,7 +27,7 @@ h=$(ls $EOSR/run_$RUN/$SUB/combined_hits_root_rr1_cm0/*_datrun_${TAG}_feu-combin
 cpr $h $SD/combined_hits_root/ || exit 2
 cpr -r $BUNDLE/. $W/bundle/ || exit 2
 NAME=run_${RUN}_${SUB}_${TAG}_$ARM
-env -u PYTHONPATH -u PYTHONHOME /eos/user/d/dneff/venvs/ntof-lock-cvmfs/bin/python $CODE/rerun/ntof/ntof_reco.py \
+/afs/cern.ch/user/d/dneff/bin/lockpy $CODE/rerun/ntof/ntof_reco.py \
   --run $RUN --subrun $SUB --arm $ARM --tag $TAG --bundle $W/bundle --out $W/out/$NAME.parquet --base $W/runs \
   --jobs ${NTOF_JOBS:-4} "$@"
 rc=$?

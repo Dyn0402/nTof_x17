@@ -9,7 +9,7 @@ export MPLBACKEND=Agg
 # the reconstruction takes no settings: the column guard and the pivot start are part of wft since 2026-10-27
 # (a study passes WFT_DIAG and stage_job.py --diag; wft/diag.py)
 W=${_CONDOR_SCRATCH_DIR:-/tmp/$USER/stage_$$}; mkdir -p $W
-env -u PYTHONPATH -u PYTHONHOME /eos/user/d/dneff/venvs/ntof-lock-cvmfs/bin/python $CODE/rerun/stage_job.py --work $W "$@"
+/afs/cern.ch/user/d/dneff/bin/lockpy $CODE/rerun/stage_job.py --work $W "$@"
 rc=$?
 # condor copies whatever is left in the scratch dir back to AFS: leave nothing large behind
 rm -rf $W/bench $W/Analysis

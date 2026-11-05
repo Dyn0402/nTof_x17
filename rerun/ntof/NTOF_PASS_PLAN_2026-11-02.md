@@ -501,8 +501,9 @@ A failing arm is held, as on the bench.
   `run_<r>_<sub>_<tag>_<arm>.{parquet,candidates,splits,meta}` to EOS. Full scope = 15,748 jobs. Dry run (code
   `89478e52`, run_145 + run_149, A + C, 300 events per tag): 4 / 4 ok, and the condor output is **bit-identical** to the
   desktop on the same acquisition (582 / 582 candidates, every field). Caveat: the χ²/dof quality-flag median is per
-  table, so per acquisition (~10³ tracks) rather than per sub-run. Known flake: EOS FUSE I/O errors loading the lock
-  venv's scipy `.so` files on a few jobs (Q7 cluster); `max_retries 2` covers it, and the ledger must check presence.
+  table, so per acquisition (~10³ tracks) rather than per sub-run. Former flake, FIXED 11-05: EOS FUSE I/O errors importing the lock
+  venv (~half of job starts in clusters 4618427-30, hidden by `max_retries 2`); `ntof_stage.sh` now runs
+  `~/bin/lockpy`, which stages the venv into scratch (`rerun/condor/lockpy`). The ledger must still check presence.
 - **P2 channel layer done** (`rerun/ntof/channel_layer/`, README + report.html): eight masks, (A, B, C, D) × (E1 = before
   the 27 July access, E2 = after); registry column `mask_era`; `ntof_bundle.py --mask-era`. Dead x/y E2: A 1/35,
   B 8/24, C 38/21, D 154/61 (+ D hot 20/21). The bench lists carry poorly (A's bench mask is bench-electronics; C-x

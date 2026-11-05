@@ -5,7 +5,7 @@ KIND=$1; K=$2
 source /cvmfs/sft.cern.ch/lcg/views/LCG_110/x86_64-el9-gcc14-opt/setup.sh >/dev/null 2>&1
 C=$HOME/x17rerun/paper1_spsfigs/code
 export WFT_REPO=$C MPLBACKEND=Agg PYTHONDONTWRITEBYTECODE=1
-PY="env -u PYTHONPATH -u PYTHONHOME /eos/user/d/dneff/venvs/ntof-lock-cvmfs/bin/python"
+PY="/afs/cern.ch/user/d/dneff/bin/lockpy"
 W=${_CONDOR_SCRATCH_DIR:-/tmp/dneff_spsfigs_$K}; mkdir -p $W/out
 O=/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/paper1_spsfigs/$KIND/$K; mkdir -p $O
 if [ "$KIND" = kernel ]; then

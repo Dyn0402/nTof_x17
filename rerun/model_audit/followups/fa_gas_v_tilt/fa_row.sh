@@ -12,7 +12,7 @@ set +u; source /cvmfs/sft.cern.ch/lcg/views/LCG_110/x86_64-el9-gcc14-opt/setup.s
 export RERUN_CODE_COMMIT=$(basename $CODE | sed 's/^code_//') MPLBACKEND=Agg
 export WFT_RND_DIR=/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/regression/wft_model_sat_det3
 W=${_CONDOR_SCRATCH_DIR:-/tmp/$USER/fa_$$}; mkdir -p $W
-PY="env -u PYTHONPATH -u PYTHONHOME /eos/user/d/dneff/venvs/ntof-lock-cvmfs/bin/python $CODE/rerun/stage_job.py --work $W --eos-analysis $EOSA"
+PY="/afs/cern.ch/user/d/dneff/bin/lockpy $CODE/rerun/stage_job.py --work $W --eos-analysis $EOSA"
 FA=rerun/model_audit/followups/fa_gas_v_tilt
 LIM=""; [ "$LIMIT" != "0" ] && LIM="--limit $LIMIT"
 rc=0

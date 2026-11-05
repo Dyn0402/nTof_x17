@@ -1,7 +1,7 @@
 #!/bin/bash
 # timing_job.sh <code dir> <first line> <count> -- run timing_row.py on lines first..first+count-1 of jobs.txt.
 CODE=$1; FIRST=$2; COUNT=$3
-PY="env -u PYTHONPATH -u PYTHONHOME /eos/user/d/dneff/venvs/ntof-lock-cvmfs/bin/python"
+PY="/afs/cern.ch/user/d/dneff/bin/lockpy"
 OUT=/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/paper1_timing/rows
 mkdir -p "$OUT"
 rc=0

@@ -20,7 +20,7 @@ SH = '''#!/bin/bash
 CODE=$1; shift
 set +u; source /cvmfs/sft.cern.ch/lcg/views/LCG_110/x86_64-el9-gcc14-opt/setup.sh >/dev/null 2>&1
 export WFT_REPO=$CODE MPLBACKEND=Agg WFT_COL_GUARD=0.01 WFT_RC_T0_INTERP=1
-env -u PYTHONPATH -u PYTHONHOME /eos/user/d/dneff/venvs/ntof-lock-cvmfs/bin/python $CODE/rerun/model_audit/ws_t0/t0_scan.py "$@"
+/afs/cern.ch/user/d/dneff/bin/lockpy $CODE/rerun/model_audit/ws_t0/t0_scan.py "$@"
 '''
 SUB = '''executable     = $ENV(HOME)/x17rerun/audit_t0/run_t0scan.sh
 arguments      = $(code) $(args)

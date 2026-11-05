@@ -5,5 +5,5 @@ set +u; source /cvmfs/sft.cern.ch/lcg/views/LCG_110/x86_64-el9-gcc14-opt/setup.s
 export RERUN_CODE_COMMIT=$(basename $CODE | sed 's/^code_//') WFT_REPO=$CODE MPLBACKEND=Agg
 # no WFT_* settings: the column guard and the pivot start are part of wft (wft/diag.py)
 W=${_CONDOR_SCRATCH_DIR:-/tmp/$USER/sps_$$}; mkdir -p $W
-env -u PYTHONPATH -u PYTHONHOME /eos/user/d/dneff/venvs/ntof-lock-cvmfs/bin/python $CODE/rerun/model_audit/sps_reco.py $KEY --out $OUT --work $W "$@"
+/afs/cern.ch/user/d/dneff/bin/lockpy $CODE/rerun/model_audit/sps_reco.py $KEY --out $OUT --work $W "$@"
 rc=$?; rm -f $W/sps_cache_*.pkl; exit $rc

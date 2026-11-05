@@ -1,0 +1,51 @@
+#!/bin/bash
+# lockpy [python args...] -- run the lock venv's python (ntof-lock-cvmfs) in a condor job WITHOUT importing it off EOS FUSE.
+#
+# Why: the venv is 14,140 files on /eos/user. Hundreds of jobs importing numpy/scipy/pandas/pyarrow through the workers'
+# EOS FUSE mount at once get "OSError: [Errno 5] Input/output error" / "cannot read file data: Input/output error" on
+# .py and .so files (and status 126 when the read fails on the interpreter itself). n_TOF pre-freeze 11-05 (clusters
+# 4618427-30): 947 job starts for ~380 jobs, i.e. about half of all attempts died importing the venv; max_retries hid it.
+#
+# What it does inside a job ($_CONDOR_SCRATCH_DIR set): xrdcp the venv tarball once per job (xrootd, not FUSE), check its
+# sha256, unpack it into the scratch dir, then exec that local python. Same bytes, same python (bin/python links to the
+# LCG_110 Python on CVMFS), so results are identical to the FUSE venv. Several lockpy calls in one job share one copy.
+# Outside condor (interactive lxplus) it runs the EOS venv directly, which is fine at that load.
+#
+# Master copy: nTof_x17/rerun/condor/lockpy.  Deploy:  scp rerun/condor/lockpy lxplus:bin/lockpy
+# Call it as  /afs/cern.ch/user/d/dneff/bin/lockpy script.py ...  (never /eos/user/d/dneff/venvs/ntof-lock-cvmfs/bin/python
+# or .../bin/activate in a job).  `lockpy --prefix` stages and prints the venv dir instead, for wrappers that need a
+# `python3` on PATH:  export PATH=$(/afs/cern.ch/user/d/dneff/bin/lockpy --prefix)/bin:$PATH
+# If the venv is ever rebuilt, re-pack the tarball:  rerun/condor/pack_lock_venv.sh  (on lxplus).
+VENV=/eos/user/d/dneff/venvs/ntof-lock-cvmfs
+TGZ=root://eosuser.cern.ch/$VENV.tgz
+SUM=$VENV.tgz.sha256
+unset PYTHONPATH PYTHONHOME
+
+PREFIX=""; [ "${1:-}" = "--prefix" ] && { PREFIX=1; shift; }
+if [ -z "${_CONDOR_SCRATCH_DIR:-}" ] || [ -n "${LOCKPY_FUSE:-}" ]; then
+  [ -n "$PREFIX" ] && { echo $VENV; exit 0; }
+  exec $VENV/bin/python "$@"
+fi
+
+D=$_CONDOR_SCRATCH_DIR/.lockpy          # a subdirectory: condor never transfers directories back to the submit dir
+L=$D/ntof-lock-cvmfs
+mkdir -p $D
+(
+  flock 9
+  [ -f $D/ok ] && exit 0
+  want=""
+  for k in 1 2 3 4 5; do
+    [ -n "$want" ] || want=$(cut -d' ' -f1 $SUM 2>/dev/null)
+    if [ -n "$want" ] && xrdcp -s -f $TGZ $D/v.tgz 2>>$D/log \
+       && [ "$(sha256sum $D/v.tgz | cut -d' ' -f1)" = "$want" ] \
+       && rm -rf $L && tar -xzf $D/v.tgz -C $D 2>>$D/log \
+       && $L/bin/python -c 'import numpy, scipy, pandas, pyarrow' 2>>$D/log; then
+      rm -f $D/v.tgz; touch $D/ok; exit 0
+    fi
+    echo "lockpy: staging attempt $k failed on $(hostname)" >&2
+    rm -f $D/v.tgz; sleep $((20*k))
+  done
+  exit 1
+) 9>$D/lock || { echo "lockpy: could not stage the lock venv on $(hostname); see $D/log" >&2; cat $D/log >&2; exit 75; }
+[ -n "$PREFIX" ] && { echo $L; exit 0; }
+exec $L/bin/python "$@"

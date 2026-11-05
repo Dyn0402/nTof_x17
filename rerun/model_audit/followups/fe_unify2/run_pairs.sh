@@ -7,7 +7,7 @@ export WFT_BEAM_BASE=/eos/experiment/ntof/data/x17/july_beam/runs/ X17_RUNS=/eos
 export X17_ROOT=/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/followups/fe X17_SEPT26_OUT=/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/followups/fe/pairs
 export MPLBACKEND=Agg
 cd $CODE
-PY="env -u PYTHONPATH -u PYTHONHOME /eos/user/d/dneff/venvs/ntof-lock-cvmfs/bin/python"
+PY="/afs/cern.ch/user/d/dneff/bin/lockpy"
 WO=""; [ "$1" != "-" ] && WO="--worker-opt $1"
 $PY -m sept26_prelim_analysis.intra_bench build --jobs 16 --variant $VAR $WO && \
 $PY -m sept26_prelim_analysis.intra_bench derive --variant $VAR

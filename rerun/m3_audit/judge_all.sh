@@ -4,7 +4,7 @@ SPEC=$1; TAG=$2
 B=/eos/experiment/ntof/data/x17/cosmic_bench/june_tests
 O=/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/m3_audit/judge_$TAG; mkdir -p $O
 set +u; source /cvmfs/sft.cern.ch/lcg/views/LCG_110/x86_64-el9-gcc14-opt/setup.sh >/dev/null 2>&1
-PY="env -u PYTHONPATH -u PYTHONHOME /eos/user/d/dneff/venvs/ntof-lock-cvmfs/bin/python"
+PY="/afs/cern.ch/user/d/dneff/bin/lockpy"
 cd ~/x17rerun/judge
 while read run sub tags dets; do
   for d in ${dets//,/ }; do

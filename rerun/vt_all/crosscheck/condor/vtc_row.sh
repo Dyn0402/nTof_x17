@@ -13,7 +13,7 @@ C2=/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/s4_inputs/code_75287c0
 set +u; source /cvmfs/sft.cern.ch/lcg/views/LCG_110/x86_64-el9-gcc14-opt/setup.sh >/dev/null 2>&1
 export MPLBACKEND=Agg
 W=${_CONDOR_SCRATCH_DIR:-/tmp/$USER/vtc_$$}; mkdir -p $W
-PYX="env -u PYTHONPATH -u PYTHONHOME /eos/user/d/dneff/venvs/ntof-lock-cvmfs/bin/python"
+PYX="/afs/cern.ch/user/d/dneff/bin/lockpy"
 RERUN_CODE_COMMIT=b5a29af $PYX $C1/rerun/stage_job.py --work $W --eos-analysis $EOSA $KEY --parts run_config,m3,decoded \
     --script rerun/model_audit/followups/fa_gas_v_tilt/colsum.py -- --bundle $P1/calib_bundle --out {out}/fa/colsum.npz --jobs 8
 rc1=$?

@@ -12,7 +12,7 @@ for k in 1 2 3; do mkdir -p $DOUT $AOUT 2>/dev/null; [ -d $DOUT ] && [ -d $AOUT 
 if [ -s $AOUT/$FB.done ] && [ -s $DOUT/$FB.root ]; then echo "done already"; exit 0; fi
 source /cvmfs/sft.cern.ch/lcg/views/LCG_110/x86_64-el9-gcc14-opt/setup.sh >/dev/null 2>&1
 DEC=$HOME/x17rerun/mm_strip_reconstruction/build/decoder/decode
-PY=/eos/user/d/dneff/venvs/ntof-lock-cvmfs/bin/python
+PY=/afs/cern.ch/user/d/dneff/bin/lockpy
 W=${_CONDOR_SCRATCH_DIR:-/tmp/$USER}/w_$FB; mkdir -p $W; cd $W
 cp $FDF in.fdf || exit 1
 $DEC in.fdf $FB.root > dec.log 2>&1 || { echo "decode failed"; tail -20 dec.log; cp dec.log $AOUT/$FB.log; rm -rf $W; exit 1; }

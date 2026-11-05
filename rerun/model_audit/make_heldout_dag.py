@@ -42,7 +42,7 @@ if [ "$ENVSPEC" != "-" ]; then for kv in ${ENVSPEC//,/ }; do export "$kv"; done;
 set +u; source /cvmfs/sft.cern.ch/lcg/views/LCG_110/x86_64-el9-gcc14-opt/setup.sh >/dev/null 2>&1
 export WFT_REPO=$CODE MPLBACKEND=Agg
 export WFT_COL_GUARD=${WFT_COL_GUARD:-0.01}
-env -u PYTHONPATH -u PYTHONHOME /eos/user/d/dneff/venvs/ntof-lock-cvmfs/bin/python $CODE/rerun/model_audit/heldout_arm.py "$@"
+/afs/cern.ch/user/d/dneff/bin/lockpy $CODE/rerun/model_audit/heldout_arm.py "$@"
 '''
 SUB = '''executable     = $ENV(HOME)/x17rerun/audit/run_heldout.sh
 arguments      = $(code) $(env) $(args)

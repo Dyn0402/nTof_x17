@@ -6,4 +6,4 @@ source /cvmfs/sft.cern.ch/lcg/views/LCG_110/x86_64-el9-gcc14-opt/setup.sh >/dev/
 export WFT_REPO=/eos/user/d/dneff/offload/x17rerun_code/code_48244778 PYTHONDONTWRITEBYTECODE=1
 O=/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/paper1_timing/sps; mkdir -p $O
 [ -s $O/$K.npz ] && { echo "done $K"; exit 0; }
-env -u PYTHONPATH -u PYTHONHOME /eos/user/d/dneff/venvs/ntof-lock-cvmfs/bin/python $CODE/rerun/paper1_timing/sps_edge.py $K --out $O/$K.npz
+/afs/cern.ch/user/d/dneff/bin/lockpy $CODE/rerun/paper1_timing/sps_edge.py $K --out $O/$K.npz

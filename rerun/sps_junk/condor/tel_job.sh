@@ -8,7 +8,7 @@ W=${_CONDOR_SCRATCH_DIR:-/tmp/dneff_tel_${TAG}_$G}; mkdir -p $W
 O=/eos/user/d/dneff/x17rerun/sps_junk/tel; mkdir -p $O
 A="--run $RUN --subrun $SUB --group $G --feu3-dir $F3 --nsamp $NS --qmin $QMIN --out $W/${TAG}_$G.parquet --work $W --jobs 8"
 [ "$KEYS" != "-" ] && A="$A --key $KEYS"
-env -u PYTHONPATH -u PYTHONHOME /eos/user/d/dneff/venvs/ntof-lock-cvmfs/bin/python $CODE/rerun/sps_audit/tel_job.py $A || exit 1
+/afs/cern.ch/user/d/dneff/bin/lockpy $CODE/rerun/sps_audit/tel_job.py $A || exit 1
 cp $W/${TAG}_$G.parquet $O/ || exit 1
 [ -f $W/${TAG}_${G}_hits.npz ] && cp $W/${TAG}_${G}_hits.npz $O/
 rm -f $W/*.parquet $W/*.npz $W/*.pkl

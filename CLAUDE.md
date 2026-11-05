@@ -83,6 +83,11 @@ position, and write that fact next to the constant. Frame, conventions and the e
 - Bench data: `/media/dylan/data/x17/cosmic_bench` (mirror at
   `~/x17/cosmic_bench`); waveforms in `<run>/<subrun>/decoded_root`.
 - venv is `.venv` (`../../.venv/bin/python` from a subdirectory).
+- **On condor, run the lock venv through `/afs/cern.ch/user/d/dneff/bin/lockpy`**, never
+  `/eos/user/d/dneff/venvs/ntof-lock-cvmfs/bin/python` or its `activate`: importing the venv off EOS FUSE is what the
+  "usual EOS read errors" were (Errno 5 / status 126; ~half of n_TOF job starts on 11-05). `lockpy` stages a checksummed
+  tarball into the scratch dir; master and why in `rerun/condor/lockpy`. After rebuilding the venv, run
+  `rerun/condor/pack_lock_venv.sh`. A job failure rate is a bug to explain, not "the usual".
 
 ## Two n_TOF conditions that will silently bias an analysis
 

@@ -12,7 +12,7 @@ RUN=$1
 echo "START $(date '+%F %T') host $(hostname) scratch=$_CONDOR_SCRATCH_DIR"
 # Lock venv (2026-10-21), not the LCG_105 view. Tested on run224401: same caches and calib JSON as LCG_105.
 unset PYTHONPATH
-source /eos/user/d/dneff/venvs/ntof-lock-cvmfs/bin/activate
+export PATH=$(/afs/cern.ch/user/d/dneff/bin/lockpy --prefix)/bin:$PATH  # lock venv staged into scratch (rerun/condor/lockpy)
 python3 -c "import numpy,uproot;print('numpy',numpy.__version__,'uproot',uproot.__version__)"
 
 # Copy the official file to node-local scratch (fast NVMe) via xrootd.

@@ -3,4 +3,4 @@
 # the lock venv, reading the frozen code archive.  Writes only to EOS (its --out); leaves nothing in the scratch dir.
 CODE=$1; shift; S=$1; shift
 export RES_CODE=$CODE MPLBACKEND=Agg PYTHONDONTWRITEBYTECODE=1
-env -u PYTHONPATH -u PYTHONHOME /eos/user/d/dneff/venvs/ntof-lock-cvmfs/bin/python $CODE/rerun/paper1_res/$S "$@"
+/afs/cern.ch/user/d/dneff/bin/lockpy $CODE/rerun/paper1_res/$S "$@"

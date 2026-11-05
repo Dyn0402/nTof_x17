@@ -5,7 +5,7 @@ set +u; source /cvmfs/sft.cern.ch/lcg/views/LCG_110/x86_64-el9-gcc14-opt/setup.s
 export WFT_REPO=$CODE MPLBACKEND=Agg PYTHONDONTWRITEBYTECODE=1
 W=${_CONDOR_SCRATCH_DIR:-/tmp/dneff_telgain_$TAG}; mkdir -p $W
 O=/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/paper1_ops/tel_gain; mkdir -p $O
-env -u PYTHONPATH -u PYTHONHOME /eos/user/d/dneff/venvs/ntof-lock-cvmfs/bin/python $CODE/rerun/paper1_ops/tel_gain.py \
+/afs/cern.ch/user/d/dneff/bin/lockpy $CODE/rerun/paper1_ops/tel_gain.py \
     --run $RUN --subrun $SUB --keys $KEYS --out $W/$TAG.parquet || exit 1
 cp $W/$TAG.parquet $O/ || exit 1
 rm -f $W/*.parquet

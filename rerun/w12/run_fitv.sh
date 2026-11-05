@@ -5,7 +5,7 @@
 set -eu
 CODE=$1; REL=$2; SRC=$3; K=$4; SUBD=$5; AROOT=${6:-/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_rr1}
 set +u; source /cvmfs/sft.cern.ch/lcg/views/LCG_110/x86_64-el9-gcc14-opt/setup.sh >/dev/null 2>&1; set -u
-PY="env -u PYTHONPATH -u PYTHONHOME /eos/user/d/dneff/venvs/ntof-lock-cvmfs/bin/python"
+PY="/afs/cern.ch/user/d/dneff/bin/lockpy"
 export WFT_COL_GUARD=${WFT_COL_GUARD:-0.01}
 A=$AROOT/$REL/wft
 O=$A/$SUBD; mkdir -p $O

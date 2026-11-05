@@ -4,7 +4,7 @@
 G=$1
 source /cvmfs/sft.cern.ch/lcg/views/LCG_110/x86_64-el9-gcc14-opt/setup.sh >/dev/null 2>&1
 export WFT_REPO=/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/sps_audit/code MPLBACKEND=Agg PYTHONDONTWRITEBYTECODE=1
-PY="env -u PYTHONPATH -u PYTHONHOME /eos/user/d/dneff/venvs/ntof-lock-cvmfs/bin/python"
+PY="/afs/cern.ch/user/d/dneff/bin/lockpy"
 R=/eos/experiment/ntof/data/x17/p2_sps_july/runs/run_71/cfg_gain4.5_peaktime50/raw_daq_data
 O=/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/sps_audit; mkdir -p $O/scan_v2 $O/tel
 FB=EicP2Bt_cfg_gain4.5_peaktime50_datrun_260803_05H22_${G}_01

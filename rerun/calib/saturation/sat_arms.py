@@ -65,7 +65,7 @@ set +u; source /cvmfs/sft.cern.ch/lcg/views/LCG_110/x86_64-el9-gcc14-opt/setup.s
 export WFT_REPO=$CODE MPLBACKEND=Agg WFT_COL_GUARD=0.01
 if [ "$DIAG" != "none" ]; then export WFT_DIAG=$DIAG; fi
 echo "WFT_DIAG=$WFT_DIAG"
-env -u PYTHONPATH -u PYTHONHOME /eos/user/d/dneff/venvs/ntof-lock-cvmfs/bin/python $CODE/rerun/model_audit/heldout_arm.py "$@"
+/afs/cern.ch/user/d/dneff/bin/lockpy $CODE/rerun/model_audit/heldout_arm.py "$@"
 '''
 SUB = '''executable     = run_sat.sh
 arguments      = $(code) $(diag) $(args)

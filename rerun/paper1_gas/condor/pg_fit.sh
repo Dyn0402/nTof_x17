@@ -4,7 +4,7 @@
 CODE=$1; OUT=$2
 set +u; source /cvmfs/sft.cern.ch/lcg/views/LCG_110/x86_64-el9-gcc14-opt/setup.sh >/dev/null 2>&1
 export MPLBACKEND=Agg XW_MIN_EV=50
-PY="env -u PYTHONPATH -u PYTHONHOME /eos/user/d/dneff/venvs/ntof-lock-cvmfs/bin/python"
+PY="/afs/cern.ch/user/d/dneff/bin/lockpy"
 mkdir -p $OUT
 $PY $CODE/rerun/paper1_gas/pg_specs.py $OUT || exit 1
 for s in $OUT/spec_T*.json; do

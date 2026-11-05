@@ -6,7 +6,7 @@
 set -eu
 CODE=$1; DET=$2; REL=$3; CM=$4; TAG=$5; MODE=$6; FREE=$7; K=${8:-}
 set +u; source /cvmfs/sft.cern.ch/lcg/views/LCG_110/x86_64-el9-gcc14-opt/setup.sh >/dev/null 2>&1; set -u
-PY="env -u PYTHONPATH -u PYTHONHOME /eos/user/d/dneff/venvs/ntof-lock-cvmfs/bin/python"
+PY="/afs/cern.ch/user/d/dneff/bin/lockpy"
 A=/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_rr1/$REL/wft/w11
 O=$A/${TAG}_$CM; mkdir -p $O
 W=${_CONDOR_SCRATCH_DIR:-/tmp/$USER}/w11_$$; mkdir -p $W; cd $W

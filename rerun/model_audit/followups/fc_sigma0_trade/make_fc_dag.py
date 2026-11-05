@@ -35,7 +35,7 @@ CODE=$1; SCRIPT=$2; shift 2
 set +u; source /cvmfs/sft.cern.ch/lcg/views/LCG_110/x86_64-el9-gcc14-opt/setup.sh >/dev/null 2>&1
 export WFT_REPO=$CODE MPLBACKEND=Agg
 cd $_CONDOR_SCRATCH_DIR 2>/dev/null || cd /tmp
-env -u PYTHONPATH -u PYTHONHOME /eos/user/d/dneff/venvs/ntof-lock-cvmfs/bin/python $CODE/$SCRIPT "$@"
+/afs/cern.ch/user/d/dneff/bin/lockpy $CODE/$SCRIPT "$@"
 '''
 SUB = '''executable     = $ENV(HOME)/x17rerun/fc/run_fc.sh
 arguments      = $(code) $(script) $(args)
