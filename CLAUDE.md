@@ -13,11 +13,15 @@ so and write it down as a stated limitation.
 
 **Never reconstruct position, angle or drift depth from `combined_hits` times.**
 
-On these resistive-strip detectors a per-strip hit time is an *aggregate* of the
-strip's own charge and delayed, dispersed copies of its neighbours' (~29 % at
-τ ≈ 47 ns to ±1 strip). It compresses the drift-time ladder by 20–30 %, reads
-~4° too steep, and makes the reconstructed cluster fan away from the true track
-with depth. This is estimator-independent — rising edge, CFD and matched filter
+A per-strip hit time is an *aggregate* of charge from several drift depths: drift
+diffusion and the prompt footprint mix neighbouring depths onto each strip (any
+µTPC, metallic too), and on the Y view the RC spreading along the resistive strips
+adds to it (X has none). It compresses the drift-time ladder by 20–30 % (det3 vs
+M3: X 1.19, Y 1.37), reads ~2–4° too steep, and makes the reconstructed cluster
+fan away from the true track with depth. The pass model reproduces it; a metallic
+readout would keep most of it (P0, 2026-11-05:
+`papers/paper2/hits_daq/P0_XBIAS_2026-11-05.md`). Never describe it as "29 %
+delayed copies at 47 ns": that was the retired copy kernel's effective fit. This is estimator-independent — rising edge, CFD and matched filter
 all show it — so no threshold change fixes it. Measured, with displays, in
 `RECONSTRUCTION_BASIS.md`; decided 2026-07-28.
 

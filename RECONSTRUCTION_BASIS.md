@@ -17,20 +17,34 @@ here rather than restating it.**
 
 ## Why — the measurement
 
-The MX17 strips are resistive and capacitively coupled. Each strip's waveform is
-its own charge plus **~29 % of each ±1 neighbour delayed by τ ≈ 47 ns** and
-~5 % of each ±2 neighbour at 2τ (det3 numbers; kY = 1.375 stronger on Y, and
-det4's kernel differs — the kernel is per detector).
+**Mechanism (revised 2026-11-05, `papers/paper2/hits_daq/P0_XBIAS_2026-11-05.md`).** A single time per strip
+reads a strip whose waveform holds charge from *several drift depths*. Three things put it there:
 
-Consequently:
+1. **drift diffusion** (Magboltz-consistent D_T; up to ~0.8 mm at the cathode on a 0.78 mm pitch) — present in any
+   µTPC, metallic or resistive;
+2. **the prompt footprint** σ0 (avalanche ⊕ induction through the resistive layer and insulator ⊕ the 550 µm
+   resistive-strip box; 0.30 mm in the model against a ~0.07 mm induction floor);
+3. **RC spreading along the resistive strips**, which grows after landing (rc_D_y 2–7e-4 mm²/ns) and therefore
+   moves charge across the strips of the **Y view only**; across them (X) there is none (`rc_D_x = 0`).
 
-- a strip near the **mesh** (its charge arrives early) also receives *late*
-  copies from neighbours further up the gap → its single hit time is pulled
-  **later**;
-- a strip near the **cathode** (charge arrives late) receives *early* copies from
-  neighbours nearer the mesh → its time is pulled **earlier**.
+With the pass kernel and real events, hits emulated on the model windows reproduce the data's hit-ladder compression
+(det3 X 1.21 vs 1.18 data, Y 1.43 vs 1.37; det2, det7 alike; det4 over-predicted). Switching ingredients off:
 
-Both ends squeeze inward: the time ladder is compressed by **20–30 %**, which at
+| det3 | full model | metallic (σ0 0.07, no RC, diffusion kept) | diffusion off | all off |
+|---|---|---|---|---|
+| X | 1.21 | 1.17 | 1.09 | 1.04 |
+| Y | 1.43 | 1.22 | 1.25 | 1.05 |
+
+So **most of the bias is generic same-time mixing — diffusion compounded by the footprint — and a metallic readout in
+the same gas would keep most of it; the resistive RC spreading roughly doubles the excess, on Y only.** X is
+effectively a metallic readout in this design. The 2026-07 wording, "29 % of each ±1 neighbour delayed by τ ≈ 47 ns"
+(det3, kY = 1.375 on Y), was the fitted *copy kernel* of the R&D model: an effective description that lumps all three
+effects, retired with that kernel. Do not quote it as the mechanism.
+
+Why the ladder compresses: a leading-edge (or peak) time is pulled toward the earliest substantial charge on the
+strip. Deep charge is the most diffused, so the strips near the cathode see earlier charge from shallower
+neighbours and are pulled earlier; strips near the mesh see little mixing (and, through RC on Y, later charge).
+The time ladder is compressed by **20–30 %** (hits against M3, det3: X 1.19, Y 1.37), which at
 a fixed drift velocity reads as a track **~4° too steep**, and every strip lands
 at the wrong depth. Measured on 600 det3 muons (`THREADING_DISPLAYS_2026-07-28.md`),
 charge-weighted median |cluster − M3 reference line| against drift depth:
@@ -73,8 +87,11 @@ kernels.
 borrowing, but the ingredients are twenty years old — Dixit et al. (2004) for
 charge dispersion on a resistive anode, Galan et al. (2012) for the
 resistive-strip transmission line, and the T2K ND280 ERAM analysis (Attié et
-al., 2023) for the simultaneous multi-channel waveform fit, which is the closest
-published method to ours. Credit them in any write-up; the part to claim is
+al., 2023) for a multi-channel waveform model of resistive charge sharing (leading pad = electronics response,
+neighbours = that response convolved with the RC dispersion) -- but used there to **map RC**, with positions from the
+pad response at the waveform maximum, not as a per-event reconstruction (`papers/paper2/hits_daq/DAQ_SURVEY.md`,
+2026-11-05; the earlier "simultaneous multi-channel waveform fit, the closest published method" overstated it).
+Credit them in any write-up; the part to claim is
 solving the drift-depth profile inside the fit, which is what turns a sharpened
 centroid into a micro-TPC. The µTPC literature this section argues against is
 the ATLAS NSW resistive-strip work — cite it as the foil.
