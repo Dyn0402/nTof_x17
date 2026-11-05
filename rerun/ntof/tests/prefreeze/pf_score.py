@@ -13,6 +13,7 @@ Sets (make_ntof_jobs.py --per-row; bundles make_pf_bundles.sh):
   cospin   the same runs minus 149; A B C D; pinned (cosmic latency)
   samples  runs 79, 81 (E1), 116, 162; first sub-run, every tag; A B C D; pinned (beam latency; D its cosmic one)
   ng1      run_145 (all 24 tags) beam + run_149 cos_0000-0011 cosmic; A B C D; pinned per trigger class
+  twosided run_149 cos_0000-0011, A C, as ng1 with WFT_DIAG=reco.TWO_SIDED=1 (mirror-basin check R6; condor 4618430)
 """
 import glob
 import json
@@ -35,6 +36,7 @@ EOSR = '/eos/experiment/ntof/data/x17/july_beam/runs'
 IS2 = '/eos/experiment/ntof/data/x17/analysis/sept26_fullpass_is2_v2'
 W = os.path.join(os.environ.get('WORK_DATA', '/media/ucla/work'), 'ntof_pass1', 'prefreeze')
 OUT = os.path.join(W, 'results')
+os.makedirs(OUT, exist_ok=True)
 REG = pd.read_csv(os.path.join(NT, 'ntof_registry.csv'))
 rng = np.random.default_rng(11)
 
@@ -45,7 +47,7 @@ def sh(cmd):
 
 def pull():
     os.makedirs(W, exist_ok=True)
-    for s in ('lat', 'cospin', 'samples', 'ng1'):
+    for s in ('lat', 'cospin', 'samples', 'ng1', 'twosided'):
         sh(f"ssh lxplus 'cd {EOS} && tar -cf - {s}' | tar -x -C {W}")
     runs = sorted({int(p.split('run_')[1].split('/')[0]) for p in glob.glob(f'{W}/*/run_*/')} | {145, 149})
     os.makedirs(f'{W}/rc', exist_ok=True)
@@ -158,7 +160,7 @@ def res68_all(M, s):
 def line():
     rows = []
     jobs = [('cospin', r, None) for r in (80, 89, 103, 119, 133, 159)] + \
-           [('lat', r, None) for r in (80, 89, 103, 119, 133, 149, 159)] + [('ng1', 149, None)]
+           [('lat', r, None) for r in (80, 89, 103, 119, 133, 149, 159)] + [('ng1', 149, None), ('twosided', 149, None)]
     for s, run, subs in jobs:
         o, M = line_one(s, run, subs)
         if o is None:
@@ -172,6 +174,9 @@ def line():
                 row[f'{arm}{v}_n'] = o[f'{arm}{v}']['n_kw']
         rows.append(row)
         print(json.dumps({k: (round(v, 4) if isinstance(v, float) else v) for k, v in row.items()}))
+        if run == 149 and s in ('ng1', 'twosided'):        # mirror check (R6): steep-line bins, one- vs two-sided
+            pd.DataFrame(o['bins']).assign(set=s).to_csv(f'{OUT}/line_bins_149_{s}.csv', index=False)
+            M.to_parquet(f'{OUT}/lines_149_{s}.parquet')
     R = pd.DataFrame(rows)
     os.makedirs(OUT, exist_ok=True)
     R.to_csv(f'{OUT}/line_by_run.csv', index=False)
