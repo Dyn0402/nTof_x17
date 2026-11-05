@@ -33,6 +33,8 @@ def main():
     ap.add_argument('--part', default='0/1')
     ap.add_argument('--nmax', type=int, default=0)
     ap.add_argument('--nsig', type=float, default=5.0)
+    ap.add_argument('--qmode', default='amp', choices=('amp', 'uniform'))
+    ap.add_argument('--lam', type=float, default=3.0)
     ap.add_argument('--on-model', action='store_true', help='closure: fit the hits of the pass model window M (truth = W)')
     a = ap.parse_args()
     ip, npart = (int(x) for x in a.part.split('/'))
@@ -56,7 +58,7 @@ def main():
     ref = load_ref(a.ref) if a.ref else {}
     fams = a.families.split(',')
     ideal = {v: E.Ideal(wm.TGRID, wm.TMPL[v], meta['nsamp']) for v in 'xy'}
-    fit = {(v, f): H2C(wm, hyper, v, f, a.gap, meta['v_drift'], K, nsig=a.nsig, ideal=ideal[v]) for v in 'xy' for f in fams}
+    fit = {(v, f): H2C(wm, hyper, v, f, a.gap, meta['v_drift'], K, nsig=a.nsig, ideal=ideal[v], qmode=a.qmode, lam=a.lam) for v in 'xy' for f in fams}
     for (v, f), h in fit.items():
         h.learn_offsets([p for p in planes if p['view'] == v], n=200)
     sel = [p for i, p in enumerate(planes) if i % npart == ip and (not ref or (p['event_id'], p['view']) in ref)]
