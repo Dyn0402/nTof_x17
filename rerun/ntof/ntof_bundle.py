@@ -156,7 +156,7 @@ def main():
     ap.add_argument('--t0-sigma', type=float, default=5.0)
     ap.add_argument('--kw', default=None, help='in-situ kw "x,y" (replaces the bench kw)')
     ap.add_argument('--tan-max', type=float, default=None, help='candidate |tan| limit for this dataset (registry tan_max)')
-    ap.add_argument('--mask-era', default=None, choices=MASK_ERAS,
+    ap.add_argument('--mask-era', required=True, choices=MASK_ERAS,
                     help='n_TOF channel layer of this registry mask_era (replaces the bench dead list); required for the pass')
     ap.add_argument('--dp', type=float, default=None, help='n_TOF 90/10 Dp (replaces the bench 95/5 value)')
     a = ap.parse_args()
