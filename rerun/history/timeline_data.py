@@ -313,6 +313,16 @@ LESSONS = [
      'rerun/calib/saturation/DECISION_2026-10-29.md; model.py docstring; REPROCESSING_TODO §D', 'lim'),
     ('2026-10-28', 'process', 'Every calibration from scratch, templates included; no audit intermediates.',
      'new calibration phase in the pass DAG (PASS_PLAN §2)', 'open'),
+    ('2026-11-05', 'process', 'The "usual EOS read errors" were not a flake: condor jobs imported the 14k-file lock venv '
+     'through the workers\' EOS FUSE mount, and about half of all job starts died (Errno 5 / cannot read file data / '
+     'status 126; clusters 4618427-30: 947 starts for ~380 jobs). max_retries hid it for a week.',
+     'every job runs ~/bin/lockpy (rerun/condor/lockpy: sha256-checked tarball staged into scratch, byte-identical '
+     'output); a PreToolUse hook and an lxplus condor_submit shim refuse EOS-FUSE software (claude-skills); '
+     'rerun/condor/README.md', 'chain'),
+    ('2026-11-05', 'process', 'n_TOF reco output is not bit-reproducible across condor worker nodes: the same job on two '
+     'nodes differs in the last digits (angles ~1e-5 deg, positions ~1e-6 mm; error columns of near-singular fits much '
+     'more). Same node: byte-identical. The earlier "bit-identical to the desktop" was the same hardware.',
+     'compare pass outputs with a tolerance, never by bytes (rerun/condor/README.md)', 'doc'),
 ]
 
 # (claimed, claim, corrected, by what)

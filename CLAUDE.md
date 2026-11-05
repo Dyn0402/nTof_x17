@@ -86,8 +86,10 @@ position, and write that fact next to the constant. Frame, conventions and the e
 - **On condor, run the lock venv through `/afs/cern.ch/user/d/dneff/bin/lockpy`**, never
   `/eos/user/d/dneff/venvs/ntof-lock-cvmfs/bin/python` or its `activate`: importing the venv off EOS FUSE is what the
   "usual EOS read errors" were (Errno 5 / status 126; ~half of n_TOF job starts on 11-05). `lockpy` stages a checksummed
-  tarball into the scratch dir; master and why in `rerun/condor/lockpy`. After rebuilding the venv, run
-  `rerun/condor/pack_lock_venv.sh`. A job failure rate is a bug to explain, not "the usual".
+  tarball into the scratch dir. Finding, checks and the guards (a PreToolUse hook and an lxplus `condor_submit` shim
+  that refuse EOS-FUSE software): `rerun/condor/README.md`. After rebuilding the venv, run
+  `rerun/condor/pack_lock_venv.sh`. A job failure rate is a bug to explain, not "the usual". Pass outputs differ
+  in the last digits between worker nodes: compare with a tolerance, never by bytes.
 
 ## Two n_TOF conditions that will silently bias an analysis
 

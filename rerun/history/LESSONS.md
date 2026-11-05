@@ -4,7 +4,7 @@
 
 Status: **in the chain** = built into the code / registry by default; **downstream step** = a step after the pass (S3-S6): no refit needed; **open: tonight** = not yet in the chain: a step of PASS_PLAN_2026-10-28; **fixed today** = was left behind; fixed while compiling this; **stated limitation** = cannot be answered from existing data; **rule / record** = a rule or decision that lives in a document; **superseded** = replaced by a later lesson.
 
-117 lessons: 63 in the chain, 18 downstream step, 14 open: tonight, 4 stated limitation, 14 rule / record, 4 superseded.
+119 lessons: 64 in the chain, 18 downstream step, 14 open: tonight, 4 stated limitation, 15 rule / record, 4 superseded.
 
 ## Before the bench (2025-11-27 → 2026-06-14)
 
@@ -147,6 +147,8 @@ Status: **in the chain** = built into the code / registry by default; **downstre
 | 2026-10-29 | Detector model & kernel | Clipping all samples >= ~1200 ADC (SAT_CAP) helps the ANGLE (det3 X -0.06 on clean tracks) but costs the CHARGE (x-y charge sigma 0.054 -> 0.072, pairing power down): bright samples are mis-modelled, not uninformative. | not adopted: the simple model is locked (DECISION_2026-10-29.md) | rule / record |
 | 2026-10-29 | Detector model & kernel | The held-out plane-fit harness cannot pass a likelihood change alone: the bright-sample cap wins there on all 14 datasets, but in the full reconstruction it loses det6 0.8 pt and det7 1.6 pt of efficiency (clipped near-vertical columns refit as steep lines in seeded windows). And a fix can flip sign with the drift field: the per-strip amplitude nuisance is neutral at 1000 V, +0.20 deg at det3 500 V. | recipe not adopted (ERROR_MODEL.md "Decision"); every model change now goes through held-out on det3 500/700 V + 6-25 + 6-28 (make_satfin_dag.py) AND the full-reco gate (make_gate_dag.py) before adoption | rule / record |
 | 2026-10-29 | Detector model & kernel | The simple model is locked (Dylan): noise-only weights, 3550 clip rule, one static footprint, no cap, no per-event width, no shape term, no rails. Capping and a width per event are not physically convincing; the measured cost is ~0.05 deg on det3 (5 % of s68) and nothing in charge or efficiency. Nine known simplifications (bright-sample over-trust, centre-strip under-fill 5-11 %, saturated planes +0.2-0.3 deg, the 3550 rule, F4 compression) are carried as stated limitations. | rerun/calib/saturation/DECISION_2026-10-29.md; model.py docstring; REPROCESSING_TODO §D | stated limitation |
+| 2026-11-05 | Process & provenance | The "usual EOS read errors" were not a flake: condor jobs imported the 14k-file lock venv through the workers' EOS FUSE mount, and about half of all job starts died (Errno 5 / cannot read file data / status 126; clusters 4618427-30: 947 starts for ~380 jobs). max_retries hid it for a week. | every job runs ~/bin/lockpy (rerun/condor/lockpy: sha256-checked tarball staged into scratch, byte-identical output); a PreToolUse hook and an lxplus condor_submit shim refuse EOS-FUSE software (claude-skills); rerun/condor/README.md | in the chain |
+| 2026-11-05 | Process & provenance | n_TOF reco output is not bit-reproducible across condor worker nodes: the same job on two nodes differs in the last digits (angles ~1e-5 deg, positions ~1e-6 mm; error columns of near-singular fits much more). Same node: byte-identical. The earlier "bit-identical to the desktop" was the same hardware. | compare pass outputs with a tolerance, never by bytes (rerun/condor/README.md) | rule / record |
 
 ## Claims that were wrong, and what corrected them
 
