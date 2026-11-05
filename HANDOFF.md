@@ -64,7 +64,7 @@ redeployed (dylan-cern-site 91d4386). Inputs on the desktop: $WORK_DATA/claude-j
 - Deck: `WORK_DATA=~/work_data .venv/bin/python papers/paper1/make_figures_deck.py --out <html>` then
   `dylan-cern-site/scripts/add-note.py <html> --slug mx17-paper1-figures --force --deploy`.
 
-## n_TOF pass 1: reprocess the n_TOF tracks on the final chain — updated 2026-11-04 (dylan-MS-7C84)
+## n_TOF pass 1: reprocess the n_TOF tracks on the final chain — updated 2026-11-05 (dylan-MS-7C84)
 
 **Resume:** every pre-freeze decision made; next: build the pass bundles, a pinned-t0 check of Q7, then N-G1 and submit.
 
@@ -118,6 +118,8 @@ n_TOF lesson in code or registry. Plan, decisions and every result: `rerun/ntof/
 - Don't `pkill -f` a pattern that matches your own shell's command line (killed my batch twice, and an agent's).
 - Subagents can't write `.md` files here: their FINDINGS text came back in the report and was saved by hand.
 - Don't carry cosmic conclusions to beam without a beam check: the t0 latency is the example (beam trigger differs).
+
+**Progress deck (11-05):** https://dylan-neff.web.cern.ch/notes/ntof-pass1-progress.html, built by `rerun/ntof/make_progress_deck.py` (numbers in its DATA block; update after the bundles/N-G1).
 
 **Key files & commands:**
 - Submit: `ssh lxplus 'cd ~/x17rerun/ntof/pass1 && condor_submit ntof.sub code=$HOME/x17rerun/code_<c> jobfile=<f> flavour=workday'`
