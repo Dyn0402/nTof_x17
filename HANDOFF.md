@@ -207,7 +207,7 @@ n_TOF lesson in code or registry. Plan, decisions and every result: `rerun/ntof/
 - At 15:10: lat/cospin/ng1 nearly done, samples 17/200 and twosided 45/72 still running. Many jobs hit EOS FUSE
   I/O errors loading the lock venv (~half of all job starts). Cause: importing the venv off FUSE. Fixed 11-05 (later):
   the deployed `ntof_stage.sh` now runs `~/bin/lockpy`, which stages the venv into scratch (`rerun/condor/lockpy`);
-  retries of these clusters pick it up. 4 / 4 finished jobs of these clusters still failed after `max_retries`.
+  retries of these clusters pick it up. By 15:30, 6 jobs of 4618427-29 had failed for good after `max_retries`: re-submit them.
   **Check presence** before scoring.
 - Job lists: `~/x17rerun/ntof/pass1/s{1_lat,2_cospin,3_samples,4_ng1,5_twosided}.txt` on lxplus.
 
