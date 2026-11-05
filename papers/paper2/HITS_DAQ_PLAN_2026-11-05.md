@@ -4,14 +4,34 @@ Source: Dylan's hub note `archive/Paper II Notes.md` ("Comparison with hits base
 repo did with hits from March to October 2026. Companion to `OUTLINE_PLAN_2026-11-05.md` (this replaces its §6/§7 rows
 and work items R1–R5, V1). No new data: everything below is computation on the stored waveforms or simulation.
 
+## 0. Decisions and status (updated 2026-11-05, after Dylan's review)
+
+- **Chambers:** det3 (chamber A) carries the section, both Paper I runs (`sat_det3` = Run 1, the p2 row = Run 2);
+  det4 at SPS is the reference-free known-angle check. det2/6/7 only where a cross-check is cheap (P0 used them).
+- **Data first.** Arm D is most of the section; Arm S only for what data cannot vary (resistivity, footprint, shaping).
+- **Every tier gets the best reconstruction we can build** (Dylan); naming a real ASIC only where the emulation is
+  faithful to its logic (decided after `hits_daq/DAQ_SURVEY.md`).
+- **P0 done** (`hits_daq/P0_XBIAS_2026-11-05.md`): the X hits bias is real (det3 vs M3: X 1.19, Y 1.37 ladder
+  compression) and the production model reproduces it with no X resistive term. It is same-time mixing — drift
+  diffusion compounded by the prompt footprint — read through one time per strip; a metallic readout keeps most of it
+  (X 1.17, Y 1.22 on det3), and the RC spreading roughly doubles the excess on Y only. The story "hits fail because of
+  resistive sharing" must be widened (Dylan to decide the wording in `RECONSTRUCTION_BASIS.md`).
+- **Survey done** (`hits_daq/DAQ_SURVEY.md`): five hit families exist (below). It also corrects one of our prior-art
+  claims: T2K ERAM takes positions from the pad response at the waveform maximum and fits full waveforms only to map RC,
+  so it is a waveform model of resistive sharing, not a per-event waveform reconstruction.
+- **Running:** Arm D window extraction, det3 both runs, all interior_good events (condor DAG `~/x17rerun/hits_daq/xw.dag`,
+  16 jobs, code `code_hd_217311c5`, output EOS `cosmic_bench/x17rerun/hits_daq/windows/`).
+
 ## 1. What the section has to show
 
 1. A hit readout (one time + one amplitude per strip, VMM-style) reconstructed **naively** reads tracks too steep
-   and depth-wrong, and the bias is set by the sharing physics, not by the hit algorithm.
+   and depth-wrong, and the bias is set by the charge mixing on each strip (drift diffusion and prompt footprint in
+   any µTPC, plus the resistive spreading in the view across the resistive strips — P0), not by the hit algorithm.
 2. The **best corrections we can build on hits alone** shrink the bias but leave a resolution gap to the waveform fit
    (or close it — that is the open result, see H2c).
 3. **How the gap depends on the resistive layer**: as the sharing goes to zero the hits chain approaches a classic
-   µTPC; how far it gets, and what still limits it (prompt footprint, shaping), is the generalisation.
+   µTPC — which P0 shows is itself compressed (metallic 1.17–1.24 against 1.21–1.54 with RC); how far it gets, and what
+   still limits it (diffusion, prompt footprint, shaping), is the generalisation.
 
 Two arms make the claim, and they need each other:
 
@@ -47,39 +67,45 @@ Lessons that constrain the design: never take v from a prior (LESSONS / R9); a h
 fitted on det3 do not transfer (hybrid on beam: slope 0.03–0.10); unsharing works in ensemble but amplifies noise per
 event; the old angle constants were on the 34 µm/ns basis.
 
-## 3. Hit-DAQ variants to emulate (the "V" axis)
+## 3. Hit-DAQ variants to emulate (the "V" codes) — `hits_daq/emulate.py`
 
-Every variant reduces a strip's waveform to at most one (or a few) `(t, A[, ToT])` per strip per event. Same events
-throughout.
+Every variant reduces each strip's waveform to at most one hit `(t, a)` per event. The families are the survey's.
 
-| id | modelled on | time | amplitude | other logic |
+| code | family | time | amplitude (weight) | front-end conditions | real examples (survey) | fair to name? |
+|---|---|---|---|---|---|---|
+| **V0** | DREAM internal (our `combined_hits`, H0's input) | 30 % leading edge of the parabolic peak | parabolic peak | ped + common mode subtracted, boxcar 5-sample gate at 5σ | DREAM + `WaveformAnalyzer.cpp` | yes (it is ours) |
+| **V1** | peak time + peak | time of the pulse maximum | peak | analog: raw − ped (no CM), threshold on the pulse, first pulse only, neighbour enable | VMM3a time-at-peak (its designed mode) | "VMM-like logic at DREAM shaping" |
+| **V2** | threshold time + peak | first threshold crossing | peak | as V1 | VMM3a time-at-threshold; TIGER ToA + E-branch; STS-XYTER | as V1 |
+| **V3** | ToA + ToT | first threshold crossing | time over threshold | as V1, no neighbour enable | TIGER ToT mode; Timepix3 | as V1 |
+| **V4** | sampled + per-strip fit | Fermi-Dirac rising-edge fit, half height | max sample | ped + CM subtracted (as V0) | APV25 (SRS), SAMPA practice | yes for the algorithm (APV25 samples at 25 ns, we at 60) |
+| **V5** | binary | threshold crossing quantised to a 25 ns bunch-crossing clock | none (unweighted) | as V1, no neighbour enable | VFAT3 | "VFAT-like"; included as the floor of the family list |
+| **V6** | ideal single time | per-strip template fit (matched-filter t0) | template amplitude | as V0 | none: the upper bound for one-time-per-strip | – |
+
+Suffix `r` = the robust ladder (iterative 3σ trimming of strips, the role of the Hough step in the NSW / APV chains).
+Sub-sample times come from a monotone cubic upsampling of the 60 ns samples. The DREAM shaping is kept (it cannot be
+undone from 60 ns samples), so V1–V3 and V5 emulate the **logic** of those chips, not their analogue front end;
+their own shaping (VMM 25–200 ns, TIGER 60/170 ns) is an Arm S axis. V0 is validated against the production hits of the
+same strips (extraction stores them). VMM3a numbers used: 10-bit peak ADC, ~250 ns dead time (one hit per channel in a
+1.9 µs window), neighbour enable on (NSW test-beam setting); thresholds 5σ by default, scanned 3–7σ (R4).
+
+## 4. Reconstruction tiers on hits (the "H" codes) — `hits_daq/tiers.py`
+
+Every tier runs on every V family; a result is named `<V code>/<H code>` (e.g. V1/H2a).
+
+| code | what | uses a reference? | uses the kernel? | status |
 |---|---|---|---|---|
-| V0 | DREAM internal (our `combined_hits`, H0) | 30 % leading edge, MF gate 5σ | parabolic peak | none |
-| V1 | VMM, time-at-peak mode | peak time | peak (PDO, 10 bit) | threshold, **neighbour enable** (±1 read below threshold), one hit per channel + dead time |
-| V2 | VMM, time-at-threshold mode | threshold crossing | peak | as V1 |
-| V3 | ToA + ToT ASIC (TIGER-, Timepix-like) | threshold crossing | ToT (no peak) | as V1, no neighbour enable |
-| V4 | ideal per-strip timing (upper bound for any single-time ASIC) | CFD 50 % / template-fit t0 on the full waveform | template amplitude | none |
+| **H-naive** | amplitude-weighted line t(x) through the hits, tan = u / v with v the bundle's calibrated drift velocity | no | no | in `tiers.py` |
+| **H0** | the same line with a global slope remap tan = (u − a)/k, (a, k) from M3 on the other half of the events (event-id parity) — what `hits_arm.py` does | yes | no | in `tiers.py` |
+| **H1** | per family, the best per-strip estimator variant (weighting, robust trimming, first/last-strip drop below 25–50 % of the neighbour, as the APV25 / VMM literature does) chosen on the training half | H0's | no | to build (P3) |
+| **H2a** | angle-dependent remap: tan = f(u), f the binned-median map of tan_ref against u, trained on the other half — the best any slope-only correction can do | yes | no | in `tiers.py` |
+| **H2b′** | hits-only unsharing: deconvolve the hit amplitudes with the kernel, correct each strip time by its neighbours' amplitude-weighted arrival, refit; plus a head-on tagger on hit features (hits6) | no (constants from the kernel) | yes | to build (P4) |
+| **H2c** | forward model through the emulator: generate the window with `build_matrix_rc` from (p0, w, t0, depth profile), apply the same V family, fit the predicted hit list to the observed one (χ² on t and a; strips below threshold censored) | no | yes | to build (P6) |
+| **W** | the pass-1 waveform fit, same planes: tan = (1e3 w − w0)/(kw v) | its calibration (kw, w0 from M3) | yes | in `tiers.py` |
 
-V4 is what a perfect per-strip timer could give; if even V4 + the best correction leaves a gap, the gap is in the
-data format (one time per strip), not in the ASIC.
-
-In Arm D, V1–V3 run at DREAM shaping: the per-strip waveform is upsampled through the measured template (a per-strip
-template fit gives a continuous pulse), then the ASIC logic is applied with VMM-like timing granularity. The VMM's own
-shaping (25–200 ns peaking) cannot be reconstructed from 60 ns samples, so **shaping is an Arm S axis only**. VMM3a
-constants (peaking options, ADC/TDC ranges, dead time, neighbour logic) to be taken from the VMM3a documentation and
-cited, not from memory.
-
-## 4. Reconstruction tiers on hits (the "H" axis)
-
-| tier | what | needs | from |
-|---|---|---|---|
-| **H-naive** | line t(x) through the hits, angle with the **true v** (W's fitted v / Magboltz), earliest hit = position | hits | new, trivial; this is "show the bias" |
-| H0 | as H-naive with a global slope scale k calibrated on a reference (current `hits_arm.py`) | hits + reference | done |
-| H1 | H0 with the best per-strip time per variant (amplitude-weighted, core-only, endpoints) | hits | `22`, `05` |
-| H2a | **angle-dependent** remap: binned tan_meas → tan_true lookup trained on one half, tested on the other; upper bound of any slope-only correction | hits + reference | extends `16` |
-| H2b′ | **hits-only unsharing**: deconvolve amplitudes with the kernel, correct each strip time by its neighbours' amplitude-weighted delay, refit; + head-on tagger on hit features (hits6) | hits + kernel | rewrite of `26`–`28`, `33`, `35` on hit lists (the July version used waveforms, so it was never a hits-only tier) |
-| **H2c** | forward model **through the hit emulator**: per event, generate the waveforms from (x0, tan, t0, q-profile) with `build_matrix_rc`, apply the same V algorithm, and fit the predicted hit list to the observed one (χ² on t and A, censoring for strips below threshold) | hits + kernel + emulator | new (R3) |
-| W | pass-1 waveform fit | waveforms | done |
+Scores (`tiers.py`): d = atan(tan) − atan(tan_ref); s68 over |d| ≤ 5° with the fraction inside 5° (tails),
+**steep** = median of d·sign(tan_ref) (> 0 = too steep: the compression, which a plain median cancels between
+signs), per |tan_ref| bin; implied v = slope of u against tan_ref. The paper-convention s68 (tilt map removed,
+`floorlib`) is applied for the final numbers.
 
 H2c is the fair "best a hit readout can do": it uses all the physics W uses, only the information a hit DAQ keeps.
 If H2c gets close to W, the paper's message becomes "the model is needed, waveforms help"; if not, "the waveform is
