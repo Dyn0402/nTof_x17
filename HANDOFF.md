@@ -1,5 +1,36 @@
 # Handoff
 
+## Paper II: figure collection, outline and plan — updated 2026-11-05 (dylan-MS-7C84)
+
+**Resume:** Paper II figures are collected and a slide note is up; next: Dylan's six decisions, then the ladder-compression figure (R1).
+
+**Goal:** Start Paper II (reconstruction, NIM A): gather every usable figure and metric, outline the paper, plan the missing work.
+
+**Done:**
+- `papers/paper2/collection/` (50 items, 46 files): one folder per section, `INDEX.md`/`index.json` with rating, basis, source, producer. Rebuild: `python3 papers/paper2/collect_figures.py`.
+- `papers/paper2/OUTLINE_PLAN_2026-11-05.md`: ten-section outline, work order, limitations, six decisions.
+- Slide note https://dylan-neff.web.cern.ch/notes/mx17-paper2-collection.html, built by `papers/paper2/make_collection_deck.py` (rerun after the collection changes, then publish with add-note.py `--slug mx17-paper2-collection --force --deploy`).
+
+**In progress / where it stopped:**
+- Nothing half-done. The `.tex` skeleton and `figures.toml` are untouched on purpose.
+
+**Next steps:**
+1. Dylan answers the decisions: H2c in scope? merge 7 into 6 and 8 into 9? headline chambers? floor in II or I? 60 ns bin bias paragraph? mount angle 25.4/25.6/25.64.
+2. R1: ladder compression on pass 1, five chambers, four estimators (start from `rerun/paper1_floor/hits_arm.py` and `waveform_first_threading/05_estimator_compare.py`).
+3. Then R2, R3 (H2c), R5, R4; forward-model and known-angle diagrams; update the skeleton text with pass-1 numbers.
+
+**Gotchas / decisions:**
+- The "electronics 0.02 deg, ~1 deg centroid jitter" floor claim in the skeleton/manifest was withdrawn 2026-10-27; floor is 0.30-0.35 deg (diffusion), measured 3-6x above it.
+- Skeleton kernel (0.42-0.47) and fleet (1.15-2.51 deg) numbers predate pass 1 (now 0.19 X / 0.26 Y; 0.9-1.5 deg on four chambers).
+- `known_angle_geometry.png` is a Y-view bar chart, not a schematic.
+- The waveform_first PNGs are gone from disk; the July figures were extracted from `report/main.pdf`. Ratings are mine, about a third of images opened.
+- No new data is possible; every open item is computation or simulation.
+
+**Key files & commands:**
+- `papers/paper2/collection/INDEX.md` — the catalogue
+- `papers/paper2/OUTLINE_PLAN_2026-11-05.md` — outline and plan
+- `python3 papers/paper2/make_collection_deck.py` — rebuild the slide note
+
 ## Paper I figures + numbers: feedback round 5, readable draft, feedback-note drafting system — updated 2026-11-04 (dylan-MS-7C84)
 
 **Resume:** Paper I moves to text: Dylan drafts sections in the hub note "Paper I Feedback"; translate on request, do its `- [ ]` items.
