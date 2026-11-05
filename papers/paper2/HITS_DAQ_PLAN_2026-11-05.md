@@ -19,8 +19,13 @@ and work items R1–R5, V1). No new data: everything below is computation on the
 - **Survey done** (`hits_daq/DAQ_SURVEY.md`): five hit families exist (below). It also corrects one of our prior-art
   claims: T2K ERAM takes positions from the pad response at the waveform maximum and fits full waveforms only to map RC,
   so it is a waveform model of resistive sharing, not a per-event waveform reconstruction.
-- **Running:** Arm D window extraction, det3 both runs, all interior_good events (condor DAG `~/x17rerun/hits_daq/xw.dag`,
-  16 jobs, code `code_hd_217311c5`, output EOS `cosmic_bench/x17rerun/hits_daq/windows/`).
+- **Arm D windows done** (det3 Run 1 12,366 planes, Run 2 38,364; EOS `cosmic_bench/x17rerun/hits_daq/windows/`);
+  SPS det4 6 rows running at the 11-05 wrap-up. First H2c numbers and the λ scan: `HANDOFF.md`.
+- **Arm S engine changed** from the g4_digi port to re-simulation on real events (`hits_daq/resim.py`): each plane's
+  own (p0, w, t0, q) regenerated through `model_waveforms` with a modified kernel plus its own fit residual, exact
+  truth; P0 is its validation (the model reproduces the data's hit compression). §6's g4_digi port is not needed.
+- **Open question for the next session (Dylan):** if the mixing exists even on a metallic readout, why does no one
+  else need a waveform fit? Literature review planned (HANDOFF next step 1; Dylan's T2K hypothesis: pads ≫ diffusion).
 
 ## 1. What the section has to show
 

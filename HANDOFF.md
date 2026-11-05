@@ -1,5 +1,85 @@
 # Handoff
 
+## Paper II hits-DAQ comparison (§ hits vs waveforms) — updated 2026-11-05 (dylan-MS-7C84)
+
+**Resume:** start with the literature review (why has no one else hit the same-time-mixing bias?), then V0 validation + analysis DAG.
+
+**Goal:** Paper II's last section: what a hits-only readout (VMM-style, and the other hit families) can achieve against
+the waveform fit, on det3 (both Paper I runs) + det4 SPS known angle, plus a resistivity / pattern / footprint scan by
+re-simulation. Plan and code definitions: `papers/paper2/HITS_DAQ_PLAN_2026-11-05.md` (§0 = decisions and status).
+
+**Done:**
+- Plan (`HITS_DAQ_PLAN`, §3 V codes = hit families, §4 H codes = tiers). Dylan's decisions: det3 headline + det4 SPS;
+  data first, simulation only for what data cannot vary; best reconstruction for every tier; name an ASIC only where
+  the emulation is faithful to its logic.
+- **P0** (`papers/paper2/hits_daq/P0_XBIAS_2026-11-05.md`): the X hits bias is real (det3 vs M3: X 1.19, Y 1.37) and the
+  pass model reproduces it with no X RC: same-time mixing (diffusion + prompt footprint) through one time per strip; a
+  metallic readout keeps most of it (det3 X 1.17, Y 1.22), RC roughly doubles the excess on Y only. **Docs updated**:
+  `RECONSTRUCTION_BASIS.md` mechanism section + `CLAUDE.md` (the "29 % at 47 ns" wording retired); ERAM prior-art
+  claim corrected (ERAM maps RC with a waveform model, positions from the waveform maximum).
+- **Survey** `papers/paper2/hits_daq/DAQ_SURVEY.md` (VMM3a, APV25/SAMPA, TIGER/STS-XYTER, VFAT3/Timepix3, ERAM): five
+  hit families; unverified items listed at its end.
+- **Code** (`papers/paper2/hits_daq/`): `emulate.py` (V0 dream, V1 peak, V2 thr, V3 tot, V4 fd, V5 binary, V6 ideal),
+  `tiers.py` (per-plane table `--table-only`, scoring `--from-tables`: H-naive, H0, H2a + ladder variants r/e/q = robust
+  trim, end-strip drop 50 %/25 %), `h2c.py` + `h2c_run.py` (forward model through the emulator; qmode uniform | amp),
+  `resim.py` (Arm S: W' = M(hyper') + residual on real events, exact truth), `validate_v0.py`, `extract_windows.py`,
+  `sps_extract.py`, `condor/` (ana.sh, sps_xw.sh, make_ana_dag.py).
+- **Arm D windows on EOS** `cosmic_bench/x17rerun/hits_daq/windows/` (293 MB): `sat_det3_p{0..3}of4.pkl` (12,366
+  planes), `p2_det3_p{0..11}of12.pkl` (38,364), with raw ADC, ped, production hits, fit + model; replay closure
+  |dw| < 1e-6 on 99.4–99.9 %. Code `~/x17rerun/code_hd_217311c5`.
+- **H2c λ scan** (det3 Run 1 bootstrap planes, V0, `hits_daq/results/lam_*.parquet` on EOS): s68 within 5° X/Y:
+  uniform 1.53/1.45 (steep −0.87/+0.36), amp λ3 1.68/2.19, λ30 1.53/2.17, λ300 1.37/2.16, λ3000 1.37/2.07 (+0.32/+0.80);
+  W 1.00/0.93; naive V0 ~3.2/4.1 (+2.5/+3.0 too steep); fraction within 5° H2c 0.77–0.86. Closure on model windows with
+  amp q: w 1.005 X / 1.007 Y (uniform q: 0.94/0.92). Locally (600–800 planes): H0 ~2.0°, H2a 1.7–2.3°.
+- **Resim prototype** (300 det3 planes, V0 plane-median u/w on Y): rc0 1.40, base 1.61, rc×5 2.67.
+
+**In progress / where it stopped:**
+- SPS det4 extraction DAG `~/x17rerun/hits_daq/sps.dag` (6 rows: run57 d550–d700, run59_co2, run55 flat d700; code
+  `code_hd_c190e6e1`) was still running at wrap-up → `windows/sps_<key>.pkl`. Check `log/sps_*.out` for `[sps-xw] wrote`.
+- Nothing half-edited. The full analysis DAG (`make_ana_dag.py`) is written but **not submitted**.
+
+**Next steps:**
+1. **Literature review (Dylan's question):** if the same-time-mixing bias exists even on a metallic readout, why does
+   nobody else need a waveform forward fit? Check: (a) ATLAS NSW µTPC (resistive strips, 5 mm gap, VMM): do they see
+   and correct a too-steep bias (capacitive-coupling bias "high" in the survey refs R8/R25), what angle range;
+   (b) BESIII CGEM / GEM µTPC (APV25, metallic, 5 mm): bias vs angle, corrections; (c) T2K ERAM: Dylan's hypothesis —
+   pads (~10 mm) much larger than our 0.78 mm strips, so diffusion (≤ 0.8 mm) mixes little charge across pads, and they
+   do not do µTPC on pads anyway; (d) GridPix/Timepix (55 µm pixels, true 3-D, each pixel one electron-ish): why no
+   mixing (single-electron detection: each hit IS one depth); (e) classic wire/pad TPCs: time from the pulse of a whole
+   track segment with pad ≫ diffusion. Quantify our ratio diffusion σ / pitch (~1 at the cathode) against each
+   experiment's, and the drift-time-per-strip vs shaping ratio. Deliverable: a section in `DAQ_SURVEY.md` (or a new
+   `LITERATURE_MIXING.md`) + a paragraph for the paper's intro. Sonnet agent with web, check its sources.
+2. V0 validation: `validate_v0.py` on a few det3 window files (needs the windows locally: scp from EOS to
+   `$WORK_DATA/paper2_hits/windows/`); emulated V0 must match production hits (presence, time, amplitude).
+3. H2c depth profile: between uniform and amp (try a linear / two-segment q, or the mean profile as a calibration
+   constant); goal remove the residual steep bias and the 15–20 % > 5° tails. Then fix the default in `h2c.py`.
+4. Submit the analysis DAG on lxplus: `python3 ~/x17rerun/<code>/papers/paper2/hits_daq/condor/make_ana_dag.py
+   ~/x17rerun/hits_daq/ana --code ~/x17rerun/<code>` then `condor_submit_dag ana.dag` (deploy a fresh `git archive`
+   first). Score locally: `tiers.py --from-tables`.
+5. SPS: hits u / W w on the 25.4° rows (v-free compression at a known angle); W |tan| vs stage needs the column v.
+6. Then H2b′ (hits-only unsharing; possibly superseded by H2c — decide), Arm S shaping axis (needs a finer time grid
+   in `wft.model`), figures + `make_report.py`.
+
+**Gotchas / decisions:**
+- W tan from w: `tan = (1e3 w − w0) / (kw v)` (wft/calib.py), not kw·w/v + w0.
+- Boot pickles (rerun/paper1_floor/boot_extract.py) are gain-corrected and have no raw; xw pickles are ADC with raw.
+- s68 within ±5° hides hits tails (naive V0 Y keeps only ~38 % within 5°): always report `in5` and `sig_mad`/`s68_full`.
+- "steep" = median d·sign(tan_ref); the plain median cancels between positive and negative angles.
+- SPS rot25 rows are ZS (suppressed samples = 0); no raw ADC, so analog families run on W there. v is uncertain at SPS
+  but hits u / W w is v-free.
+- P2's VMM data on EOS (`p2_sps_july/vmm*`) are another group's detector (pads), not usable for our chambers.
+- rc_D larger = LOWER resistivity (D = 1/(R_s c)).
+- AFS: each `code_hd_*` archive is 684 MB (repo carries data files); quota was 58 % — delete old `code_hd_*` when done.
+
+**Key files & commands:**
+- `papers/paper2/HITS_DAQ_PLAN_2026-11-05.md` — plan, codes, status
+- `papers/paper2/hits_daq/` — all code + P0 note + survey; `results/p0_*.json`
+- `.venv/bin/python papers/paper2/hits_daq/p0_xbias.py <boot pkl> <bundle> --out ...` — P0 (seconds, local)
+- `tiers.py <pkls> --ref <frames parquet> --table-only --out T.parquet`; `tiers.py --from-tables T*.parquet`
+- `h2c_run.py <pkl> --ref <ref> --gap 28.08 --families dream --qmode amp --lam 3000 --out X.parquet`
+- `resim.py <pkl> --variants 'base:,rc0:rc_D_y=0,...' --refit --out X.parquet`
+- local scratch `$WORK_DATA/paper2_hits/` (boot pickles, bundles, prototypes): delete when the study is finished
+
 ## Paper II: figure collection, outline and plan — updated 2026-11-05 (dylan-MS-7C84)
 
 **Resume:** Paper II figures are collected and a slide note is up; next: Dylan's six decisions, then the ladder-compression figure (R1).
