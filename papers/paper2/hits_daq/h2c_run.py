@@ -34,10 +34,11 @@ def main():
     ap.add_argument('--nmax', type=int, default=0)
     ap.add_argument('--nsig', type=float, default=5.0)
     ap.add_argument('--qmode', default='amp', choices=('amp', 'uniform', 'mean', 'ampmean'))
-    ap.add_argument('--lam', type=float, default=3.0)
+    ap.add_argument('--lam', type=float, default=3000.0, help='amp-mode smoothness weight (scan 2026-11-06: 3000)')
     ap.add_argument('--qcal', default='parity', help="mean/ampmean shape: 'parity' = mean normalised waveform-fit q of"
                     " the even event ids (odd ids scored), or an .npz with arrays x and y")
-    ap.add_argument('--t-rise', type=float, default=0.0, help='ns; per-strip time error S_T (+) t_rise noise/a (h2c.py)')
+    ap.add_argument('--t-rise', type=float, default=700.0, help='ns; per-strip time error S_T (+) t_rise noise/a (h2c.py);'
+                    ' 700 chosen 2026-11-06 (results/h2c_trise_sat_det3.json)')
     ap.add_argument('--t-robust', type=float, default=0.0, help='pseudo-Huber scale c of the time pulls (0 = quadratic)')
     ap.add_argument('--odd-only', action='store_true', help='score odd event ids only (as the parity-calibrated modes)')
     ap.add_argument('--model-noise', default='', choices=('', 'white'),

@@ -225,7 +225,11 @@ larger than the diffusion width". That holds for T2K (σ_T/pad 0.11–0.29) but 
 0.6–0.9, as large as ours. The difference there is the estimator and the geometry: a charge-centroid time on a segment
 far from the gap ends, rather than an edge time on strips near the mesh and the cathode. Our ladder compression comes
 largely from the gap ends (the mixing is one-sided there), which a long drift does not have. That last point is ours
-and still needs a check against P0 (compression per depth bin) before it goes into the paper. Quotes spot-checked in
+and was checked against P0 on 2026-11-06 (`p0_depth.py`, `results/p0_depth_sat_det3.json`): mid-column the data
+ladder is compressed only ~4 % (model/metallic 7–8 %); the end bins carry the rest (+84 ns at the mesh end, −65 ns at
+the cathode end). Part of that end bend is geometric, present with no diffusion at all ('point' arm +62 / −44 ns:
+strips past the column end see one-sided charge from their width), so the paper should say "gap ends" without
+attributing all of it to diffusion. Quotes spot-checked in
 `/media/ucla/work/litmix/txt/`: Alexeev 2019 l.412 (diffusion), Bortfeldt arXiv:1508.00802 l.233 (earlier timing
 from cathode electrons), Flierl l.1284 and l.4135 (15 % / 20 % subtraction, 16.99°).
 

@@ -22,6 +22,7 @@ def main():
     ap.add_argument('sets', nargs='+')
     ap.add_argument('--family', default='dream')
     ap.add_argument('--json')
+    ap.add_argument('--bins', action='store_true', help='also print H2c steep per |tan_ref| bin (tiers.TBINS)')
     a = ap.parse_args()
     T = {}
     for s in a.sets:
@@ -43,6 +44,12 @@ def main():
             h = row['H2c']
             print(f'{lab:14s} {v}  n {h["n"]:5d}  W s68 {row["W"]["s68"]:.2f}  H2c s68 {h["s68"]:.2f} '
                   f'steep {h["steep"]:+.2f} bias {h["bias"]:+.2f}  in5 {h["frac_in5"]:.3f}  s68_full {h["s68_full"]:.2f}')
+            if a.bins:
+                full = score(g[f'tan_h2c_{f}'].to_numpy(float), tr)
+                row['H2c_bins'] = {k: d for k, d in full.items() if k != 'all'}
+                print('    |tan| bin steep/s68: ' + '  '.join(
+                    f'{k} {d["steep"]:+.2f}/{d["s68"]:.2f}' for k, d in row['H2c_bins'].items()
+                    if d['n'] > 0 and d['steep'] is not None and d['s68'] is not None))
     if a.json:
         json.dump(out, open(a.json, 'w'), indent=1, default=float)
 

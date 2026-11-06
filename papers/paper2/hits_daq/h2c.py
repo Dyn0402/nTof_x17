@@ -37,8 +37,8 @@ P_MISS = 4.0        # cost of a strip hit in data but not in the model or vice v
 
 
 class H2C:
-    def __init__(self, wm, hyper, view, family, gap_mm, v_um_ns, K, nsig=5.0, ideal=None, qmode='amp', lam=3.0,
-                 qshape=None, t_rise=0.0, t_robust=0.0):
+    def __init__(self, wm, hyper, view, family, gap_mm, v_um_ns, K, nsig=5.0, ideal=None, qmode='amp', lam=3000.0,
+                 qshape=None, t_rise=700.0, t_robust=0.0):
         self.wm, self.hyper, self.view, self.fam = wm, hyper, view, family
         self.qmode, self.lam, self.t_rise, self.t_robust = qmode, lam, t_rise, t_robust
         D2 = np.zeros((max(K - 2, 0), K))
