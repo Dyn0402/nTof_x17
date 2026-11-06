@@ -109,12 +109,15 @@ Run it with `--write` after any change that moves, adds or renames a section or 
 heading moves with it. Notes under a heading that no longer exists (a renamed section) go to a final "Unplaced"
 section, never deleted, and the script names them.
 
-**In the note:** `- [ ]` items are for Claude to do. When one is done, check it off (`- [x]`) and add
+**In the note, Claude acts only on unchecked `- [ ]` items** (Dylan, 2026-11-06). Everything else (plain text,
+drafts, checked `- [x]` items) is left alone until Dylan puts a `- [ ]` on it, e.g. `- [ ] translate 2.1`, so he can
+draft without it being picked up early. Don't translate, act on or "tidy" a draft just because it is there.
+`- [ ]` items are for Claude to do. When one is done, check it off (`- [x]`) and add
 `  > 💬 claude · <date>: …` under it with the details. An unchecked item that already has a 💬 was reopened by Dylan:
 read the line he added and do it again.
 Plain text under a section or subsection heading is Dylan's draft, written however it comes.
 
-**Translating a draft into paper text** (when Dylan asks for a section):
+**Translating a draft into paper text** (when a `- [ ]` item asks for a section):
 1. `overleaf.sh pull paper1` first; don't touch a section with pending tracked changes in Overleaf.
 2. Write the section in `sections/*.tex` from the draft: Dylan's content, order and claims, in paper prose. Add no
    claims of our own. Every number is checked against its source (the result file named in `\sectionstate`, or
