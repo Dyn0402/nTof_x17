@@ -83,8 +83,8 @@ for (za, zb), lab in (((M3_Z[2], M3_Z[3]), 'M3 reference planes\n(2 + 2)'),
     ax.plot([xb - 12, xb, xb, xb - 12], [Y(za), Y(za), Y(zb), Y(zb)], color=ps.INK, lw=LW)
     t = ax.text(XT, Y((za + zb) / 2), lab, ha='left', va='center', fontsize=FS, color=ps.INK, linespacing=1.05)
     t.set_gid(ps.KEEP_GID)
-ax.text(XT - 90, Y(SLOT_Z['top']), 'MX17 (top slot)', color=A_C, fontweight='bold', fontsize=FS, ha='left', va='center')
-ax.text(XT - 90, Y(SLOT_Z['bottom']), 'MX17 (bottom slot)', color=A_C, fontweight='bold', fontsize=FS, ha='left', va='center')
+ax.text(XT - 90, Y(SLOT_Z['top']), 'test chamber (top slot)', color=A_C, fontweight='bold', fontsize=FS, ha='left', va='center')
+ax.text(XT - 90, Y(SLOT_Z['bottom']), 'test chamber (bottom slot)', color=A_C, fontweight='bold', fontsize=FS, ha='left', va='center')
 
 # left column: z ticks and lever arm
 XTK = -285

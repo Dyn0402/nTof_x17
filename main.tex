@@ -12,7 +12,15 @@
 \usepackage{siunitx}
 \usepackage{authblk}
 \usepackage[hidelinks]{hyperref}
-\usepackage{cleveref}
+\usepackage[nameinlink]{cleveref}% the whole "figure 1" is the link
+% JINST/IOP house style: "figure 1", "table 1", "section 2", "appendix A", "equation (1)" in running text, never
+% abbreviated, lower case except at the start of a sentence (\Cref). For capitals everywhere, use \Crefname only.
+\crefname{figure}{figure}{figures}\Crefname{figure}{Figure}{Figures}
+\crefname{table}{table}{tables}\Crefname{table}{Table}{Tables}
+\crefname{section}{section}{sections}\Crefname{section}{Section}{Sections}
+\crefname{subsection}{section}{sections}\Crefname{subsection}{Section}{Sections}
+\crefname{appendix}{appendix}{appendices}\Crefname{appendix}{Appendix}{Appendices}
+\crefname{equation}{equation}{equations}\Crefname{equation}{Equation}{Equations}
 \usepackage[section]{placeins} % figures stay in their own section (no pile-up at the end)
 \usepackage{drafting}
 % Float placement: allow figure-heavy pages, so figures sit next to their text
