@@ -43,6 +43,11 @@ EOS_RUNS = '/eos/experiment/ntof/data/x17/july_beam/runs'
 ACCESS_END = datetime(2026, 7, 27, 14, 11)     # local (CEST) wall time, as the file tags
 A_CM_START = datetime(2026, 7, 21, 0, 0)       # day resolution (pedestal history)
 A_CONN8_START = datetime(2026, 7, 22, 0, 0)    # day resolution (pedestal history)
+# DREAM latency epoch (pre-freeze checks 2026-11-06, rerun/ntof/tests/prefreeze/FINDINGS.md): D's free-t0 cosmic latency
+# steps by ~+35 ns between run_103 (ends 07-29 19:18) and run_105 (starts 07-30 11:49); A and C move +5-10 ns at the
+# same time.  Only run_104 (19:22 -> 11:29, excluded) lies in between: 'unplaced', like run_68 for the noise era.
+LAT_L1_END = datetime(2026, 7, 29, 19, 20)
+LAT_L2_START = datetime(2026, 7, 30, 11, 40)
 CHAMBERS = 'ABCD'
 BENCH = dict(A='det3', B='det2', C='det6', D='det7')
 TAG_RE = re.compile(r'datrun_(\d{6})_(\d{2})H(\d{2})_(\d{3})_(\d{2})')
@@ -145,6 +150,7 @@ def main():
             row['access_epoch'] = 'pre_access_27jul' if tt < ACCESS_END else 'post_access_27jul'
             # n_TOF channel layer era (rerun/ntof/channel_layer/README.md): the 27 July access is the only boundary
             row['mask_era'] = 'E1_pre_access' if row['access_epoch'] == 'pre_access_27jul' else 'E2_post_access'
+            row['lat_epoch'] = 'L1' if tt < LAT_L1_END else ('L2' if tt >= LAT_L2_START else 'unplaced')
             row['a_cm_x3'] = A_CM_START <= tt < ACCESS_END
             row['a_x_conn8_dead'] = A_CONN8_START <= tt < ACCESS_END
             reasons = []
@@ -182,7 +188,7 @@ def main():
                                     acq=('tag', 'size'), dec_TB=('dec_gb', lambda x: round(x.sum() / 1e3, 2))))
     print(reg[reg.excluded][['run', 'subrun', 'tag', 'exclude_reason']].to_string(index=False))
     print('truncated EOS decodes (redecode):', ok[ok.redecode][['run', 'subrun', 'tag', 'dec_fdf_ratio']].to_string(index=False))
-    for col in ('latency', 'n_samples', 'gas', 'noise_era', 'access_epoch', 'mask_era', 'a_x_conn8_dead'):
+    for col in ('latency', 'n_samples', 'gas', 'noise_era', 'access_epoch', 'mask_era', 'lat_epoch', 'a_x_conn8_dead'):
         print(col, ok[col].value_counts(dropna=False).to_dict())
     print('HV sets:', ok.groupby(['resist_A', 'resist_B', 'resist_C', 'resist_D',
                                    'drift_A', 'drift_B', 'drift_C', 'drift_D'], dropna=False).size().to_dict())

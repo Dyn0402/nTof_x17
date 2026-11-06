@@ -15,6 +15,7 @@ Sets (make_ntof_jobs.py --per-row; bundles make_pf_bundles.sh):
   ng1      run_145 (all 24 tags) beam + run_149 cos_0000-0011 cosmic; A B C D; pinned per trigger class
   twosided run_149 cos_0000-0011, A C, as ng1 with WFT_DIAG=reco.TWO_SIDED=1 (mirror-basin check R6; condor 4618430)
   resub    the 37 jobs of 4618427-29 lost to EOS-FUSE venv I/O errors, re-run under lockpy (4620473; s6_resub.txt)
+  samples_dL1  runs 79, 81 first sub-run, D only, pinned on the L1 latency (D_<era>_beam_L1) vs samples' L2 pin (4620578)
   lat fill cosmic runs 105-125, 2 sub-runs, A C D, t0 free: when did D's latency step (4620474; s7_latfill.txt)
 """
 import glob
@@ -49,7 +50,7 @@ def sh(cmd):
 
 def pull():
     os.makedirs(W, exist_ok=True)
-    for s in ('lat', 'cospin', 'samples', 'ng1', 'twosided'):
+    for s in ('lat', 'cospin', 'samples', 'ng1', 'twosided', 'samples_dL1'):
         sh(f"ssh lxplus 'cd {EOS} && tar -cf - {s}' | tar -x -C {W}")
     runs = sorted({int(p.split('run_')[1].split('/')[0]) for p in glob.glob(f'{W}/*/run_*/')} | {145, 149})
     os.makedirs(f'{W}/rc', exist_ok=True)
@@ -231,7 +232,8 @@ def is2_cands(run, sub, tags, arm):
 
 def beam():
     rows = []
-    for s, run in (('samples', 79), ('samples', 81), ('samples', 116), ('samples', 162), ('ng1', 145)):
+    for s, run in (('samples', 79), ('samples', 81), ('samples', 116), ('samples', 162), ('ng1', 145),
+                   ('samples_dL1', 79), ('samples_dL1', 81)):
         for arm in 'ABCD':
             fs = files(s, run, arm)
             if not fs:

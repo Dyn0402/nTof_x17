@@ -314,6 +314,12 @@ A failing arm is held, as on the bench.
   `wreco.TAN_MAX` directly (g4_digi, yield_gate) are overridden by a bundle that sets its own; they must pass
   `--tan-max` into the bundle instead.
 
+- **D latency per epoch (Dylan 11-06: "two latencies for D if it needs it").** It does: D's free-t0 cosmic latency
+  steps ~+35 ns between run_103 (07-29) and run_105 (07-30); only the excluded run_104 lies between. Registry column
+  `lat_epoch` (L1 ≤ run_103, L2 ≥ run_105, `unplaced` run_104). D L1 pin x −17.8 ± 5.4, y −11.2 ± 5.0 ns
+  (`latency_D_L1.json`: the r149 pin + the L1 − run_149 offset on one estimator); L2 keeps the r149 pin (18.3 / 20.0).
+  Bundles `D_<era>_<cos|beam>_L1`; `make_ntof_jobs --per-row` picks them for D L1 rows. A and C keep one latency
+  (they move 5–10 ns at the same step, inside their 15 ns pin). Beam check on runs 79/81: condor 4620578.
 ## 6. Findings so far
 - **Registry (P0, 11-02).** 3,941 acquisitions in scope; 3,937 kept: production 36 runs / 3,233 acquisitions / 2.83 TB
   decoded, cosmics 40 runs / 704 acquisitions / 0.58 TB. Every kept acquisition has latency 27, 20 samples, Ar/iso

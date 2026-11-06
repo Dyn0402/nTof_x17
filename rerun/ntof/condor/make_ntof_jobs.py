@@ -7,7 +7,8 @@
 
 Rows come from rerun/ntof/ntof_registry.csv (excluded rows dropped).  Bundle: <bundles>/<arm>, or with --per-row
 <bundles>/<arm>_<E1|E2>_<cos|beam> chosen by the row's mask_era and rclass (cosmic rows -> the cosmic latency,
-production -> the beam latency; make_pf_bundles.sh); --t0-class forces the class (e.g. free).  Output dir per row:
+production -> the beam latency; make_pf_bundles.sh), plus _L1 for D rows before its latency step (lat_epoch);
+--t0-class forces the class (e.g. free).  Output dir per row:
 <out>/run_<run>/<subrun>/<arm>/.  Feed the file to ntof.sub (jobfile=).
 """
 import argparse, csv, os
@@ -30,6 +31,9 @@ if a.runs:
 if a.subruns:
     rows = [r for r in rows if r['subrun'] in a.subruns.split(',')]
 CLASS = {'cosmic': 'cos', 'production': 'beam'}
+# arms whose pinned latency differs by latency epoch (registry lat_epoch): D steps ~+35 ns between run_103 and run_105
+# (prefreeze FINDINGS 2026-11-06); its L1 bundles are <arm>_<era>_<class>_L1, L2 the unsuffixed ones
+LAT_EPOCH_ARMS = {'D'}
 
 
 def bundle(r, arm):
@@ -41,6 +45,12 @@ def bundle(r, arm):
     lc = a.t0_class or CLASS.get(r['rclass'])
     if lc is None:
         raise SystemExit(f"row {r['run']} {r['subrun']} {r['tag']}: rclass {r['rclass']} has no trigger class")
+    if arm in LAT_EPOCH_ARMS and lc != 'free':
+        ep = r.get('lat_epoch', '')
+        if ep not in ('L1', 'L2'):
+            raise SystemExit(f"row {r['run']} {r['subrun']} {r['tag']}: lat_epoch {ep!r} for arm {arm} (pinned t0)")
+        if ep == 'L1':
+            return f'{a.bundles}/{arm}_{era}_{lc}_L1'
     return f'{a.bundles}/{arm}_{era}_{lc}'
 
 

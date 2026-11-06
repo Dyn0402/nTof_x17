@@ -177,11 +177,29 @@ redeployed (dylan-cern-site 91d4386). Inputs on the desktop: $WORK_DATA/claude-j
 
 ## n_TOF pass 1: reprocess the n_TOF tracks on the final chain — updated 2026-11-06 (dylan-MS-7C84)
 
-**Resume:** pre-freeze checks scored once; wait for condor 4620473 (resub) + 4620474 (D latency fill-in), re-pull, rescore, write FINDINGS.
+**Resume:** D now has two latencies (L1/L2); wait for condor 4620473/4620474/4620578, re-pull, rescore, write FINDINGS, freeze.
 
 **Goal:** reconstruct every n_TOF trigger of ours with the pass-1 bench/SPS algorithm, calibrated in situ, with every
 n_TOF lesson in code or registry. Plan, decisions and every result: `rerun/ntof/NTOF_PASS_PLAN_2026-11-02.md`
 (§5 decisions, §6 findings; P7a = v(t)).
+
+**Done (11-06, later): D gets two latencies (Dylan: "two latencies for D if it needs it" — it does).**
+- Fill-in 4620474 (73/84 at the time) places D's step between run_103 (07-29 19:18) and run_105 (07-30 11:49); D x/y
+  L1 runs (80, 89, 103) −18…+4 / −10…+16, L2 runs (105–159) +16…+56 / +26…+62 (outliers run_117 y 270, run_133 y 122).
+  A and C also move +5–10 ns at that step and drift back by ~08-04: inside their 15 ns pin, one latency each.
+- Registry column **`lat_epoch`** (L1 < 07-29 19:20, L2 ≥ 07-30 11:40, else `unplaced` = run_104 (excluded) and the
+  untimed run_148 (excluded)); in `make_ntof_registry.py` and applied to `ntof_registry.csv` by the same rule (all other
+  columns verified identical; the generator needs EOS run configs, so it wasn't re-run).
+- **D L1 pin x −17.8 ± 5.4, y −11.2 ± 5.0 ns** (`/media/ucla/work/ntof_pass1/bundles/latency_D_L1.json`, also on EOS
+  `tests/prefreeze_ed0b1162/bundles/`): r149 pin + (L1 pooled − run_149) on one estimator (−36.1 / −31.2 ns), because
+  the r149 pin was measured on line/wall candidates and reads ~10 ns below the all-track estimator. Run-to-run scatter
+  inside L1 10–13 ns. L2 keeps the r149 pin 18.3 / 20.0.
+- Bundles `pf/D_{E1,E2}_{cos,beam}_L1` (`make_pf_bundles.sh`; copied to EOS). `make_ntof_jobs.py --per-row` picks
+  `_L1` for D rows with lat_epoch L1 (`LAT_EPOCH_ARMS = {'D'}`), refuses an `unplaced` D row unless t0 is free. Checked:
+  run_80/103 D → `_L1`, run_105/145 D → L2, A unchanged. `wft/tests` 176 passed. Decision in plan §5.
+- **Beam check submitted: 4620578** (25 jobs, `s8_dl1.txt`): runs 79/81 first sub-run, D, L1 beam pin → set
+  `samples_dL1`, scored by `pf_score.py beam` beside `samples` (D on the L2 pin). Pass if D's pointing (<15 mm) is no
+  worse with L1; if worse, the cosmic L1 value doesn't transfer to beam — look before freezing.
 
 **Done (11-06):**
 - 4618426–30 all finished. 37/782 jobs had no output (cospin 3, samples 30 — mostly runs 79/81 —, ng1 4); every one
@@ -216,6 +234,7 @@ n_TOF lesson in code or registry. Plan, decisions and every result: `rerun/ntof/
 **In progress / where it stopped (condor, code archive `~/x17rerun/code_ed0b1162`, out EOS
 `/eos/experiment/ntof/data/x17/july_beam/Analysis_pass1/tests/prefreeze_ed0b1162/`):**
 - **4620473** (37 jobs, `s6_resub.txt`): resub of the lost lines into cospin/samples/ng1. At 11:00 all 37 started, no I/O errors.
+- **4620578** (25 jobs, `s8_dl1.txt`): D L1 beam check, out `samples_dL1/`.
 - **4620474** (84 jobs, `s7_latfill.txt`): free-t0 cosmic runs 105, 107, 109, 111, 113, 115, 117, 121, 125 (2 sub-runs, A C D)
   into `lat/` → dates D's step. `pf_score.py lat` now takes every run present under `lat/`.
 - Job lists on lxplus `~/x17rerun/ntof/pass1/s{1..7}_*.txt`.
@@ -226,9 +245,9 @@ n_TOF lesson in code or registry. Plan, decisions and every result: `rerun/ntof/
    `<out>/run_<r>_<sub>_<tag>_<arm>.meta.json`). Any failure: read its `.err`, explain it.
 2. `.venv/bin/python rerun/ntof/tests/prefreeze/pf_score.py pull` (re-tars whole sets, ~1.4 GB) then `all`.
 3. Write `rerun/ntof/tests/prefreeze/FINDINGS.md` + plan §6 (the numbers above, updated) and log it on the x17 board.
-4. **Decision for Dylan before freezing:** D latency per period (pre/post the 07-29→08-02 step, placed by 4620474) vs
-   one pin (σ 15 ns). Also whether C's per-run angle scale waits for P7a v(t) or blocks the freeze.
-5. Then freeze bundles (copy pf/ to EOS `Analysis_pass1/bundles/`), N-G1 sign-off, full submission (archive, `lxstore status`).
+4. D latency: decided and built (above); confirm with 4620578 (`beam_by_run.csv`: samples_dL1 vs samples, D rows).
+   Still for Dylan: whether C's per-run angle scale waits for P7a v(t) or blocks the freeze.
+5. Then freeze bundles (copy pf/ incl. the D `_L1` ones to EOS `Analysis_pass1/bundles/`), N-G1 sign-off, full submission (archive, `lxstore status`).
 6. Still missing before/with the pass: g4_digi closure (test 8), `ntof_ledger.py`, the new stage 3 (+ P7a v(t)), a regression
    test on a frozen sub-run. Open: ftst slope −7 vs −10; C per-sub-run v; D oscillation flag; the t0 template lattice
    (a smooth template *and* a smooth tensor interpolation would be needed — post-pass, if ever).
