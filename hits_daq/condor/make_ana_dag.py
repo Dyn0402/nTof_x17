@@ -55,7 +55,7 @@ def main():
             if 'resim' in st and tag == 'sat_det3':
                 for j in range(N_RESIM):
                     node(f'R_{b}_{j}', 'resim.py', f'resim_{b}_{j}of{N_RESIM}.parquet',
-                         f"{f} --variants '{VARIANTS}' --families {H2C_FAMS} --part {j}/{N_RESIM} --refit", mem=6000)
+                         f"{f} --variants {VARIANTS} --families {H2C_FAMS} --part {j}/{N_RESIM} --refit", mem=6000)
     for f in sorted(glob.glob(os.path.join(a.windows, 'sps_*.pkl'))):
         b = os.path.basename(f)[:-4]
         if 'tiers' in st:
