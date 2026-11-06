@@ -38,7 +38,18 @@
 
 ## Paper II hits-DAQ comparison (§ hits vs waveforms) — updated 2026-11-06 (dylan-MS-7C84)
 
-**Resume:** H2c on det3: choose t_rise (400 vs 1000, scan done) and set the h2c.py default, then submit the analysis DAG.
+**Resume:** analysis DAG 4634728 running (260 nodes, `~/x17rerun/hits_daq/ana_2026-11-06`, code `code_hs_8000aeac`, slim
+archive); when done score with `tiers.py --from-tables` and `score_h2c.py --bins`, then add the d650/d700 SPS rows.
+
+**Update 2026-11-06 evening (laptop, everything on condor):** H2c default set (amp λ3000, **t_rise 700**, t_robust 0; scan
+250–1000 in `results/h2c_trise_sat_det3.json`). Far-strip timing measured on X and Y (`far_strip_timing.py`): mostly
+Y, every angle. Gap-end check done (`p0_depth.py`): supports the reviewer note, with a geometric caveat. Numbers:
+`papers/paper2/HITS_DAQ_PLAN_2026-11-05.md` §0. Bench window bundles now resolve to EOS Analysis_pass1
+(`emulate.bundle_path`; the window meta holds a scratch path). SPS H2c split in 24 parts (45 s/plane), flavour
+`tomorrow`. Code archives are now slim (`code_hs_<hash>`, ~1 MB: wft, common, hits_daq and the lazily imported
+modules); the old `code_hd_1f05a760`/`217311c5` were deleted (AFS 84→71 %); `code_hd_c190e6e1` is still used by
+the SPS rescue DAG 4620580 (d650/d700, testmatch, running). For those two rows: rerun `make_ana_dag.py` into a new
+dir and keep only their `TT_`/`H_` nodes.
 
 **Goal:** Paper II's last section: what a hits-only readout (VMM-style and the other hit families) achieves against the
 waveform fit, on det3 (both Paper I runs) + det4 SPS known angle, plus a resistivity/pattern/footprint scan by
