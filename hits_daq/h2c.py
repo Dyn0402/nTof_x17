@@ -16,6 +16,10 @@ The depth profile q (one charge per 60 ns drift bin):
                    is linear in q (the design matrix row at the strip's model peak sample), so q = NNLS of the observed
                    amplitudes with a second-difference smoothness penalty (a hit list has ~one amplitude per depth bin).
                    Two passes: the peak samples of the first solution define the rows of the second.
+  qmode 'mean'     a fixed depth shape times Q: the mean normalised profile, a calibration constant per view and run
+                   condition (h2c_run.py --qcal: the waveform fit's q on the even event ids; only odd ids are scored).
+  qmode 'ampmean'  as 'amp', but the regulariser pulls q toward c x the mean shape (c a free NNLS unknown) instead of
+                   toward zero curvature: the event's own amplitudes set the Landau clusters, the shape sets the rest.
 The fit is Nelder-Mead over (p0, w, t0[, ln Q for 'uniform']), started from the hit ladder (u_h, earliest hit) with
 the start offsets learned once from model windows (no reference, no waveform information from the event).
 """
@@ -30,7 +34,8 @@ P_MISS = 4.0        # cost of a strip hit in data but not in the model or vice v
 
 
 class H2C:
-    def __init__(self, wm, hyper, view, family, gap_mm, v_um_ns, K, nsig=5.0, ideal=None, qmode='amp', lam=3.0):
+    def __init__(self, wm, hyper, view, family, gap_mm, v_um_ns, K, nsig=5.0, ideal=None, qmode='amp', lam=3.0,
+                 qshape=None):
         self.wm, self.hyper, self.view, self.fam = wm, hyper, view, family
         self.qmode, self.lam = qmode, lam
         D2 = np.zeros((max(K - 2, 0), K))
@@ -41,6 +46,11 @@ class H2C:
         T = gap_mm / (v_um_ns / 1000.0)                       # drift time across the gap [ns]
         uk = (np.arange(K) + 0.5) * wm.DT
         self.qshape = np.clip((T - np.arange(K) * wm.DT) / wm.DT, 0.0, 1.0)  # partial last bin
+        if qmode in ('mean', 'ampmean'):
+            if qshape is None:
+                raise ValueError(f'qmode {qmode} needs a calibrated qshape')
+            qs = np.clip(np.asarray(qshape, float)[:K], 0.0, None)
+            self.qshape = qs * (self.qshape.sum() / max(qs.sum(), 1e-12))  # same total as the uniform column
         self.K = K
         self.off = dict(dt0=0.0, dp0=0.0)                     # start offsets, set by learn_offsets
 
@@ -76,13 +86,22 @@ class H2C:
             kk = np.argmax(Mq[hit], axis=1)
             A = Bs[hit, kk, :]                                     # rows at each hit strip's model peak sample
             sc = np.median(np.abs(A[A > 0])) if (A > 0).any() else 1.0
-            lhs = np.vstack([A / sa[:, None], np.sqrt(self.lam) * self.D2 * sc / np.median(sa)])
+            r = np.sqrt(self.lam) * sc / np.median(sa)
+            if self.qmode == 'ampmean':
+                # unknowns [q, c]: data rows [A, 0]; prior rows r (q_k - c shape_k)
+                K = A.shape[1]
+                lhs = np.vstack([np.hstack([A / sa[:, None], np.zeros((len(a), 1))]),
+                                 r * np.hstack([np.eye(K), -self.qshape[:, None]])])
+                rhs = np.r_[a / sa, np.zeros(K)]
+                q = nnls(lhs, rhs, maxiter=400)[0][:K]
+                continue
+            lhs = np.vstack([A / sa[:, None], r * self.D2])
             rhs = np.r_[a / sa, np.zeros(self.D2.shape[0])]
             q, _ = nnls(lhs, rhs, maxiter=200)
         return q
 
     def cost(self, x, pos, gain, noise, obs):
-        if self.qmode == 'amp':
+        if self.qmode in ('amp', 'ampmean'):
             p0, w, t0 = x[:3]
             B = self.wm.build_matrix(self.view, pos, p0, w, t0, self.hyper)
             q = self.solve_q(B, len(pos), gain, noise, obs)
@@ -115,7 +134,7 @@ class H2C:
         if x0 is None:
             return None
         best = None
-        if self.qmode == 'amp':
+        if self.qmode in ('amp', 'ampmean'):
             x0 = x0[:3]
         for fw in ([1.0, 0.6, 1.5][:n_start]):
             xs = x0.copy()

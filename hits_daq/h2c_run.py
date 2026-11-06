@@ -33,8 +33,11 @@ def main():
     ap.add_argument('--part', default='0/1')
     ap.add_argument('--nmax', type=int, default=0)
     ap.add_argument('--nsig', type=float, default=5.0)
-    ap.add_argument('--qmode', default='amp', choices=('amp', 'uniform'))
+    ap.add_argument('--qmode', default='amp', choices=('amp', 'uniform', 'mean', 'ampmean'))
     ap.add_argument('--lam', type=float, default=3.0)
+    ap.add_argument('--qcal', default='parity', help="mean/ampmean shape: 'parity' = mean normalised waveform-fit q of"
+                    " the even event ids (odd ids scored), or an .npz with arrays x and y")
+    ap.add_argument('--odd-only', action='store_true', help='score odd event ids only (as the parity-calibrated modes)')
     ap.add_argument('--on-model', action='store_true', help='closure: fit the hits of the pass model window M (truth = W)')
     a = ap.parse_args()
     ip, npart = (int(x) for x in a.part.split('/'))
@@ -58,9 +61,24 @@ def main():
     ref = load_ref(a.ref) if a.ref else {}
     fams = a.families.split(',')
     ideal = {v: E.Ideal(wm.TGRID, wm.TMPL[v], meta['nsamp']) for v in 'xy'}
-    fit = {(v, f): H2C(wm, hyper, v, f, a.gap, meta['v_drift'], K, nsig=a.nsig, ideal=ideal[v], qmode=a.qmode, lam=a.lam) for v in 'xy' for f in fams}
+    qshape = {'x': None, 'y': None}
+    if a.qmode in ('mean', 'ampmean'):
+        if a.qcal == 'parity':
+            for v in 'xy':
+                Q = np.array([p['q'] for p in planes if p['view'] == v and p.get('q') is not None
+                              and p['event_id'] % 2 == 0 and np.sum(p['q']) > 0], float)
+                qshape[v] = (Q / Q.sum(1, keepdims=True)).mean(0)
+            planes = [p for p in planes if p['event_id'] % 2 == 1]
+        else:
+            Z = np.load(a.qcal)
+            qshape = {v: Z[v] for v in 'xy'}
+        print('[h2c] qshape x', np.round(qshape['x'] * K, 2), '\n[h2c] qshape y', np.round(qshape['y'] * K, 2))
+    fit = {(v, f): H2C(wm, hyper, v, f, a.gap, meta['v_drift'], K, nsig=a.nsig, ideal=ideal[v], qmode=a.qmode, lam=a.lam,
+                       qshape=qshape[v]) for v in 'xy' for f in fams}
     for (v, f), h in fit.items():
         h.learn_offsets([p for p in planes if p['view'] == v], n=200)
+    if a.odd_only:
+        planes = [p for p in planes if p['event_id'] % 2 == 1]
     sel = [p for i, p in enumerate(planes) if i % npart == ip and (not ref or (p['event_id'], p['view']) in ref)]
     if a.nmax:
         sel = sel[:a.nmax]

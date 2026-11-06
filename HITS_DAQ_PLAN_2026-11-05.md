@@ -27,7 +27,12 @@ and work items R1–R5, V1). No new data: everything below is computation on the
 - **V0 validated 2026-11-06** (`hits_daq/V0_VALIDATION_2026-11-06.md`): with production's measured gate noise
   (rms_gate = 0.68 × rms, now `emulate.GATE_K`) V0 misses 0.03 % of production strips, adds 1.5 % marginal ones, and
   matches the ladder to 0.3–0.4 %. Numbers made before with the old 0.447 gate are preliminary.
-- **Open question for the next session (Dylan):** if the mixing exists even on a metallic readout, why does no one
+- **Literature review done 2026-11-06** (`hits_daq/LITERATURE_MIXING.md`): every single-time µTPC we could read
+  (LMU/NSW Micromegas, BESIII GEM) reports angles too large (tan ratio 1.1–1.9, shrinking with angle), attributed to
+  capacitive coupling and edge strips; BESIII names diffusion as a second effect in one sentence; fixes are empirical
+  (edge-strip drop, 15–20 % neighbour subtraction, angle calibration). Nobody fits µTPC waveforms, and no source shows
+  that diffusion alone compresses the ladder on a metallic readout. Draft intro paragraph in its §5.
+- **(answered above)** Open question: if the mixing exists even on a metallic readout, why does no one
   else need a waveform fit? Literature review planned (HANDOFF next step 1; Dylan's T2K hypothesis: pads ≫ diffusion).
 
 ## 1. What the section has to show
