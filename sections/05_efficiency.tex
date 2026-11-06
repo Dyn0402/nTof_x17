@@ -135,7 +135,13 @@ and 220--230 at SNR\,$>$\,6, with chip-wide ringing.
 \end{table}
 
 \subsection{Chamber~A: two particles in the chamber}\label{sec:pairing}
-\textbf{Efficiency.} 3.2\,\% of tracks (931 of 29\,398, full area) come with a second particle in chamber~A. The muon is
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=\linewidth]{evd_showcase}
+  \caption{What one chamber sees: two chamber~A events of Run~1, both views (strip position against drift time; amplitude on one linear scale, normalised to the ADC full scale of 4096; grey lines: mesh and cathode). The reference track is the solid black line; the fits are dashed. (a) A single cosmic muon and its fit (magenta). (b) Two cosmic muons about 25\,mm apart in both views, each fitted as its own track (magenta, brown; the brown one is the reference particle). Each view is drawn in time since its own mesh crossing, so the mesh and cathode lines coincide in X and Y. Strip position and depth ($z=v\,(t-t_0)$) are drawn on one mm scale, so these are true images of the tracks in the strip--depth plane.}
+  \label{fig:showcase}
+\end{figure}
+\textbf{Efficiency.} 3.2\,\% of tracks (931 of 29\,398, full area) come with a second particle in chamber~A (\cref{fig:showcase} shows one beside a single muon). The muon is
 reconstructed in 77.0\,\% of them, and the losses are all in the two harder configurations
 (\texttt{rerun/effbudget/single/single\_track\_area.py}):
 (i) two separate segments in both views (662 events): 95.6\,\%, as efficient as with one particle;
