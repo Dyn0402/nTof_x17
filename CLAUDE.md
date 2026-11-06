@@ -119,6 +119,14 @@ sub-run of run_79, the first long production run. 41 of those 64 channels
 recorded no hits at all. Any A-x occupancy, efficiency or cluster study on
 run_79 must mask them; the strips are live again from run_83.
 
+## Paper Overleaf: shared with Stephan, edit safely
+
+Stephan edits Paper I in Overleaf, possibly while a session edits the repo. Before touching `papers/*/` text or pushing:
+`papers/overleaf.sh status paper1`, then `pull`. Never use `push --now`, remove a hold (`papers/.overleaf-hold-*`),
+or resolve a pull conflict without Dylan's say-so: stop and report. Don't edit a section Overleaf changed since your
+last pull, don't regenerate a figure Stephan replaced, push small and often, and list the pushed files in the report.
+Full rules and the command table: `papers/README.md` § "Shared editing with Stephan".
+
 ## Reporting results — write an HTML report, not just PNGs
 
 Every analysis should ship a `report.html` in its output directory alongside

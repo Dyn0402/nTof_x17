@@ -90,6 +90,29 @@ push the split commit (still a plain fast-forward, never forced):
     split=$(GIT_EXEC_PATH=$D git subtree split -q --prefix=papers/paper1)
     git fetch overleaf-paper1 && git merge-base --is-ancestor overleaf-paper1/main $split && git push overleaf-paper1 $split:main
 
+### Shared editing with Stephan: rules and protections (2026-11-06)
+
+Claude edits the repo copy and Overleaf is a separate copy, so nothing Claude does appears as a tracked change,
+and a push can reload a file under someone who has it open. `overleaf.sh` now guards this:
+
+| command | what it does |
+|---|---|
+| `status <paper>` | read-only: Overleaf-only commits (who, when), any hold, the files a push would change |
+| `pull <paper>` | tags HEAD `overleaf-backup/<paper>-<time>` first; on a conflict **aborts the merge**, leaves the repo clean and lists the files |
+| `push <paper>` | fetches first; refuses if Overleaf is ahead, if a hold is set, or if Overleaf's last commit is under 30 min old (`--now` overrides); prints the files it changes |
+| `hold <paper> "why"` / `release <paper>` | tracked flag `papers/.overleaf-hold-<paper>`: blocks every push, on every machine, while Stephan works |
+
+Rules for Claude (also in the project `CLAUDE.md`):
+1. `status`, then `pull`, before editing any paper text. Pull again right before a push.
+2. Never use `--now`, never remove a hold, and never resolve a pull conflict, without Dylan saying so. Report it.
+3. Don't edit a `sections/*.tex` that Overleaf changed since your last pull, unless Dylan asked for that section.
+4. Push small and often (a section or a figure at a time), not one big push at the end of a session.
+5. Figures are generated (`figures/*` from `make_figures.py`): if Stephan changed one in Overleaf, don't regenerate over it; ask.
+6. Say in the report which files were pushed, so Stephan can look at them in Overleaf's history (they are not tracked changes).
+
+Rules for Dylan and Stephan: Track changes on; accept or reject before a pull; Stephan says when he is in a
+section, and Dylan runs `hold` for longer sessions. Overleaf history (Menu > History) shows every Claude push.
+
 **Tracked changes are an Overleaf-only feature.** The git bridge carries the plain text, not the review
 markup. So:
 - Accept or reject Stephan's tracked changes in Overleaf before you pull.
