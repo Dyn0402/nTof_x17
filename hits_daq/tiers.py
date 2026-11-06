@@ -204,7 +204,7 @@ def build_table(a, fams):
     sys.path.insert(0, os.path.abspath(os.path.join(HERE, '..', '..', '..')))
     from wft import model as wm
     from wft.calib import CalibrationBundle
-    cal = CalibrationBundle.load(a.bundle or meta['bundle'])
+    cal = CalibrationBundle.load(E.bundle_path(meta, a.bundle))
     wm.use_calibration(cal)
     ideal = {v: E.Ideal(wm.TGRID, wm.TMPL[v], meta['nsamp']) for v in ('x', 'y')}
     v = meta['v_drift'] / 1000.0

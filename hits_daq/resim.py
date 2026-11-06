@@ -92,7 +92,7 @@ def main():
         meta = meta or D['meta']
         planes += D['planes']
     gain_corrected = 'raw' not in planes[0]                  # boot_extract windows: W, M gain corrected
-    cal = CalibrationBundle.load(a.bundle or meta['bundle'])
+    cal = CalibrationBundle.load(E.bundle_path(meta, a.bundle))
     wm.use_calibration(cal)
     K = len(planes[0]['q'])
     wm.set_depth_bins(K)
