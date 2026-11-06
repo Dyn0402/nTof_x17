@@ -175,67 +175,83 @@ redeployed (dylan-cern-site 91d4386). Inputs on the desktop: $WORK_DATA/claude-j
 - Deck: `WORK_DATA=~/work_data .venv/bin/python papers/paper1/make_figures_deck.py --out <html>` then
   `dylan-cern-site/scripts/add-note.py <html> --slug mx17-paper1-figures --force --deploy`.
 
-## n_TOF pass 1: reprocess the n_TOF tracks on the final chain — updated 2026-11-05 (dylan-MS-7C84)
+## n_TOF pass 1: reprocess the n_TOF tracks on the final chain — updated 2026-11-06 (dylan-MS-7C84)
 
-**Resume:** pre-freeze condor checks (4618426–30) running; when done: `pf_score.py pull` then `all`, write up, freeze bundles.
+**Resume:** pre-freeze checks scored once; wait for condor 4620473 (resub) + 4620474 (D latency fill-in), re-pull, rescore, write FINDINGS.
 
 **Goal:** reconstruct every n_TOF trigger of ours with the pass-1 bench/SPS algorithm, calibrated in situ, with every
 n_TOF lesson in code or registry. Plan, decisions and every result: `rerun/ntof/NTOF_PASS_PLAN_2026-11-02.md`
-(§5 decisions, §6 findings; the 11-05 block is today's, P7a = v(t)).
+(§5 decisions, §6 findings; P7a = v(t)).
 
-**Done (11-05):**
-- **D t0 pinned like A/C (Dylan: consistent treatment).** D cosmic latency measured on run_149: x +18.3 ± 3.4, y +20.0
-  ± 2.2 ns (`/media/ucla/work/ntof_pass1/bundles/latency_D_r149.json`). D's beam latency can't be measured (oscillation); the
-  borrowed A/C beam offset is contradicted by D's own beam tracks, so D uses its cosmic latency on both trigger classes.
-  Beam run_145: pointing <15 mm 68 (free) → 99 (pinned), same-track DCA68 15.8 → 13.1 mm. kw_D under the pin 0.854 / 0.872
-  (B–D lines; free kw still closes). `rerun/ntof/tests/d_b/{dpin_run.sh,dpin_score.py}`, FINDINGS §4.
-- **v(t) added to the plan as P7a** (A/C from the pass column duration per sub-run/30 min; D from the beam-off cosmic runs;
-  stage 3 writes `tan_vt` beside `tan`). Not built yet.
-- **Candidate pass bundles** `rerun/ntof/make_pf_bundles.sh` → `/media/ucla/work/ntof_pass1/bundles/pf/<arm>_<E1|E2>_<cos|beam|free>`
-  (24; A v38.6 kw .976/.965 Dp .0245; C 28.1, 1.009/1.000, .0136; D 31.0, .854/.872, .0157; B 42.6 t0 free, tan_max 0.6
-  kept — the "wide tan_max for B" proposal is undecided). Copied to EOS `tests/prefreeze_ed0b1162/bundles/`.
-- `make_ntof_jobs.py --per-row` chooses the bundle by mask_era × rclass (`--t0-class` override); `ntof_bundle.py
-  --mask-era` now required. `wft/tests`: 176 passed, 8 skipped.
+**Done (11-06):**
+- 4618426–30 all finished. 37/782 jobs had no output (cospin 3, samples 30 — mostly runs 79/81 —, ng1 4); every one
+  read: all EOS-FUSE venv `Input/output error` from before lockpy. Re-submitted as **4620473** (`s6_resub.txt`).
+- `pf_score.py` pull/lat/line/beam all run on real outputs (no parsing fixes needed). Results in
+  `$WORK_DATA/ntof_pass1/prefreeze/results/` (latency_by_run, line_by_run, beam_by_run, line_bins_149_*).
+- **t0 lattice lock (new finding).** 20–65 % of fitted t0 sit *exactly* (1e-4 ns) on the absolute 10 ns lattice (D y
+  worst). Cause: the template is tabulated on a 10 ns grid (`cal.grid`, origin −360) and evaluated with `np.interp`;
+  samples and depth bins are 60 ns, so at t0 ≡ 0 mod 10 every prompt column hits a template node at once → common kink
+  in χ²(t0); t0 at fixed geometry is flat (Δχ² ~0.02 over ±2.5 ns) so the kink holds it. `RC_T0_INTERP` (10-27) removed
+  the 5 ns staircase, not this. Tested on 300 run_149 D events (`tests/prefreeze/t0lock_wrap.py`): shifting all LM
+  starts by +2.5 ns leaves the lock on the *absolute* lattice (27 → 25 %) ⇒ model, not starts; a cubic 1 ns template
+  drops it to 14 % but t0 then locks to the 5 ns RC_T0_INTERP grid (26 %); tan changes 5e-4 (x) / 2e-4 (y) at 68 %,
+  t0 ~3 ns. **Decision: reco untouched before freeze** (no geometry effect; would split n_TOF from bench pass-1 code).
+  Estimator fixed instead: `latency()` now dithers t0 by U(−5, 5) ns before the iterated median (C_raw, tmean,
+  on_lattice also written). Effect on medians ≤ 2 ns.
+- **Latency vs run (free t0, all quality single tracks):** A stable ±6.5 ns vs run_149 (E1 run_80 included). C x ±10;
+  C y 6–21 ns, run_149 the high one (~+9 over the others), scatter ~5 ns beyond stat (~2.5). **D steps ~40 ns between
+  run_103 (07-29: −4/+8) and run_119 (08-02: +38/+44)**; run_80 −18/−10; run_133 D y = 131 (outlier, likely the
+  oscillation). No D change recorded in the registry in that window. Note d_vs_bundle at run_149 itself is −10…+18 ns:
+  the bundle latencies were measured on line/wall candidates, this on all quality tracks — the latency depends on the
+  selection by ~10 ns (not followed up).
+- **A–C line:** run_149 pinned (ng1) A 2.67 ± 0.09°, C 3.30 ± 0.10° (t0pin ref 2.62 / 3.23), ratios 1.00 ± 0.005 ✔.
+  Per run, C's angle scale swings 0.99 → 1.09 (err ~0.01; run_89 1.08/1.09, run_133 0.99/1.00, run_159 1.06/1.05),
+  res68 tracks it (2.9–4.5°); A 1–3 %. Reads as v(t) — P7a.
+- **Mirror (two-sided vs one-sided, run_149):** identical < 31°; 31–40° A 83 → 90 tracks 2.91 → 2.93°, C 83 → 90
+  3.42 → 3.64°. A–C line has no tracks > 40°: limitation, the test can't reach where a mirror basin would matter.
+- **Beam vs is2_v2, same triggers (A, C):** gated tracks/trigger +12–25 %, n pointing < 15 mm +29–49 %, frac pointing
+  0.31–0.33 → 0.34–0.37, in E1 (79, 81) and E2 (116, 162, 145). B/D: no is2_v2 reference (D frac_point_15 0.12–0.16).
+  Runs 79/81 numbers are partial until 4620473 lands.
 
 **In progress / where it stopped (condor, code archive `~/x17rerun/code_ed0b1162`, out EOS
 `/eos/experiment/ntof/data/x17/july_beam/Analysis_pass1/tests/prefreeze_ed0b1162/`):**
-- 4618426 `lat`: free t0, cosmic runs 80 (E1), 89, 103, 119, 133, 149, 159 × 2 sub-runs, A C D → latency stability (126 jobs).
-- 4618427 `cospin`: same runs minus 149, pinned, ABCD → A–C line scale/residuals per run incl. pre-access run_80 (144).
-- 4618428 `samples`: runs 79, 81 (E1), 116, 162, first sub-run, every tag, ABCD → yield + pointing vs is2_v2 (200).
-- 4618429 `ng1`: run_145 (24 tags) + run_149 cos_0000–0011, ABCD, pinned per class → N-G1 inputs + A/C re-check (240).
-- 4618430 `twosided`: run_149 cos_0000–0011 A/C with `WFT_DIAG=reco.TWO_SIDED=1` (`ntof_diag.sub`, diag=) → mirror check (72).
-- At 15:10: lat/cospin/ng1 nearly done, samples 17/200 and twosided 45/72 still running. Many jobs hit EOS FUSE
-  I/O errors loading the lock venv (~half of all job starts). Cause: importing the venv off FUSE. Fixed 11-05 (later):
-  the deployed `ntof_stage.sh` now runs `~/bin/lockpy`, which stages the venv into scratch (`rerun/condor/lockpy`);
-  retries of these clusters pick it up. By 15:30, 6 jobs of 4618427-29 had failed for good after `max_retries`: re-submit them.
-  **Check presence** before scoring.
-- Job lists: `~/x17rerun/ntof/pass1/s{1_lat,2_cospin,3_samples,4_ng1,5_twosided}.txt` on lxplus.
+- **4620473** (37 jobs, `s6_resub.txt`): resub of the lost lines into cospin/samples/ng1. At 11:00 all 37 started, no I/O errors.
+- **4620474** (84 jobs, `s7_latfill.txt`): free-t0 cosmic runs 105, 107, 109, 111, 113, 115, 117, 121, 125 (2 sub-runs, A C D)
+  into `lat/` → dates D's step. `pf_score.py lat` now takes every run present under `lat/`.
+- Job lists on lxplus `~/x17rerun/ntof/pass1/s{1..7}_*.txt`.
 
 **Next steps:**
-1. `ssh lxplus condor_q` until 4618426–30 are empty; count `*.meta.json` per set vs the job lists, resubmit missing lines.
-2. `.venv/bin/python rerun/ntof/tests/prefreeze/pf_score.py pull` (EOS → `$WORK_DATA/ntof_pass1/prefreeze`, incl. is2_v2
-   candidates of the same acquisitions), then `pf_score.py all` → `results/{latency_by_run,line_by_run,beam_by_run}.csv`,
-   `line_bins_149_{ng1,twosided}.csv`. The scorer is untested on the real outputs (parsing of file names may need a fix).
-3. Read: latency drift vs 149 (pin σ 15 ns; > ~10 ns at run_80 means a per-era latency); A–C scale per run (kw vs time,
-   E1 vs E2); E1 samples vs is2_v2 (yield, pointing); run_145 per arm vs is2_v2 and run_149 line s68 vs the t0pin numbers
-   (pinned 2.62° A / 3.23° C); mirror bins ≥ 31° one- vs two-sided. Write `tests/prefreeze/FINDINGS.md` + plan §6.
-4. If clean: freeze bundles (copy pf/ to EOS `Analysis_pass1/bundles/`), N-G1 sign-off, full submission (archive, `lxstore status`).
-5. Still missing before/with the pass: g4_digi closure (test 8), `ntof_ledger.py`, the new stage 3 (+ P7a v(t)), a regression
-   test on a frozen sub-run. Open: ftst slope −7 vs −10; C per-sub-run v (P7a covers it at table level); D oscillation flag.
+1. `ssh lxplus condor_q 4620473 4620474`; when empty, compare `001` vs `005` events per cluster in `log/ntof.log` and
+   count `*.meta.json` vs the job lists (the loop used 11-06 is in this session's history: per job line, test
+   `<out>/run_<r>_<sub>_<tag>_<arm>.meta.json`). Any failure: read its `.err`, explain it.
+2. `.venv/bin/python rerun/ntof/tests/prefreeze/pf_score.py pull` (re-tars whole sets, ~1.4 GB) then `all`.
+3. Write `rerun/ntof/tests/prefreeze/FINDINGS.md` + plan §6 (the numbers above, updated) and log it on the x17 board.
+4. **Decision for Dylan before freezing:** D latency per period (pre/post the 07-29→08-02 step, placed by 4620474) vs
+   one pin (σ 15 ns). Also whether C's per-run angle scale waits for P7a v(t) or blocks the freeze.
+5. Then freeze bundles (copy pf/ to EOS `Analysis_pass1/bundles/`), N-G1 sign-off, full submission (archive, `lxstore status`).
+6. Still missing before/with the pass: g4_digi closure (test 8), `ntof_ledger.py`, the new stage 3 (+ P7a v(t)), a regression
+   test on a frozen sub-run. Open: ftst slope −7 vs −10; C per-sub-run v; D oscillation flag; the t0 template lattice
+   (a smooth template *and* a smooth tensor interpolation would be needed — post-pass, if ever).
 
 **Gotchas / decisions:**
-- The wall-confirmed fraction and source y in N-G1 need stage-3 tables; the new stage 3 doesn't exist, so pf_score compares
-  stage-2 yield and capsule pointing only. is2_v2 has no run_149 output (line reference = the t0pin numbers).
+- Latency medians land on round numbers (10.0, 20.0, …) without the dither — that is the lattice lock, not physics.
+- The trimmed mean of t0 + 10 ftst sits 5–10 ns above the median (skewed): keep the median.
+- Wrapper trick for model tests: `t0lock_wrap.py` monkeypatches `wft.model._fit_plane_lm` / `use_calibration` and then
+  runs `ntof_reco.py` (patches reach the fork workers); `SMOOTH_TMPL=1`, `T0SHIFT=<ns>`, `T0LOG=<prefix>`.
+- Local run_149/145 waveforms: `/media/ucla/work/ntof_pass1/runs/`. EOS isn't FUSE-mounted on the desktop:
+  `ntof_bundle.py` needs `--src /media/ucla/work/ntof_pass1/bench_bundles/<arm>`.
 - Don't `pkill -f` a pattern that matches your own shell's command line. Don't carry cosmic conclusions to beam without a beam check.
-- EOS isn't FUSE-mounted on the desktop: `ntof_bundle.py` needs `--src /media/ucla/work/ntof_pass1/bench_bundles/<arm>`.
 - Another session's files (papers/paper2/hits_daq/*) were left out of these commits.
 
 **Key files & commands:**
-- Submit: `ssh lxplus 'cd ~/x17rerun/ntof/pass1 && condor_submit ntof.sub code=$HOME/x17rerun/code_<c> jobfile=<f> flavour=workday'`
-- Jobs: `.venv/bin/python rerun/ntof/condor/make_ntof_jobs.py --bundles <eos>/bundles --out <eos>/out --runs 145 --arms AC [--extra "--events F"]`
-- Local data (ucla scratch, regenerable): `/media/ucla/work/ntof_pass1/` (`runs/`, `bundles/`, `t0pin/`, `q7/` 2.2 GB,
-  `channel_layer/`, `model_checks/`, `d_b/`). Test outputs on EOS under `july_beam/Analysis_pass1/tests/`.
-  Delete both when the pass is done.
+- `rerun/ntof/tests/prefreeze/pf_score.py {pull,lat,line,beam,all}` — the scorer; outputs `$WORK_DATA/ntof_pass1/prefreeze/results/`
+- `rerun/ntof/tests/prefreeze/t0lock_wrap.py` — the t0-lattice test (`T0LOG=… .venv/bin/python …/t0lock_wrap.py --run 149
+  --subrun cosbounce_cos_0000 --arm D --bundle /media/ucla/work/ntof_pass1/bundles/pf/D_E2_free --out x.parquet
+  --base /media/ucla/work/ntof_pass1/runs --tag 260806_14H51_000 --limit-per-tag 300 --jobs 8`)
+- Submit: `ssh lxplus 'cd ~/x17rerun/ntof/pass1 && condor_submit ntof.sub code=$HOME/x17rerun/code_ed0b1162 jobfile=<f> flavour=workday'`
+- Jobs: `.venv/bin/python rerun/ntof/condor/make_ntof_jobs.py --bundles <eos>/bundles --out <eos>/<set> --runs … --arms … --per-row [--t0-class free]`
+- Local data (ucla, regenerable): `/media/ucla/work/ntof_pass1/` (`runs/`, `bundles/`, `prefreeze/`, `t0pin/`, `q7/`, `d_b/`).
+  Test outputs on EOS under `july_beam/Analysis_pass1/tests/`. Delete both when the pass is done.
 
 ## Paper I: det3 efficiency, two-particle reco, figures — updated 2026-11-02 (dylan-MS-7C84)
 

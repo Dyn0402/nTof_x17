@@ -14,6 +14,8 @@ Sets (make_ntof_jobs.py --per-row; bundles make_pf_bundles.sh):
   samples  runs 79, 81 (E1), 116, 162; first sub-run, every tag; A B C D; pinned (beam latency; D its cosmic one)
   ng1      run_145 (all 24 tags) beam + run_149 cos_0000-0011 cosmic; A B C D; pinned per trigger class
   twosided run_149 cos_0000-0011, A C, as ng1 with WFT_DIAG=reco.TWO_SIDED=1 (mirror-basin check R6; condor 4618430)
+  resub    the 37 jobs of 4618427-29 lost to EOS-FUSE venv I/O errors, re-run under lockpy (4620473; s6_resub.txt)
+  lat fill cosmic runs 105-125, 2 sub-runs, A C D, t0 free: when did D's latency step (4620474; s7_latfill.txt)
 """
 import glob
 import json
@@ -91,21 +93,41 @@ def load(fs, cand=False):
     return pd.concat(parts, ignore_index=True) if parts else None
 
 
+def _imed(v):
+    c = np.median(v)
+    for _ in range(5):
+        w = v[np.abs(v - c) < 200]
+        c = np.median(w)
+    return c, w
+
+
 def latency(d):
+    """Iterated median of t0 + 10 ftst within +-200 ns, on t0 dithered by U(-5, 5) ns.
+
+    Why the dither (2026-11-06): 20-65 % of fitted t0 sit exactly on the absolute 10 ns lattice (D y worst).  The
+    template is tabulated on a 10 ns grid and evaluated piecewise-linearly, so chi2(t0) has a common kink wherever
+    t0 = 0 mod 10 (every prompt column hits a template node at once; samples and depth bins are 60 ns), and t0 at fixed
+    geometry is flat enough (dchi2 ~0.02 over 5 ns) for the kink to hold it.  The plain median then snaps to the lattice
+    atoms (latencies of exactly 10.0, 20.0, ...).  Geometry is unaffected (a smooth template moves tan by ~2-5e-4), so
+    the fix is in the estimator: the dither (2.9 ns rms on an ~80 ns-wide distribution) breaks the atoms.  C_raw is the
+    old undithered median, kept for comparison; tmean the trimmed mean of the same window."""
     out = {}
     for p in 'xy':
         s = d[(d[f'{p}_ok'] == True) & (d[f'{p}_quality_ok'] == True) & (d['n_tracks'] == 1) & (d[f'{p}_ftst'] >= 0)]
-        v = (s[f'{p}_t0'] + 10 * s[f'{p}_ftst']).to_numpy(float)
-        v = v[np.isfinite(v)]
+        t0 = s[f'{p}_t0'].to_numpy(float)
+        v = t0 + 10 * s[f'{p}_ftst'].to_numpy(float)
+        ok = np.isfinite(v)
+        v, t0 = v[ok], t0[ok]
         if len(v) < 30:
             out[p] = dict(C=np.nan, err=np.nan, n=int(len(v)))
             continue
-        c = np.median(v)
-        for _ in range(5):
-            w = v[np.abs(v - c) < 200]
-            c = np.median(w)
+        lat10 = float(np.mean(np.abs((t0 + 5) % 10 - 5) < 1e-4))
+        c_raw, _ = _imed(v)
+        vd = v + rng.uniform(-5, 5, len(v))
+        c, w = _imed(vd)
         bs = np.std([np.median(w[rng.integers(0, len(w), len(w))]) for _ in range(400)])
-        out[p] = dict(C=float(c), err=float(bs), n=int(len(w)))
+        out[p] = dict(C=float(c), err=float(bs), n=int(len(w)), C_raw=float(c_raw), tmean=float(w.mean()),
+                      tmean_err=float(w.std() / np.sqrt(len(w))), on_lattice=lat10)
     return out
 
 
@@ -115,7 +137,8 @@ def t_of(run):
 
 def lat():
     rows = []
-    for run in (80, 89, 103, 119, 133, 149, 159):
+    # 80, 89, 103, 119, 133, 149, 159 (4618426) + the fill-in 105-125 that dates D's latency step (4620474)
+    for run in sorted({int(p.rstrip('/').split('run_')[-1]) for p in glob.glob(f'{W}/lat/run_*/')}):
         for arm in 'ACD':
             fs = files('lat', run, arm)
             if not fs:
