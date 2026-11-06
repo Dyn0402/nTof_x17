@@ -31,7 +31,7 @@ import paper_style as ps  # noqa: E402
 CACHE = os.environ.get('WORK_DATA', '/media/ucla/work') + '/claude-jobs/17c92c46-displays/principle'
 
 
-def sketch(ax, g, v_mm, t0, tlim, tan=0.45, particle='muon', gap_label=None):
+def sketch(ax, g, v_mm, t0, tlim, tan=0.45, particle='muon', gap_label=None, vsym='v', xm=None):
     """The section, in mm (x) against z (mm above the mesh, mapped onto the time axis of the data panels)."""
     import matplotlib.patches as mp
     z = lambda zz: t0 + zz / v_mm            # depth -> the shared (time) coordinate
@@ -53,7 +53,7 @@ def sketch(ax, g, v_mm, t0, tlim, tan=0.45, particle='muon', gap_label=None):
     ax.text(X1 + 0.6, z(-4.3), 'resistive strips', va='center', ha='left', fontsize=7.5, color=ink)
     ax.text(X1 + 0.6, z(-9.5), 'readout strips', va='center', ha='left', fontsize=7.5, color=ink)
     # the muon: enters at the cathode, leaves at the mesh, tilted well beyond event 7884 (tan 0.17) so the drift lines of successive clusters separate
-    xm = 6.0
+    xm = (6.0 if tan >= 0 else X1 - 6.0) if xm is None else xm
     xs = lambda zz: xm + tan * zz
     ax.annotate('', xy=(xs(-2.6), z(-2.6)), xytext=(xs(g + 9.5), z(g + 9.5)),
                 arrowprops=dict(arrowstyle='-|>', color=ps.ACCENT, lw=1.3, mutation_scale=9), zorder=5)
@@ -70,7 +70,7 @@ def sketch(ax, g, v_mm, t0, tlim, tan=0.45, particle='muon', gap_label=None):
     ax.annotate('', xy=(X0 - 1.6, z(0)), xytext=(X0 - 1.6, z(g)),
                 arrowprops=dict(arrowstyle='<->', color=mut, lw=0.7, shrinkA=0, shrinkB=0))
     ax.text(X0 - 2.3, z(g / 2), gap_label or f'$g$ = {g:.1f} mm', rotation=90, va='center', ha='right', fontsize=7.5, color=mut)
-    ax.text(xs(g * 0.62) + 5.0, z(g * 0.62), r'$t = t_0 + z/v$', fontsize=8, color=ink, ha='left', va='center',
+    ax.text(xs(g * 0.62) + 5.0, z(g * 0.62), rf'$t = t_0 + z/{vsym}$', fontsize=8, color=ink, ha='left', va='center',
             bbox=dict(fc='white', ec='none', pad=1.0))
     ax.set_xlim(X0 - 4.0, X1 + 19.5)   # room on the right so the labels clear (b)'s axis
     ax.set_ylim(*tlim)

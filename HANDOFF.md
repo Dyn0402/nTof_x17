@@ -24,7 +24,9 @@ framed as "an experiment proposed at n_TOF"; position-vs-angle argument with num
 new Fig. 1 `experiment_layout` (top-down layout + chamber section, g = 30 mm; `figs/make_experiment_layout.py`); new
 §3.4 Reconstruction with Fig. 5 `reco_example` (`make_tpc_principle.py --variant reco`); "MX17" removed from captions and
 the bench drawing; cleveref set to JINST/IOP style (lower-case "figure 1", whole name linked). Every item has a 💬.
-Still unchecked in the note: §5.2 "kick this to the appendix" (not an intro item, not done).
+Round 3 (same day): resolution argument cut to one sentence; Fig. 1 redesigned (idealised thin + thick projective
+scintillators, labels per Dylan, v_d in (b)); `\crefp{fig}{a}` links whole "figure 1a"; loss gallery moved to appendix A
+with one paragraph per loss group. Open: v vs v_d notation; B–E column in appendix A.
 
 **Open / waiting on Dylan:**
 - `\askDylan`s in §1: cite Hanoi ⁸Be + NA64?; capsule wall (0.6 mm Al + 0.9 mm CFRP, ~1 % X₀) scatters ~4× more than air — mention?;

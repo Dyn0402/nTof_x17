@@ -63,7 +63,7 @@ column, every strip and every sample. Two measurements show it. Track by track, 
 510\,V and keeping unsaturated tracks, the angle residual to the reference does not depend on the track's charge
 ($s_{68}$ 0.82--0.94\textdegree{} in X and 0.72--0.87\textdegree{} in Y over the ten charge deciles, a factor 17
 in charge, with no rise at low charge), while the time resolution of tracks binned the same way falls with the early
-amplitude as noise over slope (\cref{fig:timing}b). The fit's own angle error does not move either (median
+amplitude as noise over slope (\crefp{fig:timing}{b}). The fit's own angle error does not move either (median
 $\sigma_{\tan}$ 0.014--0.021 at every HV up to 510\,V), and the angle scale does not move with the gain, so a lower gain adds no
 tilt. Two limits: the $s_{68}$ includes the reference angle error and the scattering, which could hide a small change in the
 chamber's own term; and it holds down to 425\,V, $1/13$ of the operating gain, below which the scan does not go.
@@ -94,7 +94,8 @@ $\varepsilon_\mathrm{single}=94.8\pm0.1$\,(stat)$^{+0.7}_{-0.5}$\,($R$)\,\%; in 
 losses (4.3\,\%): $\delta$-rays 2.7 (below), discharges 0.5, noise bands 0.1, fits off with no flag 0.4, second deposits
 not particle-like 0.2, fits right in angle but far from the reference 0.2, edge of the other coordinate 0.2. The chamber hardware itself (discharges, noise bands) accounts for 0.6\,\%; the rest is the
 reconstruction of a muon accompanied by its own $\delta$-ray. The extra 0.9\,pt lost over the full area is the edge
-response (\cref{sec:edge}).
+response (\cref{sec:edge}). Every loss class, with one real event display each and what a reference-free change to the
+reconstruction recovers of it, is in \cref{app:losses}.
 \textbf{$\delta$-rays: one population, three outcomes by size.} Median strips over threshold: a clean muon 12; a
 compact saturated blob 19 (the fit is pulled off, 0.9\,\%); a $\delta$ along the track 34 (the fit is pulled beyond
 5\,mm, 0.9\,\%); a large branching deposit 67 (0.7--0.9\,\%), which trips the discharge veto (${>}50$ strips) so that no
@@ -109,12 +110,6 @@ and 220--230 at SNR\,$>$\,6, with chip-wide ringing.
   \includegraphics[width=\linewidth]{loss_budget}
   \caption{Where the chamber~A single-track inefficiency goes, over the full active area (Runs 1 and 2, the 28\,467 single-track reference tracks of the full area, 5.2\,\% lost), by class with Poisson errors, grouped under $\delta$-rays, the chamber itself, the reconstruction, and the edges. The largest single class is the edge zone, where tracks exceed the 50-strip discharge veto.}
   \label{fig:lossbudget}
-\end{figure}
-\begin{figure}[tbp]
-  \centering
-  \includegraphics[width=\linewidth]{loss_gallery}
-  \caption{Six of the loss classes of \cref{fig:lossbudget}, one real chamber~A event each (Run~1; both views, amplitude normalised to the ADC full scale; reference track solid black, fit dashed magenta, a second fitted track dashed brown; grey lines: mesh and cathode). (a) A second particle, and the reconstruction keeps the other one. (b) A second particle merged with the muon in projection. (c) A $\delta$-ray pulls the straight-line fit. (d) A saturated $\delta$ blob tilts the fit. (e) A discharge: whole chips light up and ring. (f) A shower at the crossing. The noise-band class, whose patch sets the colour scale, is a figure of its own (\cref{fig:loss_band}). Every class, with its fraction: \cref{app:losses}.}
-  \label{fig:lossgallery}
 \end{figure}
 \begin{table}[tbp]
   \centering\small
