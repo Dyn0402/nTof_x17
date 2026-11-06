@@ -33,12 +33,26 @@ source = "papers/paper1/figs/out/readout_layout_allpads.pdf"
 producer = ".venv/bin/python papers/paper1/figs/make_readout_layout.py --allpads"
 note = "2026-11-03: pad pitch 0.78 mm = 0.86 px at 200 dpi, 2.6 px at 600 dpi; 262,144 outlines, 4.5 MB PDF."
 
+[fig.experiment_layout]
+title = "The measurement the chambers were built for, schematic: (a) top-down, target, four TPCs at 20 cm, two scintillator layers each, one pair; (b) one chamber in section (nominal 30 mm gap)"
+state = "current"
+source = "papers/paper1/figs/out/experiment_layout.pdf"
+producer = ".venv/bin/python papers/paper1/figs/make_experiment_layout.py"
+note = "2026-11-06: new Fig. 1 (Dylan, feedback note Fig. 1): top-down layout + the old tpc_principle panel (a) as the blow-up. Distances rounded from MX17_Full_Geant SimConfig.hh; no data."
+
+[fig.reco_example]
+title = "Reconstruction: (a) a real chamber A muon (Run 1 event 7884, X view) with the reference track and the fit; (b) the forward model at the fit"
+state = "current"
+source = "papers/paper1/figs/out/reco_example.pdf"
+producer = ".venv/bin/python papers/paper1/figs/make_tpc_principle.py --variant reco [--cache <dir of principle_7884.pkl>]"
+note = "2026-11-06: the old tpc_principle panels (b),(c), moved to the reconstruction subsection (sec:reco) at Dylan's request."
+
 [fig.tpc_principle]
 title = "TPC principle: (a) the chamber in section, depth = drift time; (b) a real chamber A muon (Run 1 event 7884, X view); (c) the forward model at the pass-1 fit"
 state = "current"
 source = "papers/paper1/figs/out/tpc_principle.pdf"
 producer = ".venv/bin/python papers/paper1/figs/make_tpc_principle.py [--cache <dir of principle_7884.pkl, made by make_principle.py>]"
-note = "2026-11-03: rework (Dylan: too narrow/tall, too much text): one full-width row, sketch on the same vertical scale as the data (t = t0 + z/v), evd.py display style. Replaces microtpc_principle (make_principle.py still makes the replay cache)."
+note = "2026-11-06: no longer in the .tex (split into experiment_layout + reco_example). 2026-11-03: rework (Dylan: too narrow/tall, too much text): one full-width row, sketch on the same vertical scale as the data (t = t0 + z/v), evd.py display style. Replaces microtpc_principle (make_principle.py still makes the replay cache)."
 
 [fig.tpc_principle_stacked]
 title = "TPC principle, variant: (a) section; (b) event 7884 X heatmap; (c) stacked per-strip waveforms, data and model (not in the .tex; compare with tpc_principle)"

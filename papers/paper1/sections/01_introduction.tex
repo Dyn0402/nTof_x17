@@ -1,69 +1,76 @@
 \section{Introduction}\label{sec:intro}
-\sectionstate{partial}{drafted 2026-11-06 from Dylan's note; kinematics from $Q=20.58$\,MeV and $m_X=16.8$\,MeV; air scattering: Highland formula, 204\,mm of air; stack distances from the surveyed Geant4 geometry (\texttt{MX17\_Full\_Geant/include/SimConfig.hh})}
+\sectionstate{partial}{drafted 2026-11-06 from Dylan's note, revised the same day from his comments; position vs angle: $L\tan1^\circ$ at $L=200$\,mm against the intrinsic resolution of \cref{sec:posres}; kinematics from $Q=20.58$\,MeV and $m_X=16.8$\,MeV; air scattering: Highland formula, 204\,mm of air; stack distances from the surveyed Geant4 geometry (\texttt{MX17\_Full\_Geant/include/SimConfig.hh})}
 
 In 2016 the ATOMKI group reported an excess of $e^+e^-$ pairs at large opening angles in the decay of an excited
 state of $^8$Be~\cite{Krasznahorkay2016}, and later in $^4$He~\cite{Krasznahorkay2021} and
 $^{12}$C~\cite{Krasznahorkay2022}. All three are consistent with the emission of a light neutral boson of mass
 ${\approx}17$\,MeV that decays to $e^+e^-$, now called X17~\cite{Feng2016}. Independent tests have not settled the question:
-MEG~II, repeating the $^8$Be measurement, sees no significant signal yet remains compatible with ATOMKI at the
-1.5$\sigma$ level~\cite{MEGII2024}, while PADME, searching for X17 produced resonantly in $e^+e^-$ annihilation, sees an
-excess of about 2$\sigma$ at $\sqrt{s}\approx16.9$\,MeV~\cite{PADME2025}.
-\askDylan{Also cite the Hanoi (VNU) $^8$Be confirmation, and the NA64 limits? Neither is in \texttt{refs.bib} yet.}
-The n\_TOF experiment~\cite{nTOFX17proposal,Gustavino2025} reaches the $^4$He case with neutrons instead of protons: capture on $^3$He
-forms $^4$He 20.58\,MeV above its ground state, which decays by $\gamma$ emission, by internal pair creation (IPC)
-or, possibly, by emitting an X17~\cite{Viviani2022}. This paper describes the detectors built to track the leptons
-from that reaction.
+a two-arm spectrometer in Hanoi reports the $^8$Be anomaly~\cite{Anh2024}; NA64 excludes part of the couplings
+favoured by it~\cite{NA64_2018,NA64_2020}; MEG~II, repeating the $^8$Be measurement, sees no significant signal yet
+remains compatible with ATOMKI at the 1.5$\sigma$ level~\cite{MEGII2024}; and PADME, searching for X17 produced
+resonantly in $e^+e^-$ annihilation, sees an excess of about 2$\sigma$ at $\sqrt{s}\approx16.9$\,MeV~\cite{PADME2025}.
+An experiment proposed at the CERN n\_TOF facility~\cite{nTOFX17proposal,Gustavino2025} reaches the $^4$He case with
+neutrons instead of protons: capture on $^3$He forms $^4$He 20.58\,MeV above its ground state, which decays by
+$\gamma$ emission, by internal pair creation (IPC) or, possibly, by emitting an X17~\cite{Viviani2022}. This paper
+describes the compact resistive Micromegas TPCs built to track the leptons from that reaction.
 
 \paragraph{What the measurement needs.}
-The experiment must detect the rare $e^+e^-$ pairs and reconstruct each lepton's direction from the target. The two
-leptons share about 19.6\,MeV of kinetic energy; from an X17 of 16.8\,MeV each carries between 3.8 and 15.7\,MeV, and
-the pair opens by more than 109\textdegree. The opening angle is the key input to the invariant mass, which is what
-separates a resonance from the smooth IPC continuum. The figure of merit of the tracking is therefore the accuracy of
-each reconstructed track angle; the position resolution matters less, and the time resolution is needed mainly to
-show that the two leptons were produced together and to reject combinatorial background. Tracking is the first layer
-of the experiment. Behind it, scintillators trigger and measure the energy, which adds the energy split of the pair to
-the mass and rejects events whose total energy is not that of the capture. The tracker must therefore put as little
-material as possible in front of its own measurement, and then measure the track well.
+The experiment must detect the $e^+e^-$ pairs from the hypothetical rare decay of the X17 and reconstruct each
+lepton's trajectory from the target. From the kinematics, each lepton carries between about 3 and 16\,MeV. The
+opening angle of the pair is related to its invariant mass, which provides the separating power against the smooth
+IPC background. The figure of merit of the tracking is therefore the accuracy of each reconstructed track angle.
+Position resolution of the order of a millimetre is enough at these distances: projected back over 20\,cm to the
+target, an angle error of 1\textdegree{} displaces a track by 3.5\,mm, against the ${\approx}0.1$\,mm of the chamber's
+intrinsic position resolution (\cref{sec:posres}); even 1\,mm would widen the projection by only 4\,\% in quadrature.
+Nor can the direction be taken from the position alone, by assuming the pair started at the target centre, unless
+the target is much smaller than the 3.5\,mm that 1\textdegree{} subtends at 20\,cm. The time resolution is needed
+mainly to show that the two leptons were produced together and to reject combinatorial background. Tracking is the
+first layer of the experiment. Behind it, scintillators trigger and measure the energy, which adds the energy split
+of the pair to the mass and rejects events whose total energy is not that of the capture. The tracker must therefore
+put as little material as possible in front of its own measurement, and then measure the track well.
 
 \paragraph{Why a compact TPC.}
-A time projection chamber does both: the leptons cross a thin window into a gas volume, and the drift times of the
-ionisation along each track give a three-dimensional segment, hence a direction, from a single chamber (\cref{fig:principle}). We built
-Micromegas~\cite{Giomataris1996} TPCs for the measurement at n\_TOF. They must also sit close to the target, since the
-air in between scatters the leptons: over 20\,cm an 8\,MeV electron is deflected by 1.7\textdegree{} rms in each
-projection (3.2\textdegree{} at 4\,MeV), already comparable to the chamber's own angular resolution, and the deflection
-grows as the square root of the path. The chambers are therefore compact, with a 30\,mm drift gap, so that four of them form a box
-around the target with their entrance windows 20.4\,cm from it. Each has an active area of about
-$40\times36$\,cm$^2$, for a large acceptance to the back-to-back pairs. The trigger and calorimetry stack then fits
-close behind each chamber: a plastic scintillator wall 11\,cm behind the window, followed by plastic bars and liquid
-scintillators, all within about 50\,cm of the target.
+A Micromegas~\cite{Giomataris1996} time projection chamber was chosen to fill the role of a low-material-budget
+tracker. Leptons cross a thin window into a gas volume, and the drift times of the ionisation along each track give
+a three-dimensional segment, hence a direction, from a single chamber (\cref{fig:layout}b). The trackers must sit
+close to the target, since the air in between scatters the leptons: over 20\,cm an 8\,MeV electron is deflected by
+1.7\textdegree{} rms in each projection (3.2\textdegree{} at 4\,MeV), already comparable to the chamber's own angular
+resolution. Four chambers therefore form a box around the target, with their entrance windows 20\,cm from it
+(\cref{fig:layout}a), each with an active area of about $40\times36$\,cm$^2$, for a large acceptance to the
+back-to-back pairs. The trigger and calorimetry scintillators must fit close behind each chamber, the first layer
+11\,cm behind the window and the whole stack within about 50\,cm of the target, and this is what makes the chambers
+compact, with a 30\,mm drift gap.
 
 \paragraph{Why resistive strips.}
-The instantaneous intensity at n\_TOF was expected to be high, starting with the $\gamma$ flash at each proton
-pulse, so the chambers were built as resistive Micromegas~\cite{Alexopoulos2011}, which quench discharges, for
-survivability and stability. This appears to have worked (\cref{sec:operation}). The resistive strips, however, spread
-the charge of each avalanche over neighbouring strips and delay it, which poses new problems for the TPC
-reconstruction. They are discussed here where they affect the performance, and in a companion paper devoted to
-them~\cite{paperII}.
+n\_TOF operates in pulsed mode and the instantaneous intensity was expected to be high, so the chambers were built as
+resistive Micromegas~\cite{Alexopoulos2011} for survivability and stability. This appears to have worked
+(\cref{sec:operation}). The resistive strips, however, spread the charge of each avalanche over neighbouring strips
+with delay, which poses novel problems for the TPC reconstruction. Reconstruction algorithms for resistive
+Micromegas TPCs are discussed here where they affect the performance (\cref{sec:reco}), and in a companion paper
+devoted to them~\cite{paperII}.
 
 \paragraph{This paper.}
-It covers the chambers themselves, on the Saclay cosmic bench and in the CERN SPS H4 beam; the n\_TOF campaign and
-its physics are reported separately. \Cref{sec:design} describes the design and construction of the chambers, and
-\cref{sec:setups} the two test setups and the five chambers, A--E, four of which later ran at n\_TOF. \Cref{sec:operation}
+It covers the chambers themselves, characterised on the Saclay cosmic bench and in the CERN SPS H4 beam; the n\_TOF
+campaign and its physics are reported separately. \Cref{sec:design} describes the design and construction of the
+chambers, and \cref{sec:setups} the two test setups, the five chambers and the reconstruction. \Cref{sec:operation}
 covers the high voltage, the gain and the discharges, \cref{sec:efficiency} the charge balance between the two
 readout views and the efficiency, including events with two particles in one chamber, and \cref{sec:gas} the gas:
 drift velocity and electron attachment. \Cref{sec:tracking} gives the angle and position resolution, with two
 geometric effects: a bow of the readout boards and the field fringe at the chamber edges. \Cref{sec:timing} covers
 the timing, and \cref{sec:det4} a production defect of one chamber, chamber~E: stripes of its area that do not
-amplify. The reconstruction used throughout is that of the companion paper.
-\askDylan{Three things your draft didn't have, added here; keep or cut: (1) the 20\,cm figure is the air alone: the
-capsule's own wall (0.6\,mm Al plus 0.9\,mm CFRP in the Geant4 geometry, ${\approx}1\,\%\,X_0$) scatters about four
-times more, which no detector placement can avoid; (2) the sentence on the large active area; (3) the scope sentence
-(n\_TOF results separate). Also: should the outline name the gas (Ar/iC$_4$H$_{10}$ 95/5) and the DREAM readout here, or leave both to \cref{sec:setups}?}
+amplify.
+\askDylan{Still open from the first draft: (1) keep the sentence on the large active area? (2) keep the scope
+sentence (n\_TOF results separate)? (3) should the outline name the gas (Ar/iC$_4$H$_{10}$ 95/5) and the DREAM
+readout, or leave both to \cref{sec:setups}?}
 
 \begin{figure}[tbp]
   \centering
-  \includegraphics[width=\linewidth]{tpc_principle}
-  \caption{TPC operation. (a) The chamber in section (the stage below the mesh enlarged; the muon is drawn more inclined than the example, so the drift lines separate): the ionisation left along the track drifts straight down to the mesh and arrives later the higher it started, $t=t_0+z/v$; the avalanche lands on the resistive strips, which couple it to the readout strips below. (b) The X view of a real chamber~A cosmic muon (Run~1), amplitude per strip and 60\,ns sample, on the same vertical scale as (a): the track appears as a slanted column from the mesh ($t_0$) to the cathode ($t_0+g/v$, grey lines). Solid black: the reference track; dashed magenta: the fitted track. (c) The fit model: the forward model evaluated at the fit, same colour scale: the whole strip $\times$ time picture is fitted, not per-strip times. Each pulse lasts a few samples after its electrons arrive (the shaping), so the charge extends above the cathode line.}
-  \label{fig:principle}
+  \includegraphics[width=\linewidth]{experiment_layout}
+  \caption{The measurement the chambers were built for, schematic. (a) Top-down view, the beam into the page: four
+  TPCs form a box around the target, their entrance windows 20\,cm from it, each followed by two layers of
+  scintillator; one $e^+e^-$ pair is drawn. (b) The boxed region in section, enlarged (target at the top, gap drawn
+  at its nominal 30\,mm; the stage below the mesh enlarged further): the ionisation left along the track drifts
+  straight down to the mesh and arrives later the higher it started, $t=t_0+z/v$; the avalanche lands on the
+  resistive strips, which couple it to the readout strips below.}
+  \label{fig:layout}
 \end{figure}
-

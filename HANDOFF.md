@@ -19,6 +19,13 @@
 - `papers/note_outline.py`: standing "Dylan’s Notes" and "Title" headings kept at the top (they were going to Unplaced).
 - Every item answered with a 💬 in the note.
 
+**Done (2026-11-06, second round, the intro `- [ ]` items):** intro reworded item by item; Hanoi + NA64 cited; n_TOF
+framed as "an experiment proposed at n_TOF"; position-vs-angle argument with numbers (200 mm × tan 1° = 3.5 mm vs ~0.1 mm);
+new Fig. 1 `experiment_layout` (top-down layout + chamber section, g = 30 mm; `figs/make_experiment_layout.py`); new
+§3.4 Reconstruction with Fig. 5 `reco_example` (`make_tpc_principle.py --variant reco`); "MX17" removed from captions and
+the bench drawing; cleveref set to JINST/IOP style (lower-case "figure 1", whole name linked). Every item has a 💬.
+Still unchecked in the note: §5.2 "kick this to the appendix" (not an intro item, not done).
+
 **Open / waiting on Dylan:**
 - `\askDylan`s in §1: cite Hanoi ⁸Be + NA64?; capsule wall (0.6 mm Al + 0.9 mm CFRP, ~1 % X₀) scatters ~4× more than air — mention?;
   gas/DREAM in the intro? Also: he should confirm the calorimetry rewording (energy split, since total fixed by Q at thermal).

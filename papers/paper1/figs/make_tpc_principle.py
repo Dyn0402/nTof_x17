@@ -31,7 +31,7 @@ import paper_style as ps  # noqa: E402
 CACHE = os.environ.get('WORK_DATA', '/media/ucla/work') + '/claude-jobs/17c92c46-displays/principle'
 
 
-def sketch(ax, g, v_mm, t0, tlim, tan=0.45):
+def sketch(ax, g, v_mm, t0, tlim, tan=0.45, particle='muon', gap_label=None):
     """The section, in mm (x) against z (mm above the mesh, mapped onto the time axis of the data panels)."""
     import matplotlib.patches as mp
     z = lambda zz: t0 + zz / v_mm            # depth -> the shared (time) coordinate
@@ -57,7 +57,7 @@ def sketch(ax, g, v_mm, t0, tlim, tan=0.45):
     xs = lambda zz: xm + tan * zz
     ax.annotate('', xy=(xs(-2.6), z(-2.6)), xytext=(xs(g + 9.5), z(g + 9.5)),
                 arrowprops=dict(arrowstyle='-|>', color=ps.ACCENT, lw=1.3, mutation_scale=9), zorder=5)
-    ax.text(xs(g + 8.0) + 0.9, z(g + 8.0), 'muon', color=ps.ACCENT, fontsize=7.5, va='center', ha='left')
+    ax.text(xs(g + 8.0) + 0.9, z(g + 8.0), particle, color=ps.ACCENT, fontsize=7.5, va='center', ha='left')
     # ionisation clusters and their drift down to the mesh
     rng = np.random.default_rng(3)
     for zz in np.linspace(2.5, g - 2.5, 7):
@@ -69,7 +69,7 @@ def sketch(ax, g, v_mm, t0, tlim, tan=0.45):
     # drift field and gap dimension
     ax.annotate('', xy=(X0 - 1.6, z(0)), xytext=(X0 - 1.6, z(g)),
                 arrowprops=dict(arrowstyle='<->', color=mut, lw=0.7, shrinkA=0, shrinkB=0))
-    ax.text(X0 - 2.3, z(g / 2), f'$g$ = {g:.1f} mm', rotation=90, va='center', ha='right', fontsize=7.5, color=mut)
+    ax.text(X0 - 2.3, z(g / 2), gap_label or f'$g$ = {g:.1f} mm', rotation=90, va='center', ha='right', fontsize=7.5, color=mut)
     ax.text(xs(g * 0.62) + 5.0, z(g * 0.62), r'$t = t_0 + z/v$', fontsize=8, color=ink, ha='left', va='center',
             bbox=dict(fc='white', ec='none', pad=1.0))
     ax.set_xlim(X0 - 4.0, X1 + 19.5)   # room on the right so the labels clear (b)'s axis
@@ -100,9 +100,10 @@ def main():
     ap.add_argument('--event', type=int, default=7884)
     ap.add_argument('--view', default='x')
     ap.add_argument('--out', default=None)
-    ap.add_argument('--variant', default='heatmap', choices=['heatmap', 'stacked'])
+    ap.add_argument('--variant', default='heatmap', choices=['heatmap', 'stacked', 'reco'])
     a = ap.parse_args()
-    a.out = a.out or os.path.join(HERE, 'out', 'tpc_principle' + ('_stacked' if a.variant == 'stacked' else ''))
+    a.out = a.out or os.path.join(HERE, 'out', {'heatmap': 'tpc_principle', 'stacked': 'tpc_principle_stacked',
+                                               'reco': 'reco_example'}[a.variant])
     import matplotlib; matplotlib.use('Agg')
     import matplotlib.pyplot as plt
     ps.use()
@@ -112,18 +113,23 @@ def main():
     g = evd.GAP
     t0 = float(d['t0'])
     tlim = (t0 - 7.0 / v_mm, t0 + (g + 7.0) / v_mm)
-    fig = plt.figure(figsize=(ps.FULL[0], 2.75))
-    outer = fig.add_gridspec(1, 2, width_ratios=[1.45, 2.0], left=0.0, right=0.885, bottom=0.16, top=0.9,
-                             wspace=0.2)
     stk = a.variant == 'stacked'
-    gs = outer[0, 1].subgridspec(1, 3 if stk else 2, wspace=0.06 if not stk else 0.6,
-                                 width_ratios=[1, 0.06, 1.25] if stk else None)
-    bb = outer[0, 0].get_position(fig)
-    B0, B1 = 0.02, 0.985                           # (a) spans the whole figure height, like (b)/(c) with their labels
-    span = tlim[1] - tlim[0]
-    tl_a = (tlim[0] - (bb.y0 - B0) / bb.height * span, tlim[1] + (B1 - bb.y1) / bb.height * span)
-    axs_ = fig.add_axes([bb.x0, B0, bb.width, B1 - B0])
-    sketch(axs_, g, v_mm, t0, tl_a)
+    reco = a.variant == 'reco'       # Dylan 11-06: data + fit model only, for the reconstruction subsection
+    if reco:
+        fig = plt.figure(figsize=(ps.FULL[0] * 0.78, 2.75))
+        gs = fig.add_gridspec(1, 2, left=0.1, right=0.83, bottom=0.16, top=0.9, wspace=0.06)
+    else:
+        fig = plt.figure(figsize=(ps.FULL[0], 2.75))
+        outer = fig.add_gridspec(1, 2, width_ratios=[1.45, 2.0], left=0.0, right=0.885, bottom=0.16, top=0.9,
+                                 wspace=0.2)
+        gs = outer[0, 1].subgridspec(1, 3 if stk else 2, wspace=0.06 if not stk else 0.6,
+                                     width_ratios=[1, 0.06, 1.25] if stk else None)
+        bb = outer[0, 0].get_position(fig)
+        B0, B1 = 0.02, 0.985                       # (a) spans the whole figure height, like (b)/(c) with their labels
+        span = tlim[1] - tlim[0]
+        tl_a = (tlim[0] - (bb.y0 - B0) / bb.height * span, tlim[1] + (B1 - bb.y1) / bb.height * span)
+        axs_ = fig.add_axes([bb.x0, B0, bb.width, B1 - B0])
+        sketch(axs_, g, v_mm, t0, tl_a)
     m3 = r.get('m3') or {}
     cen = float(d['p0'] + d['w'] * 0.5 * g / v_mm)
     half = 9.0
@@ -131,7 +137,8 @@ def main():
     vmax = max(float(np.percentile(W, 99.5)), 60.0)
     axd = fig.add_subplot(gs[0, 0])
     axm = fig.add_subplot(gs[0, -1], sharey=axd)
-    panels = ((axd, W, '(b) data'),) if stk else ((axd, W, '(b) data'), (axm, M, '(c) fit model'))
+    panels = ((axd, W, '(b) data'),) if stk else (((axd, W, '(a) data'), (axm, M, '(b) fit model')) if reco else
+                                                  ((axd, W, '(b) data'), (axm, M, '(c) fit model')))
     for ax, A, title in panels:
         pc = evd.cells(ax, A, P, cen, half, vmax)
         evd.gap_lines(ax, t0, v_mm, label=False)
@@ -163,11 +170,12 @@ def main():
     sec = axm.secondary_yaxis('right', functions=(lambda t: (t - t0) * v_mm, lambda zz: zz / v_mm + t0))
     sec.set_ylabel('$z$ above the mesh [mm]')
     sec.tick_params(direction='in', length=2.5)
-    axs_.text(0.0, 1.0, '(a)', transform=axs_.transAxes, fontsize=8, va='top', ha='left')
+    if not reco:
+        axs_.text(0.0, 1.0, '(a)', transform=axs_.transAxes, fontsize=8, va='top', ha='left')
     if stk:
         cax = fig.add_subplot(gs[0, 1])
     else:
-        cax = fig.add_axes([0.965, 0.16, 0.012, 0.74])
+        cax = fig.add_axes([0.955 if reco else 0.965, 0.16, 0.015 if reco else 0.012, 0.74])
     cb = fig.colorbar(pc, cax=cax)
     if stk:
         cb.ax.set_title('ADC', fontsize=7, pad=3)
