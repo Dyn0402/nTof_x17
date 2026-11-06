@@ -21,7 +21,56 @@ reconstruction recovers it (tested by re-running the reconstruction, not argued)
   \end{tabular}
 \end{table}
 
-\tbw{One paragraph per class: mechanism, how it was identified, the recovery test.}
+The 7.71\,\% of interior reference tracks that chamber~A does not detect (7.36\,\% in Run~1) fall into five groups.
+The classes here count every interior reference track, including those with a second particle in the chamber, so
+their fractions are larger than the single-track losses of \cref{sec:single}. Six of the classes are shown together
+in \cref{fig:lossgallery}, and each has a display of its own below.
+
+\textbf{The chamber itself: noise bands and discharges (0.72\,\%).} A noise band is a whole-window baseline offset on a
+contiguous patch of strips, seen in the X and Y views together. The track itself is clean, but the view fails the
+competing-cluster cut (\cref{fig:loss_band}). The pass censors the band hits, which brought the class in Run~1 from
+1.43\,\% to 0.22\,\%. A discharge (0.50\,\%) lights up whole chips, which ring (\cref{fig:loss_spark_discharge}): a
+real discharge has 113 strips over threshold and 220--230 at SNR\,$>$\,6, beyond the 50-strip veto that stops the
+fit. It is not recoverable.
+
+\textbf{A second particle or deposit in the chamber (3.68\,\%).} The largest group. When chamber~A alone sees two particle-like clusters in a view, three things happen. The reference
+particle is fitted but the view fails the competing-cluster cut (1.15\,\%, \cref{fig:loss_multi_m3picked}), which
+keeping views with two tracks (multi-track credit) recovers. The reconstruction fits the other, brighter particle
+(1.51\,\%, \cref{fig:loss_multi_otherpicked}), which needs a rule to choose the triggering track and so cannot be
+recovered without the reference. Or the two lie within the 12\,mm seed gap in one projection and are merged, with the
+fit between them (0.46\,\%, \cref{fig:loss_multi_merged}); the joint two-track fit with charge corroboration recovers
+a reference-matched track in 25 of the 146 pass-1 events of this class. A clean muon with an unrelated deposit
+elsewhere in the plane can also trip the discharge veto (0.35\,\%, \cref{fig:loss_spark_muonother}), partly
+recoverable by turning the veto off and relaxing the competing-cluster cut. A second deposit that is not
+particle-like (0.21\,\%, \cref{fig:loss_multi_deposit}) is not recovered.
+
+\textbf{$\delta$-rays made by the muon (2.61\,\%).} Three classes, one population of increasing size
+(\cref{sec:single}): a $\delta$-ray along the track pulls the straight-line fit beyond 5\,mm (0.87\,\%,
+\cref{fig:loss_delta}); a compact saturated blob tilts it (0.93\,\%, \cref{fig:loss_satblob}); and a shower at the
+crossing (0.81\,\%, \cref{fig:loss_spark_shower}) exceeds the discharge veto, so that no fit is attempted. None is
+recovered. A straight-line model cannot absorb a $\delta$ track, and for the saturated blobs neither censoring at
+each channel's own rail nor a track plus a compact deposit in the forward model helps: on 350 saturated views of
+Run~1, agreement with the reference moves from 71.4 to at most 72.9\,\%, because the deposit is a short $\delta$
+track over 5--10 strips, not a point.
+
+\textbf{The reconstruction (0.30\,\%).} A fit off with no second particle-like cluster or saturation flagged
+(0.28\,\%, \cref{fig:loss_fit}), and a fit that failed in one view (0.02\,\%, \cref{fig:loss_headon}). The latter
+was the head-on class before the pass (0.26\,\% in Run~1, 17 tracks: two-strip X clusters whose third strip falls
+below the 10\,\% relative floor and are never seeded); the pass's head-on seeding recovers them, and the one track
+left in Run~1 is not head-on.
+
+\textbf{The reference and the geometry (0.37\,\%).} A position tail where the fit agrees with the charge but not with
+the reference (0.17\,\%, \cref{fig:loss_postail}; about two thirds are tracks bent between the reference doublets),
+and tracks at the edge of the other coordinate (0.20\,\%, \cref{fig:loss_edge}). These are not losses of the
+chamber. The remaining 0.03\,\% (cuts, charge elsewhere) is not classed further.
+
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=\linewidth]{loss_gallery}
+  \caption{Six of the loss classes of \cref{fig:lossbudget}, one real chamber~A event each (Run~1; both views, amplitude normalised to the ADC full scale; reference track solid black, fit dashed magenta, a second fitted track dashed brown; grey lines: mesh and cathode). (a) A second particle, and the reconstruction keeps the other one. (b) A second particle merged with the muon in projection. (c) A $\delta$-ray pulls the straight-line fit. (d) A saturated $\delta$ blob tilts the fit. (e) A discharge: whole chips light up and ring. (f) A shower at the crossing. The noise-band class, whose patch sets the colour scale, is a figure of its own (\cref{fig:loss_band}). Every class, with its fraction: \cref{tab:losses}.}
+  \label{fig:lossgallery}
+\end{figure}
+
 
 Each display (\crefrange{fig:loss_band}{fig:loss_multi_deposit}) shows one real chamber~A event of the class in both
 views: strip position against drift time, the amplitude of every sample above 4\,\% of the view's maximum, the reference

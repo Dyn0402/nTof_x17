@@ -65,7 +65,7 @@ $v$ refitted. Where a figure needs a single event it is from Run~1.
 \subsection{Reconstruction}\label{sec:reco}
 \sectionstate{partial}{added 2026-11-06 at Dylan's request (brief, points to Paper~II); \texttt{wft/model.py}, \texttt{wft/reco.py}, \texttt{RECONSTRUCTION\_BASIS.md}}
 Each readout strip records a waveform: the DREAM electronics sample it every 60\,ns over the drift window, so one
-view of an event is a picture of amplitude against strip and time (\cref{fig:reco}a). The per-strip hit times that
+view of an event is a picture of amplitude against strip and time (\crefp{fig:reco}{a}). The per-strip hit times that
 a conventional micro-TPC analysis fits are biased: each is an aggregate of charge from several drift depths, mixed
 onto the strip by drift diffusion and the prompt charge footprint and, in the view read along the resistive strips,
 by the RC spreading along them. This compresses the drift-time ladder by 20--30\,\% and reads tracks too
@@ -74,7 +74,7 @@ find candidate tracks, and take the geometry from a fit of the whole strip $\tim
 straight track, with its position at the mesh, its transverse drift speed and its start time $t_0$ as free
 parameters; the charge arriving in each 60\,ns slice of drift is shared onto the strips, spread onto their
 neighbours by the resistive layer (an RC kernel), and folded with the measured pulse shape of the electronics
-(\cref{fig:reco}b). The charge profile along the track is solved inside the fit, and the angle follows from the
+(\crefp{fig:reco}{b}). The charge profile along the track is solved inside the fit, and the angle follows from the
 transverse speed and the drift velocity, $\tan\theta=w/v$. The two views are fitted separately and paired by their
 charge balance and charge-arrival time. Dead channels and saturated samples are excluded from the fit rather than
 read as zero charge. The reconstruction uses no information from the reference tracks. The model, its

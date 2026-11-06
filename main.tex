@@ -21,6 +21,9 @@
 \crefname{subsection}{section}{sections}\Crefname{subsection}{Section}{Sections}
 \crefname{appendix}{appendix}{appendices}\Crefname{appendix}{Appendix}{Appendices}
 \crefname{equation}{equation}{equations}\Crefname{equation}{Equation}{Equations}
+% a figure panel, linked as a whole ("figure 1a"): \crefp{fig:x}{a}, \Crefp at the start of a sentence
+\newcommand{\crefp}[2]{\hyperref[#1]{\cref*{#1}#2}}
+\newcommand{\Crefp}[2]{\hyperref[#1]{\Cref*{#1}#2}}
 \usepackage[section]{placeins} % figures stay in their own section (no pile-up at the end)
 \usepackage{drafting}
 % Float placement: allow figure-heavy pages, so figures sit next to their text

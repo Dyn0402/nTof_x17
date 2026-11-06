@@ -1,5 +1,5 @@
 \section{Introduction}\label{sec:intro}
-\sectionstate{partial}{drafted 2026-11-06 from Dylan's note, revised the same day from his comments; position vs angle: $L\tan1^\circ$ at $L=200$\,mm against the intrinsic resolution of \cref{sec:posres}; kinematics from $Q=20.58$\,MeV and $m_X=16.8$\,MeV; air scattering: Highland formula, 204\,mm of air; stack distances from the surveyed Geant4 geometry (\texttt{MX17\_Full\_Geant/include/SimConfig.hh})}
+\sectionstate{partial}{drafted 2026-11-06 from Dylan's note, revised the same day from his comments; kinematics from $Q=20.58$\,MeV and $m_X=16.8$\,MeV; air scattering: Highland formula, 204\,mm of air; stack distances from the surveyed Geant4 geometry (\texttt{MX17\_Full\_Geant/include/SimConfig.hh})}
 
 In 2016 the ATOMKI group reported an excess of $e^+e^-$ pairs at large opening angles in the decay of an excited
 state of $^8$Be~\cite{Krasznahorkay2016}, and later in $^4$He~\cite{Krasznahorkay2021} and
@@ -19,12 +19,8 @@ The experiment must detect the $e^+e^-$ pairs from the hypothetical rare decay o
 lepton's trajectory from the target. From the kinematics, each lepton carries between about 3 and 16\,MeV. The
 opening angle of the pair is related to its invariant mass, which provides the separating power against the smooth
 IPC background. The figure of merit of the tracking is therefore the accuracy of each reconstructed track angle.
-Position resolution of the order of a millimetre is enough at these distances: projected back over 20\,cm to the
-target, an angle error of 1\textdegree{} displaces a track by 3.5\,mm, against the ${\approx}0.1$\,mm of the chamber's
-intrinsic position resolution (\cref{sec:posres}); even 1\,mm would widen the projection by only 4\,\% in quadrature.
-Nor can the direction be taken from the position alone, by assuming the pair started at the target centre, unless
-the target is much smaller than the 3.5\,mm that 1\textdegree{} subtends at 20\,cm. The time resolution is needed
-mainly to show that the two leptons were produced together and to reject combinatorial background. Tracking is the
+At these distances a position resolution of the order of a millimetre is enough, and the time resolution serves only
+to reject combinatorial background. Tracking is the
 first layer of the experiment. Behind it, scintillators trigger and measure the energy, which adds the energy split
 of the pair to the mass and rejects events whose total energy is not that of the capture. The tracker must therefore
 put as little material as possible in front of its own measurement, and then measure the track well.
@@ -32,11 +28,11 @@ put as little material as possible in front of its own measurement, and then mea
 \paragraph{Why a compact TPC.}
 A Micromegas~\cite{Giomataris1996} time projection chamber was chosen to fill the role of a low-material-budget
 tracker. Leptons cross a thin window into a gas volume, and the drift times of the ionisation along each track give
-a three-dimensional segment, hence a direction, from a single chamber (\cref{fig:layout}b). The trackers must sit
+a three-dimensional segment, hence a direction, from a single chamber (\crefp{fig:layout}{b}). The trackers must sit
 close to the target, since the air in between scatters the leptons: over 20\,cm an 8\,MeV electron is deflected by
 1.7\textdegree{} rms in each projection (3.2\textdegree{} at 4\,MeV), already comparable to the chamber's own angular
 resolution. Four chambers therefore form a box around the target, with their entrance windows 20\,cm from it
-(\cref{fig:layout}a), each with an active area of about $40\times36$\,cm$^2$, for a large acceptance to the
+(\crefp{fig:layout}{a}), each with an active area of about $40\times36$\,cm$^2$, for a large acceptance to the
 back-to-back pairs. The trigger and calorimetry scintillators must fit close behind each chamber, the first layer
 11\,cm behind the window and the whole stack within about 50\,cm of the target, and this is what makes the chambers
 compact, with a 30\,mm drift gap.
@@ -59,18 +55,15 @@ drift velocity and electron attachment. \Cref{sec:tracking} gives the angle and 
 geometric effects: a bow of the readout boards and the field fringe at the chamber edges. \Cref{sec:timing} covers
 the timing, and \cref{sec:det4} a production defect of one chamber, chamber~E: stripes of its area that do not
 amplify.
-\askDylan{Still open from the first draft: (1) keep the sentence on the large active area? (2) keep the scope
-sentence (n\_TOF results separate)? (3) should the outline name the gas (Ar/iC$_4$H$_{10}$ 95/5) and the DREAM
-readout, or leave both to \cref{sec:setups}?}
 
 \begin{figure}[tbp]
   \centering
   \includegraphics[width=\linewidth]{experiment_layout}
   \caption{The measurement the chambers were built for, schematic. (a) Top-down view, the beam into the page: four
-  TPCs form a box around the target, their entrance windows 20\,cm from it, each followed by two layers of
-  scintillator; one $e^+e^-$ pair is drawn. (b) The boxed region in section, enlarged (target at the top, gap drawn
+  TPCs form a box around the target, their entrance windows 20\,cm from it, each followed by a thin scintillator
+  layer and a thick one covering the full acceptance (an idealised design); one $e^+e^-$ pair is drawn. (b) The boxed region in section, enlarged (target at the top, gap drawn
   at its nominal 30\,mm; the stage below the mesh enlarged further): the ionisation left along the track drifts
-  straight down to the mesh and arrives later the higher it started, $t=t_0+z/v$; the avalanche lands on the
+  straight down to the mesh and arrives later the higher it started, $t=t_0+z/v_d$, with $v_d$ the drift velocity; the avalanche lands on the
   resistive strips, which couple it to the readout strips below.}
   \label{fig:layout}
 \end{figure}
