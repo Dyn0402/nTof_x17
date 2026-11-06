@@ -1,5 +1,36 @@
 # Handoff
 
+## Paper I text from the feedback note — updated 2026-11-06 (dylan-MS-7C84)
+
+**Resume:** Paper I intro drafted from Dylan's hub note; next: read the note for new `- [ ]` items and his replies.
+
+**Goal:** write Paper I's text from Dylan's hub note `~/.claude-hub/notes/dylan/archive/Paper I Feedback.md`
+(workflow: "The feedback note" in `papers/README.md`).
+
+**Done (2026-11-06, commit 50417235, Overleaf 9681744f):**
+- Rules recorded in `papers/README.md` + memory: act **only on unchecked `- [ ]` items**; `[…]` inside a draft = Dylan's
+  notes to Claude, never paper text.
+- §1 Introduction written from his draft (`papers/paper1/sections/01_introduction.tex`): X17 status, requirements,
+  compact TPC (air scattering 1.7° @ 8 MeV / 3.2° @ 4 MeV per projection over 20.4 cm, Highland), resistive strips, outline.
+  New refs in `refs.bib`: Krasznahorkay2021/2022, Feng2016, MEGII2024, PADME2025, nTOFX17proposal, Gustavino2025.
+- New title "Resistive Micromegas TPCs for an X17 Search: design, production and performance" (main.tex + `paperI` in both refs.bib).
+- Temporary `\tableofcontents` in main.tex (inside `\ifdraftnotes`; delete before publication).
+- `evd_showcase` figure moved from §1 to the start of §5.5 (now Fig. 12).
+- `papers/note_outline.py`: standing "Dylan’s Notes" and "Title" headings kept at the top (they were going to Unplaced).
+- Every item answered with a 💬 in the note.
+
+**Open / waiting on Dylan:**
+- `\askDylan`s in §1: cite Hanoi ⁸Be + NA64?; capsule wall (0.6 mm Al + 0.9 mm CFRP, ~1 % X₀) scatters ~4× more than air — mention?;
+  gas/DREAM in the intro? Also: he should confirm the calorimetry rewording (energy split, since total fixed by Q at thermal).
+- Fig. 1 (`tpc_principle`) placement: recommended a "2.1 Operating principle" at the start of §2; not done until he adds a `- [ ]`.
+- `refs.bib` gaps: MEG II journal ref (accepted EPJC), Gustavino NIM A 1072 article number.
+
+**Gotchas:**
+- `overleaf.sh push paper1` hits dash recursion on the desktop too: use the bash split workaround in `papers/README.md`.
+- No latexmk on the desktop: `pdflatex; bibtex main; pdflatex; pdflatex` in `papers/paper1`.
+- After moving figures/sections: `.venv/bin/python papers/note_outline.py paper1 --write` (check no Unplaced). The hub
+  auto-commits the notes repo (no git remote there).
+
 ## Paper II hits-DAQ comparison (§ hits vs waveforms) — updated 2026-11-06 (dylan-MS-7C84)
 
 **Resume:** H2c on det3: choose t_rise (400 vs 1000, scan done) and set the h2c.py default, then submit the analysis DAG.
