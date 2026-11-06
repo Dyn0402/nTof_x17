@@ -7,7 +7,7 @@ Scorer `pf_score.py {pull,lat,line,beam,all}`; tables `$WORK_DATA/ntof_pass1/pre
 Plan and decisions: `rerun/ntof/NTOF_PASS_PLAN_2026-11-02.md` §5–§6.
 
 **Status: every set is complete except the run_79/81 beam samples** (23 acquisition×arm jobs, A/C/D, need > 8 h each;
-re-submitted on the 24 h flavour as 4634655) **and the D-L1 beam check** (3/25 done, 4620578). The numbers below for
+re-submitted on the 24 h flavour as 4634655) **and the D-L1 beam check** (7/25 done; the other 18 hit the 8 h limit, re-submitted as 4635005). The numbers below for
 runs 79/81 are partial; nothing else will change.
 
 ## 1. Latency per run (free t0, all quality single tracks, dithered iterated median of t0 + 10·ftst)
@@ -66,4 +66,6 @@ Same acquisitions, D, L2 (r149) pin → L1 pin: run_79 (2 acq., 11,153 triggers)
   errors. The resubmit 4620473 (workday again) lost 23/37 the same way — all run_79/81 beam samples.
 - Run_79/81 beam acquisitions take up to > 8 h per (tag, arm) at 4 cores (median samples job 3.1 h). **The full pass
   must use the `tomorrow` flavour (or split those acquisitions)** for those runs.
-- 4620474 (84), cospin (144), ng1 (240): complete. 4620578: limit raised in place to 24 h (`condor_qedit MaxRuntime`).
+- 4620474 (84), cospin (144), ng1 (240): complete. 4620578: `condor_qedit MaxRuntime 86400` on the running jobs did
+  **not** save them (18/22 removed at 8 h anyway, 18:28): the limit can only be set at submit. 7/25 done; the 18 were
+  re-submitted on `tomorrow`, 8 cores, as 4635005.
