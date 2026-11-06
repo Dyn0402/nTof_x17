@@ -32,6 +32,10 @@ and work items R1–R5, V1). No new data: everything below is computation on the
   capacitive coupling and edge strips; BESIII names diffusion as a second effect in one sentence; fixes are empirical
   (edge-strip drop, 15–20 % neighbour subtraction, angle calibration). Nobody fits µTPC waveforms, and no source shows
   that diffusion alone compresses the ladder on a metallic readout. Draft intro paragraph in its §5.
+- **H2c 2026-11-06** (det3 Run 1, corrected gate): the depth profile is not the limit (mean/ampmean shapes do not
+  beat amp/uniform). The Y residual is near normal only and comes from data–model timing on the weak strips 3–4
+  pitches out (105–150 ns early in data, amplitudes right); the method closes on model windows (0.3°). Per-strip
+  jitter error t_rise 400 ns: X 1.14 / Y 1.27° (W 1.02/0.93). Robust time cost pending; numbers in `HANDOFF.md`.
 - **(answered above)** Open question: if the mixing exists even on a metallic readout, why does no one
   else need a waveform fit? Literature review planned (HANDOFF next step 1; Dylan's T2K hypothesis: pads ≫ diffusion).
 
