@@ -54,7 +54,7 @@ def main():
         meta = meta or D['meta']
         planes += D['planes']
     gain_corrected = 'raw' not in planes[0]                 # boot_extract windows
-    cal = CalibrationBundle.load(a.bundle or meta['bundle'])
+    cal = CalibrationBundle.load(E.bundle_path(meta, a.bundle))
     wm.use_calibration(cal)
     hyper = dict(cal.hyper)
     if meta.get('sps'):

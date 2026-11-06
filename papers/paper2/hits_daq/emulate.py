@@ -26,6 +26,8 @@ Families (papers/paper2/hits_daq/DAQ_SURVEY.md "Which algorithm families exist")
 Sub-sample times come from a monotone cubic (PCHIP) upsampling of the 60 ns samples to 1 ns.  The DREAM shaping is
 kept (it cannot be undone from 60 ns samples): V1-V3 and V5 emulate the hit LOGIC of those front ends at DREAM shaping.
 """
+import os
+
 import numpy as np
 from scipy.interpolate import PchipInterpolator
 from scipy.optimize import curve_fit
@@ -242,3 +244,18 @@ class Ideal:
 
 FAMILIES = ('dream', 'peak', 'thr', 'tot', 'fd', 'binary', 'ideal')
 CODES = dict(dream='V0', peak='V1', thr='V2', tot='V3', fd='V4', binary='V5', ideal='V6')
+
+
+PASS1_EOS = '/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1'
+
+
+def bundle_path(meta, override=None):
+    """The window file's calibration bundle.  extract_windows.py records the bundle as it was in the extraction job
+    (a copy of the row's Analysis_pass1 bundle in the condor scratch dir, '<scratch>/Analysis/<run>/<sub>/<det>/wft/
+    calib_bundle'); when that path is gone, the same row's bundle on EOS Analysis_pass1 is used."""
+    if override:
+        return override
+    b = meta['bundle']
+    if os.path.exists(os.path.join(b, 'bundle.json')) or '/Analysis/' not in b:
+        return b
+    return os.path.join(PASS1_EOS, b.split('/Analysis/', 1)[1])
