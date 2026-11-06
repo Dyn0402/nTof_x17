@@ -211,19 +211,36 @@ redeployed (dylan-cern-site 91d4386). Inputs on the desktop: $WORK_DATA/claude-j
 - Deck: `WORK_DATA=~/work_data .venv/bin/python papers/paper1/make_figures_deck.py --out <html>` then
   `dylan-cern-site/scripts/add-note.py <html> --slug mx17-paper1-figures --force --deploy`.
 
-## n_TOF pass 1: reprocess the n_TOF tracks on the final chain — updated 2026-11-06 (dylan-MS-7C84)
+## n_TOF pass 1: reprocess the n_TOF tracks on the final chain — updated 2026-11-06 (dylan-Yoga)
 
-**Resume (11-06 evening, dylan-Yoga):** scoring done and written up (`rerun/ntof/tests/prefreeze/FINDINGS.md`, plan §6
-11-06, board). Still running on the 24 h flavour, 8 cores: **4634655** (23 run_79/81 beam samples, `s9_resub_long.txt`)
-and **4635005** (18 D-L1 beam checks, `s10_dl1_long.txt`). The earlier losses were 8 h `workday` wall-time kills, not
-EOS I/O, and `condor_qedit MaxRuntime` doesn't rescue running jobs. When both clusters are empty: check `009`/`005` in
-`log/ntof.log`, re-run `pf_score.py pull` + `beam`, finalise FINDINGS §3–4, then Dylan's call on C's v(t) scale, then
-freeze. The full pass must submit runs 79/81 on `flavour=tomorrow`. On the laptop the scorer's data is in `~/work_data/`.
-(Older resume line: D now has two latencies (L1/L2); wait for condor 4620473/4620474/4620578, re-pull, rescore, write FINDINGS, freeze.)
+**Resume:** pre-freeze scored; when condor 4634655 + 4635005 finish, re-pull, rescore beam, finalise FINDINGS §3–4, freeze.
 
 **Goal:** reconstruct every n_TOF trigger of ours with the pass-1 bench/SPS algorithm, calibrated in situ, with every
 n_TOF lesson in code or registry. Plan, decisions and every result: `rerun/ntof/NTOF_PASS_PLAN_2026-11-02.md`
 (§5 decisions, §6 findings; P7a = v(t)).
+
+**Done (11-06 evening, dylan-Yoga):**
+- Scored lat / cospin / ng1 / twosided / samples and written up: `rerun/ntof/tests/prefreeze/FINDINGS.md`, plan §6
+  "11-06: pre-freeze scoring", x17 board entry. Headline: beam pointing < 15 mm +28–49 % vs is2_v2 (A, C, same
+  triggers); D ~40 ns latency step run_103→105 (two latencies confirmed); C per-run angle scale 0.99–1.09 (v(t)).
+- D L1 beam check: no worse, slightly better so far (pointing < 15 mm 450 → 476, 117 → 129 on the first 3 acq.).
+- **The "37 lost jobs" were 8 h `workday` wall-time kills (32), not EOS I/O** (the 11-06 "Done" below is wrong on
+  that). Run_79/81 beam acquisitions take > 8 h per (tag, arm) at 4 cores. `condor_qedit MaxRuntime` on running jobs
+  does NOT extend them (18/22 of 4620578 removed at 8 h anyway). Re-submitted on `flavour=tomorrow cpus=8 mem=16000`:
+  **4634655** (23 run_79/81 samples A/C/D, `s9_resub_long.txt`) and **4635005** (18 D-L1, `s10_dl1_long.txt`).
+  At 20:23 both running, 1 done each, 0 failures; expected ~00:00–03:00 (estimate).
+- `pf_score.py` runs without ucla: data dir `$WORK_DATA` or `/media/ucla/work` or `~/work_data`; r149 latencies from
+  `latency_<arm>_r149.json` if present, else the pulled EOS cos bundle's `t0_abs['0']` (verified D 18.3 / 20.0).
+  Laptop copy of the outputs: `~/work_data/ntof_pass1/prefreeze/` (~1.5 GB, delete after the pass).
+
+**Next steps (current):**
+1. `ssh lxplus` → `condor_q 4634655 4635005`; when empty, count `005`/`009` per cluster in
+   `~/x17rerun/ntof/pass1/log/ntof.log` and check `.meta.json` per line of `s9_resub_long.txt` / `s10_dl1_long.txt`.
+2. `.venv/bin/python rerun/ntof/tests/prefreeze/pf_score.py pull` then `beam`; update FINDINGS §3 (runs 79/81 rows)
+   and §4 (D L1 vs L2 on identical acquisitions: `samples_dL1` vs the same tags of `samples`, D).
+3. **Dylan's decision:** does C's per-run angle scale block the freeze, or wait for P7a v(t)?
+4. Freeze bundles (pf/ incl. D `_L1` → EOS `Analysis_pass1/bundles/`), N-G1 sign-off, full submission — **runs 79/81
+   on `flavour=tomorrow`** — with `lxstore status` before and after.
 
 **Done (11-06, later): D gets two latencies (Dylan: "two latencies for D if it needs it" — it does).**
 - Fill-in 4620474 (73/84 at the time) places D's step between run_103 (07-29 19:18) and run_105 (07-30 11:49); D x/y
@@ -273,7 +290,7 @@ n_TOF lesson in code or registry. Plan, decisions and every result: `rerun/ntof/
   0.31–0.33 → 0.34–0.37, in E1 (79, 81) and E2 (116, 162, 145). B/D: no is2_v2 reference (D frac_point_15 0.12–0.16).
   Runs 79/81 numbers are partial until 4620473 lands.
 
-**In progress / where it stopped (condor, code archive `~/x17rerun/code_ed0b1162`, out EOS
+**(Superseded by the evening block above) In progress / where it stopped (condor, code archive `~/x17rerun/code_ed0b1162`, out EOS
 `/eos/experiment/ntof/data/x17/july_beam/Analysis_pass1/tests/prefreeze_ed0b1162/`):**
 - **4620473** (37 jobs, `s6_resub.txt`): resub of the lost lines into cospin/samples/ng1. At 11:00 all 37 started, no I/O errors.
 - **4620578** (25 jobs, `s8_dl1.txt`): D L1 beam check, out `samples_dL1/`.
