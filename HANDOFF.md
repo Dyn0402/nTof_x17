@@ -2,7 +2,7 @@
 
 ## Paper II hits-DAQ comparison (§ hits vs waveforms) — updated 2026-11-06 (dylan-MS-7C84)
 
-**Resume:** H2c on det3: score the robust time-cost runs (rerun them), fix the H2c default, then submit the analysis DAG.
+**Resume:** H2c on det3: choose t_rise (400 vs 1000, scan done) and set the h2c.py default, then submit the analysis DAG.
 
 **Goal:** Paper II's last section: what a hits-only readout (VMM-style and the other hit families) achieves against the
 waveform fit, on det3 (both Paper I runs) + det4 SPS known angle, plus a resistivity/pattern/footprint scan by
@@ -35,15 +35,14 @@ re-simulation. Plan and codes: `papers/paper2/HITS_DAQ_PLAN_2026-11-05.md` (§0 
   removed and resubmitted as rescue DAG with `testmatch`, cluster **4620580** (only those 2 nodes; 4 rows already on EOS).
 
 **In progress / where it stopped:**
-- Robust-cost runs (t_rise 1000; t_rise 400 + t_robust 2 on data and on model+white) were running locally on the
-  desktop at wrap-up and die with the session: rerun them (command below). Everything so far is on EOS
-  `cosmic_bench/x17rerun/hits_daq/results/qprof_2026-11-06/` (88 parquets: `q_<mode>_<lam>_*` data, `qM_*` model,
-  `qMn_*` model+white, `trD_<t_rise>_*`, `trM_400_*`).
+- Robust-cost runs FINISHED before wrap-up (on EOS as `rbD_*`/`rbM_*` in qprof_2026-11-06): t_rise 1000 → X 1.13 /
+  Y 1.17° (near-normal Y +1.31, but inclined bins drift shallow: 0.2–0.3 X −0.42 / Y −0.24); t_rise 400 + pseudo-Huber
+  c 2 = no gain over t_rise 400 alone (1.16/1.29); its model closure stays 0.29/0.34. Robust cost: dead end.
 - `h2c.py` default is still t_rise 0 / t_robust 0 / qmode amp, λ 3: decide after the robust runs.
 
 **Next steps:**
-1. Rerun robust runs (laptop: scp boot pickle + det3 bundle first, or run on condor), score with `score_h2c.py`
-   and the per-bin steep (as in this session); pick defaults (likely amp λ3000 + t_rise ~400 + robust), set them in h2c.py.
+1. Pick t_rise (400 vs 1000; maybe 600–700 balances near-normal against the inclined-bin drift) and set the h2c.py
+   default (amp λ3000, t_robust 0). Score with `score_h2c.py` plus the per-|tan| steep (tiers.score bins).
 2. Optional, would strengthen the paper: check the far-strip early timing on X too and against the literature's capacitive
    coupling (Flierl 15 %) — a few-% prompt long-range coupling term in `wft.model`? Do not change the pass model; this is a Paper II diagnostic.
 3. Check the gap-end hypothesis in P0 (compression per depth bin) before using LITERATURE_MIXING's ALICE argument.
