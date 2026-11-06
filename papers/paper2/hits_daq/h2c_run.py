@@ -37,7 +37,11 @@ def main():
     ap.add_argument('--lam', type=float, default=3.0)
     ap.add_argument('--qcal', default='parity', help="mean/ampmean shape: 'parity' = mean normalised waveform-fit q of"
                     " the even event ids (odd ids scored), or an .npz with arrays x and y")
+    ap.add_argument('--t-rise', type=float, default=0.0, help='ns; per-strip time error S_T (+) t_rise noise/a (h2c.py)')
+    ap.add_argument('--t-robust', type=float, default=0.0, help='pseudo-Huber scale c of the time pulls (0 = quadratic)')
     ap.add_argument('--odd-only', action='store_true', help='score odd event ids only (as the parity-calibrated modes)')
+    ap.add_argument('--model-noise', default='', choices=('', 'white'),
+                    help='with --on-model: add white noise at each strip\'s sigma')
     ap.add_argument('--on-model', action='store_true', help='closure: fit the hits of the pass model window M (truth = W)')
     a = ap.parse_args()
     ip, npart = (int(x) for x in a.part.split('/'))
@@ -74,7 +78,7 @@ def main():
             qshape = {v: Z[v] for v in 'xy'}
         print('[h2c] qshape x', np.round(qshape['x'] * K, 2), '\n[h2c] qshape y', np.round(qshape['y'] * K, 2))
     fit = {(v, f): H2C(wm, hyper, v, f, a.gap, meta['v_drift'], K, nsig=a.nsig, ideal=ideal[v], qmode=a.qmode, lam=a.lam,
-                       qshape=qshape[v]) for v in 'xy' for f in fams}
+                       qshape=qshape[v], t_rise=a.t_rise, t_robust=a.t_robust) for v in 'xy' for f in fams}
     for (v, f), h in fit.items():
         h.learn_offsets([p for p in planes if p['view'] == v], n=200)
     if a.odd_only:
@@ -87,6 +91,8 @@ def main():
     for i, p in enumerate(sel):
         v = p['view']
         Wobs = (p['M'] if a.on_model else p['W']).astype(float)
+        if a.on_model and a.model_noise == 'white':
+            Wobs = Wobs + np.random.default_rng(int(p['event_id']) * 2 + (v == 'y')).normal(size=Wobs.shape) * p['noise'].astype(float)[:, None]
         nz = p['noise'].astype(float)
         g = np.ones(len(nz)) if gain_corrected else p['gain'].astype(float)
         pos = p['pos'].astype(float)

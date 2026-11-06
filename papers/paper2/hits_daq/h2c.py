@@ -31,13 +31,16 @@ import emulate as E
 S_T = 15.0          # ns: per-strip time scale of the cost (the order of the measured per-strip time scatter)
 F_A = 0.15          # relative amplitude tolerance
 P_MISS = 4.0        # cost of a strip hit in data but not in the model or vice versa (~2 sigma)
+# Per-strip time error sigma_t = S_T (+) t_rise * noise / a_obs (the jitter form).  With t_rise = 0 every strip's time
+# weighs the same, and on det3 Y near normal the small RC-reached strips 3-4 pitches out (whose model timing is off by
+# 140-240 ns, amplitudes right) pull the slope away from zero.
 
 
 class H2C:
     def __init__(self, wm, hyper, view, family, gap_mm, v_um_ns, K, nsig=5.0, ideal=None, qmode='amp', lam=3.0,
-                 qshape=None):
+                 qshape=None, t_rise=0.0, t_robust=0.0):
         self.wm, self.hyper, self.view, self.fam = wm, hyper, view, family
-        self.qmode, self.lam = qmode, lam
+        self.qmode, self.lam, self.t_rise, self.t_robust = qmode, lam, t_rise, t_robust
         D2 = np.zeros((max(K - 2, 0), K))
         for i in range(K - 2):
             D2[i, i:i + 3] = (1.0, -2.0, 1.0)
@@ -113,8 +116,15 @@ class H2C:
         pr = self.emulate(Wm, noise)
         ho, hp = np.isfinite(obs['t']), np.isfinite(pr['t'])
         both = ho & hp
-        c = np.sum(((obs['t'][both] - pr['t'][both]) / S_T) ** 2)
         ao = obs['a'][both]
+        st = S_T
+        if self.t_rise > 0 and self.fam != 'binary':
+            st = np.sqrt(S_T ** 2 + (self.t_rise * noise[both] / np.maximum(np.abs(ao), 1e-9)) ** 2)
+        z2 = ((obs['t'][both] - pr['t'][both]) / st) ** 2
+        if self.t_robust > 0:   # pseudo-Huber: quadratic inside |z| < c, linear outside (a mistimed strip counts ~|z|)
+            cr = self.t_robust
+            z2 = 2.0 * cr ** 2 * (np.sqrt(1.0 + z2 / cr ** 2) - 1.0)
+        c = np.sum(z2)
         if self.fam != 'binary':
             c += np.sum(((ao - pr['a'][both]) / (F_A * np.abs(ao) + 3 * noise[both])) ** 2)
         c += P_MISS * np.sum(ho ^ hp)
