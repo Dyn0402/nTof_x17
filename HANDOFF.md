@@ -2,43 +2,39 @@
 
 ## Paper I text from the feedback note — updated 2026-11-06 (dylan-MS-7C84)
 
-**Resume:** Paper I intro drafted from Dylan's hub note; next: read the note for new `- [ ]` items and his replies.
+**Resume:** Paper I text from Dylan's hub note; all `- [ ]` items answered through round 3; next: read the note for new ones.
 
 **Goal:** write Paper I's text from Dylan's hub note `~/.claude-hub/notes/dylan/archive/Paper I Feedback.md`
-(workflow: "The feedback note" in `papers/README.md`).
+(workflow: "The feedback note" in `papers/README.md`). Act only on unchecked `- [ ]`; answer each with a 💬.
 
-**Done (2026-11-06, commit 50417235, Overleaf 9681744f):**
-- Rules recorded in `papers/README.md` + memory: act **only on unchecked `- [ ]` items**; `[…]` inside a draft = Dylan's
-  notes to Claude, never paper text.
-- §1 Introduction written from his draft (`papers/paper1/sections/01_introduction.tex`): X17 status, requirements,
-  compact TPC (air scattering 1.7° @ 8 MeV / 3.2° @ 4 MeV per projection over 20.4 cm, Highland), resistive strips, outline.
-  New refs in `refs.bib`: Krasznahorkay2021/2022, Feng2016, MEGII2024, PADME2025, nTOFX17proposal, Gustavino2025.
-- New title "Resistive Micromegas TPCs for an X17 Search: design, production and performance" (main.tex + `paperI` in both refs.bib).
-- Temporary `\tableofcontents` in main.tex (inside `\ifdraftnotes`; delete before publication).
-- `evd_showcase` figure moved from §1 to the start of §5.5 (now Fig. 12).
-- `papers/note_outline.py`: standing "Dylan’s Notes" and "Title" headings kept at the top (they were going to Unplaced).
-- Every item answered with a 💬 in the note.
-
-**Done (2026-11-06, second round, the intro `- [ ]` items):** intro reworded item by item; Hanoi + NA64 cited; n_TOF
-framed as "an experiment proposed at n_TOF"; position-vs-angle argument with numbers (200 mm × tan 1° = 3.5 mm vs ~0.1 mm);
-new Fig. 1 `experiment_layout` (top-down layout + chamber section, g = 30 mm; `figs/make_experiment_layout.py`); new
-§3.4 Reconstruction with Fig. 5 `reco_example` (`make_tpc_principle.py --variant reco`); "MX17" removed from captions and
-the bench drawing; cleveref set to JINST/IOP style (lower-case "figure 1", whole name linked). Every item has a 💬.
-Round 3 (same day): resolution argument cut to one sentence; Fig. 1 redesigned (idealised thin + thick projective
-scintillators, labels per Dylan, v_d in (b)); `\crefp{fig}{a}` links whole "figure 1a"; loss gallery moved to appendix A
-with one paragraph per loss group. Open: v vs v_d notation; B–E column in appendix A.
+**Done (2026-11-06, three rounds; last commit e0c765a9, Overleaf da208c85):**
+- §1 Introduction drafted from his draft, then reworded item by item: Hanoi + NA64 cited (Anh2024, NA64_2018/2020);
+  "an experiment proposed at the CERN n_TOF facility"; resolution statement cut to one sentence; capsule left out
+  (generic "target"); his three questions answered, \askDylan removed.
+- New Fig. 1 `experiment_layout` (`papers/paper1/figs/make_experiment_layout.py`): idealised top-down layout (target,
+  4 TPCs at 20 cm, thin + thick projective scintillators, one pair) + one chamber in section (gap = 30 mm, v_d).
+- New §3.4 Reconstruction (`sections/03_setups.tex`) with Fig. 5 `reco_example` (`make_tpc_principle.py --variant reco`).
+- Loss gallery moved from §5.4 to appendix A (`sections/A1_loss_categories.tex`), with one paragraph per loss group
+  (sums to 7.71 %).
+- "MX17" removed from captions and the bench drawing. cleveref in JINST/IOP style (lower case, `nameinlink`), and
+  `\crefp{fig:x}{a}` / `\Crefp` link a whole "figure 1a".
+- Title, temporary TOC (inside `\ifdraftnotes`), evd_showcase in §5.5 (round 1).
 
 **Open / waiting on Dylan:**
-- `\askDylan`s in §1: cite Hanoi ⁸Be + NA64?; capsule wall (0.6 mm Al + 0.9 mm CFRP, ~1 % X₀) scatters ~4× more than air — mention?;
-  gas/DREAM in the intro? Also: he should confirm the calorimetry rewording (energy split, since total fixed by Q at thermal).
-- Fig. 1 (`tpc_principle`) placement: recommended a "2.1 Operating principle" at the start of §2; not done until he adds a `- [ ]`.
+- v vs v_d: only Fig. 1b uses v_d; the rest of the paper writes v.
+- Appendix A: B–E column? (its \analysis note).
+- Calorimetry rewording in §1 (energy split, total fixed by Q) not yet confirmed by him.
+- "2.1 Operating principle" suggestion is moot now (Fig. 1 split), unless he asks.
 - `refs.bib` gaps: MEG II journal ref (accepted EPJC), Gustavino NIM A 1072 article number.
 
 **Gotchas:**
-- `overleaf.sh push paper1` hits dash recursion on the desktop too: use the bash split workaround in `papers/README.md`.
+- **Stephan edits Overleaf** (new CLAUDE.md rule, 11-06): `papers/overleaf.sh status paper1` then `pull` before
+  touching `papers/*/` text; never push --now or lift a hold; list pushed files in the report.
+- `overleaf.sh push` hits dash recursion on the desktop: bash split workaround in `papers/README.md` (fast-forward only).
 - No latexmk on the desktop: `pdflatex; bibtex main; pdflatex; pdflatex` in `papers/paper1`.
-- After moving figures/sections: `.venv/bin/python papers/note_outline.py paper1 --write` (check no Unplaced). The hub
-  auto-commits the notes repo (no git remote there).
+- After moving figures/sections: `.venv/bin/python papers/note_outline.py paper1 --write`; a renamed figure id sends its
+  notes to "Unplaced" (move them by hand). The hub auto-commits the notes repo (no remote).
+- `reco_example` needs the replay cache `$WORK_DATA/claude-jobs/17c92c46-displays/principle/principle_7884.pkl`.
 
 ## Paper II hits-DAQ comparison (§ hits vs waveforms) — updated 2026-11-06 (dylan-MS-7C84)
 
