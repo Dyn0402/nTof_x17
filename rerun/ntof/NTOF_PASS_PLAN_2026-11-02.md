@@ -586,3 +586,14 @@ A failing arm is held, as on the bench.
 - Not checked: one more kw iteration on the final D bundle (A converged at < 1 % on the next step); E1-era D.
 - **v(t):** added as P7a (§3). A/C from the pass output's column duration per sub-run / 30-min bin; D from the beam-off
   cosmic runs; joined in stage 3 as `tan_vt` beside `tan`.
+
+### 11-06: pre-freeze scoring (`tests/prefreeze/FINDINGS.md`)
+- **Latency:** A and C stable inside their 15 ns pin (both +5–10 ns at the 07-29→07-30 step); **D steps ~40 ns between
+  run_103 and run_105** → two D latencies (registry `lat_epoch`; L1 x −17.8, y −11.2; L2 = r149 pin 18.3 / 20.0).
+- **A–C line:** run_149 pinned A 2.67 ± 0.08°, C 3.30 ± 0.10°, ratios 1.00 ± 0.005. C's per-run scale 0.99–1.09
+  (A 0.99–1.03): v(t), P7a. Open for Dylan: blocks the freeze or waits for P7a.
+- **Beam vs is2_v2 (A, C, same triggers):** gated tracks/trigger +10–25 %, pointing < 15 mm +28–49 %, frac pointing
+  0.30–0.34 → 0.34–0.37, every run.
+- **D L1 on beam:** no worse (pointing < 15 mm 450 → 476, 117 → 129 on the 3 acquisitions done); final with 4620578.
+- **Wall time:** run_79/81 beam acquisitions exceed the 8 h `workday` limit (32 + 23 jobs killed, first logged as EOS
+  I/O): the full pass needs `flavour=tomorrow` for them. Re-submitted 4634655 (23 jobs, 8 cores, 24 h).

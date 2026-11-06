@@ -37,7 +37,9 @@ CODE = 'ed0b1162'
 EOS = f'/eos/experiment/ntof/data/x17/july_beam/Analysis_pass1/tests/prefreeze_{CODE}'
 EOSR = '/eos/experiment/ntof/data/x17/july_beam/runs'
 IS2 = '/eos/experiment/ntof/data/x17/analysis/sept26_fullpass_is2_v2'
-W = os.path.join(os.environ.get('WORK_DATA', '/media/ucla/work'), 'ntof_pass1', 'prefreeze')
+WD = os.environ.get('WORK_DATA') or ('/media/ucla/work' if os.path.isdir('/media/ucla/work')
+                                     else os.path.expanduser('~/work_data'))   # laptop / lxplus: no ucla
+W = os.path.join(WD, 'ntof_pass1', 'prefreeze')
 OUT = os.path.join(W, 'results')
 os.makedirs(OUT, exist_ok=True)
 REG = pd.read_csv(os.path.join(NT, 'ntof_registry.csv'))
@@ -50,7 +52,7 @@ def sh(cmd):
 
 def pull():
     os.makedirs(W, exist_ok=True)
-    for s in ('lat', 'cospin', 'samples', 'ng1', 'twosided', 'samples_dL1'):
+    for s in ('lat', 'cospin', 'samples', 'ng1', 'twosided', 'samples_dL1', 'bundles'):
         sh(f"ssh lxplus 'cd {EOS} && tar -cf - {s}' | tar -x -C {W}")
     runs = sorted({int(p.split('run_')[1].split('/')[0]) for p in glob.glob(f'{W}/*/run_*/')} | {145, 149})
     os.makedirs(f'{W}/rc', exist_ok=True)
@@ -75,6 +77,16 @@ def pull():
             os.makedirs(d, exist_ok=True)
             sh(f"ssh lxplus 'tar -xzf {IS2}/{w} -O --wildcards \"*events_*.candidates.parquet\"' > {d}/x.candidates.parquet")
             sh(f"ssh lxplus 'tar -xzf {IS2}/{w} -O --wildcards \"*events_*[0-9].parquet\"' > {d}/x.parquet")
+
+
+def r149_latency(arm):
+    """{view: {'C': ns}} of the run_149 cosmic pin: latency_<arm>_r149.json where it exists (desktop), else the
+    pinned cos bundle pulled from EOS, whose t0_abs at ftst 0 is that C (make_pf_bundles.sh writes C - 10 ftst)."""
+    f = os.path.join(WD, 'ntof_pass1', 'bundles', f'latency_{arm}_r149.json')
+    if os.path.exists(f):
+        return json.load(open(f))
+    b = json.load(open(f'{W}/bundles/{arm}_E2_cos/bundle.json'))
+    return {v: {'C': b['t0_abs'][v]['0']} for v in 'xy'}
 
 
 def files(s, run, arm, subs=None):
@@ -151,7 +163,7 @@ def lat():
     R = pd.DataFrame(rows)
     ref = {(r.arm, r.view): r.C for r in R[R.run == 149].itertuples()}
     R['d_vs_149'] = [r.C - ref.get((r.arm, r.view), np.nan) for r in R.itertuples()]
-    bund = {a: json.load(open(f'/media/ucla/work/ntof_pass1/bundles/latency_{a}_r149.json')) for a in 'ACD'}
+    bund = {a: r149_latency(a) for a in 'ACD'}
     R['d_vs_bundle'] = [r.C - bund[r.arm][r.view]['C'] for r in R.itertuples()]
     os.makedirs(OUT, exist_ok=True)
     R.to_csv(f'{OUT}/latency_by_run.csv', index=False)
