@@ -36,6 +36,27 @@ and work items R1–R5, V1). No new data: everything below is computation on the
   beat amp/uniform). The Y residual is near normal only and comes from data–model timing on the weak strips 3–4
   pitches out (105–150 ns early in data, amplitudes right); the method closes on model windows (0.3°). Per-strip
   jitter error t_rise 400 ns: X 1.14 / Y 1.27° (W 1.02/0.93). Robust time cost pending; numbers in `HANDOFF.md`.
+- **H2c default fixed 2026-11-06 evening: amp λ 3000, t_rise 700 ns, t_robust 0** (`h2c.py`, `h2c_run.py`). Scan
+  0/250/400/600/700/800/1000 on det3 Run 1 odd ids (`hits_daq/results/h2c_trise_sat_det3.json`): X s68
+  1.23→1.14→1.13→**1.11**→1.12→1.13 (flat beyond 600; the inclined X drift, 0.2–0.3 steep −0.37…−0.42, is there
+  already at 400, so it is not t_rise's), Y 1.88→1.27→1.23→**1.22**→1.19→1.17 (near-normal +2.2→+1.5→+1.3° keeps falling,
+  but the 0.1–0.2 bin drifts −0.15→−0.35). 700 = best X, Y overall steep +0.04; closure on model windows 1.13/1.02.
+  H2c's remaining gap to W (0.09° X, 0.29° Y) is the near-normal bin, i.e. the far-strip timing below.
+- **Far-strip timing (`hits_daq/far_strip_timing.py`, `results/far_strip_timing_sat_det3.json`)**: data minus pass
+  model, leading-edge hit time vs lateral distance from the track's projection. Y: −51 / −176 / −244 ns at 1–2 / 2–3 /
+  3–4 pitches near normal, −69 / −245 at |tan| 0.05–0.15, −99 / −264 at 0.15–0.3; amplitudes right (0.96–1.15). X:
+  only near normal, −43 ns at 1–2 and −265 at 2–3 pitches (50 hits), amplitudes 19–27 % high; inclined X out-of-track
+  strips are ≤ ±8 ns. So it is mostly Y, at every angle: the far charge on the resistive view arrives earlier in the data
+  than the model's RC kernel brings it (or a prompt coupling adds to it); on X a smaller near-normal effect. Not yet
+  compared quantitatively with Flierl's 15 % coupling; the pass model is not changed (Paper II diagnostic only).
+- **Gap-end check (`hits_daq/p0_depth.py`, `results/p0_depth_sat_det3.json`), supports LITERATURE_MIXING's reviewer
+  note**: per hit, t_le − true drift time against fractional depth in the plane's charge column (ends from the fitted q,
+  median 720 ns vs gap/v 784), |tan| ≥ 0.15, per-plane mid-column offset removed. Mid-column (f 0.2–0.8) the slope is
+  −30 ns per column in data (≈ 4 %), −55 in the model and the metallic arm (≈ 7–8 %); the end bins carry the rest: data
+  +84 / +24 ns at f −0.05 / +0.05 (mesh end) and −19 / −65 ns at f 0.95 / 1.05 (cathode end); model/metallic alike. The
+  amplitude-weighted ladder is dominated by those end strips. Caveat: the 'point' arm (no diffusion, floor footprint)
+  also bends at the ends (+62 / −44 ns): strips past the column end see one-sided charge from the strip width alone, so
+  only the excess over 'point' (≈ +20 / −25 ns) is the diffusion/footprint mixing.
 - **(answered above)** Open question: if the mixing exists even on a metallic readout, why does no one
   else need a waveform fit? Literature review planned (HANDOFF next step 1; Dylan's T2K hypothesis: pads ≫ diffusion).
 
