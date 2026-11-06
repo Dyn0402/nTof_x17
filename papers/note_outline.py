@@ -17,7 +17,8 @@ Everything written under a heading (to the next heading of any level) belongs to
 a figure or section moves in the paper, re-run this and its notes follow it, renumbered. Headings are matched by key:
 figures/tables by the `key` in backticks (stable when a figure moves or its caption changes), sections by their title
 (a renamed section can't be matched: its notes go to a final "Unplaced" section, never deleted, and the run says so).
-Text before the first ## heading (the title and the guide) is kept as it is.
+Text before the first ## heading (the title and the guide) is kept as it is. Two standing headings come first:
+"Dylan’s Notes" (general notes, not tied to a section) and "Title" (the paper title, from \\title in main.tex).
 
 Numbering follows the source: figures and tables count up in \\input order (article class, not reset per section),
 \\appendix switches sections to A, B, … . A figure placed by LaTeX on a later page keeps its number, so this matches
@@ -123,6 +124,10 @@ def outline(paper):
                 items.append((4, str(st['fig' if kind == 'figure' else 'tab']), short_caption(cap),
                               kind, key))
     main = (root / 'main.tex').read_text()
+    # standing headings at the top of the note, not parts of the body: general notes, then the title
+    items.append((2, '', 'Dylan’s Notes', 'section', None))
+    if '\\title{' in main:
+        items.append((2, '', 'Title', 'section', None))
     if '\\begin{abstract}' in main:
         items.append((2, '', 'Abstract', 'section', None))
     walk(main)

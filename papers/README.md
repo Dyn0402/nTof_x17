@@ -116,6 +116,8 @@ draft without it being picked up early. Don't translate, act on or "tidy" a draf
 `  > 💬 claude · <date>: …` under it with the details. An unchecked item that already has a 💬 was reopened by Dylan:
 read the line he added and do it again.
 Plain text under a section or subsection heading is Dylan's draft, written however it comes.
+Inside a draft, `[…]` brackets are Dylan's notes to Claude (questions, "check this", "get numbers from X"), never
+paper text: act on them while translating, and answer any that stay open in an `\askDylan{…}` or the 💬 line.
 
 **Translating a draft into paper text** (when a `- [ ]` item asks for a section):
 1. `overleaf.sh pull paper1` first; don't touch a section with pending tracked changes in Overleaf.
