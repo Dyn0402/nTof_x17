@@ -24,6 +24,9 @@ and work items R1–R5, V1). No new data: everything below is computation on the
 - **Arm S engine changed** from the g4_digi port to re-simulation on real events (`hits_daq/resim.py`): each plane's
   own (p0, w, t0, q) regenerated through `model_waveforms` with a modified kernel plus its own fit residual, exact
   truth; P0 is its validation (the model reproduces the data's hit compression). §6's g4_digi port is not needed.
+- **V0 validated 2026-11-06** (`hits_daq/V0_VALIDATION_2026-11-06.md`): with production's measured gate noise
+  (rms_gate = 0.68 × rms, now `emulate.GATE_K`) V0 misses 0.03 % of production strips, adds 1.5 % marginal ones, and
+  matches the ladder to 0.3–0.4 %. Numbers made before with the old 0.447 gate are preliminary.
 - **Open question for the next session (Dylan):** if the mixing exists even on a metallic readout, why does no one
   else need a waveform fit? Literature review planned (HANDOFF next step 1; Dylan's T2K hypothesis: pads ≫ diffusion).
 

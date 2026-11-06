@@ -32,6 +32,7 @@ from scipy.optimize import curve_fit
 
 SNS = 60.0
 FINE = 1.0
+GATE_K = 0.68  # production rms_gate / rms (see dream)
 
 
 def _parab(y, k):
@@ -80,16 +81,18 @@ def _neighbours(out, fired, values_fn, n):
 
 
 def dream(W, noise, nsig=5.0, mf=5, frac=0.3, gate_k=None):
-    """V0.  gate_k: the gate noise in units of the per-sample noise (default 1/sqrt(mf), white noise; tuned on
-    production hits in validate_v0)."""
+    """V0.  gate_k: the gate noise (sigma of the 5-sample boxcar of the noise, production's per-channel `rms_gate`) in
+    units of the per-sample noise; scalar or one value per strip.  Default GATE_K = 0.68, measured from production hits
+    (rms_gate = boxcar peak / significance) on det3 Run 1 and Run 2: per channel 0.645-0.72, not the white-noise
+    1/sqrt(mf) = 0.447, because the noise is time-correlated.  validate_v0.py measures it per channel."""
     n, ns = W.shape
     out = _empty(n)
-    gk = (1.0 / np.sqrt(mf)) if gate_k is None else gate_k
+    gk = np.broadcast_to(np.asarray(GATE_K if gate_k is None else gate_k, float), (n,))
     ker = np.ones(mf) / mf
     for i in range(n):
         y = W[i]
         g = np.convolve(y, ker, mode='same')
-        if not np.any(g >= nsig * gk * noise[i]):
+        if not np.any(g >= nsig * gk[i] * noise[i]):
             continue
         k = int(np.argmax(y))
         kk, A = _parab(y, k)
