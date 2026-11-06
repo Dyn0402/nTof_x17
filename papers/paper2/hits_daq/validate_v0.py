@@ -33,22 +33,42 @@ def main():
     for f in a.pickles:
         planes += pickle.load(open(f, 'rb'))['planes']
     planes = [p for p in planes if p.get('hits') is not None and len(p['hits'].get('time', []))][:a.nmax]
-    res = dict(n_planes=len(planes), gate=[])
-    for gk in (0.30, 0.38, 0.447, 0.55, 0.7):
+    # production's gate sigma per channel: rms_gate = (5-sample boxcar peak) / significance, from the EVEN planes;
+    # every count below is scored on the ODD planes only, so the per-channel gate is not tuned on the planes it scores
+    calib, planes = planes[0::2], planes[1::2]
+    perch = {}
+    for p in calib:
+        idx = {int(c): i for i, c in enumerate(p['ch'])}
+        for c, s in zip(p['hits']['channel'], p['hits']['significance']):
+            i = idx.get(int(c))
+            if i is None or s <= 0 or p['noise'][i] <= 0:
+                continue
+            g = np.convolve(p['W'][i].astype(float), np.ones(5) / 5, mode='same').max()
+            perch.setdefault((p['view'], int(c)), []).append(g / s / p['noise'][i])
+    gmed = {k: float(np.median(v)) for k, v in perch.items()}
+    gall = float(np.median(np.concatenate([v for v in perch.values()]))) if perch else E.GATE_K
+
+    def gate_of(p, gk):
+        if gk != 'per_channel':
+            return gk
+        return np.array([gmed.get((p['view'], int(c)), gall) for c in p['ch']])
+
+    res = dict(n_planes=len(planes), n_calib_planes=len(calib), gate_k_measured=gall,
+               n_channels_gate=len(gmed), gate=[])
+    for gk in (0.447, 0.55, 0.62, gall, 0.75, 'per_channel'):
         both = ponly = vonly = 0
         for p in planes:
-            h = E.dream(p['W'].astype(float), p['noise'].astype(float), gate_k=gk)
+            h = E.dream(p['W'].astype(float), p['noise'].astype(float), gate_k=gate_of(p, gk))
             prod = set(int(c) for c in p['hits']['channel'])
             emu = set(int(c) for c, t in zip(p['ch'], h['t']) if np.isfinite(t))
             both += len(prod & emu); ponly += len(prod - emu); vonly += len(emu - prod)
         res['gate'].append(dict(gate_k=gk, both=both, prod_only=ponly, v0_only=vonly,
                                 agree=both / max(1, both + ponly + vonly)))
         print(f'gate_k {gk}: both {both}, production only {ponly}, V0 only {vonly}')
-    best = max(res['gate'], key=lambda r: r['agree'])
-    gk = best['gate_k']
+    gk = 'per_channel'  # the faithful emulation; the scalar scan shows how much the per-channel detail matters
     dt, dtm, ra, ur = [], [], [], []
     for p in planes:
-        h = E.dream(p['W'].astype(float), p['noise'].astype(float), gate_k=gk)
+        h = E.dream(p['W'].astype(float), p['noise'].astype(float), gate_k=gate_of(p, gk))
         idx = {int(c): i for i, c in enumerate(p['ch'])}
         H = p['hits']
         # one production hit per channel: the largest
@@ -77,7 +97,7 @@ def main():
             ur.append(u_emu / u_prod)
     dt, ra, ur = np.array(dt), np.array(ra), np.array(ur)
     mad = lambda x: float(1.4826 * np.nanmedian(np.abs(x - np.nanmedian(x))))  # noqa: E731
-    res.update(best_gate_k=gk, time_resid_ns=dict(median=float(np.median(dt)), mad=mad(dt), n=len(dt)),
+    res.update(scored_gate_k=gk, time_resid_ns=dict(median=float(np.median(dt)), mad=mad(dt), n=len(dt)),
                amp_ratio=dict(median=float(np.nanmedian(ra)), mad=mad(ra)),
                ladder_ratio_emu_over_prod=dict(median=float(np.median(ur)), mad=mad(ur), n=len(ur)))
     print(json.dumps({k: v for k, v in res.items() if k != 'gate'}, indent=1))

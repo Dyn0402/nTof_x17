@@ -1,0 +1,65 @@
+{
+ "n_planes": 1538,
+ "n_calib_planes": 1538,
+ "gate_k_measured": 0.6801614783333185,
+ "n_channels_gate": 889,
+ "gate": [
+  {
+   "gate_k": 0.447,
+   "both": 14473,
+   "prod_only": 0,
+   "v0_only": 1414,
+   "agree": 0.9109964121608862
+  },
+  {
+   "gate_k": 0.55,
+   "both": 14473,
+   "prod_only": 0,
+   "v0_only": 771,
+   "agree": 0.9494227236945684
+  },
+  {
+   "gate_k": 0.62,
+   "both": 14473,
+   "prod_only": 0,
+   "v0_only": 460,
+   "agree": 0.9691957409763611
+  },
+  {
+   "gate_k": 0.6801614783333185,
+   "both": 14460,
+   "prod_only": 13,
+   "v0_only": 205,
+   "agree": 0.9851478403052187
+  },
+  {
+   "gate_k": 0.75,
+   "both": 14353,
+   "prod_only": 120,
+   "v0_only": 42,
+   "agree": 0.9888391319324836
+  },
+  {
+   "gate_k": "per_channel",
+   "both": 14467,
+   "prod_only": 6,
+   "v0_only": 196,
+   "agree": 0.9862294634944441
+  }
+ ],
+ "scored_gate_k": "per_channel",
+ "time_resid_ns": {
+  "median": 0.0,
+  "mad": 2.2635567245114885,
+  "n": 14467
+ },
+ "amp_ratio": {
+  "median": 1.000355358953414,
+  "mad": 0.012665174045998722
+ },
+ "ladder_ratio_emu_over_prod": {
+  "median": 1.0043467864098596,
+  "mad": 0.021662709813062307,
+  "n": 1105
+ }
+}
