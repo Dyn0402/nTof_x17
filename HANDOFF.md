@@ -213,7 +213,13 @@ redeployed (dylan-cern-site 91d4386). Inputs on the desktop: $WORK_DATA/claude-j
 
 ## n_TOF pass 1: reprocess the n_TOF tracks on the final chain — updated 2026-11-06 (dylan-MS-7C84)
 
-**Resume:** D now has two latencies (L1/L2); wait for condor 4620473/4620474/4620578, re-pull, rescore, write FINDINGS, freeze.
+**Resume (11-06 evening, dylan-Yoga):** scoring done and written up (`rerun/ntof/tests/prefreeze/FINDINGS.md`, plan §6
+11-06, board). Still running on the 24 h flavour, 8 cores: **4634655** (23 run_79/81 beam samples, `s9_resub_long.txt`)
+and **4635005** (18 D-L1 beam checks, `s10_dl1_long.txt`). The earlier losses were 8 h `workday` wall-time kills, not
+EOS I/O, and `condor_qedit MaxRuntime` doesn't rescue running jobs. When both clusters are empty: check `009`/`005` in
+`log/ntof.log`, re-run `pf_score.py pull` + `beam`, finalise FINDINGS §3–4, then Dylan's call on C's v(t) scale, then
+freeze. The full pass must submit runs 79/81 on `flavour=tomorrow`. On the laptop the scorer's data is in `~/work_data/`.
+(Older resume line: D now has two latencies (L1/L2); wait for condor 4620473/4620474/4620578, re-pull, rescore, write FINDINGS, freeze.)
 
 **Goal:** reconstruct every n_TOF trigger of ours with the pass-1 bench/SPS algorithm, calibrated in situ, with every
 n_TOF lesson in code or registry. Plan, decisions and every result: `rerun/ntof/NTOF_PASS_PLAN_2026-11-02.md`
