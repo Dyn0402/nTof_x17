@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""score_h2c.py <label>=<glob> ... [--json OUT] -- score h2c_run.py tables against the reference, with tiers.score.
+"""score_h2c.py <label>=<glob> ... [--each] [--json OUT] -- score h2c_run.py tables against the reference, with tiers.score.
 
 Per label and view: W, the naive hit ladder converted with the hit v (u_dream / v, as H-naive), and H2c.  Only the
-planes common to every label are scored (same event ids), so the rows are directly comparable.
+planes common to every label are scored (same event ids), so the rows are directly comparable; if that cut drops more
+than 5 % of a label the labels are not the same planes and it stops (use --each for labels from different runs).
 """
 import argparse
 import glob
@@ -23,6 +24,7 @@ def main():
     ap.add_argument('--family', default='dream')
     ap.add_argument('--json')
     ap.add_argument('--bins', action='store_true', help='also print H2c steep per |tan_ref| bin (tiers.TBINS)')
+    ap.add_argument('--each', action='store_true', help='score every label on its own planes (labels from different runs)')
     a = ap.parse_args()
     T = {}
     for s in a.sets:
@@ -32,10 +34,21 @@ def main():
     for t in T.values():
         k = set(zip(t.event_id, t.view))
         keys = k if keys is None else keys & k
+    if not a.each:
+        # the common-event cut is for labels that are variants on the SAME window files; labels from different runs
+        # share event ids only by accident (det3 Run 1 / Run 2: ~800 of 6000), so refuse instead of scoring the overlap
+        for lab, t in T.items():
+            lost = 1 - len(keys) / max(len(set(zip(t.event_id, t.view))), 1)
+            if lost > 0.05:
+                sys.exit(f'[score_h2c] the common event set drops {lost:.0%} of {lab!r}: these labels are not the same '
+                         f'planes (different runs?). Use --each to score every label on its own planes.')
+    else:
+        keys = None
     out = {}
     f = a.family
     for lab, t in T.items():
-        t = t[[k in keys for k in zip(t.event_id, t.view)]]
+        if keys is not None:
+            t = t[[k in keys for k in zip(t.event_id, t.view)]]
         for v, g in t.groupby('view'):
             tr = g.tan_ref.to_numpy(float)
             row = dict(W=score(g.tan_W.to_numpy(float), tr)['all'],
