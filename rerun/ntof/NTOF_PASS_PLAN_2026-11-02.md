@@ -594,6 +594,9 @@ A failing arm is held, as on the bench.
   (A 0.99–1.03): v(t), P7a. Open for Dylan: blocks the freeze or waits for P7a.
 - **Beam vs is2_v2 (A, C, same triggers):** gated tracks/trigger +10–25 %, pointing < 15 mm +28–49 %, frac pointing
   0.30–0.34 → 0.34–0.37, every run.
-- **D L1 on beam:** no worse (pointing < 15 mm 450 → 476, 117 → 129 on the 3 acquisitions done); final with 4620578.
+- **D L1 on beam (final 11-07, all 25 acquisitions):** no worse, slightly better: pointing < 15 mm 3473 → 3525 (run_79),
+  3553 → 3641 (run_81), frac pointing unchanged (0.157, 0.155 → 0.156). The cosmic L1 latency transfers to beam.
 - **Wall time:** run_79/81 beam acquisitions exceed the 8 h `workday` limit (32 + 23 jobs killed, first logged as EOS
   I/O): the full pass needs `flavour=tomorrow` for them. Re-submitted 4634655 (23 jobs, 8 cores, 24 h).
+  4634655 + 4635005 (41 jobs, `tomorrow`) all done, exit 0 (11-07); runs 79/81 beam rows rescored (+31–36 % pointing
+  vs is2_v2 for A and C, same triggers).

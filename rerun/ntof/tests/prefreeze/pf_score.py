@@ -20,7 +20,7 @@ Sets (make_ntof_jobs.py --per-row; bundles make_pf_bundles.sh):
 """
 import glob
 import json
-import os
+import os, re
 import subprocess
 import sys
 import tarfile
@@ -54,7 +54,8 @@ def pull():
     os.makedirs(W, exist_ok=True)
     for s in ('lat', 'cospin', 'samples', 'ng1', 'twosided', 'samples_dL1', 'bundles'):
         sh(f"ssh lxplus 'cd {EOS} && tar -cf - {s}' | tar -x -C {W}")
-    runs = sorted({int(p.split('run_')[1].split('/')[0]) for p in glob.glob(f'{W}/*/run_*/')} | {145, 149})
+    runs = sorted({int(m.group(1)) for p in glob.glob(f'{W}/*/run_*/')
+                   if (m := re.search(r'/run_(\d+)(?:_|/|$)', p))} | {145, 149})
     os.makedirs(f'{W}/rc', exist_ok=True)
     for r in runs:
         if not os.path.exists(f'{W}/rc/run_{r}.json'):

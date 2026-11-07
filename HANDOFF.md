@@ -211,13 +211,25 @@ redeployed (dylan-cern-site 91d4386). Inputs on the desktop: $WORK_DATA/claude-j
 - Deck: `WORK_DATA=~/work_data .venv/bin/python papers/paper1/make_figures_deck.py --out <html>` then
   `dylan-cern-site/scripts/add-note.py <html> --slug mx17-paper1-figures --force --deploy`.
 
-## n_TOF pass 1: reprocess the n_TOF tracks on the final chain — updated 2026-11-06 (dylan-Yoga)
+## n_TOF pass 1: reprocess the n_TOF tracks on the final chain — updated 2026-11-07 (dylan-Yoga)
 
-**Resume:** pre-freeze scored; when condor 4634655 + 4635005 finish, re-pull, rescore beam, finalise FINDINGS §3–4, freeze.
+**Resume:** pre-freeze scoring COMPLETE; waiting on Dylan's C v(t) decision, then freeze bundles + full submission.
 
 **Goal:** reconstruct every n_TOF trigger of ours with the pass-1 bench/SPS algorithm, calibrated in situ, with every
 n_TOF lesson in code or registry. Plan, decisions and every result: `rerun/ntof/NTOF_PASS_PLAN_2026-11-02.md`
 (§5 decisions, §6 findings; P7a = v(t)).
+
+**Done (11-07, dylan-Yoga):**
+- 4634655 (23 run_79/81 samples) + 4635005 (18 D-L1): 41/41 started and terminated exit 0, no evict/abort/hold, every
+  `.meta.json` present. `pf_score.py pull` + `beam` rerun (pull fixed: its run-number glob choked on `is2/` dir names).
+- FINDINGS §3 final: runs 79/81 A/C vs is2_v2, pointing < 15 mm +31–36 %, gated/trigger +18–24 %.
+- FINDINGS §4 final: **D L1 pin passes on beam** (pointing < 15 mm +1.5 % / +2.5 %, fraction unchanged).
+
+**Next steps (current):**
+1. **Dylan's decision:** does C's per-run angle scale (0.99–1.09) block the freeze, or wait for P7a v(t)?
+2. Freeze bundles (pf/ incl. D `_L1` → EOS `Analysis_pass1/bundles/`), N-G1 sign-off, full submission — **runs 79/81
+   on `flavour=tomorrow`, 8 cores** — with `lxstore status` before and after.
+3. Delete the laptop copy `~/work_data/ntof_pass1/prefreeze/` (1.9 GB) once the pass is submitted.
 
 **Done (11-06 evening, dylan-Yoga):**
 - Scored lat / cospin / ng1 / twosided / samples and written up: `rerun/ntof/tests/prefreeze/FINDINGS.md`, plan §6
@@ -233,7 +245,7 @@ n_TOF lesson in code or registry. Plan, decisions and every result: `rerun/ntof/
   `latency_<arm>_r149.json` if present, else the pulled EOS cos bundle's `t0_abs['0']` (verified D 18.3 / 20.0).
   Laptop copy of the outputs: `~/work_data/ntof_pass1/prefreeze/` (~1.5 GB, delete after the pass).
 
-**Next steps (current):**
+**Next steps (11-06 evening; 1–2 done 11-07):**
 1. `ssh lxplus` → `condor_q 4634655 4635005`; when empty, count `005`/`009` per cluster in
    `~/x17rerun/ntof/pass1/log/ntof.log` and check `.meta.json` per line of `s9_resub_long.txt` / `s10_dl1_long.txt`.
 2. `.venv/bin/python rerun/ntof/tests/prefreeze/pf_score.py pull` then `beam`; update FINDINGS §3 (runs 79/81 rows)

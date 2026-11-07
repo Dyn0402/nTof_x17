@@ -6,9 +6,9 @@ Scorer `pf_score.py {pull,lat,line,beam,all}`; tables `$WORK_DATA/ntof_pass1/pre
 (`latency_by_run.csv`, `line_by_run.csv`, `beam_by_run.csv`). On the laptop (no ucla) the scorer uses `~/work_data/`.
 Plan and decisions: `rerun/ntof/NTOF_PASS_PLAN_2026-11-02.md` §5–§6.
 
-**Status: every set is complete except the run_79/81 beam samples** (23 acquisition×arm jobs, A/C/D, need > 8 h each;
-re-submitted on the 24 h flavour as 4634655) **and the D-L1 beam check** (7/25 done; the other 18 hit the 8 h limit, re-submitted as 4635005). The numbers below for
-runs 79/81 are partial; nothing else will change.
+**Status (2026-11-07): every set is complete.** The run_79/81 beam samples (4634655, 23 jobs) and the D-L1 beam
+check (4635005, 18 jobs) finished on the 24 h flavour: 41/41 started, terminated with exit 0, no evictions or holds,
+every `.meta.json` present. Rescored 11-07 (§3, §4 final).
 
 ## 1. Latency per run (free t0, all quality single tracks, dithered iterated median of t0 + 10·ftst)
 
@@ -40,10 +40,10 @@ is a model artefact with no geometry effect (tan 2–5e-4 at 68 %); reco left un
 
 | run | arm | acq | gated tracks / trigger | pointing < 15 mm (n) | frac pointing |
 |---|---|---|---|---|---|
-| 79* | A | 8 | 0.266 → 0.329 (+24 %) | 3081 → 4193 (+36 %) | 0.327 → 0.359 |
-| 79* | C | 10 | 0.231 → 0.275 (+19 %) | 3025 → 4024 (+33 %) | 0.331 → 0.369 |
-| 81* | A | 9 | 0.259 → 0.322 (+25 %) | 3300 → 4411 (+34 %) | 0.335 → 0.359 |
-| 81* | C | 3 | 0.235 → 0.276 (+17 %) | 673 → 915 (+36 %) | 0.323 → 0.374 |
+| 79 | A | 13 | 0.265 → 0.326 (+23 %) | 5090 → 6898 (+36 %) | 0.328 → 0.361 |
+| 79 | C | 13 | 0.229 → 0.272 (+19 %) | 3964 → 5224 (+32 %) | 0.333 → 0.370 |
+| 81 | A | 12 | 0.259 → 0.323 (+24 %) | 4450 → 5923 (+33 %) | 0.331 → 0.354 |
+| 81 | C | 12 | 0.231 → 0.273 (+18 %) | 3302 → 4328 (+31 %) | 0.329 → 0.366 |
 | 116 | A | 13 | 0.352 → 0.393 (+12 %) | 4795 → 6327 (+32 %) | 0.313 → 0.370 |
 | 116 | C | 13 | 0.270 → 0.328 (+21 %) | 3526 → 4881 (+38 %) | 0.310 → 0.354 |
 | 162 | A | 12 | 0.345 → 0.388 (+12 %) | 5044 → 6474 (+28 %) | 0.320 → 0.365 |
@@ -51,13 +51,20 @@ is a model artefact with no geometry effect (tan 2–5e-4 at 68 %); reco left un
 | 145 | A | 24 | 0.358 → 0.393 (+10 %) | 9595 → 12382 (+29 %) | 0.306 → 0.359 |
 | 145 | C | 24 | 0.258 → 0.323 (+25 %) | 6577 → 9824 (+49 %) | 0.298 → 0.356 |
 
-\* partial (run_79/81 samples still running). B and D have no is2_v2 reference: D frac pointing 0.12–0.16, B 0.07–0.10.
+All acquisitions of the first sub-run. B and D have no is2_v2 reference: D frac pointing 0.12–0.16, B 0.07–0.10.
 
 ## 4. D L1 pin on beam (the check that the cosmic L1 value transfers)
 
-Same acquisitions, D, L2 (r149) pin → L1 pin: run_79 (2 acq., 11,153 triggers) pointing < 15 mm 450 → 476,
-< 10 mm 313 → 347, median DCA 90.2 → 89.7 mm; run_81 (1 acq.) 117 → 129, 81 → 84, DCA 86.0 → 85.9 mm.
-**No worse with L1 (slightly better) on 3/25 acquisitions**: pass criterion met so far; final when 4620578 completes.
+Same acquisitions, D, L2 (r149) pin → L1 pin, all of them (run_79 13 acq., 84,795 triggers; run_81 12 acq., 78,522):
+
+| run | gated tracks | pointing < 10 mm | pointing < 15 mm | frac < 15 mm | median DCA (mm) |
+|---|---|---|---|---|---|
+| 79 | 22109 → 22420 (+1.4 %) | 2403 → 2476 (+3.0 %) | 3473 → 3525 (+1.5 %) | 0.157 → 0.157 | 89.6 → 89.4 |
+| 81 | 22871 → 23344 (+2.1 %) | 2506 → 2545 (+1.6 %) | 3553 → 3641 (+2.5 %) | 0.155 → 0.156 | 90.4 → 91.2 |
+
+**Pass: no worse with L1, slightly better** (more tracks gated and pointing; the fraction pointing unchanged). The cosmic
+L1 latency transfers to beam; D keeps two latencies (`lat_epoch`). The median DCA of all gated tracks moves ±0.8 mm
+with the extra tracks, well inside D's ~90 mm spread: not a pointing change.
 
 ## 5. Job accounting (rule: a failure rate is a bug to explain)
 
@@ -69,3 +76,4 @@ Same acquisitions, D, L2 (r149) pin → L1 pin: run_79 (2 acq., 11,153 triggers)
 - 4620474 (84), cospin (144), ng1 (240): complete. 4620578: `condor_qedit MaxRuntime 86400` on the running jobs did
   **not** save them (18/22 removed at 8 h anyway, 18:28): the limit can only be set at submit. 7/25 done; the 18 were
   re-submitted on `tomorrow`, 8 cores, as 4635005.
+- 4634655 (23) and 4635005 (18) on `tomorrow`, 8 cores: 41/41 done, exit 0, no `004`/`009`/`012` events (11-07).
