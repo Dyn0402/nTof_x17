@@ -73,9 +73,28 @@ and work items R1–R5, V1). No new data: everything below is computation on the
     family; < 1 = more compressed): X base 0.88, metal 0.92, dp0 0.97, s0_45 0.85, sheet 0.81 (rc_D_y variants leave X
     unchanged, as they must). Y base 0.80, metal 0.90, rc0 0.87, rc05 0.84, rc2 0.70, rc5 0.56, rc10 0.43, dp0 0.91.
     So without RC, diffusion + footprint still compress ~10 %; nominal RC adds ~8 % on Y and it scales steeply above.
-    No resim scorer yet (W on resim, H2c per variant): to write.
-  - SPS: 4 rows' tables in; d650/d700 resubmitted 11-07 as DAG 4635707 (`~/x17rerun/hits_daq/ana_2026-11-07`, 50
-    nodes). The SPS tables have tan_ref NaN: they need the stage-angle scoring (next step 5), not `score_h2c.py`.
+  - **Resim scorer** `hits_daq/resim_score.py` (against exact truth, ratio = slope / true slope, |tan| > 0.1, no v):
+    base X 1.18 / Y 1.34 — **the model reproduces the data's compression** (P0 data X 1.19 / Y 1.37), which is
+    gate S0's ratio test passed on the hits side. Y: rc0 1.23, rc025 1.26, rc05 1.28, rc2 1.52, rc5 1.93, rc10 2.47;
+    metal 1.19 (X 1.14), point 1.07 (X 1.04: strip width alone), s0_45 1.40, sheet X 1.28. V6 (ideal single time)
+    within ±0.05 of V0 everywhere, so the hit algorithm is not the limit. **W reads 0.99–1.00 on every variant**,
+    up to 10× RC. (Its absolute s68 there, 0.15–0.46°, is on the model with exact truth: not a resolution claim.)
+    The first-look numbers above (relative to 'point') are superseded by these.
+  - **SPS known angle** `hits_daq/sps_score.py`, rot25 CO₂ rows d550 / d600 / run59, inclined Y view. No column v
+    on these rows (v 7.5–10 µm/ns, the column overruns the window), so v is set per row from the stage angle through
+    W: everything is relative to W on the same plane. Hits / W slope: V0 1.13 / 1.10 / 1.07, V0r 1.05 / 1.04 / 1.03,
+    V4 1.08–1.14, V6 1.09–1.13, V1/V2/V5 1.19–1.32; s68 V0 1.40–1.49° (V0r 1.05–1.12) vs W 1.02–1.10°.
+    Compression shrinks with field (d550 → run59 at 243 V/cm). H2c on SPS: ratio 1.00–1.05 but s68 2.0–2.7°, i.e.
+    untuned there (its model takes v = 33 µm/ns and t_rise from the det3 bench bundle): don't quote. The X view
+    (normal incidence) and the 0° run55 row are not scored: at v ≈ 8 µm/ns, u / v blows up the hits' normal slope.
+    Mount: 25.4° (measured yaw) used, `--stage` to change.
+  - SPS d650/d700 resubmitted 11-07 as DAG 4635707 (`~/x17rerun/hits_daq/ana_2026-11-07`, 50 nodes, `tomorrow`);
+    when done: `sps_score.py --tables <dir> --json results/ana1106_sps_score.json` and `make_report.py`.
+  - **Report** `hits_daq/make_report.py` → `hits_daq/report/report.html` (four figures, tables, caveats), from the
+    `results/ana1106_*.json` score files. Oddity seen, not chased: H2a's binned remap reads shallow on the steepest
+    bin (X −3.5° at |tan| 0.3–0.5, Y −3.9° at 0.2–0.3), probably the map's edge statistics.
+  - `score_h2c.py` now refuses labels that are not the same planes (> 5 % lost to the common cut); `--each` scores
+    labels from different runs on their own planes.
 - **(answered above)** Open question: if the mixing exists even on a metallic readout, why does no one
   else need a waveform fit? Literature review planned (HANDOFF next step 1; Dylan's T2K hypothesis: pads ≫ diffusion).
 
