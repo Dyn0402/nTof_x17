@@ -14,5 +14,5 @@ max_retries    = 2
 should_transfer_files = NO
 # a worker whose EOS FUSE mount times out reading the archive (pass1 10-30: all 18 status-126 failures)
 requirements   = (Machine != "b9g42p2031.cern.ch")
-max_materialize = 400
+max_materialize = $(maxmat:400)
 queue args from $(jobfile)

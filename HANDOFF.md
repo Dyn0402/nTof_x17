@@ -211,25 +211,39 @@ redeployed (dylan-cern-site 91d4386). Inputs on the desktop: $WORK_DATA/claude-j
 - Deck: `WORK_DATA=~/work_data .venv/bin/python papers/paper1/make_figures_deck.py --out <html>` then
   `dylan-cern-site/scripts/add-note.py <html> --slug mx17-paper1-figures --force --deploy`.
 
-## n_TOF pass 1: reprocess the n_TOF tracks on the final chain — updated 2026-11-07 (dylan-Yoga)
+## n_TOF pass 1: reprocess the n_TOF tracks on the final chain — updated 2026-11-07 evening (dylan-Yoga)
 
-**Resume:** pre-freeze scoring COMPLETE; waiting on Dylan's C v(t) decision, then freeze bundles + full submission.
+**Resume:** full pass RUNNING (condor 4636418 main, 4636419/20 D run_104 side); when done: account jobs, N-G1, ledger, stage 3.
 
 **Goal:** reconstruct every n_TOF trigger of ours with the pass-1 bench/SPS algorithm, calibrated in situ, with every
 n_TOF lesson in code or registry. Plan, decisions and every result: `rerun/ntof/NTOF_PASS_PLAN_2026-11-02.md`
-(§5 decisions, §6 findings; P7a = v(t)).
+(§5 decisions, §6 findings incl. "11-07: bundles frozen, full pass submitted"; P7a = v(t)).
 
-**Done (11-07, dylan-Yoga):**
+**Done (11-07 afternoon, dylan-Yoga):**
+- Dylan: freeze now, C's v(t) later. Bundles frozen to EOS `Analysis_pass1/bundles/` (md5-identical to the scored set;
+  `rerun/ntof/freeze/FROZEN_2026-11-07.md`). Smoke 4635766 = regression test: identical to ng1 run_145 (`freeze/regress.py`).
+- Submitted 11-07 ~16:45, code `code_ed0b1162`, `flavour=tomorrow`, 4 cores, maxmat 2000: **4636418** (15,550 jobs,
+  out `Analysis_pass1/stage2/`), **4636419 / 4636420** (D run_104 under the L1 / L2 pin, 198 each, out
+  `Analysis_pass1/side/run104_D_{L1,L2}/`). Job lists `rerun/ntof/freeze/pass_*.txt[.gz]`. Expect several days: ~15.7 k
+  jobs × median ~3 h × 4 cores (estimate), throughput set by our condor share.
+- run_104 straddles D's latency step (it's a production run, not excluded as the plan said): D decided per acquisition later.
+
+**Next steps (current):**
+1. `ssh lxplus` → `condor_q 4636418 4636419 4636420 -totals`; watch for holds (`012`) and wall-time kills (`009`). When
+   done: compare `001` vs `005` per cluster in `~/x17rerun/ntof/pass1/log/ntof.log`, check a `.meta.json` per job line,
+   read the `.err` of every failure and explain it. `lxstore status` after.
+2. N-G1 on the pass's own run_145 / run_149: wall-confirmed fraction per arm, A–C line s68 vs is2_v2, source y (−31/−35), G5.
+   A failing arm is held.
+3. D run_104: pick L1 / L2 per acquisition (e.g. pointing < 15 mm per acquisition, or the free-t0 latency estimator).
+4. `ntof_ledger.py`, new stage 3 + P7a v(t) (`tan_vt`), g4_digi closure (test 8), then downstream migration (P7).
+5. Delete the laptop copy `~/work_data/ntof_pass1/prefreeze/` (1.9 GB) and EOS `tests/` when no longer needed.
+
+**Done (11-07 midday, dylan-Yoga):** pre-freeze scoring finished (below).
+
 - 4634655 (23 run_79/81 samples) + 4635005 (18 D-L1): 41/41 started and terminated exit 0, no evict/abort/hold, every
   `.meta.json` present. `pf_score.py pull` + `beam` rerun (pull fixed: its run-number glob choked on `is2/` dir names).
 - FINDINGS §3 final: runs 79/81 A/C vs is2_v2, pointing < 15 mm +31–36 %, gated/trigger +18–24 %.
 - FINDINGS §4 final: **D L1 pin passes on beam** (pointing < 15 mm +1.5 % / +2.5 %, fraction unchanged).
-
-**Next steps (current):**
-1. **Dylan's decision:** does C's per-run angle scale (0.99–1.09) block the freeze, or wait for P7a v(t)?
-2. Freeze bundles (pf/ incl. D `_L1` → EOS `Analysis_pass1/bundles/`), N-G1 sign-off, full submission — **runs 79/81
-   on `flavour=tomorrow`, 8 cores** — with `lxstore status` before and after.
-3. Delete the laptop copy `~/work_data/ntof_pass1/prefreeze/` (1.9 GB) once the pass is submitted.
 
 **Done (11-06 evening, dylan-Yoga):**
 - Scored lat / cospin / ng1 / twosided / samples and written up: `rerun/ntof/tests/prefreeze/FINDINGS.md`, plan §6

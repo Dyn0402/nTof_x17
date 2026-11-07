@@ -8,7 +8,7 @@
 Rows come from rerun/ntof/ntof_registry.csv (excluded rows dropped).  Bundle: <bundles>/<arm>, or with --per-row
 <bundles>/<arm>_<E1|E2>_<cos|beam> chosen by the row's mask_era and rclass (cosmic rows -> the cosmic latency,
 production -> the beam latency; make_pf_bundles.sh), plus _L1 for D rows before its latency step (lat_epoch);
---t0-class forces the class (e.g. free).  Output dir per row:
+--t0-class forces the class (e.g. free); --unplaced decides D rows outside both latency epochs.  Output dir per row:
 <out>/run_<run>/<subrun>/<arm>/.  Feed the file to ntof.sub (jobfile=).
 """
 import argparse, csv, os
@@ -21,6 +21,8 @@ ap.add_argument('--tags-per-subrun', type=int, default=None)
 ap.add_argument('--subruns', default=None, help='comma list of sub-runs to keep')
 ap.add_argument('--per-row', action='store_true', help='bundle per (arm, mask era, trigger class)')
 ap.add_argument('--t0-class', default=None, choices=['cos', 'beam', 'free'])
+ap.add_argument('--unplaced', default='refuse', choices=['refuse', 'skip', 'L1', 'L2'],
+                help='D rows with lat_epoch unplaced (run_104 straddles the step): refuse, skip the arm, or force an epoch')
 ap.add_argument('--extra', default='')
 a = ap.parse_args()
 rows = [r for r in csv.DictReader(open(os.path.join(HERE, '..', 'ntof_registry.csv'))) if r['excluded'] != 'True']
@@ -47,6 +49,10 @@ def bundle(r, arm):
         raise SystemExit(f"row {r['run']} {r['subrun']} {r['tag']}: rclass {r['rclass']} has no trigger class")
     if arm in LAT_EPOCH_ARMS and lc != 'free':
         ep = r.get('lat_epoch', '')
+        if ep == 'unplaced' and a.unplaced in ('L1', 'L2'):
+            ep = a.unplaced
+        elif ep == 'unplaced' and a.unplaced == 'skip':
+            return None
         if ep not in ('L1', 'L2'):
             raise SystemExit(f"row {r['run']} {r['subrun']} {r['tag']}: lat_epoch {ep!r} for arm {arm} (pinned t0)")
         if ep == 'L1':
@@ -66,5 +72,8 @@ for r in sorted(rows, key=lambda r: (int(r['run']), r['subrun'], r['tag'])):
         continue
     tags.append(r['tag'])
     for arm in a.arms:
-        print(f"{r['run']} {r['subrun']} {r['tag']} {arm} {bundle(r, arm)} "
+        b = bundle(r, arm)
+        if b is None:
+            continue
+        print(f"{r['run']} {r['subrun']} {r['tag']} {arm} {b} "
               f"{a.out}/run_{r['run']}/{r['subrun']}/{arm} {a.extra}".rstrip())

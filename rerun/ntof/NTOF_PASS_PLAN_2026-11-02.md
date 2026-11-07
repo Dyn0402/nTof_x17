@@ -315,7 +315,7 @@ A failing arm is held, as on the bench.
   `--tan-max` into the bundle instead.
 
 - **D latency per epoch (Dylan 11-06: "two latencies for D if it needs it").** It does: D's free-t0 cosmic latency
-  steps ~+35 ns between run_103 (07-29) and run_105 (07-30); only the excluded run_104 lies between. Registry column
+  steps ~+35 ns between run_103 (07-29) and run_105 (07-30); only run_104 lies between (a production run, not excluded; see 11-07). Registry column
   `lat_epoch` (L1 ≤ run_103, L2 ≥ run_105, `unplaced` run_104). D L1 pin x −17.8 ± 5.4, y −11.2 ± 5.0 ns
   (`latency_D_L1.json`: the r149 pin + the L1 − run_149 offset on one estimator); L2 keeps the r149 pin (18.3 / 20.0).
   Bundles `D_<era>_<cos|beam>_L1`; `make_ntof_jobs --per-row` picks them for D L1 rows. A and C keep one latency
@@ -600,3 +600,27 @@ A failing arm is held, as on the bench.
   I/O): the full pass needs `flavour=tomorrow` for them. Re-submitted 4634655 (23 jobs, 8 cores, 24 h).
   4634655 + 4635005 (41 jobs, `tomorrow`) all done, exit 0 (11-07); runs 79/81 beam rows rescored (+31–36 % pointing
   vs is2_v2 for A and C, same triggers).
+
+### 11-07: bundles frozen, full pass submitted (`rerun/ntof/freeze/`)
+- **Dylan 11-07: freeze now, analyse C's v(t) later** (v is not in the fit, P7a corrects at table level). Checked first
+  on `line_by_run.csv`: C's scale follows A's (corr 0.71 pinned / 0.85 free t0), x and y move together (0.97), same
+  with t0 free: a common depth scale (gas, v), C ≈ 2× A. For P7a: C res68 grows more (2.9 → 4.5°) than a 9 % v error
+  explains; the 1.2 µs window clips columns slower than ~24 µm/ns (C closest).
+- **Frozen:** `Analysis_pass1/bundles/` (20 bundles + `latency_D_L1.json`, md5 = the scored `prefreeze_ed0b1162`
+  set, `*_free` left out; `FROZEN_2026-11-07.md`, `bundles.md5`). Code archive `code_ed0b1162` (reco path unchanged
+  to the freeze commit).
+- **Regression test (plan test 7):** smoke 4635766 (5 jobs, `--limit-per-tag 300`, frozen bundles) vs the scored ng1
+  run_145 `_000` A/B/C/D: every ok flag and p0 / tan / t0 identical (`freeze/regress.py`). D L1 picked on run_80.
+- **run_104 is a production run (198 acquisitions, 07-29 19:22 → 07-30 11:29), not excluded:** it straddles D's
+  latency step. A/B/C in the main pass; D under both pins in `Analysis_pass1/side/run104_D_{L1,L2}/` (decide per
+  acquisition later). `make_ntof_jobs.py --unplaced {refuse,skip,L1,L2}`. (Corrected in §5: only its two 0-byte acquisitions are excluded.)
+- **Wall time:** the prefreeze history has 4-core jobs up to 11.4 h on E2 runs too (145 D, 116/162 D 9–10 h), and 8 cores
+  barely help (run_79 A 7.0 → 6.8 h): **every job on `flavour=tomorrow`, 4 cores**. `ntof.sub` takes `maxmat=` (2000).
+- **Submitted 11-07 ~16:45:** main **4636418** (15,550 = 3,937 acquisitions × ABCD − D run_104), side **4636419**
+  (D run_104 L1, 198), **4636420** (L2, 198). Out `Analysis_pass1/stage2/run_<r>/<sub>/<arm>/`. Job lists in
+  `rerun/ntof/freeze/`. AFS 71 % at submit.
+- **N-G1, status at submission:** efficiency proxy (gated tracks/trigger) and capsule pointing ≥ is2_v2 on every A/C run
+  (§6 11-06); A–C line ratios 1.00 ± 0.005 at run_149. **Not yet evaluated:** wall-confirmed fraction per arm, line s68
+  against is2_v2, source y (−31 / −35) and G5. They are scored on the pass's own run_145 / run_149 output; an arm that
+  fails is held (its rows re-run), as on the bench.
+
