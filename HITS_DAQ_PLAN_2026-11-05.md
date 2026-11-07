@@ -57,6 +57,25 @@ and work items R1–R5, V1). No new data: everything below is computation on the
   amplitude-weighted ladder is dominated by those end strips. Caveat: the 'point' arm (no diffusion, floor footprint)
   also bends at the ends (+62 / −44 ns): strips past the column end see one-sided charge from the strip width alone, so
   only the excess over 'point' (≈ +20 / −25 ns) is the diffusion/footprint mixing.
+- **Analysis DAG 4634728 scored 2026-11-07** (code `8000aeac`, H2c defaults amp λ3000 / t_rise 700; full det3 Run 1
+  and Run 2, all event ids; 244/260 nodes, the 16 failed `R_` nodes were the `--variants` quoting bug, fixed in
+  `b2685686` and rerun clean in `ana_resim_2026-11-06`; job log 292 starts = 244 + 16×3, no other failure). Tables on
+  EOS `hits_daq/results/`. Score each run on its own: `score_h2c.py` keeps only event ids common to all labels, and
+  Run 1 / Run 2 ids collide by accident (~800 planes).
+  - Tiers (`tiers.py --from-tables`), naive / H0 / H2a s68 [°], X | Y, W = 1.04 | 1.01:
+    Run 1 V0 3.18/2.06/1.75 | 3.75/2.68/2.42, V0r 3.08/2.05/1.79 | 3.38/2.42/2.05;
+    Run 2 V0 3.02/2.11/1.78 | 3.68/2.61/2.40, V0r 2.93/2.10/1.77 | 3.30/2.38/2.00. Best H2a: V4e/V6r (X 1.69, Y 1.74–1.98).
+    Naive steep +2.3–2.5° X, +3.0° Y on V0.
+  - H2c (`score_h2c.py --bins`): Run 1 X 1.20 (steep −0.05) / Y 1.28 (+0.19); Run 2 X 1.20 (+0.11) / Y 1.29 (+0.25);
+    in5 0.84–0.86. The gap to W (0.16 X / 0.27 Y) stays in |tan| < 0.05: steep +0.8–0.9 X, +1.4–1.6 Y, s68 2.0–2.7.
+    (The odd-id subset of 11-06 read X 1.12 / Y 1.19: the full sets are ~0.08° worse.)
+  - Arm S first look (resim, Run 1, 14 variants, |tan_true| > 0.1; median u/tan_true relative to 'point', DREAM
+    family; < 1 = more compressed): X base 0.88, metal 0.92, dp0 0.97, s0_45 0.85, sheet 0.81 (rc_D_y variants leave X
+    unchanged, as they must). Y base 0.80, metal 0.90, rc0 0.87, rc05 0.84, rc2 0.70, rc5 0.56, rc10 0.43, dp0 0.91.
+    So without RC, diffusion + footprint still compress ~10 %; nominal RC adds ~8 % on Y and it scales steeply above.
+    No resim scorer yet (W on resim, H2c per variant): to write.
+  - SPS: 4 rows' tables in; d650/d700 resubmitted 11-07 as DAG 4635707 (`~/x17rerun/hits_daq/ana_2026-11-07`, 50
+    nodes). The SPS tables have tan_ref NaN: they need the stage-angle scoring (next step 5), not `score_h2c.py`.
 - **(answered above)** Open question: if the mixing exists even on a metallic readout, why does no one
   else need a waveform fit? Literature review planned (HANDOFF next step 1; Dylan's T2K hypothesis: pads ≫ diffusion).
 
