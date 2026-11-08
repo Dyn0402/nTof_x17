@@ -1,9 +1,9 @@
 \section{Hits against waveforms, same events}\label{sec:tiers}
 \sectionstate{open}{R1--R5; the July det3 five-tier table (R\&D model); FLEET\_DIGEST (H0 vs W)}
 \intent{The core new result. Every tier on the same events with the same reference: H0 production hits, H1 best
-per-strip estimator, H2a slope remap, H2b unsharing + angle-calibrated hybrid, H2c the forward model fitted to hit
+per-strip estimator, H2a slope remap, H2c the forward model fitted to hit
 lists, W waveforms. Metrics: $\sigma_\theta$ vs angle, bias, implied-$v$ flatness, threading $<1$\,mm, position, efficiency, near-vertical tracks.}
-\analysis{R2}{H2a/H2b refitted on r06}
+\analysis{R2}{H2a on pass 1; H2b$'$ dropped 2026-11-08 (H2c covers the best a hit readout can do)}
 \analysis{R3}{H2c: forward fit on hit lists}
 \analysis{R5}{benchmark, all tiers}
 \begin{figure}[t]
@@ -11,4 +11,16 @@ lists, W waveforms. Metrics: $\sigma_\theta$ vs angle, bias, implied-$v$ flatnes
   \includegraphics[width=0.95\linewidth]{tiers_benchmark}
   \caption{\tbw{Every reconstruction tier on the same events.}}
   \label{fig:tiers_benchmark}
+\end{figure}
+
+\subsection{What a hit readout must record}\label{sec:readout}
+\sectionstate{open}{R4; VMM emulation deferred (V1, \texttt{ntof\_cosmics/g4\_digi})}
+\intent{For a hit-only front-end: which threshold, whether to read $\pm1/\pm2$ neighbours, whether to keep amplitude.
+Answered in general terms; a full VMM emulation is left for later.}
+\analysis{R4}{threshold 3--7$\sigma$, neighbour readout, amplitude on/off}
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.75\linewidth]{threshold_neighbours}
+  \caption{\tbw{Angular resolution against hit threshold and neighbour readout.}}
+  \label{fig:threshold_neighbours}
 \end{figure}

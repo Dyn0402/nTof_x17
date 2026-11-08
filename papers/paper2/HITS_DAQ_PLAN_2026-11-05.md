@@ -95,6 +95,15 @@ and work items R1–R5, V1). No new data: everything below is computation on the
     bin (X −3.5° at |tan| 0.3–0.5, Y −3.9° at 0.2–0.3), probably the map's edge statistics.
   - `score_h2c.py` now refuses labels that are not the same planes (> 5 % lost to the common cut); `--each` scores
     labels from different runs on their own planes.
+- **Dylan's decisions 2026-11-08** (answers to the 11-07 list): (1) mechanism wording stays same-time mixing, and the pitch
+  question is now tested (`hits_daq/gang_scan.py`); (2) H2c tuned per SPS row, as far as it goes; (3) **H2b′ dropped**; (4) shaping axis
+  in Arm S (`resim_shape.py`); (5) H2c on the simulated variants (`resim.py --h2c`); (6) **det3 carries the paper, det4 where SPS adds
+  something**, others only if interesting; (7) **§7 merged into §6, §8 into §9**; (8) **the floor is in Paper II** (§5 rewritten);
+  (9) 60 ns depth-bin bias paragraph added to §5; (10) **mount angle 25.4°**, the measured yaw (`det4_gap`'s 25.52 is the midpoint with the config).
+- **H2a edge oddity resolved 2026-11-08** (`hits_daq/h2a_edge.py`, `results/h2a_edge_sat_det3.json`): not statistics and not the flat ends
+  (1–2 % of planes clamped; 40 bins still −2.7° at |tan| 0.3–0.5). H2a is median(tan_ref | u), a regression of truth on a noisy slope, so
+  it shrinks toward the training angle distribution. The inverse map median(u | tan_ref) inverted is unbiased at steep angles
+  (+0.06° X, −0.12° Y) but loses resolution overall (X 2.10 vs 1.75°, Y 2.36 vs 2.42°). So H2a's s68 is partly the cosmic angle prior: quote it as such; it will not hold on a different angle distribution.
 - **(answered above)** Open question: if the mixing exists even on a metallic readout, why does no one
   else need a waveform fit? Literature review planned (HANDOFF next step 1; Dylan's T2K hypothesis: pads ≫ diffusion).
 
@@ -174,7 +183,7 @@ Every tier runs on every V family; a result is named `<V code>/<H code>` (e.g. V
 | **H0** | the same line with a global slope remap tan = (u − a)/k, (a, k) from M3 on the other half of the events (event-id parity) — what `hits_arm.py` does | yes | no | in `tiers.py` |
 | **H1** | per family, the best per-strip estimator variant (weighting, robust trimming, first/last-strip drop below 25–50 % of the neighbour, as the APV25 / VMM literature does) chosen on the training half | H0's | no | to build (P3) |
 | **H2a** | angle-dependent remap: tan = f(u), f the binned-median map of tan_ref against u, trained on the other half — the best any slope-only correction can do | yes | no | in `tiers.py` |
-| **H2b′** | hits-only unsharing: deconvolve the hit amplitudes with the kernel, correct each strip time by its neighbours' amplitude-weighted arrival, refit; plus a head-on tagger on hit features (hits6) | no (constants from the kernel) | yes | to build (P4) |
+| ~~H2b′~~ (dropped 11-08) | hits-only unsharing: deconvolve the hit amplitudes with the kernel, correct each strip time by its neighbours' amplitude-weighted arrival, refit; plus a head-on tagger on hit features (hits6) | no (constants from the kernel) | yes | to build (P4) |
 | **H2c** | forward model through the emulator: generate the window with `build_matrix_rc` from (p0, w, t0, depth profile), apply the same V family, fit the predicted hit list to the observed one (χ² on t and a; strips below threshold censored) | no | yes | to build (P6) |
 | **W** | the pass-1 waveform fit, same planes: tan = (1e3 w − w0)/(kw v) | its calibration (kw, w0 from M3) | yes | in `tiers.py` |
 
@@ -241,7 +250,7 @@ Expected deliverable: s68(H-best)/s68(W) and bias vs ρ_s, with the metallic (rc
 | P1 | Hit-emulator module (V0–V4) on numpy waveforms, unit-tested on real `decoded_root` (V0 must reproduce `combined_hits` times/amplitudes on the same strips) | M | – |
 | P2 | Arm D extraction: run P1 on the pass-1 interior_good events, five chambers + SPS det4 (condor, outputs on EOS; local scratch `$WORK_DATA/paper2_hits/`) | M | P1 |
 | P3 | H-naive, H1, H2a on P2 + the benchmark scorer (extend `hits_arm.py` into a tier scorer) → first figures: ladder residual vs depth, bias/s68 vs angle | M | P2 |
-| P4 | H2b′ hits-only unsharing + hits6 tagger, constants refit per chamber on half the events | M | P3 |
+| ~~P4~~ | dropped 2026-11-08 | | |
 | P5 | Port g4_digi to `build_matrix_rc` + shaper + P1; gate S0 at det3 | L | P1 |
 | P6 | H2c: emulator-in-the-loop fit (start on Arm S where truth is known, then Arm D) | L | P1, P5 |
 | P7 | Scans of §6 in Arm S; threshold/neighbour axis in both arms | M | P5 (P6 for the H2c line) |

@@ -1,18 +1,29 @@
-\section{The physics floor}\label{sec:floor}
-\sectionstate{partial}{toy closure, WFT \S12 (\texttt{18\_toy\_closure.py}, R\&D model)}
-\intent{What limits the angle once the bias is gone: electronics contribute 0.02\textdegree; $\sim$1\textdegree{} comes from
-the 0.3\,mm jitter of the charge centroid (diffusion). The floor is physics, not readout.}
-\analysis{R6}{re-run the toy on the production model and the r06 kernel}
-\tbw{Unmodelled X asymmetry (\texttt{xasym\_toy.py}, cloud\_basics \S43): the measured one-sided $\pm1$ copy
-($0.13\times$, 114\,ns late) injected into det3 toys on the production model and refitted symmetric. Closure floor
-0.018\textdegree, no bias. With the copy: angle bias $-0.051\pm0.005$\textdegree{} over the bench angle mix,
-$\mp0.19$\textdegree{} at $|\tan\theta|<0.05$, turning over by $|\tan\theta|\approx0.2$; spread $+0.13$\textdegree{}
-($+0.007$\textdegree{} in quadrature on 1.15\textdegree); position pulled 60--70\,\textmu m toward the copy side.
-$\sigma_{0,x}=0.25$ halves the overall angle cost against 0.42 and cuts $\chi^2$/dof 17.8 $\to$ 6.6. On that footprint the
-injection reproduces the measured head-on $a_Q$ ($+0.160$ against $+0.165$).}
+\section{How far from the physics floor}\label{sec:floor}
+\sectionstate{partial}{\texttt{rerun/model\_audit/ws\_floor} (F3, 2026-10-27); pass-1 resolutions (\texttt{rerun/paper1\_res}); bootstrap (\texttt{rerun/paper1\_floor})}
+\intent{What limits the angle once the bias is gone, and how far the measurement is from it. Replaces the withdrawn
+``$\sim$1\textdegree{} physics floor''.}
+An electron-by-electron toy (cluster sizes and $\delta$-ray ranges, Magboltz diffusion, Polya gain, the measured footprint,
+template, sampling, noise and ADC ceiling), fitted by the production estimator with the toy's exact mean model, gives a floor
+of 0.30--0.35\textdegree{} (s68) at every angle up to 45\textdegree, on all five bench chambers. Transverse diffusion sets it:
+without diffusion the floor falls to 0.02--0.09\textdegree, while electronics noise alone contributes at most
+0.015\textdegree. The closed form $\sigma_\theta\approx D_T\sqrt{6(1+f)/(NG)}$, with $N$ drift electrons, gap $G$ and
+$f=1/(1+\theta_\mathrm{Polya})$, gives 0.29\textdegree{} for chamber A. \tbw{Define the chamber naming once with Paper I.}
+
+The measured resolution of chamber A, 0.99\textdegree{} (X) and 0.90\textdegree{} (Y) on pass 1, is about three times this
+floor. Most of the difference is not understood: \tbw{bring in the remainder from the residual bootstrap, $0.59\pm0.10$\textdegree{} on chamber A X,
+which no reference, X-copy or position structure explains.}
+
+\paragraph{The depth-bin bias.} The waveform fit describes the charge column in bins of one sample, 60\,ns. Even with a
+perfect model this degrades steep tracks and reads them shallow: in the toy the bias is $-0.08$, $-0.23$ and $-0.51$\textdegree{} at
+25, 30 and 40\textdegree, and the resolution grows from 0.34\textdegree{} at 20\textdegree{} to 1.35\textdegree{} at 40\textdegree. With 20\,ns
+bins the bias stays within 0.05\textdegree{} up to 45\textdegree{} and the resolution within 0.27--0.41\textdegree. The cause is that
+when $v\,\Delta t\tan\theta$ approaches the strip pitch, a charge uniform within a bin cannot represent clustered ionisation; the
+effect vanishes in the toy without clustering. On the bench it is small ($\sim-0.05$\textdegree{} at 20\textdegree), but it is the main term for
+pairs at 30--45\textdegree, as at n\_TOF. A finer or interpolated charge grid costs about three times more columns and has not been
+tested on data.
 \begin{figure}[t]
   \centering
   \includegraphics[width=0.7\linewidth]{toy_floor}
-  \caption{\tbw{Toy closure: contributions to the angular resolution.}}
+  \caption{\tbw{Toy floor against angle and its breakdown, with the measured chamber A resolution.}}
   \label{fig:toy_floor}
 \end{figure}
