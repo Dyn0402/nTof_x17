@@ -336,14 +336,59 @@ def main():
     P.line(list(range(len(ks))), y2, sd.PURPLE, tips=[f'V0 robust {q:.3f}' for q in y2])
     D.slide('sps', sd.title('A second, reference-free test: the same compression on a chamber at a known 25.4°', 'det4 at SPS H4, inclined view, CO₂ rows. Relative to the waveform fit') + sd.legend([('Hits (DREAM-style)', sd.RED), ('Hits, robust line', sd.PURPLE)], size=23) + P.svg('sps'), 'The stage angle sets v per row through the waveform fit, so this is relative to the fit on the same planes and cannot join the bench curve without caveat. 25.4° is the yaw measured in the run-57 alignment. H2c on these rows is still being tuned.', short='SPS known angle')
 
-    # running
     exists = {n: os.path.exists(os.path.join(RES, n)) for n in ('gang_scan.json', 'shape_scan.json', 'h2c_resim.json', 'charge_weighted.json')}
-    st = lambda n: 'done' if exists[n] else 'running'  # noqa: E731
-    rows = [('Strip pitch: sum neighbouring strips, data and model, by angle', st('gang_scan.json'), 'Separates lever arm from strip-end term, which no literature comparison can'),
-            ('Front-end shaping 25-200 ns', st('shape_scan.json'), 'No controlled study found; a VMM-type answer'),
-            ('Forward model fitted to hit lists, resistivity scan', st('h2c_resim.json'), 'Is the waveform needed, or just the model?'),
+    # scan results
+    G = J('gang_scan.json') if exists['gang_scan.json'] else None
+    if G:
+        ks = [1, 2, 3, 4, 6]
+        P = sd.Plot(1660, 600, x=(0.5, 6.5), y=(1.0, 1.8), xlabel='strips summed into one readout element (pitch × 0.78 mm)', ylabel='slope ratio, X view, |tan θ| 0.2-0.3')
+        P.xticks([(k, str(k)) for k in ks])
+        P.yticks([(1.0, '1.0'), (1.2, '1.2'), (1.4, '1.4'), (1.6, '1.6'), (1.8, '1.8')])
+        P.hline(1.0, sd.MUT)
+        leg = []
+        for arm, lab, col in (('data', 'Data vs telescope', sd.INK), ('base', 'Full model', sd.BLUE), ('metal', 'Metallic readout', sd.GREEN), ('point', 'Strip geometry only', sd.GREY)):
+            y = [G['x'][arm][str(k)]['dream']['0.2-0.3'] for k in ks]
+            cov = [G['x'][arm][str(k)]['dream']['coverage'] for k in ks]
+            P.line(ks, y, col, tips=[f'{lab}, {k} strips: {q:.2f}, coverage {c:.2f} (|tan|>0.1)' for k, q, c in zip(ks, y, cov)])
+            leg.append((lab, col))
+        P.text(1.3, 1.65, 'Wider strips make it worse, even with no diffusion', 28, sd.INK, weight=700)
+        D.slide('pitch', sd.title('Fine strips are not the problem: summing them increases the compression', 'det3, Runs 1 and 2: neighbouring strips summed on the data and on the model') + sd.legend(leg, size=23) + P.svg('pitch'), 'Noise adds in quadrature; extra strip capacitance not modelled. Coverage falls with width (below 50 % at 6 strips for |tan θ| > 0.1), so wide-strip points contain only tracks spanning at least 3 elements. Most of the growth is present in the geometry-only arm, so it is the strip-end term. No literature comparison can separate this from the lever arm. papers/paper2/hits_daq/gang_scan.py, results/gang_scan.json.', short='Strip pitch')
+    if exists['shape_scan.json']:
+        Z = J('shape_scan.json')
+        names = ['tp25', 'tp50', 'tp100', 'tp200']
+        xv = [25, 50, 100, 200]
+        P = sd.Plot(1660, 600, x=(20, 250, 'log'), y=(1.0, 1.6), xlabel='front-end peaking time [ns] (CR-RC², signal-to-noise held at DREAM’s)', ylabel='slope ratio (|tan θ| > 0.1), time at peak')
+        P.xticks([(v, str(v)) for v in xv])
+        P.yticks([(1.0, '1.0'), (1.2, '1.2'), (1.4, '1.4'), (1.6, '1.6')])
+        P.hline(1.0, sd.MUT)
+        leg = []
+        for v_, det, lab, col in (('y', 'base', 'Y, resistive', sd.ORANGE), ('x', 'base', 'X', sd.BLUE), ('y', 'metal', 'Y, metallic', sd.GREEN)):
+            y = [Z[v_]['variants'][f'{det}_{n}']['fams']['V1_peak']['ratio'] for n in names]
+            P.line(xv, y, col, tips=[f'{lab}, {t} ns: {q:.3f}' for t, q in zip(xv, y)])
+            leg.append((lab, col))
+        P.text(30, 1.55, 'Faster shaping does not remove it', 28, sd.INK, weight=700)
+        D.slide('shaping', sd.title('A faster front end does not fix it: shaping from 25 to 200 ns barely matters', 'Re-simulated det3 events, VMM-style time at peak, exact truth') + sd.legend(leg, size=23) + P.svg('shaping'), 'Noise is white noise through the same shaper at each strip’s measured rms; real ENC changes with shaping and is not modelled. Pulse: CR-RC² convolved with a 10 % prompt / 90 % 100 ns ion current. resim_shape.py, results/shape_scan.json.', short='Shaping')
+    if exists['h2c_resim.json']:
+        Y = J('h2c_resim.json')['y']['variants']
+        names = ['rc0', 'rc05', 'base', 'rc2', 'rc5']
+        xv = [0.1, 0.5, 1, 2, 5]
+        P = sd.Plot(1660, 600, x=(0.08, 7, 'log'), y=(0.8, 2.2), xlabel='RC spreading on Y relative to measured (leftmost: no RC)', ylabel='slope ratio against exact truth')
+        P.xticks([(0.1, '0'), (0.5, '½'), (1, '1'), (2, '2'), (5, '5')])
+        P.yticks([(1.0, '1.0'), (1.5, '1.5'), (2.0, '2.0')])
+        P.hline(1.0, sd.MUT)
+        a0 = [Y[k]['fams']['V0_dream']['ratio'] for k in names]
+        a1 = [Y[k]['fams']['V0/H2c_dream']['ratio'] for k in names]
+        P.line(xv, a0, sd.RED, tips=[f'hits: {q:.2f}' for q in a0])
+        P.line(xv, a1, sd.PURPLE, tips=[f'model on hits: {q:.3f}' for q in a1])
+        P.text(0.12, 2.0, 'The model recovers the slope from hit lists alone', 28, sd.PURPLE, weight=700)
+        D.slide('h2csim', sd.title('On simulation, the model fitted to hit lists also recovers the slope', f'Y view, {Y["base"]["n"]} re-simulated planes so far (partial), the fit knows the generating kernel') + sd.legend([('Plain hits line', sd.RED), ('Forward model fitted to hits (H2c)', sd.PURPLE)], size=23) + P.svg('h2csim'), 'On the data H2c gives 1.20 / 1.28° against 1.04 / 1.01° for the waveform fit, with the gap near normal incidence (far-strip timing), so the model is what matters, and waveforms still help. h2c_resim.json; 39 of 48 nodes at the time of this build.', short='Model on hits')
+
+    # running
+    rows = [('Strip pitch: sum neighbouring strips, data and model, by angle', 'done (slide above)', 'Wider strips are worse; growth is mostly the strip-end term'),
+            ('Front-end shaping 25-200 ns', 'done (slide above)', 'Shaping barely matters'),
+            ('Forward model fitted to hit lists, resistivity scan', 'partial', 'The model recovers the slope on simulation; data gap stays near normal'),
             ('Charge-weighted time on our data', 'to add' if not exists['charge_weighted.json'] else 'done', 'Tests the pad-TPC estimator; the MAIKo midpoint too')]
-    D.slide('running', sd.title('Four more results would sharpen the claim, all from existing data') + tbl(['Study', 'Status', 'What it adds'], rows, size=27, widths=[760, 160, 740]), 'A first look at 400 planes of the pitch scan shows compression growing with summed width (data Y 1.40 at one strip, 1.82 at four). Not quotable yet. Jobs: condor cluster 4637865.', short='Still to come')
+    D.slide('running', sd.title('Four more results would sharpen the claim, all from existing data') + tbl(['Study', 'Status', 'What it adds'], rows, size=27, widths=[760, 160, 740]), 'Jobs: condor DAG 4637865. SPS H2c tuning (spstune) is still running.', short='Still to come')
 
     q = ('Single-time-per-strip µTPC reconstruction is known to read tracks too steep, an effect attributed to capacitive coupling and edge strips. '
          'We measure it per track against an independent telescope, show that it is dominated by same-time mixing from diffusion and the prompt footprint with a further strip-end term, '

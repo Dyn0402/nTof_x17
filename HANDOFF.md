@@ -1,5 +1,34 @@
 # Handoff
 
+## Paper II hits-DAQ and TPC literature survey — updated 2026-11-08 (dylan-Yoga)
+
+**Resume:** when DAG 4637865 ends: account jobs, rescore H2c variants + SPS tune, rebuild deck; then charge-weighted estimator.
+
+**Goal:** Paper II's hits-vs-waveforms section and an honest novelty claim against every other TPC family.
+
+**Done (11-08):**
+- Dylan's 10 decisions applied (plan §0): H2b′ dropped; det3 headline, det4 where SPS helps; §7 into §6, §8 into §9; floor section rewritten with 60 ns paragraph; mount angle 25.4° (Paper I still says 25.6° in `03_setups.tex` and `A3_all_chambers.tex`: not touched, Stephan edits it, ask Dylan).
+- H2a edge oddity resolved (`hits_daq/h2a_edge.py`): regression toward the training angle spectrum, not statistics; H2a's s68 is partly the cosmic prior.
+- Literature survey of all TPC families: `papers/paper2/hits_daq/LITERATURE_TPC_SURVEY.md`, index `hits_daq/literature_survey/README.md`, deck https://dylan-neff.web.cern.ch/notes/mx17-tpc-literature.html (`literature_survey/make_deck.py`). Verdict: strip µTPCs report the bias under other names; long TPCs have Λ 7-110× smaller; LAr already has the channel-time convolution. Claim the measurement, decomposition and per-event depth fit, not the effect.
+- Scans (plan §0 “Scans 2026-11-08”): pitch done (wider strips worse, mostly strip-end term), shaping done (25-200 ns barely matters), H2c on variants 39/48 (recovers the slope on simulation).
+
+**In progress:** DAG 4637865 (`~/x17rerun/hits_daq/ana_2026-11-08`, code `code_hs_19d9be5b`, batch `hd1108`, schedd bigbird101): 61/77 nodes, 0 failures at wrap-up. Outputs on EOS `cosmic_bench/x17rerun/hits_daq/results/` (`h2cresim_*`, `spstune_*`). The local waiter dies with this session.
+
+**Next steps:**
+1. `ssh lxplus`, `condor_q -constraint 'ClusterId==4637865'` (empty = done); compare `001`/`005` in `log/ana.log`, read any failure.
+2. rsync `h2cresim_*`, `spstune_*` into `$WORK_DATA/paper2_hits/r1108`; `resim_score.py "<dir>/h2cresim_*.parquet" --json results/h2c_resim.json`; score spstune (per-row v, gap 28.6) and pick H2c settings for SPS, then rerun the rows.
+3. Add a charge-weighted time and a TOT-midpoint family to `emulate.py`/`tiers.py` (only windows needed); Dylan to confirm.
+4. Fix wording listed in `literature_survey/README.md`; write §6 text and paper figures; rebuild and republish the deck (slide “Still to come” status strings in `make_deck.py`).
+5. Dylan's open choices: lead with decomposition or fit (recommended decomposition), contact T2K about their global waveform fit, Paper I mount angle.
+
+**Gotchas:**
+- `condor_q -batch` from the login node can miss a DAG on another schedd: check `-constraint`, never resubmit blindly (I double-submitted once; both removed before work ran).
+- On a long-lived ssh the AFS token expires (Permission denied on `~`): a re-login fixes it.
+- Run 1 and Run 2 event ids collide: `score_h2c.py` scores one run at a time; `gang_scan` pools by rows, fine.
+- Laptop working data: `~/work_data/paper2_hits` (regenerable). Source papers: `/eos/user/d/dneff/litsurvey_sources_2026-11-08.tgz`.
+
+**Key files:** `hits_daq/gang_scan.py`, `resim_shape.py`, `resim.py --h2c`, `resim_score.py`, `h2a_edge.py`, `condor/make_ana_dag.py` (stages gang, shape, h2cresim, spstune).
+
 ## Paper I text from the feedback note — updated 2026-11-06 (dylan-MS-7C84)
 
 **Resume:** Paper I text from Dylan's hub note; all `- [ ]` items answered through round 3; next: read the note for new ones.
@@ -36,7 +65,7 @@
   notes to "Unplaced" (move them by hand). The hub auto-commits the notes repo (no remote).
 - `reco_example` needs the replay cache `$WORK_DATA/claude-jobs/17c92c46-displays/principle/principle_7884.pkl`.
 
-## Paper II hits-DAQ comparison (§ hits vs waveforms) — updated 2026-11-06 (dylan-MS-7C84)
+## (older detail) Paper II hits-DAQ comparison (§ hits vs waveforms) — updated 2026-11-06 (dylan-MS-7C84)
 
 **Resume:** analysis DAG 4634728 running (260 nodes, `~/x17rerun/hits_daq/ana_2026-11-06`, code `code_hs_8000aeac`, slim
 archive); when done score with `tiers.py --from-tables` and `score_h2c.py --bins`, then add the d650/d700 SPS rows.
