@@ -104,6 +104,7 @@ and work items R1–R5, V1). No new data: everything below is computation on the
   (1–2 % of planes clamped; 40 bins still −2.7° at |tan| 0.3–0.5). H2a is median(tan_ref | u), a regression of truth on a noisy slope, so
   it shrinks toward the training angle distribution. The inverse map median(u | tan_ref) inverted is unbiased at steep angles
   (+0.06° X, −0.12° Y) but loses resolution overall (X 2.10 vs 1.75°, Y 2.36 vs 2.42°). So H2a's s68 is partly the cosmic angle prior: quote it as such; it will not hold on a different angle distribution.
+- **TPC literature survey 2026-11-08** (`hits_daq/LITERATURE_TPC_SURVEY.md`, index `hits_daq/literature_survey/README.md`, deck notes/mx17-tpc-literature): strip µTPCs report the bias under other names; long TPCs have Λ 7-110× smaller; LAr already has the channel-time convolution. Paper II claims the measurement, the decomposition and the per-event depth fit, not the effect.
 - **(answered above)** Open question: if the mixing exists even on a metallic readout, why does no one
   else need a waveform fit? Literature review planned (HANDOFF next step 1; Dylan's T2K hypothesis: pads ≫ diffusion).
 
