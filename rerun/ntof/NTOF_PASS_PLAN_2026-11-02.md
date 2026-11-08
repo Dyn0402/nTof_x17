@@ -633,10 +633,10 @@ A failing arm is held, as on the bench.
   | run | sub-run | tag | FEU | arm | bytes on EOS / expected | state |
   |---|---|---|---|---|---|---|
   | 89 | cosbounce_cos_0003 | 260728_06H23_001 | 02 | D | 104,464,384 / 120,454,790 | repaired 11-08 |
-  | 104 | stat090_0010 | 260730_05H27_010 | 05 | B | 9,043,968 / 115,335,804 | **open** (main proc 3745) |
-  | 106 | stat090_0005 | 260730_17H42_006 | 08 | C | 3,145,728 / 84,417,280 | **open** (main proc 4176) |
-  | 116 | stat090_0028 | 260801_21H19_003 | 01 | D | 24,772,608 / 118,236,801 | **open** (main proc 6641) |
-  | 158 | stat090_0002 | 260809_10H11_007 | 04 | A | 83,099,648 / 111,151,125 | **open** (main proc 14662) |
+  | 104 | stat090_0010 | 260730_05H27_010 | 05 | B | 9,043,968 / 115,335,804 | repaired 11-08 (main proc 3745) |
+  | 106 | stat090_0005 | 260730_17H42_006 | 08 | C | 3,145,728 / 84,417,280 | repaired 11-08 (main proc 4176) |
+  | 116 | stat090_0028 | 260801_21H19_003 | 01 | D | 24,772,608 / 118,236,801 | repaired 11-08 (main proc 6641) |
+  | 158 | stat090_0002 | 260809_10H11_007 | 04 | A | 83,099,648 / 111,151,125 | repaired 11-08 (main proc 14662) |
 
 - **Mechanism, as far as the data shows.** Five different worker nodes, each job one attempt and exit 0, clean logs, EOS status
   "healthy" with 2 replicas (its checksum is of the short file). `redecode/job.sh` did `cp` through FUSE, compared the `.part`
@@ -650,6 +650,12 @@ A failing arm is held, as on the bench.
   rr1_cm0 hits re-run (condor 4638251): the seven other FEUs are identical to before in per-FEU hits, FEU 02 gains 86,712 hits,
   combined 247,380 → 334,092. So the finished A/B/C jobs of that acquisition stand. Arm D resubmitted (4638252). The cut file and
   the old hits are in `Analysis_pass1/checks/redecode/quarantine_2026-11-08/`.
+- **Repair of the other four (Dylan 11-08).** Same recipe: all four decode with 0 missing events and exactly the recorded size. rr1_cm0
+  hits re-run (condor 4638261, 4/4 exit 0, first attempt, with the guarded `job.sh`). Each acquisition's seven intact FEUs are identical
+  to before, and the repaired FEU gains its hits (combined: run_104 +184,793, run_106 +130,549, run_116 +439,154, run_158 +124,265).
+  Main procs 3745 and 4176 were held during the repair and released: a job started between the two steps would have run with no
+  hits for its own FEU and exited 0. Procs 6641 and 14662 had not materialized. After an atomic `eosput`, a FUSE mount that has cached
+  the file can show the old size for a while (seen on the lxplus node, server correct), so check right after with `xrdfs stat`.
 - **Guards.** `rerun/condor/eosput` (XRootD, server-checked adler32, atomic, re-read; replaces `cp` to EOS in `redecode/job.sh`
   and `rehit/job.sh`), `rerun/condor/root_complete` (size == fEND; the hits job refuses a cut input), and
   `rerun/ntof/condor/audit_eos.py {inputs,outputs}`. Audit of the 2,440 outputs on EOS at 11-08 14:10: 0 problems.

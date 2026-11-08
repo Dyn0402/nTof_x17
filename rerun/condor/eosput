@@ -6,6 +6,7 @@
 # EOS then reports the short file as healthy, because its checksum is of what arrived. Here the server checks the
 # adler32 of the local file (--cksum), the upload is atomic (eos.atomic, the old file stays until a good one commits),
 # and the size and checksum are re-read from the server afterwards.
+# The atomic upload replaces the file, so a FUSE mount that had it cached can show the old size for a while: check with xrdfs.
 set -u
 SRC=$1; DST=$2
 case $DST in
