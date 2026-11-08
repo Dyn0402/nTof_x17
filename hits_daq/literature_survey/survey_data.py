@@ -396,5 +396,5 @@ KNOWN_NEW = [
     ('Signal = charge ⊗ response in channel and time', 'Adams 2018 (LAr), T2K for RC maps', 'Per-event fit of a track and depth-binned charge, diffusion and RC in the kernel', 'METHOD'),
     ('Corrections by filter or calibration', 'Several groups', 'Fit reads 0.99-1.00 of the true slope on re-simulation up to 10× RC, with no edge filter', 'METHOD'),
     ('One time per channel suffices for long tracks', 'LAr, pad TPCs (implicit)', 'Λ as a design rule for when it fails', 'INFERENCE'),
-    ('Strip pitch and shaping', 'No controlled study found', 'Scans by re-simulation and by summing strips on data', 'RUNNING'),
+    ('Strip pitch and shaping', 'No controlled study found', 'Wider strips worsen it, mostly the strip-end term; shaping 25-200 ns barely matters', 'MEASURED + MODEL'),
 ]

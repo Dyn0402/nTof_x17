@@ -62,10 +62,12 @@ def main():
             Ws = o['W']['score']['all']
 
             def cell(n):
-                t = o['fams'][n]
+                t = o['fams'].get(n)
+                if t is None or t['ratio'] is None:
+                    return '  -     -     - '
                 s = t['score']['all']
                 return f'{t["ratio"]:.3f} {s["s68"] or float("nan"):4.2f} {s["steep"] if s["steep"] is not None else float("nan"):+5.2f}'
-            print(f'  {var:8s} {o["W"]["ratio"]:8.3f} {Ws["s68"] or float("nan"):6.2f} | '
+            print(f'  {var:8s} {o["W"]["ratio"] or float("nan"):8.3f} {Ws["s68"] or float("nan"):6.2f} | '
                   + ' | '.join(cell(f'{CODES[f]}_{f}') for f in ('dream', 'peak', 'ideal')))
     if a.json:
         json.dump(out, open(a.json, 'w'), indent=1, default=float)

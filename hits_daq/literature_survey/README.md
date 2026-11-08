@@ -25,6 +25,9 @@ source states Λ or the lever-arm argument. Source PDFs and extracted text (986 
 - MX17 Λ₀.₃ = 0.076 on one definition (0.04-0.08, 0.07, 9.5 % in the notes are the same formula with other inputs).
 - The strip notes pair 1.19/1.37 with tan θ 0.3-0.6; the sample is |tan θ| ≲ 0.3, median 0.11. Binned by angle the tension goes away.
 
+## Scans added after the survey (2026-11-08)
+Pitch and shaping complete, H2c on simulated variants partial: numbers in `../../HITS_DAQ_PLAN_2026-11-05.md` §0, slides `pitch`, `shaping`, `h2csim`. Rebuild the deck after `results/{gang_scan,shape_scan,h2c_resim}.json` change.
+
 ## Not read (all absences are negative results of a limited search)
 Lösel PhD, Klitzner PhD, Alexopoulos 2019, Iodice, ALEPH and PEP-4 NIM papers, Blum-Rolandi-Riegler, Bradt, Mauss, Giovinazzo
 2020, later D3, SpecMAT, DMTPC, LAr theses and DUNE/SBN notes, internal ATLAS and BESIII notes. ATLAS bias figures exist as images only.
