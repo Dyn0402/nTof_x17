@@ -27,6 +27,13 @@ VARIANTS = ('base:,rc0:rc_D_y=0,rc025:rc_D_y=x0.25,rc05:rc_D_y=x0.5,rc2:rc_D_y=x
             'metal:rc_D_y=0;sigma_p0=0.07,dp0:Dp=0,point:rc_D_y=0;sigma_p0=0.07;Dp=0')
 
 
+H2C_VARIANTS = ('base:,rc0:rc_D_y=0,rc05:rc_D_y=x0.5,rc2:rc_D_y=x2,rc5:rc_D_y=x5,sheet:rc_D_x=@rc_D_y,'
+                'metal:rc_D_y=0;sigma_p0=0.07,point:rc_D_y=0;sigma_p0=0.07;Dp=0')
+N_H2CRESIM = 12
+#: SPS H2c tuning (2026-11-08): row v (sps_score v_stage), det4 gap 28.6 mm, on 400 planes of d600, family V0
+SPS_TUNE = [(tr, st) for tr in (700, 1500, 3000) for st in (15, 40, 80)]
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('dag')
@@ -52,12 +59,24 @@ def main():
                 for j in range(N_H2C):
                     node(f'H_{b}_{j}', 'h2c_run.py', f'h2c_{b}_{j}of{N_H2C}.parquet',
                          f'{f} --ref {ref} --gap {gap} --families {H2C_FAMS} --part {j}/{N_H2C}')
+            if 'gang' in st:
+                node(f'G_{b}', 'gang_scan.py', f'gang_{b}.parquet', f'{f} --ref {ref}', mem=6000)
+            if 'shape' in st and tag == 'sat_det3':
+                node(f'S_{b}', 'resim_shape.py', f'shape_{b}.parquet', f'{f} --every 1', mem=6000)
+            if 'h2cresim' in st and tag == 'sat_det3':
+                for j in range(N_H2CRESIM):
+                    node(f'HR_{b}_{j}', 'resim.py', f'h2cresim_{b}_{j}of{N_H2CRESIM}.parquet',
+                         f"{f} --variants {H2C_VARIANTS} --families dream --h2c dream --gap {gap} --part {j}/{N_H2CRESIM}", mem=6000)
             if 'resim' in st and tag == 'sat_det3':
                 for j in range(N_RESIM):
                     node(f'R_{b}_{j}', 'resim.py', f'resim_{b}_{j}of{N_RESIM}.parquet',
                          f"{f} --variants {VARIANTS} --families {H2C_FAMS} --part {j}/{N_RESIM} --refit", mem=6000)
     for f in sorted(glob.glob(os.path.join(a.windows, 'sps_*.pkl'))):
         b = os.path.basename(f)[:-4]
+        if 'spstune' in st and b.endswith('d600'):
+            for tr, sts in SPS_TUNE:
+                node(f'T_{tr}_{sts}', 'h2c_run.py', f'spstune_tr{tr}_st{sts}.parquet',
+                     f'{f} --gap 28.6 --families dream --v-drift 8.354 --t-rise {tr} --s-t {sts} --nmax 400')
         if 'tiers' in st:
             node(f'TT_{b}', 'tiers.py', f'tiers_{b}.parquet', f'{f} --table-only')
         if 'h2c' in st:
