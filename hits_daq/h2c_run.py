@@ -40,6 +40,8 @@ def main():
     ap.add_argument('--t-rise', type=float, default=700.0, help='ns; per-strip time error S_T (+) t_rise noise/a (h2c.py);'
                     ' 700 chosen 2026-11-06 (results/h2c_trise_sat_det3.json)')
     ap.add_argument('--t-robust', type=float, default=0.0, help='pseudo-Huber scale c of the time pulls (0 = quadratic)')
+    ap.add_argument('--s-t', type=float, default=15.0, help='ns; constant term of the per-strip time error')
+    ap.add_argument('--v-drift', type=float, default=0.0, help='um/ns; overrides the window meta (SPS rows: the row v, sps_score v_stage)')
     ap.add_argument('--odd-only', action='store_true', help='score odd event ids only (as the parity-calibrated modes)')
     ap.add_argument('--model-noise', default='', choices=('', 'white'),
                     help='with --on-model: add white noise at each strip\'s sigma')
@@ -57,6 +59,8 @@ def main():
     cal = CalibrationBundle.load(E.bundle_path(meta, a.bundle))
     wm.use_calibration(cal)
     hyper = dict(cal.hyper)
+    if a.v_drift > 0:
+        meta['v_drift'] = a.v_drift
     if meta.get('sps'):
         # the SPS row's adaptation (sps_reco._init): v, K, nsamp; no bench w0
         cal.v_drift = meta['v_drift']
@@ -79,7 +83,7 @@ def main():
             qshape = {v: Z[v] for v in 'xy'}
         print('[h2c] qshape x', np.round(qshape['x'] * K, 2), '\n[h2c] qshape y', np.round(qshape['y'] * K, 2))
     fit = {(v, f): H2C(wm, hyper, v, f, a.gap, meta['v_drift'], K, nsig=a.nsig, ideal=ideal[v], qmode=a.qmode, lam=a.lam,
-                       qshape=qshape[v], t_rise=a.t_rise, t_robust=a.t_robust) for v in 'xy' for f in fams}
+                       qshape=qshape[v], t_rise=a.t_rise, t_robust=a.t_robust, s_t=a.s_t) for v in 'xy' for f in fams}
     for (v, f), h in fit.items():
         h.learn_offsets([p for p in planes if p['view'] == v], n=200)
     if a.odd_only:

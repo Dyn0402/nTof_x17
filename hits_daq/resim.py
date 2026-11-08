@@ -82,6 +82,8 @@ def main():
     ap.add_argument('--nsig', type=float, default=5.0)
     ap.add_argument('--refit', action='store_true')
     ap.add_argument('--views', default='xy')
+    ap.add_argument('--h2c', default='', help='also run H2c on each regenerated window, with the generating kernel: families')
+    ap.add_argument('--gap', type=float, default=28.08, help='for --h2c')
     a = ap.parse_args()
     ip, npart = (int(x) for x in a.part.split('/'))
     from wft import model as wm, reco as wr
@@ -103,6 +105,17 @@ def main():
     if a.nmax:
         sel = sel[:a.nmax]
     vv = meta['v_drift']
+    h2c = {}
+    if a.h2c:
+        from h2c import H2C
+        for v in a.views:
+            for f in a.h2c.split(','):
+                base_off = H2C(wm, dict(cal.hyper), v, f, a.gap, vv, K, ideal=ideal[v])
+                base_off.learn_offsets([p for p in planes if p['view'] == v], n=200)
+                for name, hy in V.items():
+                    h = H2C(wm, hy, v, f, a.gap, vv, K, ideal=ideal[v])
+                    h.off = base_off.off
+                    h2c[(v, f, name)] = h
     rows, t0c = [], time.time()
     for i, p in enumerate(sel):
         v = p['view']
@@ -134,6 +147,12 @@ def main():
                     h = getattr(E, f)(W2, nz2, nsig=a.nsig)
                 r[f'u_{f}'], r[f'n_{f}'] = ladder_u(pos2, h['t'], h['a'], weighted=f != 'binary')
                 r[f'ur_{f}'], _ = ladder_u(pos2, h['t'], h['a'], weighted=f != 'binary', robust=True)
+            for (hv, hf, hn), h in h2c.items():
+                if hv != v or hn != name:
+                    continue
+                obs = h.emulate(W2, nz2)
+                res = h.fit(pos2, g2, nz2, obs, r.get(f'u_{hf}', np.nan))
+                r[f'w_h2c_{hf}'] = res['w'] if res is not None else np.nan
             if a.refit:
                 P = dict(W=W2.astype(np.float32), noise=nz2.astype(np.float32), pos=pos2.astype(np.float32),
                          ch=np.r_[np.full(PAD, -1), p['ch'], np.full(PAD, -1)].astype(int))

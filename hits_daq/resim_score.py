@@ -41,18 +41,21 @@ def main():
     out = {}
     for view in ('x', 'y'):
         G = T[T.view == view]
+        extra = sorted(set(G.variant) - set(ORDER))
         k = np.abs(G.tan_true) > 0.1
         v = float(np.median(G.w_true[k] / G.tan_true[k]))
         out[view] = dict(v_mm_ns=v, variants={})
         print(f'[{view}] v_true {v * 1e3:.1f} um/ns   ratio = slope / true slope (|tan|>0.1); s68 / steep in deg')
         print(f'  {"variant":8s} {"W ratio":>8s} {"W s68":>6s} | ' + ' | '.join(f'{CODES[f]} ratio s68 steep' for f in ('dream', 'peak', 'ideal')))
-        for var in [x for x in ORDER if x in set(G.variant)]:
+        for var in [x for x in ORDER if x in set(G.variant)] + extra:
             g = G[G.variant == var]
             wt, tt = g.w_true.to_numpy(float), g.tan_true.to_numpy(float)
-            o = dict(n=len(g), W=dict(ratio=ratio(g.w_fit.to_numpy(float), wt, tt), score=score(g.w_fit.to_numpy(float) / v, tt)),
-                     fams={})
+            wf = g.w_fit.to_numpy(float) if 'w_fit' in g else np.full(len(g), np.nan)
+            o = dict(n=len(g), W=dict(ratio=ratio(wf, wt, tt), score=score(wf / v, tt)), fams={})
             for f in FAMS:
-                for suf, col in (('', f'u_{f}'), ('r', f'ur_{f}')):
+                for suf, col in (('', f'u_{f}'), ('r', f'ur_{f}'), ('/H2c', f'w_h2c_{f}')):
+                    if col not in g:
+                        continue
                     s = g[col].to_numpy(float)
                     o['fams'][f'{CODES[f]}{suf}_{f}'] = dict(ratio=ratio(s, wt, tt), score=score(s / v, tt))
             out[view]['variants'][var] = o

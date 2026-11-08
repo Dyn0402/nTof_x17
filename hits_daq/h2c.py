@@ -38,9 +38,9 @@ P_MISS = 4.0        # cost of a strip hit in data but not in the model or vice v
 
 class H2C:
     def __init__(self, wm, hyper, view, family, gap_mm, v_um_ns, K, nsig=5.0, ideal=None, qmode='amp', lam=3000.0,
-                 qshape=None, t_rise=700.0, t_robust=0.0):
+                 qshape=None, t_rise=700.0, t_robust=0.0, s_t=S_T):
         self.wm, self.hyper, self.view, self.fam = wm, hyper, view, family
-        self.qmode, self.lam, self.t_rise, self.t_robust = qmode, lam, t_rise, t_robust
+        self.qmode, self.lam, self.t_rise, self.t_robust, self.s_t = qmode, lam, t_rise, t_robust, s_t
         D2 = np.zeros((max(K - 2, 0), K))
         for i in range(K - 2):
             D2[i, i:i + 3] = (1.0, -2.0, 1.0)
@@ -117,9 +117,9 @@ class H2C:
         ho, hp = np.isfinite(obs['t']), np.isfinite(pr['t'])
         both = ho & hp
         ao = obs['a'][both]
-        st = S_T
+        st = self.s_t
         if self.t_rise > 0 and self.fam != 'binary':
-            st = np.sqrt(S_T ** 2 + (self.t_rise * noise[both] / np.maximum(np.abs(ao), 1e-9)) ** 2)
+            st = np.sqrt(self.s_t ** 2 + (self.t_rise * noise[both] / np.maximum(np.abs(ao), 1e-9)) ** 2)
         z2 = ((obs['t'][both] - pr['t'][both]) / st) ** 2
         if self.t_robust > 0:   # pseudo-Huber: quadratic inside |z| < c, linear outside (a mistimed strip counts ~|z|)
             cr = self.t_robust
