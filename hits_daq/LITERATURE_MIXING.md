@@ -1,3 +1,5 @@
+> **Extended 2026-11-08 to every TPC family:** `LITERATURE_TPC_SURVEY.md` and `literature_survey/README.md`.
+
 # Same-time mixing in single-time-per-strip µTPC: what the literature says
 
 Review date 2026-11-06. Source texts were downloaded and read with `pdftotext`; the working copies are in
