@@ -624,3 +624,36 @@ A failing arm is held, as on the bench.
   against is2_v2, source y (−31 / −35) and G5. They are scored on the pass's own run_145 / run_149 output; an arm that
   fails is held (its rows re-run), as on the bench.
 
+### 11-08: five decoded files were cut on EOS during the 11-02 re-decode
+- **Found** through 4636418.1727 (run_89 `cosbounce_cos_0003` `_001`, D): exit 1 on three different nodes, `received 0 bytes`.
+  `decoded_root_fa80c06/..._001_02.root` was 104,464,384 bytes against 120,454,790 in its own ROOT header and in the
+  re-decode record. So "31,496 / 31,496 files, 0 errors" above counted it as good.
+- **Census of all 31,496 files (size vs record vs fEND): 5 cut, all written 11:05–11:30 on 11-02**, each on a 64 KiB boundary:
+
+  | run | sub-run | tag | FEU | arm | bytes on EOS / expected | state |
+  |---|---|---|---|---|---|---|
+  | 89 | cosbounce_cos_0003 | 260728_06H23_001 | 02 | D | 104,464,384 / 120,454,790 | repaired 11-08 |
+  | 104 | stat090_0010 | 260730_05H27_010 | 05 | B | 9,043,968 / 115,335,804 | **open** (main proc 3745) |
+  | 106 | stat090_0005 | 260730_17H42_006 | 08 | C | 3,145,728 / 84,417,280 | **open** (main proc 4176) |
+  | 116 | stat090_0028 | 260801_21H19_003 | 01 | D | 24,772,608 / 118,236,801 | **open** (main proc 6641) |
+  | 158 | stat090_0002 | 260809_10H11_007 | 04 | A | 83,099,648 / 111,151,125 | **open** (main proc 14662) |
+
+- **Mechanism, as far as the data shows.** Five different worker nodes, each job one attempt and exit 0, clean logs, EOS status
+  "healthy" with 2 replicas (its checksum is of the short file). `redecode/job.sh` did `cp` through FUSE, compared the `.part`
+  size, renamed. That check passed, and the local decode was whole (the record holds the full byte count), so the data was lost
+  after the check, in the FUSE write-back. Inference: the EOS server logs that would prove it are not available to us. The
+  window is the job peak (max_materialize 300), but the rate (1.6e-4) and five nodes do not separate load from chance.
+- **Silent second-order damage.** `analyze_waveforms` read each cut file and exited 0 with a hits file holding only pedestals
+  (~41 kB, no `hits` tree), so the combined rr1_cm0 hits of those acquisitions lack that FEU. The other 31 hits files under
+  100 kB are genuine short acquisitions with a `hits` tree.
+- **Repair of run_89 `_001`.** FEU 02 re-decoded (8,308 events, the recorded size), pushed with a checksum, readback adler32 equal.
+  rr1_cm0 hits re-run (condor 4638251): the seven other FEUs are identical to before in per-FEU hits, FEU 02 gains 86,712 hits,
+  combined 247,380 → 334,092. So the finished A/B/C jobs of that acquisition stand. Arm D resubmitted (4638252). The cut file and
+  the old hits are in `Analysis_pass1/checks/redecode/quarantine_2026-11-08/`.
+- **Guards.** `rerun/condor/eosput` (XRootD, server-checked adler32, atomic, re-read; replaces `cp` to EOS in `redecode/job.sh`
+  and `rehit/job.sh`), `rerun/condor/root_complete` (size == fEND; the hits job refuses a cut input), and
+  `rerun/ntof/condor/audit_eos.py {inputs,outputs}`. Audit of the 2,440 outputs on EOS at 11-08 14:10: 0 problems.
+  **`ntof_stage.sh` is deliberately unchanged while the pass runs** (it still uses `cp`; jobs read it live from AFS), so
+  `audit_eos.py outputs` must run at the end of the pass. Not yet changed: the bench/SPS job scripts with the same `cp` pattern
+  (`rerun/rehit/job.sh`, `rerun/sps_decode/job.sh`, `rerun/decoder_audit/job.sh`, `rerun/sps_audit/condor/dec53_job.sh`); the bench
+  and SPS decoded sets have not had this census.

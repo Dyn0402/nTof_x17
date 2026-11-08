@@ -228,6 +228,10 @@ n_TOF lesson in code or registry. Plan, decisions and every result: `rerun/ntof/
   jobs × median ~3 h × 4 cores (estimate), throughput set by our condor share.
 - run_104 straddles D's latency step (it's a production run, not excluded as the plan said): D decided per acquisition later.
 
+**11-08:** 5 of the 31,496 fa80c06 decodes were cut on EOS (plan §6 "11-08"). run_89 repaired, arm D resubmitted (4638252). Four more
+are open (104 B, 106 C, 116 D, 158 A): their main-pass jobs fail until repaired. At the end of the pass run `audit_eos.py outputs`
+on lxplus (`~/x17rerun/ntof/pass1/`), because `ntof_stage.sh` still writes with `cp`.
+
 **Next steps (current):**
 1. `ssh lxplus` → `condor_q 4636418 4636419 4636420 -totals`; watch for holds (`012`) and wall-time kills (`009`). When
    done: compare `001` vs `005` per cluster in `~/x17rerun/ntof/pass1/log/ntof.log`, check a `.meta.json` per job line,

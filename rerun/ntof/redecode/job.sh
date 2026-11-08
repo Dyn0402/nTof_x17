@@ -25,9 +25,9 @@ for F in 01 02 03 04 05 06 07 08; do
   [ $ok = 1 ] || { echo "copy failed $base"; fail=1; continue; }
   if ! ./decode in.fdf out.root > dec.log 2>&1; then echo "decode failed $base"; tail -5 dec.log; fail=1; rm -f in.fdf out.root; continue; fi
   S=$(stat -c %s out.root)
-  ok=0
-  for k in 1 2 3; do cp out.root $DOUT/$base.root.part && [ $(stat -c %s $DOUT/$base.root.part) -eq $S ] && mv $DOUT/$base.root.part $DOUT/$base.root && ok=1 && break; sleep 15; done
-  [ $ok = 1 ] || { echo "push failed $base"; fail=1; rm -f in.fdf out.root; continue; }
+  /afs/cern.ch/user/d/dneff/bin/root_complete out.root || { echo "decoder output incomplete $base"; fail=1; rm -f in.fdf out.root; continue; }
+  # not cp through FUSE: 5 files of the 11-02 pass landed cut with cp + size check + mv and exit 0 (rerun/condor/eosput)
+  /afs/cern.ch/user/d/dneff/bin/eosput out.root $DOUT/$base.root || { echo "push failed $base"; fail=1; rm -f in.fdf out.root; continue; }
   EV=$(grep -m1 "Events analysed" dec.log | sed 's/.*: *//')
   printf '{"run":%s,"subrun":"%s","tag":"%s","feu":"%s","events":"%s","bytes":%s,"fdf_bytes":%s,"decoder":"fa80c06","log_tail":%s}\n' \
     $RUN $SUB $TAG $F "$EV" $S $(stat -c %s in.fdf) "$(tail -12 dec.log | python3 -c 'import json,sys;print(json.dumps(sys.stdin.read()))')" > $REC/$B.json

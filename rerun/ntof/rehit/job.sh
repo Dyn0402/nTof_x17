@@ -16,6 +16,8 @@ for M in ${CM_MODES:-0 5}; do   # pass 1: CM_MODES=0 (the pass reads rr1_cm0 onl
   for item in ${SPEC//;/ }; do
     IFS='=' read -r FEU DEC PED FL <<< "$item"
     FL=${FL//_/ }
+    # a cut decoded file makes analyze_waveforms exit 0 with no hits tree (run_89 FEU 02, 11-04): refuse it
+    /afs/cern.ch/user/d/dneff/bin/root_complete $DEC || exit 1
     [ -s ped_$FEU.root ] || { cp $PED ped_$FEU.fdf && $SOFT/decoder/decode ped_$FEU.fdf ped_$FEU.root > ped_$FEU.log 2>&1 && rm -f ped_$FEU.fdf; } \
       || { echo "pedestal decode failed $PED"; exit 1; }
     out=$(basename $DEC .root)_hits.root
@@ -25,7 +27,8 @@ for M in ${CM_MODES:-0 5}; do   # pass 1: CM_MODES=0 (the pass reads rr1_cm0 onl
   done
   first=$(head -1 list_$M.txt | cut -d' ' -f1); comb=$(basename $first | sed -E 's/(_[0-9]{3}_)[0-9]{2}_hits/\1feu-combined_hits/')
   $SOFT/feu_hit_combiner/combine_feus_hits list_$M.txt $comb > comb_$M.log 2>&1 || { echo "combine failed m$M"; tail -5 comb_$M.log; exit 1; }
-  for f in $(cut -d' ' -f1 list_$M.txt); do cp $f $HO/ && rm -f $f; done
-  cp $comb $CO/$comb.part && mv $CO/$comb.part $CO/$comb && rm -f $comb
+  for f in $(cut -d' ' -f1 list_$M.txt); do /afs/cern.ch/user/d/dneff/bin/eosput $f $HO/$(basename $f) || exit 1; rm -f $f; done
+  /afs/cern.ch/user/d/dneff/bin/eosput $comb $CO/$comb || exit 1
+  rm -f $comb
 done
 cd /; rm -rf $W

@@ -1,0 +1,29 @@
+#!/bin/bash
+# eosput <local file> <absolute /eos path> -- copy to EOS over XRootD, verified end to end; exit 0 only if it landed whole.
+#
+# Why not cp through the FUSE mount: on 2026-11-02, 5 of 31,496 decoded files written with `cp` + a size check + `mv`
+# ended up short on EOS (cut on a 64 KiB boundary, 3-104 MB kept), with every job exiting 0 and the size check passing.
+# EOS then reports the short file as healthy, because its checksum is of what arrived. Here the server checks the
+# adler32 of the local file (--cksum), the upload is atomic (eos.atomic, the old file stays until a good one commits),
+# and the size and checksum are re-read from the server afterwards.
+set -u
+SRC=$1; DST=$2
+case $DST in
+  /eos/user/*|/eos/home-*) MGM=root://eosuser.cern.ch/ ;;
+  /eos/*) MGM=root://eospublic.cern.ch/ ;;
+  *) echo "eosput: not an /eos path: $DST" >&2; exit 2 ;;
+esac
+[ -s "$SRC" ] || { echo "eosput: empty or missing: $SRC" >&2; exit 2; }
+SIZE=$(stat -c %s "$SRC")
+SUM=$(xrdadler32 "$SRC" | cut -d' ' -f1)
+for k in 1 2 3 4 5; do
+  if xrdcp -s -f -p --cksum adler32:$SUM "$SRC" "$MGM$DST?eos.atomic=1" \
+     && [ "$(xrdfs $MGM stat "$DST" | awk '/Size:/{print $2}')" = "$SIZE" ] \
+     && xrdfs $MGM query checksum "$DST" | grep -qi "adler32 0*${SUM#0}"; then
+    exit 0
+  fi
+  echo "eosput: attempt $k failed for $DST" >&2
+  sleep $((15*k))
+done
+echo "eosput: FAILED $DST" >&2
+exit 1

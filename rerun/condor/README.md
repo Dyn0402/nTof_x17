@@ -94,3 +94,11 @@ Both live in `~/Software/claude-skills` and apply to every repo and machine:
 The rule itself is written in the global `CLAUDE.md` (claude-skills), in this repo's `CLAUDE.md`, and in
 `rerun/history/LESSONS.md`. **And more generally: a job failure rate is a bug to explain.** After a cluster, compare
 job starts (`001` events) with jobs (`005`) in the user log.
+
+## Writing to EOS: use `eosput`, not `cp` through FUSE (2026-11-08)
+
+During the n_TOF re-decode, 5 of 31,496 files written with `cp` + size check + `mv` ended up cut on EOS, with exit 0, clean logs and
+a passing size check. EOS calls such a file healthy, because it checksums what arrived. `eosput <local> <eos path>` (`~/bin`, master
+here) uploads over XRootD with a server-checked adler32 atomically and re-reads the size and checksum. `root_complete FILE...` is a
+stdlib check that a ROOT file is as long as its header says: use it on inputs of tools that exit 0 on a cut file. Evidence and the
+list of files: `rerun/ntof/NTOF_PASS_PLAN_2026-11-02.md`, "11-08".
