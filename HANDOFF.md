@@ -211,9 +211,9 @@ redeployed (dylan-cern-site 91d4386). Inputs on the desktop: $WORK_DATA/claude-j
 - Deck: `WORK_DATA=~/work_data .venv/bin/python papers/paper1/make_figures_deck.py --out <html>` then
   `dylan-cern-site/scripts/add-note.py <html> --slug mx17-paper1-figures --force --deploy`.
 
-## n_TOF pass 1: reprocess the n_TOF tracks on the final chain — updated 2026-11-07 evening (dylan-Yoga)
+## n_TOF pass 1: reprocess the n_TOF tracks on the final chain — updated 2026-11-08 (dylan-Yoga)
 
-**Resume:** full pass RUNNING (condor 4636418 main, 4636419/20 D run_104 side); when done: account jobs, N-G1, ledger, stage 3.
+**Resume:** full pass RUNNING (4636418 main, 4636419/20 side, 4638252 run_89 D); when done: account, audit_eos, N-G1, ledger, stage 3.
 
 **Goal:** reconstruct every n_TOF trigger of ours with the pass-1 bench/SPS algorithm, calibrated in situ, with every
 n_TOF lesson in code or registry. Plan, decisions and every result: `rerun/ntof/NTOF_PASS_PLAN_2026-11-02.md`
@@ -231,6 +231,8 @@ n_TOF lesson in code or registry. Plan, decisions and every result: `rerun/ntof/
 **11-08:** 5 of the 31,496 fa80c06 decodes were cut on EOS (plan §6 "11-08"). All repaired 11-08; run_89 arm D resubmitted as 4638252 (count it with the
 pass: main proc 1727 is the failed original). At the end of the pass run `audit_eos.py outputs`
 on lxplus (`~/x17rerun/ntof/pass1/`), because `ntof_stage.sh` still writes with `cp`.
+At 11-08 ~15:30: about 2,400 of 15,550 main jobs done, 665 running, 0 held of ours. Not done: `ntof_stage.sh` guard (wait for the pass), and the same
+file census on the bench and SPS decoded sets, whose job scripts still use `cp`.
 
 **Next steps (current):**
 1. `ssh lxplus` → `condor_q 4636418 4636419 4636420 -totals`; watch for holds (`012`) and wall-time kills (`009`). When
