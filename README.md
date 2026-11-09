@@ -20,6 +20,8 @@ Inputs (all existing data; nothing new was taken):
   `$WORK_DATA/paper2_hits/bundles/det3/calib_bundle`, used by `hits_daq/coupling/depth_ratio.py`,
   `hits_daq/coupling/phase_closure.py`, `hits_daq/remedies.py`, `hits_daq/ghost_census.py` (outputs under
   `$WORK_DATA/paper2_hits/{depth,phasecl,remedies}/` and `hits_daq/results/`);
+- the four-chamber comparison `hits_daq/chambers_C.py` on the bootstrap windows `$WORK_DATA/paper2_hits/boot/*.pkl` (from
+  `rerun/paper1_floor/boot_extract.py`; no det6: 92 % saturated) -> `results/chambers_C.json`;
 - the toy `hits_daq/toy_mixing.py` (`results/toy_{arms,pitch,estimators,detectors}.json`; needs the det3 template saved by
   the first run at `$CLAUDE_JOB_DIR/tmp/det3_template.npz` -- re-save from the bundle if missing);
 - literature: `hits_daq/LITERATURE_TPC_SURVEY.md`, `hits_daq/LITERATURE_MIXING.md`, `hits_daq/literature_survey/*.md`,

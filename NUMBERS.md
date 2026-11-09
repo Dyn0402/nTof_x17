@@ -297,6 +297,19 @@ data bootstrap errors: r1 0.017/0.006/0.021, r2 0.002/0.002/0.014
 | y|pureK_white|refit | 3838 | 0.237/0.187 | 0.315/0.160 | 0.442/0.144 | 0.615/0.136 | 0.861/0.132 | 0.032 |
 | y|pureK_white|true | 3837 | 0.232/0.190 | 0.298/0.164 | 0.409/0.147 | 0.573/0.138 | 0.837/0.132 | nan |
 
+## The strip-end coefficient on four chambers (bootstrap windows of the golden rows; truth = the fit w; L = 28.08 mm for all)
+
+| chamber | row | planes X/Y | Dp | D_RC [mm^2/ns] | view | data C | model | metallic | RC off | no diffusion | geometry | data b | toy law C_X |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| B (det2) | o22_long_det2 | 979/1150 | 0.025 | 5.13e-04 | x | 5.23 +- 0.21 | 5.51 | 4.46 | - | 2.42 | 0.95 | +0.014 | 6.76 |
+| B (det2) | o22_long_det2 | 979/1150 | 0.025 | 5.13e-04 | y | 10.09 +- 0.33 | 10.43 | 4.24 | 5.51 | 6.35 | 0.91 | -0.018 | 6.76 |
+| A (det3) | sat_det3 | 3045/3074 | 0.023 | 3.82e-04 | x | 6.13 +- 0.12 | 5.77 | 4.50 | - | 2.79 | 1.09 | +0.011 | 6.48 |
+| A (det3) | sat_det3 | 3045/3074 | 0.023 | 3.82e-04 | y | 9.69 +- 0.15 | 10.40 | 4.42 | 5.88 | 6.20 | 1.02 | -0.010 | 6.48 |
+| E (det4) | g_det4 | 3000/3388 | 0.02 | 2.20e-04 | x | 7.98 +- 0.26 | 7.17 | 5.15 | - | 3.88 | 1.43 | +0.019 | 5.80 |
+| E (det4) | g_det4 | 3000/3388 | 0.02 | 2.20e-04 | y | 9.07 +- 0.34 | 8.23 | 4.25 | 6.15 | 4.86 | 1.02 | +0.016 | 5.80 |
+| D (det7) | g_det7_long | 177/198 | 0.0225 | 6.84e-04 | x | 7.20 +- 0.75 (coarse) | 5.11 (coarse) | 4.24 (coarse) | - | 2.60 (coarse) | 1.09 (coarse) | +0.001 | 6.22 |
+| D (det7) | g_det7_long | | | | y | too few planes | | | | | | | |
+
 ## Toy scan: arms (ntr = 300 tracks per point)
 
 
