@@ -1,12 +1,16 @@
 # Handoff
 
-## Review of the coupling study, and the TPC single-time-bias review paper ("Paper III") — updated 2026-11-09 evening (dylan-MS-7C84)
+## TPC single-time-bias review paper ("Paper III") and the coupling-study review — updated 2026-11-09 (dylan-MS-7C84)
 
-**Resume:** Dylan decided (11-09) to keep the review as a **third paper**. Read, in this order:
+**Resume:** Paper III draft complete (24 pp); next: compile this info, score DAGs 4646000/4647206 when done, Dylan reads the draft. Read, in this order:
 `papers/tpc_mixing_review/README.md` (what is where, how to regenerate), `papers/tpc_mixing_review/main.pdf` (complete first
-draft, 23 pages), `papers/paper2/hits_daq/REVIEW_COUPLING_2026-11-09.md` (the answers to the six HANDOFF questions of the
+draft, 24 pages), `papers/paper2/hits_daq/REVIEW_COUPLING_2026-11-09.md` (the answers to the six HANDOFF questions of the
 morning session, plus the four-chamber addendum), `papers/tpc_mixing_review/NUMBERS.md` (every number the draft quotes,
 generated). Then pick one of the next steps below.
+
+**Goal:** a literature review across TPC families plus a unified account of how lateral charge spreading biases single-time-per-channel
+track angles, with MX17 chamber A (and B, D, E) as the test bed; Dylan decided on 2026-11-09 to keep it as a **third paper**
+(not folded into Paper II). The next session compiles all of this and follows up on the condor runs.
 
 **The claim of the paper (one paragraph).** A single time per readout channel is a functional of the charge from every drift
 depth that reaches the channel. The strips at the two ends of a short drift column receive charge of the wrong depth, from
@@ -53,6 +57,10 @@ neighbour, bounded by the position-in-strip test and its closure). Hit-level rem
     NUMBERS.md, README.md, main.pdf). Memory note `project_tpc-mixing-review` in the Claude memory dir.
 11. `docs/PARAMETERS.md` §2: a "recorded tension" paragraph (Dp 0.021 preferred by the depth stacks; per-view sigma0).
 
+**In progress / where it stopped:** nothing half-done. The draft compiles cleanly (0 errors, 0 undefined references, 3 cosmetic
+overfull boxes); all analyses finished and their outputs are on `$WORK_DATA` (desktop) with the summaries in the repo. The two
+condor DAGs below were still running at wrap-up (their outputs land on EOS `hits_daq/results/`).
+
 **Next steps (pick any):**
 1. Dylan's read of the draft; author list and venue (`\tbw` marks); decide whether Paper II keeps its own §3/§6 or points here.
 2. Condor DAGs 4646000 (SPS H2c rows, `h2crow_sps_*`) and 4647206 (V7/V8 tiers, `tiers2_*`): at 17:00 14 running / 95 idle, no
@@ -67,7 +75,16 @@ neighbour, bounded by the position-in-strip test and its closure). Hit-level rem
 5. Paper II text to align: the end-term wording (C/N^2), "data below every model at the strip centre" is true on Y only, the
    Y footprint narrower than 0.30, the Dp tension; `LITERATURE_MIXING.md` Sec. 1 point 2 should cite Fang (MPGD2024) and Herrmann.
 
-**Gotchas:** `pkill -f <pattern>` with the python command line as pattern kills the calling shell (exit 144): use pgrep + kill.
+**Key files & commands:**
+- `papers/tpc_mixing_review/` — `main.tex`, `sections/`, `refs.bib`, `README.md`; regenerate with
+  `cd papers/tpc_mixing_review && ../../.venv/bin/python scripts/collect_numbers.py && ../../.venv/bin/python scripts/make_figures.py && pdflatex main && bibtex main && pdflatex main && pdflatex main`
+- `papers/paper2/hits_daq/{universal,remedies,ghost_census,chambers_C,toy_mixing}.py`, `hits_daq/coupling/{depth_ratio,phase_closure}.py` —
+  the analyses (docstrings give the arguments; all ran locally on the desktop with the repo venv, 12-14 processes)
+- `papers/paper2/hits_daq/REVIEW_COUPLING_2026-11-09.md` — the review memo; `hits_daq/results/*.json` — every score
+- DAG scoring: `hits_daq/sps_score.py` (h2crow_*), `hits_daq/tiers.py --from-tables ... --families cw,totmid` (tiers2_*); compare
+  `001`/`005` in `~/x17rerun/hits_daq/ana_2026-11-09{,e}/log/ana.log` first
+
+**Gotchas / decisions:** `pkill -f <pattern>` with the python command line as pattern kills the calling shell (exit 144): use pgrep + kill.
 The boot windows and hits_daq windows hold only the fit's strips (9-16), so ghosts far outside the window are not in W; the
 resim/depth/phase scripts pad by 4 strips, chambers_C.py does not. The det3 template for the toy is cached at
 `$CLAUDE_JOB_DIR/tmp/det3_template.npz` (job bb4311c1; regenerate from the bundle's arrays if the job dir is gone: see

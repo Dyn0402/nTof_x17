@@ -31,9 +31,18 @@ from remedies import edge_fix, line_u  # noqa: E402
 TEMPLATE_NPZ = '/home/dylan/.claude/jobs/bb4311c1/tmp/det3_template.npz'
 
 
+BUNDLE_DET3 = os.environ.get('WORK_DATA', '/media/ucla/work') + '/paper2_hits/bundles/det3/calib_bundle'
+
+
 def det3_template():
-    z = np.load(TEMPLATE_NPZ)
-    return np.asarray(z['grid'], float), np.asarray(z['tmpl_x'], float)
+    """the measured det3 X impulse response: the cached npz if present, else straight from the calibration bundle"""
+    if os.path.exists(TEMPLATE_NPZ):
+        z = np.load(TEMPLATE_NPZ)
+        return np.asarray(z['grid'], float), np.asarray(z['tmpl_x'], float)
+    sys.path.insert(0, os.path.abspath(os.path.join(HERE, '..', '..', '..')))
+    from wft.calib import CalibrationBundle
+    cal = CalibrationBundle.load(BUNDLE_DET3)
+    return np.asarray(cal.grid, float), np.asarray(cal.tmpl['x'], float)
 
 
 def crrc_template(tp, n=2, step=2.0, span=2000.0):
