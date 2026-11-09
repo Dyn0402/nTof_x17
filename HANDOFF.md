@@ -2,7 +2,21 @@
 
 ## TPC single-time-bias review paper ("Paper III") and the coupling-study review — updated 2026-11-09 (dylan-MS-7C84)
 
-**Resume:** Paper III draft complete (24 pp); next: compile this info, score DAGs 4646000/4647206 when done, Dylan reads the draft. Read, in this order:
+**Resume:** Paper III slides published; Dylan is reading them and decides next; then fix the draft (list below), score DAGs.
+
+**Slide note (11-09, after the wrap-up below):** https://dylan-neff.web.cern.ch/notes/tpc-single-time-bias.html, built by
+`papers/tpc_mixing_review/make_deck.py` (reads the result files; republish with `add-note.py <html> --slug tpc-single-time-bias --force --deploy`).
+Verdict in it: one mechanism and one scaling, tested only for strip uTPCs (pad/LAr predicted invisible, directional untestable); a paper yes,
+framed as a measurement with a survey rather than a review. **Waiting on Dylan:** third paper and framing; Paper II sections 3/6; authors, venue; chamber C.
+
+**Draft corrections found by reading it against its own tables, NOT yet applied to `sections/`:** RC term +4.6 is Y minus X, RC on/off is +4.2;
+"within 10 %" on the chambers fails for D X (7.2 data, 5.1 model); edge cuts "a quarter" are 10-15 % (the toy's 24 % is not the data); 15 % subtraction
+"halves the gap" is ~40 %; sec 5.4 says both no floor and a 0.10 floor on Y (the closure paragraph stands); report chi2/ndf of C/N^2 + b on X (51/9, 114/9);
+"reproduced to 2 %" is for the arms with the real residual (clean toy about 1 unit of C lower); toy vs published should be stated as a factor (x1.7 on 4 measured points).
+Add Scholer's unshifted 28 deg test beam (toy 1.09) to the literature figure and discuss it, with Klitzner and the Ntekas/Scholer simulation mismatch.
+The toy, universal fit and full draft have had no independent read (the reviewing session wrote them). The DAGs below were not scored; `condor_q` on the default schedd showed neither, state unknown (use `-constraint`).
+
+Read, in this order:
 `papers/tpc_mixing_review/README.md` (what is where, how to regenerate), `papers/tpc_mixing_review/main.pdf` (complete first
 draft, 24 pages), `papers/paper2/hits_daq/REVIEW_COUPLING_2026-11-09.md` (the answers to the six HANDOFF questions of the
 morning session, plus the four-chamber addendum), `papers/tpc_mixing_review/NUMBERS.md` (every number the draft quotes,
