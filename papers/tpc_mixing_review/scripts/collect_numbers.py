@@ -115,6 +115,16 @@ def main():
         for k, rec in P['groups'].items():
             cells = [f'{b["near"]:.3f}/{b["far"]:.3f}' if b else '-' for b in rec['bins']]
             lines.append(f'| {k} | {rec["n"]} | ' + ' | '.join(cells) + f' | {rec.get("dp0_mad_mm", float("nan")):.3f} |')
+    Ch = load(os.path.join(HD, 'results', 'chambers_C.json'))
+    if Ch:
+        lines.append('\n## The strip-end coefficient on four chambers (bootstrap windows of the golden rows; truth = the fit w; L = 28.08 mm for all)\n')
+        lines.append('| chamber | row | planes X/Y | Dp | D_RC [mm^2/ns] | view | data C | model | metallic | RC off | no diffusion | geometry | data b | toy law C_X |')
+        lines.append('|---|---|---|---|---|---|---|---|---|---|---|---|---|---|')
+        for det, ch in Ch['chambers'].items():
+            for view in 'xy':
+                A = ch['views'].get(view, {}).get('arms', {})
+                g = lambda k: (f"{A[k]['C']:.2f}" + (f" +- {A[k]['C_err']:.2f}" if 'C_err' in A[k] else '') + (' (coarse)' if A[k].get('coarse') else '')) if k in A else '-'
+                lines.append(f"| {ch['name']} ({det}) | {ch['row']} | {ch['views']['x']['n']}/{ch['views']['y']['n']} | {ch['hyper']['Dp']} | {ch['hyper']['rc_D_y']:.2e} | {view} | {g('data')} | {g('model')} | {g('metallic')} | {g('rc0')} | {g('Dp0')} | {g('point')} | {A['data']['b']:+.3f} | {ch['toy_law_C_X']:.2f} |" if 'data' in A else f"| {ch['name']} ({det}) | {ch['row']} | | | | {view} | too few planes | | | | | | | |")
     for scan in ('arms', 'pitch', 'estimators', 'detectors'):
         T = load(os.path.join(HD, 'results', f'toy_{scan}.json'))
         if not T:

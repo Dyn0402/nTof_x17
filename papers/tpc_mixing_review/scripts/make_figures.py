@@ -352,9 +352,53 @@ def ghosts():
     save(fig, 'ghosts')
 
 
+# ------------------------------------------------------------------ 9. the four chambers
+def chambers():
+    J = load(os.path.join(HD, 'results', 'chambers_C.json'))
+    if not J:
+        return print('  chambers: missing')
+    dets = [d for d in ('det4', 'det3', 'det2', 'det7') if d in J['chambers']]
+    fig, ax = plt.subplots(1, 3, figsize=(6.1, 2.7))
+    xs = np.arange(len(dets))
+    names = [J['chambers'][d]['name'] for d in dets]
+    for iv, view in enumerate('xy'):
+        a = ax[iv]
+        for arm, lab, st in (('data', 'data', dict(color='k', marker='o', ms=4.5, ls='none', zorder=5)),
+                             ('model', 'model', dict(color='#0b3d91', marker='s', ms=3.5, ls='none')),
+                             ('metallic', 'metallic footprint', dict(color='#b2182b', marker='d', ms=3.5, ls='none')),
+                             ('rc0', 'model, RC off', dict(color='#CC79A7', marker='^', ms=3.5, ls='none')),
+                             ('point', 'geometry only', dict(color='#3c8d5a', marker='v', ms=3.5, ls='none'))):
+            y, e = [], []
+            for d in dets:
+                f = J['chambers'][d]['views'].get(view, {}).get('arms', {}).get(arm)
+                y.append(f['C'] if f else np.nan), e.append(f.get('C_err', 0) if f else 0)
+            if np.all(np.isnan(y)):
+                continue
+            a.errorbar(xs, y, e, label=lab if iv == 0 else None, **st)
+        if view == 'x':
+            a.plot(xs, [J['chambers'][d]['toy_law_C_X'] for d in dets], ls=':', color='#0b3d91', label='toy law, chamber $D_p$')
+        a.set(xticks=xs, xticklabels=names, xlabel='chamber', ylabel='$C$' if iv == 0 else '', title=f'({"ab"[iv]}) {view.upper()} view', ylim=(0, 13))
+    ax[0].legend(fontsize=5.6, loc='upper left', ncol=2)
+    # (c) RC increment against D_RC
+    c = ax[2]
+    for arm, lab, st in (('data', 'data', dict(color='k', marker='o', ms=4.5, ls='none', zorder=5)), ('model', 'model', dict(color='#0b3d91', marker='s', ms=3.5, ls='none'))):
+        xr, yr, er = [], [], []
+        for d in dets:
+            ch = J['chambers'][d]
+            fy = ch['views'].get('y', {}).get('arms', {}).get(arm)
+            f0 = ch['views'].get('y', {}).get('arms', {}).get('rc0')
+            if fy and f0:
+                xr.append(ch['hyper']['rc_D_y'] * 1e4), yr.append(fy['C'] - f0['C']), er.append(fy.get('C_err', 0))
+        c.errorbar(xr, yr, er, label=lab, **st)
+    c.set(xlabel=r'$D_{RC}$ [$10^{-4}$ mm$^2$/ns]', ylabel=r'$C_Y - C_Y$(RC off)', title='(c) the RC increment', xlim=(0, 8))
+    c.legend(fontsize=6)
+    fig.tight_layout()
+    save(fig, 'chambers')
+
+
 if __name__ == '__main__':
     ps.use()
-    for f in (schematic, universal, depth, phase, remedies, pitch, toy, ghosts):
+    for f in (schematic, universal, depth, phase, remedies, pitch, toy, ghosts, chambers):
         try:
             f()
         except Exception as e:  # keep going; report

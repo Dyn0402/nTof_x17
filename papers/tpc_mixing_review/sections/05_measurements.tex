@@ -115,6 +115,62 @@ The published points of \cref{fig:universal}b fall in the band spanned by the ar
 the lateral spread in units of the pitch, as \cref{eq:scaling} says it should; with diffusion coefficients assumed for the
 LMU chambers and most-probable or mean angles quoted, this is a consistency check and not a measurement.
 
+\subsection{Four chambers}\label{sec:chambers}
+
+The same measurement on the other bench chambers tests the scaling on a second axis, since their calibrated resistive
+spreading constants span a factor three ($D_{RC} = 2.2$, $3.8$, $5.1$ and $6.8\times10^{-4}$~mm$^2$/ns for chambers E, A, B and D)
+and their diffusion constants differ by 25\,\%. For this comparison all four are treated alike: the clean planes of each
+chamber's calibration run (the residual-bootstrap extraction of~\cite{paperII}; 2\,129, 6\,119, 6\,388 and 375 planes for B,
+A, E and D), the fit's own slope as the truth on the calibrated angle scale, and the model arms regenerated on the plane's own
+strips. On this selection chamber A reads $C = 6.1 \pm 0.1$ (X) and $9.7 \pm 0.2$ (Y), below the $7.0$ and $11.7$ of the full
+sample of \cref{sec:ratio}: the clean selection removes the brightest and partly saturated planes, which carry more ghosts,
+and the arms regenerated without padding strips beyond the window lose the ghosts that lie outside it. The comparison between
+chambers is therefore relative.
+
+\Cref{fig:chambers} and \cref{tab:chambers} give the result. On X the data read $C = 5.2 \pm 0.2$, $6.1 \pm 0.1$, $8.0 \pm 0.3$
+and $7.2 \pm 0.8$ (B, A, E, D) against the model's 5.5, 5.8, 7.2 and 5.1; the geometry-only arm is 0.9 to 1.4 on every chamber
+and the metallic arm 4.2 to 5.2. On Y the data read $10.1 \pm 0.3$, $9.7 \pm 0.2$ and $9.1 \pm 0.3$ (B, A, E; chamber D's 198
+Y planes do not fill the bins) against the model's 10.4, 10.4 and 8.2, and the increment the resistive spreading adds, $C_Y$
+with and without the RC term in the model, is 4.9, 4.5 and 2.1 in the order of $D_{RC}$. The data follow: chamber E, with the
+smallest spreading constant, has the smallest $C_Y$ and the largest $C_X$. Over the inclined planes as a whole the single
+slope ratios of~\cite{paperII} order the four chambers with $D_{RC}$ on Y, 1.27, 1.37, 1.42 and 1.53 for E, A, B and D against
+the model's 1.48, 1.43, 1.49 and 1.54, while on X all four read 1.17 to 1.20. Chamber E's X value is the one outlier: it is the
+chamber with dead and low-gain bands and a measured column 2.5~mm short~\cite{paperI}, its model over-predicts its hit bias at
+large angles~\cite{paperII}, and its clean sample is the least representative. The toy law of \cref{eq:Claw} with each
+chamber's $D_p$ gives 6.8, 6.5, 5.8 and 6.2 on X, within a unit of the data on A, B and D.
+
+\begin{table}[t]
+  \centering\footnotesize
+  \caption{The strip-end coefficient $C$ on four chambers, from the clean planes of their calibration runs with the fit's slope
+  as the truth ($L = 28.08$~mm for all). Model arms as in \cref{tab:arms}; ``RC off'' is the model without resistive
+  spreading. Chamber D's Y sample is too small for the fit.}
+  \label{tab:chambers}
+  \begin{tabular}{@{}llcccccccc@{}}
+    \toprule
+    chamber & $D_p$ [mm/$\sqrt{\rm ns}$], $D_{RC}$ [$10^{-4}$~mm$^2$/ns] & view & planes & data & model & metallic & RC off & geometry & toy law \\
+    \midrule
+    B (det2) & 0.025, 5.1 & X & 979  & $5.2 \pm 0.2$ & 5.5 & 4.5 & & 0.9 & 6.8 \\
+             &            & Y & 1150 & $10.1 \pm 0.3$ & 10.4 & 4.2 & 5.5 & 0.9 & \\
+    A (det3) & 0.023, 3.8 & X & 3045 & $6.1 \pm 0.1$ & 5.8 & 4.5 & & 1.1 & 6.5 \\
+             &            & Y & 3074 & $9.7 \pm 0.2$ & 10.4 & 4.4 & 5.9 & 1.0 & \\
+    E (det4) & 0.020, 2.2 & X & 3000 & $8.0 \pm 0.3$ & 7.2 & 5.2 & & 1.4 & 5.8 \\
+             &            & Y & 3388 & $9.1 \pm 0.3$ & 8.2 & 4.3 & 6.2 & 1.0 & \\
+    D (det7) & 0.0225, 6.8 & X & 177 & $7.2 \pm 0.8$ & 5.1 & 4.2 & & 1.1 & 6.2 \\
+             &            & Y & 198  & \multicolumn{6}{l}{too few planes; slope ratio 1.53 (data) / 1.54 (model) over the inclined planes~\cite{paperII}} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{chambers}
+  \caption{The strip-end coefficient on four chambers: (a) X view and (b) Y view, data (bootstrap errors) and model arms, with
+  the toy law of \cref{eq:Claw} evaluated with each chamber's diffusion constant; (c) the increment of $C_Y$ from the
+  resistive spreading, the model with and without its RC term, against the chamber's spreading constant, with the data's
+  $C_Y$ minus the model's RC-off value.}
+  \label{fig:chambers}
+\end{figure}
+
 \subsection{Lateral sharing against drift depth}\label{sec:depth}
 
 On tracks within \ang{0.5} of the drift direction ($|w| < \SI{3e-4}{mm/ns}$, so that the track moves less than a third of a pitch

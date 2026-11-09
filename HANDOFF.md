@@ -1,40 +1,77 @@
 # Handoff
 
-## Review of the coupling study, and the TPC single-time-bias review paper — updated 2026-11-09 (dylan-MS-7C84, later session)
+## Review of the coupling study, and the TPC single-time-bias review paper ("Paper III") — updated 2026-11-09 evening (dylan-MS-7C84)
 
-**Resume:** read `papers/paper2/hits_daq/REVIEW_COUPLING_2026-11-09.md` (the answers to the six questions below), then
-`papers/tpc_mixing_review/main.pdf` (complete first draft, 22 pages). Decide: third paper, or fold into Paper II §3/§6.
+**Resume:** Dylan decided (11-09) to keep the review as a **third paper**. Read, in this order:
+`papers/tpc_mixing_review/README.md` (what is where, how to regenerate), `papers/tpc_mixing_review/main.pdf` (complete first
+draft, 23 pages), `papers/paper2/hits_daq/REVIEW_COUPLING_2026-11-09.md` (the answers to the six HANDOFF questions of the
+morning session, plus the four-chamber addendum), `papers/tpc_mixing_review/NUMBERS.md` (every number the draft quotes,
+generated). Then pick one of the next steps below.
 
-**Done (11-09, afternoon):**
-- Independent review of the coupling study: verdict = the study's conclusions hold; the phase test survives a closure with
-  known truth and refitted p0 (fit lean 0.007-0.07 mm, makes a near/far asymmetry of 0.03 against the data's 0.08); the
-  "shares" question is replaced by the end-term decomposition. Memo: `hits_daq/REVIEW_COUPLING_2026-11-09.md`.
-- New analyses (all on existing windows, local): `coupling/depth_ratio.py` (lateral sharing vs drift depth on 5066 near-normal
-  planes: same-time share at the mesh, growth = diffusion with Dp ~ 0.021 (D_T ~ 350) vs the pass's 0.023; X footprint
-  wider than Y; second-neighbour same-time floor 2.4 %/side), `coupling/phase_closure.py` (8001 planes, two truths x two noise
-  modes, pass refit), `remedies.py` (literature corrections + charge-weighted time scored on Runs 1+2 vs M3: best hit-only
-  s68 1.5-2.0 deg vs W 1.0; cw alone does not help; 30 % subtraction best on X, harms Y), `ghost_census.py` (data have +0.8
-  mesh-end ghost strips/plane on X vs model), `universal.py` (ratio vs |tan| -> Delta tan = a/tan + b tan: C = a (L/p)^2 =
-  7.0 X / 11.7 Y, b ~ 0 on the kw angle scale; model 6.9/11.5; geometry 2.3; literature points on the same axis),
-  `toy_mixing.py` (transparent toy: C = 1.1 + 11 (sigma_rms/p)^2 over 13 configs; a no-coupling toy reproduces the published
-  strip-uTPC biases; estimator and edge-shift effects). Outputs: `hits_daq/results/{universal,toy_*,ghost_census_*}.json`,
-  `$WORK_DATA/paper2_hits/{depth,phasecl,remedies}/`.
-- Literature gap-fill (agent, verified quotes): `hits_daq/literature_survey/gapfill_2026-11-09.md` (drift-tube angle-dependent
-  r-t as a precedent: CMS DT, BESIII MDC, Belle II; Herrmann 2019's 30 % is adopted from simulation; Fang MPGD2024 poster =
-  first-electron diffusion mechanism; no strip uTPC uses a charge-weighted time; Bini 2014 has no bias number; Alexopoulos
-  2019 closed access).
-- The review paper draft: `papers/tpc_mixing_review/` (README there; `NUMBERS.md` generated; figures generated).
+**The claim of the paper (one paragraph).** A single time per readout channel is a functional of the charge from every drift
+depth that reaches the channel. The strips at the two ends of a short drift column receive charge of the wrong depth, from
+the partial overlap of the track with the strip (geometry) and from any lateral spread (diffusion, prompt footprint, same-time
+coupling, resistive spreading), and rotate the fitted ladder toward a steeper track. For an amplitude-weighted line through
+N = L tan(theta)/p strips: tan_rec/tan_true - 1 = C/N^2 + b. On chamber A against M3: C = 7.0 (X), 11.7 (Y), |b| < 0.02 on the
+kw angle scale; the forward model reproduces C to 2 % and decomposes it (geometry 2.3, footprint +1.5, diffusion +3.1, RC +4.6 on
+Y); a white-noise toy gives C = 1.1 + 11 (sigma_rms/p)^2 (sigma_rms^2 = sigma0^2 + Dp^2 T/2) over 13 configurations, and with
+no coupling at all reproduces the published strip-uTPC biases (Bortfeldt, Iodice, Flierl) within the uncertainty of their
+assumed footprints. "Capacitive coupling" of the published 15-30 % is not needed and not seen (floor ~6 % X, ~10 % Y per
+neighbour, bounded by the position-in-strip test and its closure). Hit-level remedies reach at best s68 1.5-2.0 deg against
+1.0 for the waveform fit.
 
-**Pending:**
-- Condor DAGs 4646000 (SPS H2c rows, `h2crow_sps_*`) and 4647206 (V7/V8 tables, `tiers2_*`): still idle in the pool at 15:00
-  (0 output tables on EOS). When done: steps in the previous section.
-- Paper II text: the end-term wording (C/N^2), the Y footprint narrower than 0.30, Dp tension (0.021 vs 0.023) in
-  `docs/PARAMETERS.md`, the report's phase section (data below every model only on Y).
-- `toy_detectors.json`: the first pass had E.SNS = 60 for 25 ns sampling (fixed; the file is from the fixed run, 14:15+).
+**Done 11-09 (this session), all on existing data, everything committed on main:**
+1. Review memo answering Q1-Q6 of the morning HANDOFF: `papers/paper2/hits_daq/REVIEW_COUPLING_2026-11-09.md`.
+2. `hits_daq/coupling/depth_ratio.py`: lateral sharing vs drift depth on 5066 near-normal planes (Runs 1+2), data vs 10 model
+   arms. Findings: same-time share at the mesh (X Gaussian-equivalent 0.33-0.37 mm, Y narrower); growth = diffusion with
+   Dp ~ 0.021 (D_T ~ 350) vs the pass's 0.023; second-neighbour same-time floor 2.4 %/side on both views; heavier-than-Gaussian
+   tails at depth. Output `$WORK_DATA/paper2_hits/depth/full/`.
+3. `hits_daq/coupling/phase_closure.py`: 8001 near-normal planes regenerated under two truths (no coupling / pure 13 %
+   coupling) x two noise modes, (p0, w, t0) refitted with the pass fitter. The fit lean is 0.007-0.07 mm and makes a near/far
+   asymmetry of 0.03 against the data's 0.08: the phase test is sound; the data have a far-neighbour floor (0.06 X, 0.10 Y)
+   between a Gaussian (0.04/0.07) and a 13 % coupling (0.13). Output `$WORK_DATA/paper2_hits/phasecl/full/`.
+4. `hits_daq/remedies.py`: the literature's corrections (robust line, edge cuts 1/2, 1/4, 1/6, geometric edge shift, 7/15/20/30 %
+   time-bin neighbour subtraction) and the charge-weighted and ToT-midpoint times, scored vs M3 on both det3 runs (naive and
+   H0 per |tan| bin). Best hit-only: X 30 % subtraction (s68 1.51 calibrated), Y charge-weighted + 15 % (1.98-2.30); W 1.04/1.01.
+   cw alone does nothing (no interior term to remove); ToT-midpoint is unusable (amplitude walk). Output
+   `$WORK_DATA/paper2_hits/remedies/{run1,run2}.json`.
+5. `hits_daq/ghost_census.py`: hits beyond the column ends, data vs model+noise, Run 1: X has +0.8 ghosts/plane at the MESH end
+   in data (1.57 vs 0.82); cathode end and Y agree. `results/ghost_census_sat_det3.json`.
+6. `hits_daq/universal.py`: ratio vs |tan| for data (tiers tables, both runs), resim arms, pitch scan and the literature points on
+   the N axis; fits Delta tan = a/tan + b tan. **Data ratios must use w_ref = kw v tan_ref + w0** (the kw angle scale), not the
+   timing v (inflates by 3.7 % on X and looks like an interior term). `results/universal.json`.
+7. `hits_daq/toy_mixing.py`: transparent toy (det3 template or CR-RC^2, strips, Gaussian spread sigma^2 = sigma0^2 + Dp^2 u,
+   clustered ionisation, emulators, ladder fits). Scans: arms, pitch, estimators, other detectors (NSW/FSM/GEM-like at 25 ns).
+   `results/toy_{arms,pitch,estimators,detectors}.json`. Gotcha: `emulate.SNS` is a module constant (set for non-60 ns).
+8. `hits_daq/chambers_C.py`: C on chambers B, A, E, D from the bootstrap windows (`$WORK_DATA/paper2_hits/boot/`), truth = fit w,
+   arms on the window strips. X data 5.2/6.1/8.0/7.2 vs model 5.5/5.8/7.2/5.1; Y 10.1/9.7/9.1 (D: too few planes) vs 10.4/10.4/8.2;
+   the model's RC increment (4.9, 4.5, 2.1) orders with D_RC. Chamber C (det6) has no bootstrap extraction (92 % saturated).
+   Absolute C here is ~10-15 % below the full-sample/padded-arm values (clean selection, no padding): compare chambers relatively.
+   `results/chambers_C.json`.
+9. Literature gap-fill with verified quotes (agent): `hits_daq/literature_survey/gapfill_2026-11-09.md`.
+10. The draft: `papers/tpc_mixing_review/` (main.tex, sections/, refs.bib, scripts/{collect_numbers,make_figures}.py, figures/,
+    NUMBERS.md, README.md, main.pdf). Memory note `project_tpc-mixing-review` in the Claude memory dir.
+11. `docs/PARAMETERS.md` §2: a "recorded tension" paragraph (Dp 0.021 preferred by the depth stacks; per-view sigma0).
 
-**Gotchas:** `pkill -f` with the python command line as pattern kills the calling shell (exit 144) -- use pgrep/kill by pid.
-`emulate.SNS` is a module constant: set it when emulating non-60 ns samples. The data ratio vs M3 must use
-w_ref = kw v tan_ref + w0, not v alone (3.7 % on X).
+**Next steps (pick any):**
+1. Dylan's read of the draft; author list and venue (`\tbw` marks); decide whether Paper II keeps its own §3/§6 or points here.
+2. Condor DAGs 4646000 (SPS H2c rows, `h2crow_sps_*`) and 4647206 (V7/V8 tiers, `tiers2_*`): at 17:00 14 running / 95 idle, no
+   tables yet. When done (steps in the section below): the SPS rows give an optional known-angle column for the review's
+   Table 4 (`remedies` at the 25.4 deg stage angle, chamber E) and the H2c point at a known angle.
+3. Chamber C (det6) for Table 5: needs a window extraction (hits_daq/extract_windows.py style, not the clean bootstrap) on
+   g_det6_long; expect saturation to dominate (92 % saturated); decide whether it is worth it.
+4. Open physics, stated as such in the draft: the origin of the ~6 % / 10 % same-time floor and of the 2.4 %/side second
+   neighbour (channel-map test says mostly electronics at the mesh end; the tails at depth are heavier than Gaussian);
+   chamber E's X outlier (8.0 vs toy law 5.8); the p0_depth interior slope (data -30 vs model -55 ns/column: probably the 60 ns
+   depth-quantisation of the arms, unverified; the toy's interior term is 0.5 %).
+5. Paper II text to align: the end-term wording (C/N^2), "data below every model at the strip centre" is true on Y only, the
+   Y footprint narrower than 0.30, the Dp tension; `LITERATURE_MIXING.md` Sec. 1 point 2 should cite Fang (MPGD2024) and Herrmann.
+
+**Gotchas:** `pkill -f <pattern>` with the python command line as pattern kills the calling shell (exit 144): use pgrep + kill.
+The boot windows and hits_daq windows hold only the fit's strips (9-16), so ghosts far outside the window are not in W; the
+resim/depth/phase scripts pad by 4 strips, chambers_C.py does not. The det3 template for the toy is cached at
+`$CLAUDE_JOB_DIR/tmp/det3_template.npz` (job bb4311c1; regenerate from the bundle's arrays if the job dir is gone: see
+`toy_mixing.det3_template`). Toy results with 25 ns sampling before the E.SNS fix were wrong and were discarded.
 
 ## Paper II hits-DAQ and the capacitive coupling study — updated 2026-11-09 (dylan-MS-7C84)
 

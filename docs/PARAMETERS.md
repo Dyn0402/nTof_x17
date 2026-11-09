@@ -81,6 +81,12 @@ and every increment of charge on a strip is seen through the electronics templat
 | `dead` | bundle | e.g. det3 x [307, 398, 400], y [510] | no signal rate: **censored** (unknown charge, not zero), and the seeder bridges them | `rerun/channel_layer/` census + shorts |
 | `hot` | bundle | mostly empty | signal-carrying noisy channels: kept in the fit with noise ×10 (`HOT_NOISE_INFLATION`), never seeded on | |
 
+**Recorded tension, not a change (2026-11-09, `papers/paper2/hits_daq/REVIEW_COUPLING_2026-11-09.md`):** the depth-resolved
+stacks of near-normal det3 tracks (`hits_daq/coupling/depth_ratio.py`) grow in lateral width at a rate that prefers `Dp` ≈ 0.021
+(D_T ≈ 350 µm/√cm) over the pass's 0.023, and the same-time footprint at the mesh is wider on X (Gaussian-equivalent 0.33–0.37 mm)
+than on Y (narrower than 0.28 mm, with a flat same-time floor of ~10 % on the far neighbour). One `sigma_p0` for both views is a
+compromise. The pass is unchanged; the kw angle calibration absorbs the angle-scale part.
+
 The old copy-amplitude parameters (`c1`, `c2`, `kY`, `tau_s`, `sigma_s`) are retired. A bundle that still has them must have c2 < c1
 (`wft.calib.check_kernel_ordering`), and on an r06 bundle the ratio is in `c2_over_c1` (read it with `wft.calib.effective_c2`).
 
