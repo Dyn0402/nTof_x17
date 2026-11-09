@@ -63,6 +63,8 @@ def main():
                 for j in range(N_H2C):
                     node(f'H_{b}_{j}', 'h2c_run.py', f'h2c_{b}_{j}of{N_H2C}.parquet',
                          f'{f} --ref {ref} --gap {gap} --families {H2C_FAMS} --part {j}/{N_H2C}')
+            if 'estim' in st:
+                node(f'E_{b}', 'tiers.py', f'tiers2_{b}.parquet', f'{f} --ref {ref} --table-only --families cw,totmid')
             if 'gang' in st:
                 node(f'G_{b}', 'gang_scan.py', f'gang_{b}.parquet', f'{f} --ref {ref}', mem=6000)
             if 'shape' in st and tag == 'sat_det3':
@@ -82,6 +84,8 @@ def main():
                 node(f'T_{tr}_{sts}', 'h2c_run.py', f'spstune_tr{tr}_st{sts}.parquet',
                      f'{f} --gap 28.6 --families dream --v-drift 8.354 --t-rise {tr} --s-t {sts} --nmax 400')
         row = b[len('sps_'):]
+        if 'estim' in st:
+            node(f'E_{b}', 'tiers.py', f'tiers2_{b}.parquet', f'{f} --table-only --families cw,totmid')
         if 'spsrow' in st and row in SPS_ROW_V:
             for j in range(N_H2C_SPS):
                 node(f'HR_{b}_{j}', 'h2c_run.py', f'h2crow_{b}_{j}of{N_H2C_SPS}.parquet',

@@ -22,6 +22,10 @@ Families (papers/paper2/hits_daq/DAQ_SURVEY.md "Which algorithm families exist")
   V5  binary    threshold crossing quantised to a 25 ns bunch-crossing clock, no amplitude (VFAT3-like).
   V6  ideal     best single time per strip: the strip's waveform fitted by the measured single-electron template
                 (amplitude, t0; grid + parabola), i.e. a matched-filter time.  Upper bound for one-time-per-strip.
+  V7  cw        sampled: charge-weighted mean time of the first pulse above threshold, peak amplitude.  One time per strip that
+                uses the whole pulse, the estimator the literature's cluster times are closest to (needs samples: W, as V0/V4).
+  V8  totmid    midpoint of the threshold crossings, ToT as the amplitude (analog logic: R, as V3).  Not in FAMILIES (the
+                default of tiers.py, whose old tables lack them): ask for them with --families cw,totmid.
 
 Sub-sample times come from a monotone cubic (PCHIP) upsampling of the 60 ns samples to 1 ns.  The DREAM shaping is
 kept (it cannot be undone from 60 ns samples): V1-V3 and V5 emulate the hit LOGIC of those front ends at DREAM shaping.
@@ -144,6 +148,13 @@ def _analog(R, noise, nsig, mode, neighbour=True):
             return tc, te - tc, A
         if mode == 'binary':
             return tc, 1.0, A
+        if mode == 'cw':                 # the fired pulse only: [crossing, back below threshold]
+            y = yf[jc:je + 1]
+            return float(np.sum(tf[jc:je + 1] * y) / np.sum(y)), A, A
+        if mode == 'totmid':
+            below = np.flatnonzero(yf[jc:] < thr)
+            te = tf[jc + below[0]] if len(below) else tf[-1]
+            return 0.5 * (tc + te), te - tc, A
         raise ValueError(mode)
 
     for i in range(n):
@@ -171,6 +182,14 @@ def thr(R, noise, nsig=5.0, neighbour=True):
 
 def tot(R, noise, nsig=5.0):
     return _analog(R, noise, nsig, 'tot', False)
+
+
+def cw(W, noise, nsig=5.0):
+    return _analog(W, noise, nsig, 'cw', False)
+
+
+def totmid(R, noise, nsig=5.0):
+    return _analog(R, noise, nsig, 'totmid', False)
 
 
 def binary(R, noise, nsig=5.0, bx=25.0, phase=None, rng=None):
@@ -243,7 +262,7 @@ class Ideal:
 
 
 FAMILIES = ('dream', 'peak', 'thr', 'tot', 'fd', 'binary', 'ideal')
-CODES = dict(dream='V0', peak='V1', thr='V2', tot='V3', fd='V4', binary='V5', ideal='V6')
+CODES = dict(dream='V0', peak='V1', thr='V2', tot='V3', fd='V4', binary='V5', ideal='V6', cw='V7', totmid='V8')
 
 
 PASS1_EOS = '/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1'
