@@ -1,4 +1,4 @@
 element,z_mm,yaw_deg,z_measured
 uRWELL front,0.0,0.0,True
 uRWELL back,1370.0,0.0,True
-chamber E,1155.0,25.64,False
+chamber E,1155.0,25.4,False

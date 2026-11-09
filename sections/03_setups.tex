@@ -1,7 +1,7 @@
 \section{Test setups}\label{sec:setups}
 \sectionstate{ready}{\texttt{mx\_june\_cosmic\_qa/MICROTPC\_RUNBOOK.md}; \texttt{sps\_beam\_test\_26/analysis/README.md}; \texttt{mpgd26} renders}
 \intent{The two setups and what each can measure: the Saclay cosmic bench (M3 reference tracking, all five chambers,
-June 2026) and the SPS H4 beam (uRWELL telescope, chamber~E only, including the 25.6\textdegree{} rotation).}
+June 2026) and the SPS H4 beam (uRWELL telescope, chamber~E only, including the 25.4\textdegree{} rotation).}
 
 \subsection{Cosmic bench}
 \tbw{Scintillator trigger, four M3 tracking planes, two test slots. The four M3 planes form the bench's reference telescope; we call a track reconstructed in them (one cluster per plane, $N_\mathrm{clus}=4$, $\chi^2<1.0$) the \emph{reference track} and its extrapolation to the chamber under test the \emph{reference ray}, and drop the M3 name from here on.
@@ -25,7 +25,12 @@ the position resolution in a beam (chamber~E's working region, 138/120\,\textmu 
 (column $v$ 0.981 $\pm$ 0.03 of tan 25.4\textdegree), and measure the charge footprint at normal incidence.
 \askDylan{Dylan 2026-11-02: SPS reads as a cross-check; it may move to an appendix or out, depending on the referee.
 Keep as a short section for now?}
-The setup (beam, the two uRWELL reference trackers, chamber~E yawed by 25.6\textdegree{}) is drawn in \cref{fig:sps} (\cref{app:sps}).
+% NOTE (Dylan, 2026-11-09): mount angle changed from 25.6 to 25.4 deg here, in the fig. sps caption (A3_all_chambers.tex) and in
+% figs/make_sps_setup.py (E_YAW), to agree with the angle-scale number above and with Paper II. To go back, the options are:
+%   25.4  measured yaw from the run-57 alignment (now used)
+%   25.52 midpoint of the measured yaw and the configuration value (det4_gap)
+%   25.64 run-configuration value det_orientation.y (the old "25.6")
+The setup (beam, the two uRWELL reference trackers, chamber~E yawed by 25.4\textdegree{}) is drawn in \cref{fig:sps} (\cref{app:sps}).
 
 \subsection{Chambers and data sets}\label{sec:datasets}
 % Public names (Dylan 2026-11-03). Internal keys, for the analysis code and logbooks:

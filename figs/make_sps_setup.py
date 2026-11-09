@@ -9,7 +9,7 @@ Geometry: mpgd26/geometry.py SPS_STATIONS = run_59/run_config.json det_center_co
 (sps_beam_test_26/det4_sps_assessment/SPS_BEAM_GEOMETRY_2026-07-31.md sect. 1):
   EIC uRWELL front z = 0, back z = 1370 mm (127.4 mm active, URW_ACTIVE_MM)
   chamber E (mx17_4) z = 1155 mm: run-config NOMINAL, flagged PLACEHOLDER in the config itself (not surveyed);
-                    yawed 25.64 deg about the vertical (det_orientation.y), a real mounting angle.
+                    yawed 25.4 deg about the vertical (measured yaw; config det_orientation.y is 25.64), a real mounting angle.
   transverse x = y = 0 for all stations: nominal, never surveyed.
 The P2 BASKET sectors (z = 320, 630, 940) are left out on purpose.
 ASSUMPTIONS, not checked against the run config: the sign of the yaw (drawn so the chamber normal points away from the
@@ -37,7 +37,7 @@ FS = ps.BASE_PT * 0.9
 LW = 0.7
 
 URW_Z = {'front': 0.0, 'back': 1370.0}
-E_Z, E_YAW = 1155.0, 25.64
+E_Z, E_YAW = 1155.0, 25.4        # measured yaw (run-57 alignment); run config 25.64, midpoint 25.52: see sections/03_setups.tex
 URW_W, URW_T = 127.4, 14                                            # active width; drawn thickness
 E_W, E_T = 400, 18
 URW_C, E_C = '#cfd8e3', ps.DET_COLOR['det4']
@@ -71,7 +71,7 @@ ax.text(ZL + 20, 28, 'SPS H4 beam', color=ps.ACCENT, fontsize=FS, fontstyle='ita
 # angle to the beam
 ax.plot([E_Z, E_Z + 175], [0, 0], color=ps.MUTED, lw=0.5, ls=(0, (3, 2)), zorder=2)   # beam reference for the angle
 ax.add_patch(Arc((E_Z, 0), 120, 120, theta1=0, theta2=E_YAW, color=ps.INK, lw=LW, zorder=8))
-ax.text(E_Z + 55, -26, '25.6°', fontsize=FS * 0.95, color=ps.INK, ha='left', va='center')
+ax.text(E_Z + 55, -26, '25.4°', fontsize=FS * 0.95, color=ps.INK, ha='left', va='center')
 
 # the two faces of chamber E: drift window upstream (front), readout PCB downstream (back).  ASSUMED sense (cathode
 # upstream, drift along the beam), as before.  Horizontal arrows at transverse x = XA, ending on the faces.

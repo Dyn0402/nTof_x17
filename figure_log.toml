@@ -1031,3 +1031,9 @@ date = "2026-11-04"
 fig = "hv_metrics"
 status = "for review"
 change = "Dylan 11-04: panel letters moved left of the tick-label column (x = -0.15 axes) so (b)-(d) clear the axis numbers. Data unchanged (csv identical)."
+
+[[entry]]
+date = "2026-11-09"
+fig = "sps_setup"
+status = "for review"
+change = "Yaw drawn and labelled 25.4 deg (measured, run-57 alignment) instead of the configuration 25.64 / 25.6 (Dylan 11-09); options recorded in sections/03_setups.tex."
