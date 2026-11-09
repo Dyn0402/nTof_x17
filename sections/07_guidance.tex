@@ -1,0 +1,43 @@
+\section{Consequences for design and analysis}\label{sec:guidance}
+
+\paragraph{When will a readout see the bias?} \Cref{eq:scaling} with $C$ from \cref{tab:arms} answers it. For a leading-edge
+or peak time and a lateral spread of 0.5 to 0.8 pitches at full drift, $C$ is 4 to 8, and the compression is 10\,\% at
+$N \approx 7$ strips and 1\,\% at $N \approx 25$. A $\mu$TPC with a 5~mm gap and \SI{0.4}{mm} strips has $N = 12\tan\theta$ and
+reads 1.3 at \ang{10}, 1.08 at \ang{20} and 1.02 at \ang{40}: the published curve. A pad TPC with a 1~m column and 1~cm pads has
+$N = 100\tan\theta$ and a bias below $10^{-3}$ at every angle it measures; the same TPC reading a 3~cm segment near its anode
+would see a few per cent. A readout that sums strips to save channels raises $C$ and lowers $N$ at once; in the pitch scan of
+\cref{fig:pitch} doubling the pitch raised the end term by 40\,\% at fixed angle.
+
+\paragraph{What the hit times cannot tell you.} The implied drift velocity of the raw ladder is not a drift velocity: on
+chamber A it reads 45 and \SI{52}{\micro\metre/ns} for 37 and 36 (\cref{tab:remedies}), and every correction moves it. A
+$\mu$TPC that takes $v$ from the ladder will read the right angle at one inclination and the wrong one everywhere else; one
+that takes $v$ from the gas tables will read every angle too steep. A calibration against an external angle absorbs the
+multiplicative part and leaves the $1/N^2$ part, which no constant can remove. The interior term and a drift-velocity error
+have the same signature.
+
+\paragraph{What to record.} The remedies of \cref{sec:remedies} rank the information: a time per strip gives the
+compressed ladder; a time and an amplitude allow the edge treatments and the forward model on hit lists (\ang{1.2}); the samples
+of the strips around the cluster allow the neighbour subtraction and the full forward fit (\ang{1.0}). Whatever is kept, the
+neighbours of the cluster must be kept (the VMM's neighbour-enable logic does this), because the end strips are the
+measurement of the spread and the model needs them. A threshold raised to suppress the ghosts removes the information that
+locates the column ends.
+
+\paragraph{How to separate the mechanisms.} The angle cannot; the compression is invariant under the exchange of a same-time
+footprint for a same-time coupling of equal variance (\cref{sec:mechanisms}). Three measurements can, and each needs only
+existing data: the neighbour share against drift depth on near-normal tracks (the constant is the same-time share, the growth is
+diffusion, a delay is resistive spreading), the far-neighbour share against the position in the strip (a floor is a fixed
+coupling, with its closure against the fitted position), and the channel map (electronics against board). The published
+coupling fractions were obtained from none of these; a fraction tuned to restore the angle is a measure of the total same-time
+spread, and should be reported as such.
+
+\paragraph{What ``capacitive coupling'' should mean in the next paper.} On chamber A a same-time share of a few per cent per
+neighbour is present, its second-neighbour part follows the channel map and is electronic, its first-neighbour part is on the
+board and of unidentified origin, and its contribution to the angle bias is one of four of equal standing: strip geometry,
+footprint, diffusion and (on the resistive view) RC spreading. A paper that attributes its $\mu$TPC bias to coupling should show
+the depth and phase dependences that distinguish it from the other three, or call the whole same-time spread by one name.
+
+\paragraph{What the forward model needs.} A measured impulse response per plane, the three spreads calibrated per detector and
+run condition (they trade against each other in the waveform $\chi^2$, so the calibration must be anchored: the depth-resolved
+stack fixes the diffusion and the mesh-end share independently of the fit), the drift velocity from the column duration, and
+an angle scale from an external reference. With these it is unbiased at the per cent level and limited by diffusion and
+ionisation statistics~\cite{paperII}. Without the reference it is still unbiased in shape, which the hits are not.

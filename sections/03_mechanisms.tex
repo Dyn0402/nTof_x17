@@ -1,0 +1,60 @@
+\section{What spreads the charge, and what separates the mechanisms}\label{sec:mechanisms}
+
+The literature uses ``capacitive coupling'' for several different processes, and a citation for one does not support another.
+\Cref{tab:mechanisms} lists the processes that put charge of one depth on a neighbouring strip, with the time structure and the
+dependences that distinguish them. The last two columns are the ones that matter for the $\mu$TPC: whether the share depends on
+the drift depth, and whether it depends on where within the strip the charge lands.
+
+\begin{table}[t]
+  \centering\footnotesize
+  \caption{Processes that put charge of one depth on a neighbouring strip. ``Same time'' means the neighbour's signal has the
+  time structure of the strip's own charge. The MX17 column gives the values measured or bounded in \cref{sec:measurements}.}
+  \label{tab:mechanisms}
+  \begin{tabular}{@{}p{2.9cm}p{3.3cm}p{1.9cm}p{1.7cm}p{1.7cm}p{2.9cm}@{}}
+    \toprule
+    Process & Physics & Time on the neighbour & Depth dependence & Position-in-strip dependence & MX17 (chamber A) \\
+    \midrule
+    Drift diffusion & Gaussian, $\sigma^2 = D_T^2 z$ & same time & grows as $\sqrt{z}$ & yes & $D_T \approx \SI{350}{\micro\metre\per\sqrt{cm}}$, $\sigma_T(L) \approx \SI{0.6}{mm}$ \\
+    Prompt footprint & avalanche spread, charge equalisation across the resistive strip width, induction through the insulator & same time & none & yes, smooth & Gaussian-equivalent \SIrange{0.33}{0.37}{mm} (X), narrower (Y) \\
+    Floating-electrode imaging & charge on the resistive strip images onto several readout electrodes in the ratio of capacitances & same time, same shape & none & none (fixed ratio) & $\lesssim 7\,\%$ per side on X, bounded by the phase test \\
+    Direct inter-strip capacitance & strip-to-strip $C$ into a charge amplifier: a transient leading the main pulse & derivative-like, leads by \SIrange{40}{115}{ns} & none & none & not required by the waveforms (derivative term $<$ a few \% per sample) \\
+    Front-end or connector cross-talk & mutual capacitance in the ASIC or flex & same time or derivative & none & none & second neighbour \SI{1.3}{\%} within a chip, \SI{0.45}{\%} across a boundary (X) \\
+    Resistive spreading along the strip & 1-D RC line, $\sigma^2 = 2 D_{RC} s$ with $s$ the time since landing & delayed and longer & grows with time since landing & yes & $D_{RC} = \SI{3.8e-4}{mm^2/ns}$ on Y; none across the strips \\
+    Weighting-field induction & Shockley--Ramo current on a non-collecting strip & bipolar, zero net & none & yes & $\approx 0$ after shaping \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+For the angle bias the table has one message: the first five rows all feed the end strips with same-time charge, and the
+ladder cannot tell them apart. Within the forward model of \cref{sec:measurements} the total compression is invariant as the
+same-time share is moved between a Gaussian footprint and a nearest-neighbour coupling kernel along the valley of equal
+waveform $\chi^2$~\cite{paperII}: a fixed fraction $\kappa$ on both neighbours and a Gaussian of width $\sigma_0$ add to the cluster
+variance alike ($\sigma^2 \to \sigma^2 + 2\kappa p^2$), and it is the variance that sets the ghost strips. What distinguishes the
+processes is therefore not the bias but three other observables:
+
+\begin{description}
+\item[Depth.] Diffusion grows as $\sqrt{z}$; resistive spreading grows with the time since landing; every same-time coupling
+  is the same at every depth. On near-normal tracks, where the column stays within a fraction of a pitch, the neighbour share
+  read sample by sample against the drift time separates the constant part (the same-time share at the mesh) from the growing
+  part, and the growth measures $D_T$ (\cref{sec:depth}).
+\item[Position in the strip.] A Gaussian footprint puts most of its share on the neighbour nearer to the charge and little on
+  the far one; a fixed coupling puts the same fraction on both. The far neighbour's share as a function of the charge's
+  position within the strip therefore bounds the coupling (\cref{sec:phase}). The test is only as good as the position
+  estimate, which in a $\mu$TPC comes from the same waveforms; \cref{sec:phase} includes its closure.
+\item[Delay.] Resistive spreading arrives later and lasts longer, which is how the T2K ERAM analysis separates its ``charge
+  spreading'' from diffusion's ``charge sharing''~\cite{T2K2022}. The delay separates the RC term from everything else, and
+  nothing else: a same-time coupling and a same-time footprint sit on the same side of it.
+\end{description}
+
+A fourth observable, the channel map, separates electronics from the board: cross-talk inside a front-end chip or a connector
+follows channel adjacency, charge sharing on the board follows strip adjacency, and the two differ at chip and connector
+boundaries (\cref{sec:phase}).
+
+The sizes in the literature for ``the'' coupling fraction, \SIrange{5}{67}{\%}~\cite{Farinelli2019,Ntekas2016,Loesel2017,Scholer2021},
+are not one quantity. The 5\,\% is a pulse injected into a GEM strip and read on the neighbour after about \SI{15}{ns}
+\cite{Farinelli2019}; the 10 to 15\,\% are a circuit simulation and an edge-strip charge correlation on one ATLAS test chamber
+\cite{Ntekas2016}; the 23 to 32\,\% are an LTspice model of resistive strips 10 to 150~cm long~\cite{Loesel2017}, afterwards
+adopted as a correction factor~\cite{Flierl2018,Herrmann2019}; the 67\,\% is the peak of an edge-to-inner charge ratio on the
+longest NSW strips read with the VMM, which assumes the edge strip is pure coupling~\cite{Scholer2021}. A factor tuned to
+restore the angle, such as the 20 or 30\,\% of~\cite{Flierl2018,Herrmann2019}, absorbs every same-time share, diffusion and
+footprint included, and measures no capacitance.

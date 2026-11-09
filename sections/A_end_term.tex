@@ -1,0 +1,28 @@
+\section{The slope of a line with displaced ends}\label{app:endterm}
+
+Let $N$ points $x_i = i\,p$, $i = 1 \dots N$, carry times $t_i = x_i/w + \delta_i$ and let a straight line be fitted by
+unweighted least squares. The slope estimate is
+\begin{equation}
+  \hat s = \frac{\sum_i (x_i - \bar x)(t_i - \bar t)}{\sum_i (x_i - \bar x)^2}
+        = \frac{1}{w} + \frac{\sum_i (x_i - \bar x)\,\delta_i}{p^2 N(N^2-1)/12}.
+\end{equation}
+If only the two end points are displaced, $\delta_1 = +\delta$ (the mesh-end point later than the line) and $\delta_N = -\delta$
+(the cathode-end point earlier), then $\sum_i (x_i - \bar x)\delta_i = -(N-1)p\,\delta$ and
+\begin{equation}
+  \frac{\hat s - 1/w}{1/w} = -\frac{12\,\delta}{N(N+1)\,\Delta t}, \qquad \Delta t = \frac{p}{w},
+\end{equation}
+so that the reconstructed tangent, $1/(\hat s v)$, is too large by
+\begin{equation}
+  \frac{\tan\theta_{\rm rec}}{\tan\theta} - 1 \simeq \frac{12}{N(N+1)}\,\frac{\delta}{\Delta t} \approx \frac{12\,(\delta/\Delta t)}{N^2}.
+\end{equation}
+Ghost points beyond the ends enter the same way with a larger lever arm and a displacement set by the lateral spread,
+$\delta \sim \sigma_\perp/(v\tan\theta) = (\sigma_\perp/p)\,\Delta t$, which gives the dependence of $C$ on the spread in units of the
+pitch. Partial strips give $\delta$ a fixed fraction of $\Delta t$ set by the estimator (\cref{sec:formulation}), hence a $C$ of
+order unity that does not depend on the spread. Amplitude weighting lowers the weight of the partial strips and the ghosts,
+which carry less charge, and so lowers $C$; the robust trimming of \cref{sec:remedies} lowers it further by removing some of
+them. The scaling with $1/N^2$ is the same for all of these, which is why the angle dependence alone does not identify the
+cause (\cref{sec:mechanisms}).
+
+Bortfeldt's LTspice predictions~\cite{Bortfeldt2014}, converted to $\Delta\tan\theta\cdot\tan\theta$, give 0.031, 0.032, 0.028
+and 0.015 at \ang{10}, \ang{20}, \ang{30} and \ang{40}: a nearly constant product, i.e.\ the $1/N^2$ form, as expected of a circuit
+model that perturbs the end strips.

@@ -1,0 +1,47 @@
+\section{Introduction}\label{sec:intro}
+
+A time-projection readout turns a drift time into a coordinate. In a large TPC the drift coordinate is read along a track
+many centimetres long and the local direction comes from many pad rows; in a micro-TPC ($\mu$TPC) the whole drift column is a
+few millimetres to a few centimetres deep, each strip crossed by the track is given one drift time, and the inclination of the
+segment is the slope of time against strip position~\cite{Alexopoulos2010,Bini2014}. The second form is attractive because it
+recovers a good position for inclined tracks where the charge centroid degrades, and it is used in the ATLAS New Small Wheel
+Micromegas~\cite{Iodice2015,Ntekas2016,Scholer2021}, in triple-GEM trackers~\cite{Alexeev2019,Farinelli2019,Flierl2018} and in
+floating-strip Micromegas~\cite{Bortfeldt2014,Bortfeldt2015}.
+
+Every one of these groups that compared the reconstructed inclination with the set angle of the chamber found the track too
+steep, by a few degrees at \ang{10} shrinking to a fraction of a degree at \ang{40}~\cite{Bortfeldt2014,Iodice2015,Flierl2018,Ntekas2016}.
+The published explanation is capacitive coupling: a strip at the edge of the cluster receives a copy of its neighbour's signal
+at the neighbour's time, so the first and last strips carry the wrong depth~\cite{Bortfeldt2015,Iodice2015,Alexeev2019}. The
+remedies are a cut on the charge ratio of the edge strips~\cite{Sessa2014,Rinnagel2019,Vanadia2015}, a shift of their assigned
+position~\cite{Farinelli2019,Ntekas2016}, a subtraction of a fixed fraction of the neighbour pulse, sample by
+sample~\cite{Loesel2017,Flierl2018,Herrmann2019}, or an angle-dependent calibration~\cite{Bortfeldt2014}. Two things are
+missing from this record. No study has separated the coupling from the other processes that put charge of one depth on a
+neighbouring strip, drift diffusion and the finite width of the induction footprint, and none has had a per-track external
+reference for the angle: the comparison is always with the mounting angle of the chamber, through the peak or the mean of the
+reconstructed distribution. Where the field's own simulations switch the coupling off they still find a bias, of \ang{0.2} to
+\ang{4}~\cite{Ntekas2016} or \ang{7}~\cite{Scholer2021}, and leave it unexplained.
+
+This paper argues that the question ``which process couples the strips'' is the wrong one for the angle. A single time per
+channel, whatever its definition, is a functional of all the charge that reaches the channel, and the channels at the two ends of
+a short column receive charge of the wrong depth from any lateral spread, by any mechanism. The bias is therefore a geometric
+consequence of reading a short column one time per channel, its size is set by the lateral spread in units of the pitch and by the
+number of channels in the column, and the mechanisms differ only in how they are to be modelled or removed. Pad TPCs and
+liquid-argon TPCs have the same spread in units of the pitch but columns one or two orders of magnitude longer, and read a
+charge-weighted time; directional and short-track detectors have the column but no reference that would reveal a few per cent
+of slope. The strip $\mu$TPC is the one place where the effect is both large and measurable, and that is where it was found.
+
+We test this account on a resistive-strip Micromegas with an unusually deep drift gap (\SI{28}{mm}), a fine pitch (\SI{0.78}{mm}),
+sampled waveforms (\SI{60}{ns}) and a silicon telescope that gives the slope of every track independently of the chamber. The
+detector, its calibration and its waveform reconstruction are described in two companion papers~\cite{paperI,paperII}; here it
+serves as a test bed, with a forward model whose ingredients (footprint, diffusion, resistive spreading, electronics response)
+can be switched on and off, and with 50\,000 track projections in two runs. \Cref{sec:formulation} sets out the formulation and
+the scaling, \cref{sec:mechanisms} what the lateral spreads are and which observables separate them, \cref{sec:literature} what
+each detector family has reported, \cref{sec:measurements} the measurements, \cref{sec:remedies} the remedies scored on the same
+tracks, and \cref{sec:guidance} the consequences for the design and analysis of such readouts.
+
+Terminology. We write $L$ for the drift length of the column, $p$ for the readout pitch, $v$ for the drift velocity, $\theta$
+for the angle between the track and the drift direction, so that a track crosses $N = L\tan\theta/p$ strips, and $u$ for the
+drift time of a charge from depth $z = v u$. ``Ratio'' means $\tan\theta_{\rm rec}/\tan\theta$ at fixed drift velocity, which is
+also the factor by which the drift-time ladder is compressed; it is 1 for an unbiased reconstruction and larger than 1 when the
+track reads too steep. ``Same-time'' sharing means charge appearing on a neighbour with the time structure of the strip's own
+charge; ``delayed'' sharing means a later and longer signal, the signature of resistive spreading.

@@ -1,0 +1,83 @@
+\section{A transparent toy of the single-time bias}\label{app:toy}
+\label{sec:toy}
+
+The toy (\texttt{toy\_mixing.py} in the analysis repository) implements \cref{eq:waveform} with nothing else: a straight track
+through a gap $L$ at $\tan\theta$, entering at a uniformly random position within a strip; ionisation in \SI{5}{ns} steps of
+drift time, either uniform or clustered (Poisson clusters at \SI{25}{cm^{-1}} with sizes distributed as $1/n^2$ and an
+exponential gain per electron); a Gaussian lateral spread $\sigma^2(u) = \sigma_0^2 + D_p^2 u$ integrated over strips of pitch $p$;
+the measured impulse response of chamber A's X plane (or an analytic CR--RC$^2$ of chosen peaking time); sampling at
+\SI{60}{ns} (or \SI{25}{ns}); white noise at a signal-to-noise of about 35 on the centre strip; the hit emulators and ladder
+fits of \cref{sec:measurements}. Each point is the median over 300 tracks. The toy reproduces the ordering and the
+increments of the model arms (\cref{tab:arms}) with a constant offset of about one unit of $C$, which the arms owe to the real
+residual they carry.
+
+\begin{table}[h]
+  \centering\small
+  \caption{Toy results for chamber A's geometry: the strip-end coefficient $C$ and the interior term $b$ for three
+  estimators and for the leading edge with the edge shift. $D_p = \SI{0.021}{mm/\sqrt{ns}}$ unless stated.}
+  \label{tab:toy}
+  \begin{tabular}{@{}lcccccccc@{}}
+    \toprule
+    & \multicolumn{2}{c}{leading edge} & \multicolumn{2}{c}{charge-weighted} & \multicolumn{2}{c}{template time} & \multicolumn{2}{c}{leading edge + edge shift} \\
+    configuration & $C$ & $b$ & $C$ & $b$ & $C$ & $b$ & $C$ & $b$ \\
+    \midrule
+    geometry only ($\sigma_0 = 0.07$, $D_p = 0$) & 1.27 & $-0.001$ & 1.33 & $-0.003$ & 1.27 & $-0.001$ & 0.90 & $-0.005$ \\
+    footprint only ($\sigma_0 = 0.30$, $D_p = 0$) & 2.83 & $0.000$ & 2.95 & $-0.004$ & 2.73 & $-0.001$ & 1.68 & $-0.001$ \\
+    diffusion only ($\sigma_0 = 0.07$) & 4.33 & $+0.008$ & 4.56 & $0.000$ & 4.08 & $0.000$ & 3.20 & $+0.006$ \\
+    footprint + diffusion & 5.95 & $+0.006$ & 6.27 & $-0.003$ & 5.60 & $-0.001$ & 4.53 & $+0.005$ \\
+    the same with $D_p = 0.023$ & 6.46 & $+0.007$ & 6.81 & $-0.001$ & 6.09 & $-0.001$ & 5.08 & $+0.006$ \\
+    footprint 0.45 + diffusion & 8.00 & $+0.004$ & 8.44 & $-0.002$ & 7.62 & $-0.002$ & 6.55 & $+0.003$ \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Three results of the toy are used in the text. The interior term $b$ is $+0.5$ to $+0.8$\,\% for the leading edge whenever the
+spread grows with depth and consistent with zero for the charge-weighted and template times, as \cref{sec:formulation} derives;
+it is far below the end term at every $N$ of interest. The edge shift (moving a kept edge strip inward by the fraction of the
+column it collects) lowers $C$ by about 25\,\% for every configuration, and the charge-weighted time does not lower it at all.
+And $C$ grows with the lateral spread in units of the pitch: from 1.3 with none to 2.8 with the footprint (0.38 pitches), 4.3
+with diffusion alone (0.73 pitches at full drift), 6.0 with both (0.84) and 8.0 with a wide footprint (0.93); the pitch scan
+(\cref{fig:pitch}) and the other geometries of \cref{tab:toydet} follow the same variable.
+
+\begin{table}[h]
+  \centering\small
+  \caption{Toy $C$ and $b$ for the estimators of \cref{sec:remedies} on chamber A's geometry ($\sigma_0 = 0.30$~mm, $D_p =
+  0.021$), each plain and with the edge shift. The Fermi-Dirac rise and the peak time are the estimators of the APV25 and VMM
+  chains.}
+  \label{tab:estimators}
+  \begin{tabular}{@{}lcccc@{}}
+    \toprule
+    estimator & $C$ & $b$ & $C$ with edge shift & $b$ with edge shift \\
+    \midrule
+    leading edge (30\,\% of peak) & 5.9 & $+0.004$ & 4.6 & $+0.003$ \\
+    Fermi-Dirac rise, half height & 4.9 & $+0.005$ & 3.7 & $+0.004$ \\
+    time of the peak & 5.3 & $-0.001$ & 4.0 & $-0.002$ \\
+    template (matched-filter) time & 5.6 & $-0.002$ & 4.2 & $-0.003$ \\
+    charge-weighted time & 6.2 & $-0.002$ & 4.8 & $-0.004$ \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{table}[h]
+  \centering\footnotesize
+  \caption{The toy on the published geometries, with no capacitive coupling of any kind: a 50~ns CR--RC$^2$ shaper sampled every
+  25~ns, a Fermi-Dirac rise-time estimator (LMU practice) or the time of the peak (VMM), $D_T = \SI{365}{\micro\metre\per\sqrt{cm}}$, a
+  footprint of 0.10~mm (0.15~mm for the GEM), clustered ionisation. The published values are those of \cref{fig:universal}b.}
+  \label{tab:toydet}
+  \begin{tabular}{@{}p{3.1cm}ccp{3.3cm}p{5.0cm}@{}}
+    \toprule
+    geometry & $\sigma_{\rm rms}/p$ & $C$ (Fermi / peak) & ratio at \ang{10} / \ang{15} / \ang{20} / \ang{30} & published \\
+    \midrule
+    5~mm, 0.40~mm (NSW-like) & 0.52 & 4.1 / 4.9 & 1.82 / 1.46 / 1.27 / 1.10 & \ang{20}$\to$\ang{23}, ratio 1.17~\cite{Iodice2015} \\
+    6~mm, 0.50~mm (floating strip) & 0.45 & 3.0 / 4.0 & 1.68 / 1.35 / 1.19 / 1.06 & 1.52 measured at \ang{10}; 1.99 / 1.24 / 1.08 at \ang{10} / \ang{20} / \ang{30} in LTspice~\cite{Bortfeldt2014} \\
+    8~mm, 0.40~mm (GEM) & 0.69 & 5.9 / 6.8 & 1.50 / 1.22 / 1.13 / 1.05 & 1.28 at \ang{15}, 1.08 at \ang{30}~\cite{Flierl2018} \\
+    28~mm, 0.78~mm (chamber A, X) & 0.66 & 6.4 (leading edge) & 1.16 / 1.08 / 1.04 / 1.02 & data 1.17 / 1.08 / 1.04 at $N$ = 6.3 / 9.6 / 13 (\cref{sec:ratio}) \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+The last table is the central check of the review's argument: the biases the strip-$\mu$TPC groups measured and simulated,
+1.1 to 2.0 at \ang{10} to \ang{30}, are reproduced within the uncertainty of the assumed footprint by drift diffusion, the strip-end
+geometry and a 0.1~mm footprint, with no coupling term. The circuit model's 20--\ang{40} predictions (1.24, 1.08, 1.02) and the
+diffusion-only toy (1.19, 1.06, 1.03) are indistinguishable at the precision of either; at \ang{10} the measured 1.52 lies between
+them. Coupling may be present in those chambers, but the angle did not need it.
