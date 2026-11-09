@@ -32,6 +32,10 @@ H2C_VARIANTS = ('base:,rc0:rc_D_y=0,rc05:rc_D_y=x0.5,rc2:rc_D_y=x2,rc5:rc_D_y=x5
 N_H2CRESIM = 12
 #: SPS H2c tuning (2026-11-08): row v (sps_score v_stage), det4 gap 28.6 mm, on 400 planes of d600, family V0
 SPS_TUNE = [(tr, st) for tr in (700, 1500, 3000) for st in (15, 40, 80)]
+#: SPS H2c on every inclined row (2026-11-09): row v_stage (results/ana1106_sps_score.json), gap 28.6, the bench t_rise 700 /
+#: S_T 15, since the d600 grid did not separate settings (results/spstune_d600.json).  h2crow_ tables, not h2c_sps_ (11-06).
+SPS_ROW_V = {'run57_rot25_co2__d550': 7.508, 'run57_rot25_co2__d600': 8.354, 'run57_rot25_co2__d650': 9.184,
+             'run57_rot25_co2__d700': 10.073, 'run59_co2__co2': 9.994}
 
 
 def main():
@@ -77,6 +81,11 @@ def main():
             for tr, sts in SPS_TUNE:
                 node(f'T_{tr}_{sts}', 'h2c_run.py', f'spstune_tr{tr}_st{sts}.parquet',
                      f'{f} --gap 28.6 --families dream --v-drift 8.354 --t-rise {tr} --s-t {sts} --nmax 400')
+        row = b[len('sps_'):]
+        if 'spsrow' in st and row in SPS_ROW_V:
+            for j in range(N_H2C_SPS):
+                node(f'HR_{b}_{j}', 'h2c_run.py', f'h2crow_{b}_{j}of{N_H2C_SPS}.parquet',
+                     f'{f} --gap 28.6 --families {H2C_FAMS} --v-drift {SPS_ROW_V[row]} --t-rise 700 --s-t 15 --part {j}/{N_H2C_SPS}')
         if 'tiers' in st:
             node(f'TT_{b}', 'tiers.py', f'tiers_{b}.parquet', f'{f} --table-only')
         if 'h2c' in st:
