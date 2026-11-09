@@ -1,33 +1,51 @@
 # Handoff
 
-## Paper II hits-DAQ and TPC literature survey — updated 2026-11-08 (dylan-Yoga)
+## Paper II hits-DAQ and the capacitive coupling study — updated 2026-11-09 (dylan-MS-7C84)
 
-**Resume:** when DAG 4637865 ends: account jobs, rescore H2c variants + SPS tune, rebuild deck; then charge-weighted estimator.
+**Resume:** independent review of the coupling study (brief below), then SPS/other-chamber shape tests or hit-mode corrections.
 
-**Goal:** Paper II's hits-vs-waveforms section and an honest novelty claim against every other TPC family.
+**Goal:** Paper II's hits-vs-waveforms section, with an argument about the field's "capacitive coupling" explanation of the micro-TPC bias that survives a referee.
 
-**Done (11-08):**
-- Dylan's 10 decisions applied (plan §0): H2b′ dropped; det3 headline, det4 where SPS helps; §7 into §6, §8 into §9; floor section rewritten with 60 ns paragraph; mount angle 25.4° (Paper I still says 25.6° in `03_setups.tex` and `A3_all_chambers.tex`: not touched, Stephan edits it, ask Dylan).
-- H2a edge oddity resolved (`hits_daq/h2a_edge.py`): regression toward the training angle spectrum, not statistics; H2a's s68 is partly the cosmic prior.
-- Literature survey of all TPC families: `papers/paper2/hits_daq/LITERATURE_TPC_SURVEY.md`, index `hits_daq/literature_survey/README.md`, deck https://dylan-neff.web.cern.ch/notes/mx17-tpc-literature.html (`literature_survey/make_deck.py`). Verdict: strip µTPCs report the bias under other names; long TPCs have Λ 7-110× smaller; LAr already has the channel-time convolution. Claim the measurement, decomposition and per-event depth fit, not the effect.
-- Scans (plan §0 “Scans 2026-11-08”): pitch done (wider strips worse, mostly strip-end term), shaping done (25-200 ns barely matters), H2c on variants 39/48 (recovers the slope on simulation).
+**Dylan's request at wrap-up:** have another model look at the situation before going further. Read the code and data with fresh eyes; the conclusions below are this session's and may be wrong.
 
-**In progress:** DAG 4637865 (`~/x17rerun/hits_daq/ana_2026-11-08`, code `code_hs_19d9be5b`, batch `hd1108`, schedd bigbird101): 61/77 nodes, 0 failures at wrap-up. Outputs on EOS `cosmic_bench/x17rerun/hits_daq/results/` (`h2cresim_*`, `spstune_*`). The local waiter dies with this session.
+**Review brief (questions worth an independent answer):**
+1. Is the claim "pure coupling cannot replace σ0" sound? It rests on position-in-strip dependence (`report_coupling/report.html` §3, Fig. phase) and uses the fitted p0 as the position.
+2. The earlier 18 %/59 % share and today's "equal shares on X" (1.115 / 1.115 / 1.188 against geometry 1.043) differ only in parametrisation. Is any split meaningful?
+3. Fitted k1 = 0.13/0.11 against 0.10/0.09 from no-coupling closure: does the excess mean anything? χ²/dof ≈ 66, so χ² cannot decide.
+4. Does the chip-boundary test really isolate electronics? Only 33+33 (X), 27+40 (Y) planes cross a boundary, and strip adjacency equals channel adjacency elsewhere.
+5. What physics gives a ~7–9 % same-time floor and a smooth ~0.25 mm width? Bottom-up estimates (1–2 % direct, ~1 % imaging) do not; the estimate uses an assumed board stack and DREAM impedances.
+6. Unexplained: the −1 ratio falls with amplitude (8.2 → 5.4 % X); data lie below every model near the strip centre; inside the track data shift about half as much as any arm with diffusion.
+
+**Done (11-09):**
+- DAG 4637865 accounted (77/77, one start each, exit 0). H2c on simulated variants complete 48/48 (`hits_daq/results/h2c_resim.json`).
+- SPS H2c tuning scored (`hits_daq/spstune_score.py`, `results/spstune_d600.json`): using the row's v and gap took s68 from 2.60° to 1.67–2.19°; the t_rise × S_T grid does not choose a setting, so bench 700/15 kept. ~21 % of fits run away, same planes at every grid point, seeded by a hits line ~3× off W.
+- Paper I mount angle 25.4° in `03_setups.tex`, `A3_all_chambers.tex`, `figs/make_sps_setup.py`, with a comment listing the options (25.4 measured, 25.52 midpoint, 25.64 config). On Overleaf (`e67794ac`).
+- T2K contact dropped (Dylan). Lead Paper II with the decomposition (Dylan: try it, judge once written).
+- Estimators V7 charge-weighted and V8 TOT midpoint added (`emulate.py`, `tiers.py --families cw,totmid`). Smoke (210 planes): V7 1.43 vs V0 1.40; V8 2.26, suspected amplitude walk, not checked.
+- Coupling literature review: `hits_daq/reports/Capacitive coupling in strip microTPCs.md`, notes in `hits_daq/research_notes/`. No study isolates coupling as the cause; Ntekas (gas only) and Scholer (sharing off) still show a bias.
+- Coupling study on chamber A, Runs 1+2: `hits_daq/report_coupling/report.html` (physics, predictions table, fits, closure, boundary, profile, suggested wording, limits). Summary: pure coupling fails on position-in-strip; a floor caps a same-time term at ~7 % X / ~9 % Y; X still needs ~0.25 mm width; −2 strip (1.3–1.7 %) mostly chip/connector (0.4 ± 0.1 % X across a boundary); no derivative term wanted; no 0.80 mm grid or 31.2 mm beat seen at the predicted size.
+
+**In progress (condor, schedd bigbird101):**
+- DAG 4646000: SPS H2c on the 5 inclined rows with row v, 120 nodes, `~/x17rerun/hits_daq/ana_2026-11-09`, code `code_hs_19d9be5b`, tables `h2crow_sps_*`. At wrap-up 2 running, none finished.
+- DAG 4647206: V7/V8 tables, 22 nodes, `~/x17rerun/hits_daq/ana_2026-11-09e`, code `code_hs_0aba53f8`, tables `tiers2_*`. Queued.
+- Outputs: EOS `cosmic_bench/x17rerun/hits_daq/results/`.
 
 **Next steps:**
-1. `ssh lxplus`, `condor_q -constraint 'ClusterId==4637865'` (empty = done); compare `001`/`005` in `log/ana.log`, read any failure.
-2. rsync `h2cresim_*`, `spstune_*` into `$WORK_DATA/paper2_hits/r1108`; `resim_score.py "<dir>/h2cresim_*.parquet" --json results/h2c_resim.json`; score spstune (per-row v, gap 28.6) and pick H2c settings for SPS, then rerun the rows.
-3. Add a charge-weighted time and a TOT-midpoint family to `emulate.py`/`tiers.py` (only windows needed); Dylan to confirm.
-4. Fix wording listed in `literature_survey/README.md`; write §6 text and paper figures; rebuild and republish the deck (slide “Still to come” status strings in `make_deck.py`).
-5. Dylan's open choices: lead with decomposition or fit (recommended decomposition), contact T2K about their global waveform fit, Paper I mount angle.
+1. Independent review (brief above).
+2. When the DAGs end: compare `001`/`005` in `log/ana.log`; copy `h2crow_*` next to the `tiers_sps_*` tables renamed `h2c_sps_*` and run `sps_score.py`; score `tiers2_*` with `tiers.py --from-tables ... --families cw,totmid`; check V8.
+3. Shape tests (`coupling/observables.py`, `boundary.py`) on SPS chamber E head-on rows and other bench chambers: is the floor and the −2 result general?
+4. Hit-mode corrections Dylan wants next: Sessa's 1/6 cut, Farinelli's edge shift, Flierl's neighbour subtraction (needs samples); see the corrections table in the 11-09 conversation and `tiers.py` (V0e, V0q, H0, H2a already exist).
+5. Wording fixes in `literature_survey/README.md`; §6 text and figures; rebuild deck (`literature_survey/make_deck.py`).
 
-**Gotchas:**
-- `condor_q -batch` from the login node can miss a DAG on another schedd: check `-constraint`, never resubmit blindly (I double-submitted once; both removed before work ran).
-- On a long-lived ssh the AFS token expires (Permission denied on `~`): a re-login fixes it.
-- Run 1 and Run 2 event ids collide: `score_h2c.py` scores one run at a time; `gang_scan` pools by rows, fine.
-- Laptop working data: `~/work_data/paper2_hits` (regenerable). Source papers: `/eos/user/d/dneff/litsurvey_sources_2026-11-08.tgz`.
+**Gotchas / decisions:**
+- Windows are 9–12 strips with few samples before t0: noise correlation between strips cannot be measured from them (`coupling/noise_corr.py` has too few entries).
+- Windows and tables live in `$WORK_DATA/paper2_hits/` on the desktop (`windows/`, `capcoup/`), regenerable from EOS `hits_daq/windows/`. Report figures are git-ignored PNGs; `coupling/make_report.py` rebuilds them from committed `results/coupling_*`.
+- `overleaf.sh push` fails with subtree recursion depth on this machine: use the bash workaround in `papers/README.md`.
+- `condor_q -batch` can miss a DAG on another schedd: use `-constraint`.
+- Run 1 and Run 2 event ids collide: score one run at a time.
+- Laptop working data: `~/work_data/paper2_hits`.
 
-**Key files:** `hits_daq/gang_scan.py`, `resim_shape.py`, `resim.py --h2c`, `resim_score.py`, `h2a_edge.py`, `condor/make_ana_dag.py` (stages gang, shape, h2cresim, spstune).
+**Key files:** `hits_daq/coupling/` (`observables.py`, `fit_kernel.py`, `run_fits.sh`, `profile.py`, `boundary.py`, `extra.py`, `make_report.py`, `physics/`), `hits_daq/coupling_scan.py`, `hits_daq/condor/make_ana_dag.py` (stages `spsrow`, `estim`), `papers/paper2/HITS_DAQ_PLAN_2026-11-05.md`.
 
 ## Paper I text from the feedback note — updated 2026-11-06 (dylan-MS-7C84)
 
