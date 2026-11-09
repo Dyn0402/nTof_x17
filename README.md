@@ -34,3 +34,5 @@ Open items (also marked `\tbw` in the text): author list; whether to merge with 
 condor DAGs 4646000/4647206 (queued at the time of writing) could add a known-angle column to §6; the Y-view same-time
 footprint (narrower than the pass's 0.30 mm) deserves a sentence in Paper II's calibration section; the review memo with the
 answers to the HANDOFF questions is `papers/paper2/hits_daq/REVIEW_COUPLING_2026-11-09.md`.
+
+Slide note of the study (unified picture, is there a paper, draft corrections): https://dylan-neff.web.cern.ch/notes/tpc-single-time-bias.html, built by `make_deck.py`.
