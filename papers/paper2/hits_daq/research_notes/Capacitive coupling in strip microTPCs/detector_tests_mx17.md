@@ -98,3 +98,6 @@ M_i -> M_i + kd x (central difference per 60 ns sample of M_{i-1} + M_{i+1}): bi
 - Same-shape and derivative forms only; no term with its own delay.
 - chi2 dominated by model error.
 - The pass was calibrated at kappa = 0.
+
+
+Follow-up study with sigma_p0 removed, joint fits, closure, boundary test: `papers/paper2/hits_daq/report_coupling/report.html` (coupling/).
