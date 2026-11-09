@@ -1,5 +1,41 @@
 # Handoff
 
+## Review of the coupling study, and the TPC single-time-bias review paper — updated 2026-11-09 (dylan-MS-7C84, later session)
+
+**Resume:** read `papers/paper2/hits_daq/REVIEW_COUPLING_2026-11-09.md` (the answers to the six questions below), then
+`papers/tpc_mixing_review/main.pdf` (complete first draft, 22 pages). Decide: third paper, or fold into Paper II §3/§6.
+
+**Done (11-09, afternoon):**
+- Independent review of the coupling study: verdict = the study's conclusions hold; the phase test survives a closure with
+  known truth and refitted p0 (fit lean 0.007-0.07 mm, makes a near/far asymmetry of 0.03 against the data's 0.08); the
+  "shares" question is replaced by the end-term decomposition. Memo: `hits_daq/REVIEW_COUPLING_2026-11-09.md`.
+- New analyses (all on existing windows, local): `coupling/depth_ratio.py` (lateral sharing vs drift depth on 5066 near-normal
+  planes: same-time share at the mesh, growth = diffusion with Dp ~ 0.021 (D_T ~ 350) vs the pass's 0.023; X footprint
+  wider than Y; second-neighbour same-time floor 2.4 %/side), `coupling/phase_closure.py` (8001 planes, two truths x two noise
+  modes, pass refit), `remedies.py` (literature corrections + charge-weighted time scored on Runs 1+2 vs M3: best hit-only
+  s68 1.5-2.0 deg vs W 1.0; cw alone does not help; 30 % subtraction best on X, harms Y), `ghost_census.py` (data have +0.8
+  mesh-end ghost strips/plane on X vs model), `universal.py` (ratio vs |tan| -> Delta tan = a/tan + b tan: C = a (L/p)^2 =
+  7.0 X / 11.7 Y, b ~ 0 on the kw angle scale; model 6.9/11.5; geometry 2.3; literature points on the same axis),
+  `toy_mixing.py` (transparent toy: C = 1.1 + 11 (sigma_rms/p)^2 over 13 configs; a no-coupling toy reproduces the published
+  strip-uTPC biases; estimator and edge-shift effects). Outputs: `hits_daq/results/{universal,toy_*,ghost_census_*}.json`,
+  `$WORK_DATA/paper2_hits/{depth,phasecl,remedies}/`.
+- Literature gap-fill (agent, verified quotes): `hits_daq/literature_survey/gapfill_2026-11-09.md` (drift-tube angle-dependent
+  r-t as a precedent: CMS DT, BESIII MDC, Belle II; Herrmann 2019's 30 % is adopted from simulation; Fang MPGD2024 poster =
+  first-electron diffusion mechanism; no strip uTPC uses a charge-weighted time; Bini 2014 has no bias number; Alexopoulos
+  2019 closed access).
+- The review paper draft: `papers/tpc_mixing_review/` (README there; `NUMBERS.md` generated; figures generated).
+
+**Pending:**
+- Condor DAGs 4646000 (SPS H2c rows, `h2crow_sps_*`) and 4647206 (V7/V8 tables, `tiers2_*`): still idle in the pool at 15:00
+  (0 output tables on EOS). When done: steps in the previous section.
+- Paper II text: the end-term wording (C/N^2), the Y footprint narrower than 0.30, Dp tension (0.021 vs 0.023) in
+  `docs/PARAMETERS.md`, the report's phase section (data below every model only on Y).
+- `toy_detectors.json`: the first pass had E.SNS = 60 for 25 ns sampling (fixed; the file is from the fixed run, 14:15+).
+
+**Gotchas:** `pkill -f` with the python command line as pattern kills the calling shell (exit 144) -- use pgrep/kill by pid.
+`emulate.SNS` is a module constant: set it when emulating non-60 ns samples. The data ratio vs M3 must use
+w_ref = kw v tan_ref + w0, not v alone (3.7 % on X).
+
 ## Paper II hits-DAQ and the capacitive coupling study — updated 2026-11-09 (dylan-MS-7C84)
 
 **Resume:** independent review of the coupling study (brief below), then SPS/other-chamber shape tests or hit-mode corrections.
