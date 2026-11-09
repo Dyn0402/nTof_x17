@@ -89,6 +89,18 @@ leading edge with this diffusion, the data's universal fit gives b = -0.003/+0.0
 b = -0.01 to -0.02 (the 60 ns depth-quantisation artefact at steep angles). The model's interior compression of 5 % in
 p0_depth is probably that artefact rather than physics; the data's 1.7 % is near the toy's expectation.
 
+## Added later the same day: the other chambers (`chambers_C.py` -> `results/chambers_C.json`)
+
+Same statistic on the clean bootstrap windows of B (det2), A (det3), E (det4), D (det7), truth = the fit's w, L = 28.08 for
+all, model arms regenerated on the window's own strips (no padding: absolute C ~10-15 % below the padded resim arms and
+the full-sample det3 values, so compare chambers relatively). Data C_X: 5.2+-0.2, 6.1+-0.1, 8.0+-0.3, 7.2+-0.8 (B, A, E, D)
+vs model 5.5, 5.8, 7.2, 5.1; geometry-only 0.9-1.4; metallic 4.2-5.2. Data C_Y: 10.1+-0.3, 9.7+-0.2, 9.1+-0.3 (B, A, E; D's
+198 Y planes do not fill the bins) vs model 10.4, 10.4, 8.2; the model's RC increment (C_Y minus RC-off) 4.9, 4.5, 2.1 orders
+with D_RC (5.1, 3.8, 2.2e-4). P0's inclined slope ratios order all four with D_RC on Y (1.27, 1.37, 1.42, 1.53 for E, A, B, D).
+Chamber E's X value (8.0 vs toy law 5.8) is the outlier, as in P0 (its model over-predicts the hit bias at large angles;
+dead/low-gain bands; column 2.5 mm short). Chamber C (det6) has no bootstrap extraction (92 % saturated, clean sample
+unrepresentative) and is not included.
+
 ## What the paper can say (replacing the report's section 6 wording)
 
 "Single-time-per-strip reconstruction reads tracks too steep because the strips at the two ends of the drift column receive
