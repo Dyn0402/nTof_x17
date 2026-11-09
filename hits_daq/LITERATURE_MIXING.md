@@ -193,7 +193,7 @@ Compression of the time ladder equals the ratio tan(θ_reco)/tan(θ_true) for a 
 
 | Source | True | Reconstructed | tan ratio | Note |
 |---|---|---|---|---|
-| Bortfeldt, simulation | 10 deg | 19 deg | 1.95 | LTspice, capacitive only |
+| Bortfeldt, simulation | 10 deg | 19 deg | 1.95 | LTspice, capacitive coupling plus the edge-position effect (no breakdown given) |
 | Bortfeldt, measured | 10 deg | 15 deg | 1.52 | "+5 deg" |
 | Flierl GEM, uncorrected | 15 deg | 19 deg (MPV) | 1.28 | 8 mm gap, 0.4 mm pitch |
 | Flierl GEM, uncorrected | 30 deg | 32 deg (mean) | 1.08 | |
