@@ -101,6 +101,8 @@ def run_families(p, fams, nsig, ideal):
             out[f] = E.dream(W, nz, nsig=nsig)
         elif f == 'fd':
             out[f] = E.fd(W, nz, nsig=nsig)
+        elif f == 'cw':
+            out[f] = E.cw(W, nz, nsig=nsig)
         elif f == 'ideal':
             out[f] = ideal(W, nz, nsig=nsig)
         elif f == 'binary':
