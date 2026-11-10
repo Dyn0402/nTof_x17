@@ -1,6 +1,6 @@
 # Handoff
 
-## Paper II: one paper or two — decisions waiting on Dylan (2026-11-10, dylan-MS-7C84)
+## Paper II split (one paper or two) — updated 2026-11-10 (dylan-Yoga)
 
 **Resume:** read Dylan's choices from the decision page, then act on D11 (which says how much to do).
 
@@ -16,6 +16,10 @@ I + IIa. Nothing was edited. Pending text fixes if he agrees: `paper1/sections/0
 47 ns" wording and the design lesson), `03_setups.tex:73-77` (split the citation), `paper1/main.tex:51` (stale `\requote`),
 `paper2/main.tex` title/abstract/§3 intent, `papers/JOURNAL_STRATEGY.md`, `papers/paper2/OUTLINE_PLAN_2026-11-05.md`. Paper I is
 Overleaf-shared: `papers/overleaf.sh status paper1` and `pull` first.
+
+**Gotchas:** the page's save path was not clicked through (only the empty store was read back); if Dylan says he chose but the
+collection is empty, his view could not save (banner on the page) and he has to give the choices in chat. Dylan decided on 11-09 to
+keep the review as a third paper; this page reopens that at his request, so don't treat 11-09 as final. No background jobs.
 
 ## TPC single-time-bias review paper ("Paper III") and the coupling-study review — updated 2026-11-09 (dylan-MS-7C84)
 
