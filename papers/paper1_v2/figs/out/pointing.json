@@ -1,0 +1,126 @@
+{
+ "d_mm": 233.32,
+ "d_definition": "target to the readout (mesh) plane, along the chamber normal: 200 window + 0.060 Mylar + 5.0 gas + 0.059 cathode + 28.2 drift",
+ "segment_mm": 28.2,
+ "lever_over_segment": 8.27,
+ "lever_mid_over_segment": 7.77,
+ "pointing_mm": {
+  "theta0.99_x0.12": 4.03,
+  "theta0.99_x0.5": 4.06,
+  "theta0.90_x0.12": 3.67,
+  "theta0.90_x0.5": 3.7
+ },
+ "pointing_toy_acceptance_mm": {
+  "theta0.99_x0.12": 4.46,
+  "theta0.99_x0.5": 4.5,
+  "theta0.90_x0.12": 4.06,
+  "theta0.90_x0.5": 4.09
+ },
+ "sigma_x_equiv_to_1deg_mm": 4.07,
+ "theta_equiv_to_0p5mm_deg": 0.123,
+ "theta_equiv_to_0p12mm_deg": 0.029,
+ "position_share_of_pointing_variance": {
+  "theta0.99_x0.12": 0.0009,
+  "theta0.99_x0.5": 0.0151,
+  "theta0.90_x0.12": 0.0011,
+  "theta0.90_x0.5": 0.0183
+ },
+ "scattering_in_front_of_gas": {
+  "4MeV": {
+   "theta0_deg": 5.49,
+   "pointing_rms_mm": 16.8,
+   "equiv_sigma_theta_deg": 4.13
+  },
+  "8MeV": {
+   "theta0_deg": 2.88,
+   "pointing_rms_mm": 8.8,
+   "equiv_sigma_theta_deg": 2.17
+  },
+  "16MeV": {
+   "theta0_deg": 1.48,
+   "pointing_rms_mm": 4.5,
+   "equiv_sigma_theta_deg": 1.11
+  }
+ },
+ "toy": {
+  "n_tracks": 200000,
+  "sigma_theta_deg": [
+   0.0,
+   0.25,
+   0.5,
+   0.75,
+   1.0,
+   1.25,
+   1.5,
+   1.75,
+   2.0,
+   2.25,
+   2.5,
+   2.75,
+   3.0
+  ],
+  "s68_mm": {
+   "0.1": [
+    0.09,
+    1.137,
+    2.267,
+    3.393,
+    4.517,
+    5.624,
+    6.761,
+    7.926,
+    9.055,
+    10.153,
+    11.286,
+    12.465,
+    13.553
+   ],
+   "0.5": [
+    0.452,
+    1.219,
+    2.308,
+    3.422,
+    4.531,
+    5.64,
+    6.796,
+    7.919,
+    9.038,
+    10.181,
+    11.308,
+    12.407,
+    13.537
+   ],
+   "1": [
+    0.904,
+    1.458,
+    2.446,
+    3.516,
+    4.601,
+    5.718,
+    6.869,
+    7.969,
+    9.048,
+    10.163,
+    11.343,
+    12.449,
+    13.565
+   ],
+   "2": [
+    1.806,
+    2.143,
+    2.914,
+    3.873,
+    4.902,
+    5.927,
+    7.021,
+    8.1,
+    9.196,
+    10.305,
+    11.474,
+    12.565,
+    13.66
+   ]
+  }
+ },
+ "notes": "pointing = s68 of the impact parameter in one projection; analytic = normal incidence sqrt(sx^2+(d sth)^2); toy averages isotropic tracks over the efficient area (path d/cos alpha)."
+}

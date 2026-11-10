@@ -1,0 +1,131 @@
+% Paper I, reorganised (v2, 2026-11-10): same content as papers/paper1, ordered along the measurement
+% (calibration from the gas -> angle -> efficiency -> two particles -> the chamber as built), per the audit in
+% papers/paper1_audit/report.html. papers/paper1 is the version shared with Stephan and is NOT changed by this one.
+% Journal: JINST (decided 2026-11-01, papers/JOURNAL_STRATEGY.md); switch to the jinst class.
+% Author list undecided (PAPER_PLAN C4): plain article for now.
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=2.2cm,marginparwidth=2.6cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage[font=small,labelfont=bf,margin=0.5em]{caption}
+\usepackage{booktabs}
+\usepackage{siunitx}
+\usepackage{authblk}
+\usepackage[hidelinks]{hyperref}
+\usepackage[nameinlink]{cleveref}% the whole "figure 1" is the link
+% JINST/IOP house style: "figure 1", "table 1", "section 2", "appendix A", "equation (1)" in running text, never
+% abbreviated, lower case except at the start of a sentence (\Cref). For capitals everywhere, use \Crefname only.
+\crefname{figure}{figure}{figures}\Crefname{figure}{Figure}{Figures}
+\crefname{table}{table}{tables}\Crefname{table}{Table}{Tables}
+\crefname{section}{section}{sections}\Crefname{section}{Section}{Sections}
+\crefname{subsection}{section}{sections}\Crefname{subsection}{Section}{Sections}
+\crefname{appendix}{appendix}{appendices}\Crefname{appendix}{Appendix}{Appendices}
+\crefname{equation}{equation}{equations}\Crefname{equation}{Equation}{Equations}
+% a figure panel, linked as a whole ("figure 1a"): \crefp{fig:x}{a}, \Crefp at the start of a sentence
+\newcommand{\crefp}[2]{\hyperref[#1]{\cref*{#1}#2}}
+\newcommand{\Crefp}[2]{\hyperref[#1]{\Cref*{#1}#2}}
+\usepackage[section]{placeins} % figures stay in their own section (no pile-up at the end)
+\usepackage{drafting}
+% Drift velocity: v_d everywhere (Dylan, feedback note 2026-11-06)
+\newcommand{\vd}{v_\mathrm{d}}
+% A figure that may not exist yet: includes figures/<name>.pdf when it is there, else draws a labelled box, so the
+% paper builds while a figure is still being made. #1 = options of \includegraphics, #2 = name, #3 = what it will show.
+\newcommand{\figorbox}[3][width=\linewidth]{\IfFileExists{figures/#2.pdf}{\includegraphics[#1]{#2}}{%
+  \fbox{\parbox[c][0.33\linewidth][c]{0.92\linewidth}{\centering\small\textbf{Figure in preparation: \texttt{\detokenize{#2}}}\\[4pt]#3}}}}
+% Float placement: allow figure-heavy pages, so figures sit next to their text
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\bottomfraction}{0.7}
+\renewcommand{\textfraction}{0.1}
+\renewcommand{\floatpagefraction}{0.75}
+\setcounter{topnumber}{3}
+\setcounter{bottomnumber}{2}
+\setcounter{totalnumber}{4}
+% \draftnotesfalse   % uncomment for a clean read without notes
+
+\graphicspath{{figures/}}
+
+\title{Resistive Micromegas TPCs for an X17 Search: design, production and performance}
+\author{\tbw{author list -- undecided (C4)}}
+\date{Outline draft, \today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\askDylan{Draft abstract (2026-11-10), written from the results as they stand in this version; every number is in the
+body. Rewrite freely.}
+We describe compact resistive-strip Micromegas time projection chambers built to track the $e^+e^-$ pairs of an X17
+search at the CERN n\_TOF facility, and their performance on a cosmic-ray bench and in the SPS H4 beam. Each chamber
+has an active area of $40\times36$\,cm$^2$ and a 30\,mm drift gap, and measures a three-dimensional track segment
+from the waveforms of two strip views that share one plane of pads. Because a chamber sees a short segment far from
+the target, the quantity that matters is the track angle. With a reconstruction that fits the full
+strip-by-time waveform image, a single chamber measures it to 1.0\textdegree{} in one view and 0.9\textdegree{} in
+the other, independent of the track angle within $\pm20$\textdegree, of the gain over an order of magnitude and of the
+drift field; the reference telescope contributes at most 0.14\textdegree. The drift velocity and the drift gap are
+calibrated from the data themselves, in two independent ways that agree to 2\,\%, which makes each chamber a monitor
+of the water and oxygen in its gas. The best chamber detects 94.8\,\% of single tracks over its full active area, of
+which 0.6 percentage points are lost to the chamber hardware and the rest to the reconstruction of real ionisation,
+mostly $\delta$-rays. The two views carry equal charge, which pairs the segments of two particles in one chamber
+correctly in 97.7\,\% of events. We also report an intrinsic position resolution of about 120\,\textmu m, an event
+time resolution of 40\,ns, a bow of 1.3--1.9\,mm of every readout board and its correction, the field fringe at the
+chamber sides, and the production defects that separate two good chambers from three.
+\end{abstract}
+
+\ifdraftnotes
+\listoftodos[Open items]
+\clearpage
+% TEMPORARY table of contents for drafting (Dylan 2026-11-06): delete before publication
+% (JINST makes its own). It is hidden with the other draft notes by \draftnotesfalse.
+\tableofcontents
+\clearpage
+\fi
+
+\input{sections/01_introduction}
+\input{sections/02_requirement}
+\input{sections/03_design}
+\input{sections/04_setups}
+\input{sections/05_gas}
+\input{sections/06_tracking}
+\input{sections/07_efficiency}
+\input{sections/08_two_particles}
+\input{sections/09_straight_track}
+\input{sections/10_as_built}
+\input{sections/11_conclusions}
+
+\appendix
+\input{sections/A1_efficiency}
+\input{sections/A2_discharges_currents}
+\input{sections/A3_gain_timing}
+\input{sections/A4_bow}
+\input{sections/A5_beam_test}
+\input{sections/A6_moved}
+
+\section*{Acknowledgements}
+\tbw{Funding, CERN SPS H4 and n\_TOF, the RD51 / MPGD workshop, \ldots}
+
+\paragraph{Use of AI tools.}
+\askDylan{Placement follows IOP/JINST (an AI statement in the Acknowledgements; Elsevier/NIM~A, for Paper~II, wants
+a ``Declaration of generative AI and AI-assisted technologies in the manuscript preparation process'' before the
+references). Both publishers also ask for AI used \emph{in the research} to be described in the methods. No AI model is
+part of the reconstruction or of any measurement here, so we propose no methods text unless the editor asks
+(Dylan 2026-11-02: keep an open mind). Code release: Zenodo (CERN's free repository) would give the analysis code and
+its history a citable DOI; to decide. Wording to agree among all authors.}
+This work made extensive use of Claude Code (Anthropic), an AI agent that writes and runs code, with the Claude
+Opus, Fable, Sonnet and Haiku models (versions 4.6--5.5), from November 2025 to the submission of this paper. We state
+its role in full because it was large. Under the direction of the authors it wrote most of the analysis software:
+the waveform reconstruction of the companion paper, the calibrations, and the efficiency, resolution, gas and timing
+studies. It ran those analyses on the CERN batch system, proposed and carried out cross-checks, found errors in
+earlier results, made every figure from scripts, and drafted much of the text of this paper, which the authors then
+revised. Of the 1\,353 changes to the analysis repository, 1\,131 are marked as written with it.
+The authors decided what to measure, the strategy and the conventions, and made every analysis choice. We verified
+the results through independent cross-checks of each headline number, a complete from-scratch re-processing of the
+data, event displays inspected by eye for every class of lost track, and Monte Carlo closure tests of the
+reconstruction. No data, measurement or figure was generated or altered by an image or language model: every figure is
+produced by a script from the recorded data. The code and its full history are available from the authors
+[repository / DOI]. The authors take full responsibility for the content of this paper.
+
+\bibliographystyle{unsrt}
+\bibliography{refs}
+\end{document}

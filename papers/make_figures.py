@@ -33,7 +33,7 @@ import matplotlib.pyplot as plt
 
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parent
-PAPERS = ["paper1", "paper2"]
+PAPERS = ["paper1", "paper1_v2", "paper2"]
 EXTS = (".pdf", ".png", ".jpg")
 
 STATE_COLOUR = {"ready": "#2e7d32", "partial": "#ef6c00", "open": "#c62828",

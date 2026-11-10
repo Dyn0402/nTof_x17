@@ -1,0 +1,277 @@
+# Paper I v2 figure manifest -- read by ../make_figures.py (paper1_v2).
+# Entries copied from ../paper1/figures.toml are unchanged (same source, same producer). New figures of the
+# reorganisation (2026-11-10) have their script in papers/paper1_v2/figs/ and their output in figs/out/.
+# Rule: nothing that shows a position, angle or depth from combined_hits times may be "current".
+
+# --- reused from paper1 ----------------------------------------------------
+
+[fig.experiment_layout]
+title = "The measurement the chambers were built for, schematic: (a) top-down, target, four TPCs at 20 cm, two scintillator layers each, one pair; (b) one chamber in section (nominal 30 mm gap)"
+state = "current"
+source = "papers/paper1/figs/out/experiment_layout.pdf"
+producer = ".venv/bin/python papers/paper1/figs/make_experiment_layout.py"
+note = "2026-11-06: new Fig. 1 (Dylan, feedback note Fig. 1): top-down layout + the old tpc_principle panel (a) as the blow-up. Distances rounded from MX17_Full_Geant SimConfig.hh; no data."
+
+[fig.chamber_stack]
+title = "MX17 chamber cross-section: (a) the whole chamber to scale in z; (b) amplification region and readout board enlarged"
+state = "current"
+source = "papers/paper1/figs/out/chamber_stack.pdf"
+producer = ".venv/bin/python papers/paper1/figs/make_chamber_stack.py"
+note = "2026-11-03: replaces the pyvista render with a 2D technical cross-section; every number from docs/detector_spec/spec.py, dagger = assumed/open there. Layer order below the strips follows the response model."
+
+[fig.two_velocities]
+title = "Two drift velocities and the gap: the head-on stack (T = g / v), the reference ladder (slope = v, no gap) and g = v_reference x T per field"
+state = "current"
+source = "rerun/paper1_gas/figures/two_velocities.pdf"
+section_state = "partial"
+note = "2026-11-02 (Dylan's outline). det3 6-27 drift scan, pass 1. (a) the in30 head-on stacks (rc_diffusion.stack, |tan_x| < 0.03, rr1 waveforms, unsaturated) with the s4f_fit model at its stored sigma_0, Dd, T, dt (A refitted, linear); markers = fitted column start dt and end dt + T. (b) M3 ladder: binned medians of the fitted w - w0 against the bow-corrected M3 slope, X filled / Y open, lines slope v_drift x kw. (c) g = v_ladder x T: 24.9 +- 2.9 / 27.9 +- 0.5 / 27.4 +- 1.1 / 29.4 +- 0.8 mm at 177 / 248 / 319 / 390 V/cm, mean 28.2 +- 0.5 mm (chi2 4.1/3), against the strip-extent gap 28.19 +- 0.19 (S4 re-check). NB: the 29 [28, 30] mm in the story is the gap profile of the timing-v Magboltz fit (results/summary.json scan.profile), not this ratio. Inputs copied from EOS x17rerun/paper1_gas (stacks, fit_v1) and Analysis_pass1 (03_angles, bundles); numbers in results/twov.json. Checklist pass 2026-11-02: full width (6.1 in drawn, 6.22 in PDF), fonts embedded; titles -> (a)-(c), one field legend above, field ramp from det3 tints, (b) y label w - w0. Numbers unchanged. 2026-11-03: field colours viridis 0-0.82 (no chamber colour); 'strip extent' relabelled 'geometric gap L/tan(theta)'."
+producer = "cd rerun/paper1_gas && ../../.venv/bin/python pg_twov.py extract <data dir> && ../../.venv/bin/python pg_twov.py fig"
+
+[fig.gas_drying]
+title = "Bench gas drying over the night of 6-26 (C, D): measured drift velocity, Magboltz-inverted water, one time shape"
+state = "current"
+source = "rerun/paper1_gas/figures/gas_drying.pdf"
+section_state = "partial"
+note = "2026-11-02, from rerun/paper1_gas/results/gas.json (no recomputation). (a) water from the anchored M3 ladder (k v_lad, k = timing stack / ladder on the attachment-free rows: det6 0.970 +- 0.013, det7 0.984 +- 0.011) through Magboltz: det6 1.47 -> 0.76 %, det7 0.68 -> 0.35 % (01:00 -> 15:00), dashed = afternoon plateaus; grey = the golden rows 06:00-10:20. (b) excess over plateau, det6 / 2.17: r = 0.975. (c) det3 6-27 timing-v water per field (0.87 / 0.97 / 0.91 / 1.05 %) on the one-water fit 0.97 % [0.95, 0.99]; the 390 V/cm point sits near the velocity maximum, hence its wide interval. Checklist pass 2026-11-02: full width (6.1 in drawn, 6.22 in PDF), fonts embedded; titles -> (a)-(c), in-plot labels removed except det6 / 2.17, one legend above. Numbers unchanged. 2026-11-03: (c) dropped; left = measured k v_lad (a) over Magboltz-inverted water (b), shared time axis; right = excess over plateau."
+producer = "cd rerun/paper1_gas && ../../.venv/bin/python pg_figs.py drying"
+
+[fig.attachment_charge]
+title = "Charge against drift time: flat on the bench (A), falling at SPS (E, CF4 and CO2 mixtures) = attachment; gas-fit models with and without O2"
+state = "current"
+source = "rerun/paper1_spsfigs/figures/attachment_charge.pdf"
+producer = "cd rerun/paper1_spsfigs && ../../.venv/bin/python attach_charge.py  # stacks from EOS x17rerun/sps_gasfit/stacks copied to WORK_DATA/claude-jobs/77eb854f/gas/stacks"
+note = "2026-11-03: new (Dylan: the key plot showing attachment at SPS vs the bench). Head-on strip-sum stacks (pass-1 waveforms), models via gasfit.fit_stack at the verdict composition, 27.9 mm."
+
+[fig.efficiency_map]
+title = "Detection efficiency maps, all five chambers (pass 1, plateau pools, 8 mm disk)"
+state = "current"
+source = "papers/paper1/figures/efficiency_map.pdf"
+producer = ".venv/bin/python rerun/paper1_figs/make_effmap_figure.py --root <mergedroot> --rows <mergedroot>/results/rows.csv  # mergedroot = paper1_eff for 28 A rows + paper1_eff_twotrack for the 2 golden rows ($WORK_DATA/claude-jobs/twotrack/mergedroot)"
+note = "Rebuilt 2026-10-31 on pass 1: the loss budget's denominator (every measured M3 ray in the active area) and its 'detected'; pools in rerun/effbudget/pass1/results/map_pools.json; det4 is its golden row alone. Was the 07-14 hits figure 20. Restyled 2026-11-02 (paper_style): det3 large with det2/det4/det6/det7 small (2x2), shared colour bar; titles give the golden-row interior efficiency the text quotes and the pooling (rows, rays); pixels outside the active area masked; interior box 30 mm from the x sides / 8 mm from the y sides; det7 'X ch 0-255 not quoted' boxed. CSV figures/efficiency_map.csv.gz. Checklist pass 2026-11-02: full width (6.1 in drawn, 6.22 in PDF), fonts embedded; titles -> (a) det3 ... (e) det7; golden-row efficiencies move to the caption (rerun/paper1_figs/results/efficiency_map.json); det7 X ch 0-255 veiled; maps rasterized 300 dpi. Numbers unchanged. 2026-11-03 (two-track): chamber A golden rows from Analysis_pass1_twotrack + x17rerun/paper1_eff_twotrack."
+
+[fig.loss_budget]
+title = "Where the chamber A single-track inefficiency goes, full active area (% of single tracks, by class)"
+state = "current"
+source = "rerun/effbudget/single/figures/loss_budget.pdf"
+producer = ".venv/bin/python rerun/effbudget/single/single_track_area.py --root $WORK_DATA/claude-jobs/twotrack --analysis Analysis_pass1_twotrack --eff paper1_eff_twotrack --two-particle-json papers/paper1/figs/data/two_particle_eff.json && .venv/bin/python rerun/effbudget/single/single_track.py --root $WORK_DATA/claude-jobs/twotrack --analysis Analysis_pass1_twotrack --eff paper1_eff_twotrack --m3root $WORK_DATA/claude-jobs/17c92c46 && .venv/bin/python rerun/effbudget/single/single_track_v2.py --root $WORK_DATA/claude-jobs/twotrack --analysis Analysis_pass1_twotrack --eff paper1_eff_twotrack --m3root $WORK_DATA/claude-jobs/17c92c46 && .venv/bin/python rerun/effbudget/single/fiducial_variants.py --root $WORK_DATA/claude-jobs/twotrack --analysis Analysis_pass1_twotrack --eff paper1_eff_twotrack && .venv/bin/python rerun/effbudget/single/make_figures.py"
+note = "2026-11-02, paper_style; both golden rows; edge-zone classes are the budget ladder (no A1 waveform class outside the interior). Checklist pass 2026-11-02: full width (6.1 in drawn, 6.22 in PDF), fonts embedded; det3 dot plot with Poisson errors, groups as y-axis headings (no borrowed chamber colours), CSV gains pct_err. Numbers unchanged. 2026-11-03 (two-track): chamber A golden rows from Analysis_pass1_twotrack + x17rerun/paper1_eff_twotrack. fiducial_variants.py is the producer of results/fiducial_variants.json (the three areas)."
+
+[fig.edge_turnon]
+title = "The edge zone (chamber A): efficiency turn-on, angle bias of the perpendicular view, column duration"
+state = "current"
+source = "papers/paper1/figures/edge_turnon.pdf"
+section_state = "partial"
+producer = ".venv/bin/python rerun/paper1_figs/edge_angles.py --rays-root $WORK_DATA/claude-jobs/twotrack/paper1_eff_twotrack/budget --angles-root $WORK_DATA/claude-jobs/twotrack/Analysis_pass1_twotrack --dets mx17_3 --merge --phys --out rerun/paper1_figs/results/edge_angles_phys.json && .venv/bin/python rerun/paper1_figs/make_edge_figure.py"
+note = "Rebuilt 2026-10-31 on pass 1 (D4: wft angles, M3 rays, FA column duration). Replaces the 07-12 hits dashboard. The x sides (no passivation) carry a drift-field fringe over ~20-30 mm; the passivated y sides are sharp beyond 5 mm (rerun/paper1_figs/README.md). Restyled 2026-11-02 (paper_style): linear 0-60 mm axis (was symlog), 0-30 mm edge zone shaded, one legend for the four sides above the panels (x solid, passivated y dashed/open). Checklist pass 2026-11-02: full width (6.1 in drawn, 6.22 in PDF), fonts embedded; titles -> (a)-(c), x labels on every panel, error bars on (a) (binomial) and (b) (1.2533 s68/sqrt(n_det), n_det = rays x eff: an estimate), one legend above. Numbers unchanged. 2026-11-03: distance to the physical chamber edge on all four sides from 0 mm (edge_angles.py / edge_study.py --phys -> results/edge_*_phys.json; old JSONs reproduce exactly); dotted lines where the passivation ends; (b) masked where eff < 30 %. 2026-11-03 (two-track): chamber A golden rows from Analysis_pass1_twotrack + x17rerun/paper1_eff_twotrack."
+
+[fig.eff_vs_radius]
+title = "Chamber A efficiency against the matching radius (Runs 1+2, interior): any candidate within R, with the accidental rate (appendix A4)"
+state = "current"
+source = "rerun/effbudget/single/figures/eff_vs_radius.pdf"
+producer = ".venv/bin/python rerun/effbudget/single/radius.py --root $WORK_DATA/claude-jobs/twotrack --eff paper1_eff_twotrack && .venv/bin/python rerun/effbudget/single/make_figures.py"
+note = "2026-11-02, pass 1, both det3 golden rows; R = 5 mm is the knee (9 core sigma, accidentals 0.07 %). rerun/effbudget/single/README.md section 3. Checklist pass 2026-11-02: 4.3 in drawn (4.4 in PDF), fonts embedded; det3 palette only (filled = multi-track credit, open = production pick, solid/dashed = golden rows), binomial errors, one legend. Numbers unchanged. 2026-11-03: Runs 1 and 2 summed (counts); legend relabelled. 2026-11-03 (two-track): chamber A golden rows from Analysis_pass1_twotrack + x17rerun/paper1_eff_twotrack."
+
+[fig.residuals]
+title = "Chamber A residual distributions at the mesh: per view and radial, with the event-mixed accidentals"
+state = "current"
+source = "rerun/effbudget/single/figures/residuals.pdf"
+producer = ".venv/bin/python rerun/effbudget/single/radius.py --root $WORK_DATA/claude-jobs/twotrack --eff paper1_eff_twotrack && .venv/bin/python rerun/effbudget/single/make_figures.py"
+note = "2026-11-02; Dylan: show the full distribution behind the R = 5 mm choice. Checklist pass 2026-11-02: full width (6.1 in drawn, 6.22 in PDF), fonts embedded; (a)/(b), the two golden rows summed per view, legend off the data. Numbers unchanged. 2026-11-03 (two-track): chamber A golden rows from Analysis_pass1_twotrack + x17rerun/paper1_eff_twotrack."
+
+[fig.spark_deadtime]
+title = "Efficiency and charge against the time since the previous discharge: no dead time"
+state = "current"
+source = "rerun/paper1_ops/figures/spark_deadtime.pdf"
+producer = ".venv/bin/python rerun/paper1_ops/make_report.py --spark <spark> --telgain <tel_gain> --spsgain <sps_gain> --hitsgain <hits_gain>  # inputs: EOS cosmic_bench/x17rerun/paper1_ops/{spark,tel_gain,sps_gain,hits_gain}, fetched over xrootd (70 MB); spark.sub (lxplus condor) makes them"
+note = "Rebuilt 2026-10-31 on pass 1, all five chambers (was the 07 det3 hits figure 44). Dead time per discharge integrated below 0.1 s. Restyled 2026-11-02 (paper_style): det3 leads; det2/det6/det7 lighter; det4 in its own small panel (c); bootstrap errors on the charge ratio (summary.json deadtime.*.q_err, new); the dead-time values left the legend (report.html table). Checklist pass 2026-11-02: full width (6.1 in drawn, 6.22 in PDF), fonts embedded; titles -> (a)-(c), one legend above, discharge counts out of the legend (caption), (a)/(b) share 0.8-1.2. Numbers unchanged."
+
+[fig.currents_vs_hv]
+title = "Resistive-electrode current of chamber A against HV: full range and the leakage floor"
+state = "current"
+source = "rerun/paper1_ops/currents/results/figures/currents_vs_hv.pdf"
+producer = "WORK_DATA=/media/ucla/work .venv/bin/python rerun/paper1_ops/currents/hv_currents.py  # HV logs in $WORK_DATA/claude-jobs/17c92c46/hv"
+note = "2026-11-02; n_TOF-batch boards only (from 6-17; boards by run-config description; 6-20 weekend excluded); one curve per night, det3 6-27 fit I = 1.05 uA x 2^((V-490)/13.3 V). rerun/paper1_ops/currents/README.md. Restyled 2026-11-02 (paper_style): board colours from the palette, one legend entry per board, nights by marker, reference slope gain x2 per 16.7 V (dotted), det3 6-27 fit kept. Checklist pass 2026-11-02: 4.3 in drawn (4.4 in PDF), fonts embedded; one legend above (boards by colour, nights by marker), fixed night-marker order (was set-order dependent). Numbers unchanged. 2026-11-03: main text = chamber A only, y linear, (b) zoom of the ~0.2 uA floor; all boards -> currents_vs_hv_all (appendix A3)."
+
+[fig.currents_vs_hv_all]
+title = "Resistive-electrode current against HV, every board (appendix)"
+state = "current"
+source = "rerun/paper1_ops/currents/results/figures/currents_vs_hv_all.pdf"
+producer = "WORK_DATA=/media/ucla/work .venv/bin/python rerun/paper1_ops/currents/hv_currents.py"
+note = "2026-11-03: appendix A3: all boards, y linear."
+
+[fig.det_a_timeseries]
+title = "Chamber A, Runs 1+2 against time: drift velocity (water), gain and saturation, efficiency, position core, angle s68, time resolution"
+state = "current"
+source = "rerun/paper1_timeseries/figures/det_a_timeseries.pdf"
+producer = "cd rerun/paper1_timeseries && ../../.venv/bin/python timeseries.py --data $WORK_DATA/claude-jobs/twotrack/timeseries_tt --eff-events ../effbudget/single/results && ../../.venv/bin/python make_report.py"
+note = "New 2026-11-03 (Dylan: Runs 1+2 is the paper's most important data set; everything against time). Same definitions as the integrated numbers, which the code reproduces (single-track eff 95.72 / 94.81 %, core 0.547 / 0.531 mm, s68 0.987 / 0.900 deg, (tX-tY)/sqrt2 22.4 / 22.2 ns). Bins: 30 min (v, efficiency, position, angle), 20 min (timing), 10 min (charge). Flat: efficiency, position, angle, timing (|z| <= 1.7). Moving: ladder v 35.80 (Run 1, flat) -> 36.64 um/ns end of Run 2 (water 0.99 -> 0.94 %), column v agrees inside Run 2 (+1.1 / +1.3 %) but not on the 0.9 % step between the runs; gain +4 % step at the run boundary (saturated 36 -> 39 %). rerun/paper1_timeseries/report.html. 2026-11-03 (two-track): chamber A golden rows from Analysis_pass1_twotrack + x17rerun/paper1_eff_twotrack."
+
+[fig.timing]
+appendix_candidate = "Dylan 2026-11-02: keep in the body for now; maybe move to an appendix later (see how the paper reads)"
+title = "Chamber A time resolution: vs resist HV and the uncorrelated part vs signal size (all rows and Runs 1+2 at one HV); the drift-field scan is timing_driftscan (A5)"
+state = "current"
+source = "rerun/paper1_timing/figures/timing.pdf"
+section_state = "partial"
+producer = "cd rerun/paper1_timing && ../../.venv/bin/python matched_rows.py jobs.txt --out results/rows_matched.csv --only sat_det3,<Run 2 key> --analysis $WORK_DATA/claude-jobs/twotrack/ttroot/Analysis_pass1 --rows-dir <timing_rows> --merge results/rows_matched.csv && ../../.venv/bin/python walk_snr.py --rows <timing_rows> --events $WORK_DATA/claude-jobs/twotrack/ttroot/Analysis_pass1 && ../../.venv/bin/python make_report.py"
+note = "Pass 1 (2026-10-31): column start of the strip sum (edge25), M3-matched tracks; event time 40-46 ns (det2/3/7), per view 22-28 ns, common 35-40 ns; replaces the hits 33 ns. rerun/paper1_timing/README.md. Restyled 2026-11-02 (paper_style): palette; one chamber legend above the panels, in-panel legends only for line styles; (c) ordered det3, det2, det6, det7, det4; det4 at SPS grey open markers; x axis of (a) is the resist HV. Checklist pass 2026-11-02: full width (6.1 in drawn, 6.22 in PDF), fonts embedded; titles -> (a)-(c), one legend above, (b) y range to 700 ns (det4 SPS no longer clipped). Numbers unchanged. 2026-11-03: chamber A only; all chambers -> timing_all (appendix A3). 2026-11-03 (Dylan: drift-scan timing; is (b) walk?): (c) new, the 490 V drift scan from rows_matched.csv (event time 114 -> 38 ns, (X-Y)/sqrt2 46 -> 22 ns from 106 to 390 V/cm; event time in drift distance flat 1.3-1.5 mm, right axis, v from gas.json); (b) adds Runs 1+2 binned in per-track early amplitude at one HV (open squares; on the all-row curve within 0.89-1.01): signal-to-noise, not walk (walk_snr.py -> results/walk_snr.json: walk correction moves sigma_evt 40.7 -> 40.5 ns). 2026-11-03 (two-track): chamber A golden rows from Analysis_pass1_twotrack + x17rerun/paper1_eff_twotrack."
+
+[fig.timing_driftscan]
+title = "Chamber A time resolution against the drift field at 490 V (appendix A5): event time, (X-Y)/sqrt2, event time in mm of drift"
+state = "current"
+source = "rerun/paper1_timing/figures/timing_driftscan.pdf"
+producer = "cd rerun/paper1_timing && ../../.venv/bin/python matched_rows.py jobs.txt --out results/rows_matched.csv --only sat_det3,<Run 2 key> --analysis $WORK_DATA/claude-jobs/twotrack/ttroot/Analysis_pass1 --rows-dir <timing_rows> --merge results/rows_matched.csv && ../../.venv/bin/python walk_snr.py --rows <timing_rows> --events $WORK_DATA/claude-jobs/twotrack/ttroot/Analysis_pass1 && ../../.venv/bin/python make_report.py"
+note = "2026-11-03: the former panel (c) of timing, moved to appendix A5 (Dylan: details in a short appendix section). 2026-11-03 (two-track): chamber A golden rows from Analysis_pass1_twotrack + x17rerun/paper1_eff_twotrack."
+
+[fig.timing_all]
+title = "Time resolution, all chambers and E at SPS (appendix A3)"
+state = "current"
+source = "rerun/paper1_timing/figures/timing_all.pdf"
+producer = "cd rerun/paper1_timing && ../../.venv/bin/python matched_rows.py jobs.txt --out results/rows_matched.csv --only sat_det3,<Run 2 key> --analysis $WORK_DATA/claude-jobs/twotrack/ttroot/Analysis_pass1 --rows-dir <timing_rows> --merge results/rows_matched.csv && ../../.venv/bin/python walk_snr.py --rows <timing_rows> --events $WORK_DATA/claude-jobs/twotrack/ttroot/Analysis_pass1 && ../../.venv/bin/python make_report.py"
+note = "2026-11-03: the previous all-chamber timing figure, renamed. 2026-11-03 (two-track): chamber A golden rows from Analysis_pass1_twotrack + x17rerun/paper1_eff_twotrack."
+
+[fig.bow_profiles]
+title = "Mesh height across the chamber from position residuals vs reference slope, X and Y strips, five chambers"
+state = "current"
+source = "rerun/paper1_res/figures/bow_profiles_2d.pdf"
+note = "2026-11-03: drawn from the 2-D fit (fb_bow_maps xcheck.py on the final tables, the same estimator the text of 08b quotes); depth errors = bootstrap + four-term scatter/2 (summary_paper.json). The earlier 1-D binned-profile version (bow_pass1.py plot, bow_profiles.pdf / bow_closure.pdf) is kept as files but no longer used."
+producer = ".venv/bin/python rerun/paper1_res/bow_2d_fig.py summary && .venv/bin/python rerun/paper1_res/bow_2d_fig.py plot  # reads rerun/model_audit/followups/fb_bow_maps/results_final (final_tables.py build/run/gate on the final tables; --results to override)"
+
+[fig.det4_stripes]
+title = "Chamber E: X-view efficiency map at SPS (run 63) with the resolution region R and comparison patches R2-R6"
+state = "current"
+source = "papers/paper1/figures/det4_stripes.pdf"
+section_state = "ready"
+producer = ".venv/bin/python rerun/paper1_figs/det4_stripes.py --rays <paper1_eff>/budget/mx17_det4_day_6-24-26/long_run/mx17_4/rays_det4.parquet --tel <x17rerun/sps_audit/tel>  # both fetched from EOS over xrootd"
+note = "Rebuilt 2026-10-31 on pass 1 (was a placeholder on the retired hits alignment). Bench and SPS stripe positions agree on 82-85 % of 1 mm bins (run63), mirror 52 %. Stephan: production cause? Restyled 2026-11-02 (paper_style): bench in det4 grey, SPS run63 / run53 in ps.GAS (CF4 / CO2), legend handles as thick as the curves; det4_stripes.json reproduces (82.3 / 51.9 / 84.8 %). Checklist pass 2026-11-02: full width (6.1 in drawn, 6.22 in PDF), fonts embedded; (a) bench whole chamber with the SPS range shaded, new (b) zoom with bench + both SPS runs overlaid, one legend above. Numbers unchanged. 2026-11-03: (a) 2D X-view efficiency map of E at SPS run 63 with the profile-selection box, (b) bench + SPS profile; old two-row version kept as det4_stripes_profiles."
+
+# Pass 1 (2026-10-31 picks); restyled 2026-11-02: class names of the A1 table as titles, no fractions, the paper's
+# display style (papers/paper1/figs/evd_style.py). Produced locally from copies of EOS (rerun/paper1_figs/a1_displays.py).
+
+[fig.attachment]
+appendix_candidate = "Dylan 2026-11-02: keep in the body for now; maybe move to an appendix later (see how the paper reads)"
+title = "What gas chamber E had at SPS: water and O2 of every run group (CO2 and CF4 mixtures), bench range for scale"
+state = "current"
+section_state = "partial"
+source = "rerun/paper1_spsfigs/figures/attachment.pdf"
+producer = "cd rerun/paper1_spsfigs && ../../.venv/bin/python make_figs.py --only attachment"
+note = "Restyled 2026-11-02 (paper_style; gas legend from ps.GAS; unrotated run ticks). SPS from rerun/sps_gasfit/results/verdict.json (4127f9ea, gap 27.9 mm; at det4's geometric 28.6 mm water is ~0.1-0.2 % lower, O2 ~30-40 ppm lower). Bench chambers no longer drawn point by point (they are gas_vE / gas_drying): only the golden-row range 0.42-1.00 % as a grey band; det6 early-night O2-equivalent 370-600 ppm band in (b). Checklist pass 2026-11-02: full width (6.1 in drawn, 6.22 in PDF), fonts embedded; titles and band labels removed, (a)/(b), one legend above. Numbers unchanged. 2026-11-03: x = run time with axis break; bands darker and labelled; the O2 band (det6 early-night estimate) is not like-for-like: consider dropping."
+
+# --- new in v2 -------------------------------------------------------------
+
+[fig.pointing]
+title = "Why the angle: to-scale side view and toy pointing resolution at the target against angular resolution"
+state = "current"
+source = "papers/paper1_v2/figs/out/pointing.pdf"
+producer = ".venv/bin/python papers/paper1_v2/figs/make_pointing.py"
+note = "toy; numbers in out/pointing.json"
+
+[fig.readout_layout_cd]
+title = "Readout board from the Gerber files, panels (c), (d) of the chamber figure (fan-out panel dropped)"
+state = "current"
+source = "papers/paper1_v2/figs/out/readout_layout_cd.pdf"
+producer = ".venv/bin/python papers/paper1_v2/figs/make_readout_layout_cd.py"
+note = "copy of papers/paper1/figs/make_readout_layout.py; sits under chamber_stack in one float"
+
+[fig.setups]
+title = "The two setups in one figure: (a) cosmic bench, (b) beam test"
+state = "current"
+source = "papers/paper1_v2/figs/out/setups.pdf"
+producer = ".venv/bin/python papers/paper1_v2/figs/make_setups.py"
+note = "calls the paper1 bench and SPS drawing scripts; 'reference planes' instead of 'M3'"
+
+[fig.muon_data_model]
+title = "One chamber-A muon (Run 1, event 7884), both views: data and the forward model at the fit"
+state = "current"
+source = "papers/paper1_v2/figs/out/muon_data_model.pdf"
+producer = "WORK_DATA=~/work_data .venv/bin/python papers/paper1_v2/figs/make_displays_v2.py --only muon_data_model"
+note = "WORK_DATA=~/work_data; replaces reco_example + evd_showcase(a)"
+
+[fig.gas_vE_all]
+title = "Drift velocity against field: chamber A's scan and the long-run points of B-E, each with its Magboltz water curve"
+state = "current"
+source = "papers/paper1_v2/figs/out/gas_vE_all.pdf"
+producer = ".venv/bin/python papers/paper1_v2/figs/make_gas_vE_all.py"
+note = "needs figs/_gas_labels.py next to it; water fractions from rerun/paper1_gas/results/summary.json"
+
+[fig.angle_resolution_v2]
+title = "Angular resolution: residual distribution (A), s68 against angle (A, B), all five chambers"
+state = "current"
+source = "papers/paper1_v2/figs/out/angle_resolution_v2.pdf"
+producer = "WORK_DATA=~/work_data .venv/bin/python papers/paper1_v2/figs/make_angle_resolution_v2.py"
+note = "WORK_DATA=~/work_data; same selection and statistic as rerun/paper1_res/angle_resolution.py (0.987/0.899 deg); numbers in out/angle_resolution_v2.json"
+
+[fig.position_res]
+title = "Position resolution: bench (a, b) and beam (c, d, e) in one figure"
+state = "current"
+source = "papers/paper1_v2/figs/out/position_res.pdf"
+producer = ".venv/bin/python papers/paper1_v2/figs/make_position_res.py"
+note = "bench inputs rerun/paper1_floor/results/position_ms_bins.json; beam ~/work_data/sps_region"
+
+[fig.gain_scan]
+title = "Chamber A against the resist HV: charge and saturation, angle, position, time (reference-matched tracks)"
+state = "current"
+source = "papers/paper1_v2/figs/out/gain_scan.pdf"
+producer = ".venv/bin/python papers/paper1_v2/figs/make_gain_scan.py"
+note = "replaces hv_metrics, timing(a), hv_metrics_extra(a,c); numbers and the three resolved contradictions in out/gain_scan.json"
+
+[fig.hv_scan_v2]
+title = "HV scans of chambers A-D on one x range (400-530 V)"
+state = "current"
+source = "papers/paper1_v2/figs/out/hv_scan_v2.pdf"
+producer = ".venv/bin/python papers/paper1_v2/figs/make_hv_scan_v2.py"
+note = "same data as hv_scan; plateau band widened to half the step so C's shows"
+
+[fig.two_particle_ab]
+title = "Two particles in chamber A: separate in both views; merged in one projection"
+state = "current"
+source = "papers/paper1_v2/figs/out/two_particle_ab.pdf"
+producer = "WORK_DATA=~/work_data .venv/bin/python papers/paper1_v2/figs/make_displays_v2.py --only two_particle_ab"
+note = "the first two rows of two_particle"
+
+[fig.pairing]
+title = "X/Y pairing: charge balance, true and swapped pairings, fraction paired against charge ratio, arrival-time difference"
+state = "current"
+source = "papers/paper1_v2/figs/out/pairing.pdf"
+producer = ".venv/bin/python papers/paper1_v2/figs/make_pairing.py --root ~/work_data/claude-jobs/twotrack --analysis Analysis_pass1_twotrack --eff paper1_eff_twotrack"
+note = "replaces charge_balance + xy_pairing; numbers out/pairing.json; bookkeeping out/two_particle_numbers.md"
+
+[fig.not_straight]
+title = "Four chamber-A events that are not one straight track"
+state = "current"
+source = "papers/paper1_v2/figs/out/not_straight.pdf"
+producer = "WORK_DATA=~/work_data .venv/bin/python papers/paper1_v2/figs/make_displays_v2.py --only not_straight"
+note = "existing loss-class picks (delta, saturated blob, shower, non-particle deposit)"
+
+[fig.gas_scatter]
+title = "Toy: multiple scattering of 3-16 MeV electrons in the drift gas and what a straight-line fit makes of it"
+state = "current"
+source = "papers/paper1_v2/figs/out/gas_scatter.pdf"
+producer = ".venv/bin/python papers/paper1_v2/figs/make_gas_scatter.py"
+note = "Highland width, Gaussian model; numbers out/gas_scatter.json"
+
+[fig.bow]
+title = "The bow from data: mesh-height map and profiles of chamber A, dish depth of the five chambers, closure"
+state = "current"
+source = "papers/paper1_v2/figs/out/bow.pdf"
+producer = ".venv/bin/python papers/paper1_v2/figs/make_bow.py"
+note = "reproduces fb_bow_maps/results_final/summary_paper.json; replaces bow_closure in the body"
+
+[fig.loss_gallery_1]
+title = "Loss classes, panels (a)-(g): the first seven rows of the loss table"
+state = "current"
+source = "papers/paper1_v2/figs/out/loss_gallery_1.pdf"
+producer = "WORK_DATA=~/work_data .venv/bin/python papers/paper1_v2/figs/make_displays_v2.py --only loss_gallery"
+note = "with loss_gallery_2 replaces the 14 single displays and the 6-panel gallery"
+
+[fig.loss_gallery_2]
+title = "Loss classes, panels (a)-(g): the last seven rows of the loss table"
+state = "current"
+source = "papers/paper1_v2/figs/out/loss_gallery_2.pdf"
+producer = "WORK_DATA=~/work_data .venv/bin/python papers/paper1_v2/figs/make_displays_v2.py --only loss_gallery"
+
+[fig.two_track_separation]
+title = "Two-track separation from overlaid real muons: probability of resolving both against separation; opening-angle resolution"
+state = "placeholder"
+section_state = "open"
+note = "needs a batch run on the final reconstruction: papers/paper1_v2/figs/two_track_batch/ (see its README)"
+producer = ".venv/bin/python papers/paper1_v2/figs/make_two_track_separation.py"

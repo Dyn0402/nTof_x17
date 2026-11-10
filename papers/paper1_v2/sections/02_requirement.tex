@@ -1,0 +1,53 @@
+\section{What the tracker must measure: the angle}\label{sec:requirement}
+\sectionstate{partial}{new section (Dylan 2026-11-10: ``a diagram and section for arguing why angular resolution is most
+important \ldots{} a quick toy simulation with visualization''). Toy and figure: \texttt{papers/paper1\_v2/figs/make\_pointing.py},
+numbers in \texttt{figs/out/pointing.json}; scattering from \texttt{figs/out/material\_budget.json}.}
+\intent{Before the detector is described: a chamber sees a short piece of track far from the target, so the angle, not
+the position, decides how well a track points to its origin and how well the opening angle of a pair is known.}
+
+A chamber does not see where a particle started. It sees a straight segment about 30\,mm long, 20\,cm away
+(\crefp{fig:pointing}{a}), and everything the experiment wants to know about the track at the target has to be
+extrapolated from that segment. Two measured quantities enter: the position of the segment, known to $\sigma_x$, and
+its slope, known to $\sigma_\theta$. Carried back over the distance $d$ from the target to the plane where the position
+is measured, the slope error moves the track by $d\,\sigma_\theta$ and the position error by $\sigma_x$, so the track
+misses its origin by
+\begin{equation}
+  \sigma_b=\sqrt{\sigma_x^2+(d\,\sigma_\theta)^2}\,.\label{eq:pointing}
+\end{equation}
+With $d=233$\,mm from the target to the readout plane, an angle error of 1\textdegree{} is 4.1\,mm at the target.
+A position error of 0.5\,mm is 1.5\,\% of the variance beside it, and the 0.12\,mm that the chambers reach
+(\cref{sec:position}) is 0.1\,\%: the position would have to be as poor as 4\,mm to matter as much as one degree. The
+lever arm is eight times the length of the segment, and that ratio is why the angle dominates. \Cref{fig:pointing}
+shows it to scale, and a toy simulation that throws tracks from the target over the acceptance of a chamber, smears the
+measured position and slope and extrapolates them back reproduces \cref{eq:pointing} (\crefp{fig:pointing}{b}; the toy
+lies slightly above the line because inclined tracks have a longer lever arm).
+
+The same holds for the opening angle of a pair. Each direction is measured inside its chamber, so the error on the
+opening angle is that of the two slopes and the position does not enter at first order. A direction could instead be
+taken from the position in the chamber and an assumed origin, with an error of the size of the target divided by $d$.
+That is better than a local angle of 1\textdegree{} only if the origin is known to better than $d\,\sigma_\theta$,
+about 4\,mm; for an extended target it is not, and the measured angles are also what locate the origin.
+\askDylan{The last three sentences are the vertex-constraint argument that was cut from the introduction on 2026-11-06.
+It seems to belong here now; cut it again if you would rather not make it.}
+
+What sets the useful scale for $\sigma_\theta$ is scattering before the measurement. In the 20\,cm of air between
+the target and the window an 8\,MeV electron is deflected by 1.7\textdegree{} rms in each projection, and the window and
+the cathode of the chamber add to it: 2.9\textdegree{} in all at 8\,MeV, 5.5\textdegree{} at 4\,MeV and 1.5\textdegree{} at
+16\,MeV (\cref{tab:material}). That scattering is itself an angle error, of 4.5 to 17\,mm at the target (arrows in
+\crefp{fig:pointing}{b}). A tracker for these leptons therefore needs an angular resolution of about a degree, a
+position resolution no better than a millimetre, and as little material as possible in front of its drift volume.
+\Cref{sec:tracking} gives what the chambers deliver against this.
+
+\begin{figure}[tbp]
+  \centering
+  \figorbox[width=0.9\linewidth]{pointing}{to-scale side view and toy pointing resolution}
+  \caption{Why the angle. (a) One chamber to scale, seen from the side: the measured segment, 28\,mm long, lies
+  233\,mm from the target. Inset, at the target and to scale: toy back-extrapolations for an angle error of
+  1\textdegree{} with an exact position (blue), and for a position error of 0.5\,mm with an exact angle (orange).
+  (b) Pointing resolution at the target ($s_{68}$ of the miss distance in one projection) against the angular
+  resolution, for four position resolutions. Points: toy simulation over the acceptance of a chamber. Lines:
+  \cref{eq:pointing} at normal incidence. Square: the chambers of this paper (\cref{sec:tracking}). Arrows: the
+  pointing error from multiple scattering in the material in front of the drift gas (\cref{tab:material}) for electrons
+  of 4, 8 and 16\,MeV.}
+  \label{fig:pointing}
+\end{figure}

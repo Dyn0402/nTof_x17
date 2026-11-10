@@ -1,0 +1,79 @@
+\section{Material moved out of the body}\label{app:moved}
+\sectionstate{partial}{v2 2026-11-10: text of papers/paper1 that the reorganised body no longer carries, kept here verbatim
+(apart from references and public wording) so that nothing is lost.}
+\askDylan{Nothing was deleted in the reorganisation; what the body no longer needs is here. My recommendation for each:
+\textbf{(1)} the development of the two-track fit, \textbf{(2)} the rescue of vetoed events and \textbf{(3)} the earlier pairing
+selection are about how the reconstruction got to its present state: companion paper, or cut. \textbf{(4)} ``What could be
+recovered'' is summarised in three sentences in \cref{sec:conclusions}; the long version could go to the companion paper
+too. \textbf{(5)} The X neighbour asymmetry has no figure, an unproven hypothesis and an effect of at most 5\,\textmu m:
+companion paper, since it is a property the forward model does not describe. Tell me which to keep and this appendix
+goes.}
+
+\subsection{The joint two-track fit}
+The reconstruction is built for it: a joint two-track fit offers a merged
+candidate a second track, with a lowered threshold when the other view resolves more candidates. In its first version
+it rarely fired on the bench: both its trigger and its acceptance required candidates to pass a plausibility test tuned
+on beam tracks (full drift column, raw $|\tan|<0.6$) that short, steep secondaries fail, and a short secondary drifts from
+only part of the gap, so its column time misses the coincidence. A charge-corroborated trigger and acceptance (the
+merged view's charge must match the sum of the other view's two segments, and each child its partner; only the muon
+child need be plausible; the 4-pitch separation floor kept) recovers the muon in 53.8\,\% of the 195 interior merged
+events (from 41.0\,\%), with correct X/Y pairing in 36.4\,\% (from 20.5\,\%), and splits no clean single muon on any of the
+five chambers. The rest fail the geometric guards:
+the two children share almost no depth (one track cut in half) or lie within the floor.
+
+\subsection{Rescuing events set aside as discharges}
+Configuration (iii), the large $\delta$-rays and the edge-zone losses all come from
+dropping every event with more than 50 strips over threshold. A rescue that re-seeds such events from their clean
+clusters (track-sized clusters only, rail samples censored, a one-particle gate on the result) recovers muons, but they
+are right far less often than ordinary tracks: 57--75\,\% on chambers B and A (ordinary tracks: 95\,\%), 11--26\,\% on E, C and D, where a
+discharge rings every chip within a sample of the muon's own signal. It therefore stays off, and vetoed muons count as
+losses. The clean case, a muon plus a separate deposit,
+would be worth rescuing alone (29 right, 4 wrong on chambers B and A) if it could be told from a shower without the reference.
+
+\subsection{The pairing selection}
+The production reconstruction makes the same choice: it selects the X/Y matching with the lowest summed pairing
+cost, then applies the usual coincidence gate to each pair. On the same 567 events it pairs $96.6\pm0.8$\,\% correctly
+(re-reconstructed from the waveforms). An earlier selection,
+which let a beam-tuned plausibility flag decide which pairs survived, managed 80\,\%.
+
+\subsection{What could be recovered}\label{sec:improve}
+Of the 5.2\,\% of chamber~A single tracks lost over the full active area (\cref{fig:lossbudget}), only the discharges
+(0.47\,\%) and the noise bands (0.10\,\%) are the chamber's own: about 0.6\,pt is a hardware floor. The rest is the
+reconstruction of real ionisation, and each part has a named route to recovery:
+\textbf{$\delta$-rays, up to 2.4\,pt.} The three $\delta$ classes (along the track 0.81, saturated blob 0.87, large
+branching deposit tripping the veto 0.76\,\%) are a muon with its own knock-on electron. A straight-line fit cannot
+separate them, and the one model tested here (track plus a compact deposit) recovers only ${\sim}3$\,\% of the saturated
+views (\cref{app:losses}): the deposit is a short curling track, not a point. A topological or image-recognition
+algorithm that identifies the $\delta$ and fits the muon on the remaining charge could recover up to 2.4\,pt; how much
+of that is reachable is not measured.
+\textbf{The edges, about 1\,pt over the full area.} Near the unpassivated $x$ sides the drift field fringes
+(\cref{sec:edge}): tracks there spread over more strips (1.01\,\% exceed the discharge veto) or are fitted off (0.32\,\%), and
+0.19\,\% leave through the other coordinate's edge. An edge-aware drift model and a veto that counts strips per cluster
+rather than per plane could recover these; the interior is unaffected.
+\textbf{A smarter discharge veto, ${\sim}0.1$--0.2\,pt.} Re-seeding vetoed events from their clean clusters recovers a
+muon accompanied by a separate deposit correctly (29 right, 4 wrong on chambers B and A), but in discharges and large
+$\delta$-rays it mostly finds the wrong track (overall 57--75\,\% right on chambers B and A, 11--26\,\% on E, C and D, against
+95\,\% for ordinary tracks), so it is not used. Telling a separate deposit from a shower without the reference would
+make the clean part usable.
+\textbf{Two particles merged in one projection, 0.8\,\% of tracks.} The charge-corroborated split recovers the muon
+in 54\,\% of them (from 41\,\%) without splitting any clean single muon; most of the rest fail geometric guards that
+protect single tracks (relaxing the column-sharing guard would add ${\sim}6$\,\% of them at the price of
+one-track-cut-in-half splits). A joint fit of both views at once, using the charge and time correspondence directly,
+is the route beyond that.
+Together these bound what the named improvements could add at ${\approx}4$\,pt (A single-track efficiency over the
+full area from 94.8 towards ${\approx}98.8\,\%$); the remaining 0.7\,pt of reconstruction losses (fits off with nothing
+flagged, non-particle second deposits, right-angle tracks far from the reference) have no identified cause. The hardware alone
+would allow 99.4\,\%.
+
+\subsection{A measured X neighbour asymmetry}\label{sec:xasym}
+Every board shows an X-only field of unequal $\pm1$ neighbours: smooth over the board, fixed per
+board, both signs, absent in Y. Chamber~A head-on: $a_Q=(Q_{-1}-Q_{+1})/(Q_{-1}+Q_{+1})=+0.165\pm0.019$, the excess a copy of
+the centre pulse $0.13\times$ its size, $\approx$110\,ns late (B $+0.08$, E $+0.08$, D $+0.19$, C $-0.02$).
+Excluded: electronics and connectors (it follows the board, not the front-end card), copper/bus coupling ($\times$10 too weak),
+track angle and walk (measured at the time-symmetric angle), the 800\,\textmu m strip/pad beat (no 31.2\,mm period),
+the bulk pillars. Leading hypothesis, unproven: resistive-strip registration against the pads; the strip mask was
+never obtained and the photographed film (761\,\textmu m) does not make the size. Effect: the production X position
+carries $K=-0.77\pm0.13$ times the raw centroid-bias map, $\le44$\,\textmu m (A) and $\le116$\,\textmu m (B) per
+50\,mm cell after the board mean; resolution unchanged within 5\,\textmu m after correction and re-alignment. The
+forward model of~\cite{paperII} is symmetric in X; the cost of that is quoted there.
+
