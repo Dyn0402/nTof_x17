@@ -121,6 +121,27 @@ markup. So:
 - Don't push repo edits to a section that still has pending tracked changes or comments. Edit that section
   in Overleaf instead. New figures are always safe to push.
 
+## Paper I v2 (`paper1_v2/`, 2026-11-10)
+
+A reorganised copy of Paper I, made after the audit in `paper1_audit/`. `paper1/` stays the version shared with Stephan.
+
+- **Order:** introduction, why the angle (new), chambers, setups and reconstruction, drift velocity/gap/gas, tracking
+  (angle, position, time, gain), operating point and efficiency, two particles, what a straight-track reconstruction
+  misses (new), the chamber as built, summary with a five-chamber table. Appendices A-F; F holds the text moved out of
+  the body, for Dylan to keep or cut.
+- **Figures:** `.venv/bin/python papers/make_figures.py paper1_v2`. Reused figures keep their paper1 producer; new ones
+  have their script in `paper1_v2/figs/make_*.py` and write to `paper1_v2/figs/out/` (pdf + a json of the numbers).
+  `paper1_v2/figs/AGENT_RULES.md` is the brief the figure agents worked to.
+- **Numbers:** disagreements between places were run down in `paper1_v2/NUMBERS_RUNDOWN.md`,
+  `paper1_v2/figs/out/two_particle_numbers.md` and `paper1_v2/figs/out/gain_scan.json`. Decisions left for Dylan are
+  `\askDylan` boxes in the text.
+- **Build:** `cd papers/paper1_v2 && ~/bin/latexmk -pdf main.tex` (47 pages with the draft notes hidden, 60 with them).
+- **Open, needs Dylan:**
+  1. Overleaf: not linked yet. Create a Blank Project in Overleaf, then
+     `papers/overleaf.sh link paper1_v2 https://git.overleaf.com/<project id>` (the id is in the project URL).
+  2. Two-track separation figure: the overlay job is written and tested but needs the batch system
+     (`paper1_v2/figs/two_track_batch/README.md`, about 6 core-hours, submit from lxplus).
+
 ## The feedback note and drafting from it (Paper I, from 2026-11-04)
 
 Dylan's hub note `~/.claude-hub/notes/dylan/archive/Paper I Feedback.md` mirrors the paper's outline: one heading per
