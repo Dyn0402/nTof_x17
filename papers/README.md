@@ -7,7 +7,7 @@ The two companion papers of `mx_june_cosmic_qa/PAPER_PLAN.md`, as LaTeX, at outl
 | `paper1/` | I. Detector & performance (cosmic bench + det4 at SPS) | linked 2026-10-19 (`https://git.overleaf.com/6ad61186fe591228d14dac68`) |
 | `mpgd26_proceedings/` | MPGD2026 proceedings (JINST, 5 pages, due 2027-01-17) | linked 2026-10-20 (`https://git.overleaf.com/6ad72207b122b98dea142d04`) |
 | `infn_in2p3_2026_abstract/` | abstract draft, INFN–IN2P3 detector R&D conference (Frascati, Dec 2026), not submitted | — |
-| `paper1_v2/` | Paper I reorganised (2026-11-10): the same content ordered along the measurement (gas and calibration, angle, efficiency, two particles, chamber as built), two new sections (why the angle; what a straight track misses), rebuilt figures. `paper1/` is the version shared with Stephan and is not changed by it. New figure scripts in `paper1_v2/figs/`, numbers run down in `paper1_v2/NUMBERS_RUNDOWN.md` | own project, see below |
+| `paper1_v2/` | Paper I reorganised (2026-11-10): the same content ordered along the measurement (gas and calibration, angle, efficiency, two particles, chamber as built), two new sections (why the angle; what a straight track misses), rebuilt figures. `paper1/` is the version shared with Stephan and is not changed by it. New figure scripts in `paper1_v2/figs/`, numbers run down in `paper1_v2/NUMBERS_RUNDOWN.md` | linked 2026-11-11 (`https://git.overleaf.com/6af3a464cb8d4f7336894eac`) |
 | `paper1_audit/` | audit of Paper I (2026-11-10): organisation, key figures, numbers that disagree, plots to add. Open `report.html`; `make_report.py` builds it (and its untracked `thumbs/`) | not synced |
 | `paper2/` | II. Reconstruction: why hit times fail, the waveform forward model, hits vs waveforms | not linked yet |
 
@@ -137,10 +137,12 @@ A reorganised copy of Paper I, made after the audit in `paper1_audit/`. `paper1/
   `\askDylan` boxes in the text.
 - **Build:** `cd papers/paper1_v2 && ~/bin/latexmk -pdf main.tex` (47 pages with the draft notes hidden, 60 with them).
 - **Open, needs Dylan:**
-  1. Overleaf: not linked yet. Create a Blank Project in Overleaf, then
-     `papers/overleaf.sh link paper1_v2 https://git.overleaf.com/<project id>` (the id is in the project URL).
-  2. Two-track separation figure: the overlay job is written and tested but needs the batch system
-     (`paper1_v2/figs/two_track_batch/README.md`, about 6 core-hours, submit from lxplus).
+  1. Two-track separation figure: the overlay job (`paper1_v2/figs/two_track_batch/README.md`) was submitted on
+     2026-11-11 as condor cluster 4666850 (code `~/x17rerun/code_2a99f017_twotrack`, a trimmed archive; logs
+     `~/x17rerun/two_track/log`; outputs EOS `x17rerun/paper1_v2/two_track/`).
+- **Overleaf:** linked 2026-11-11 to its own project "MX17 Paper I v2 (reorganised)"
+  (`https://git.overleaf.com/6af3a464cb8d4f7336894eac`); `papers/overleaf.sh status|pull|push paper1_v2` as for paper1.
+  Not shared with Stephan yet.
 
 ## The feedback note and drafting from it (Paper I, from 2026-11-04)
 
