@@ -1,0 +1,248 @@
+<title>Paper II split decisions</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Serif:wght@500&display=swap">
+<style>
+/* Layout: one reading column; context first, then a ledger of decision blocks, each with options and a note. */
+:root{
+  --bg:#f6f7f8; --surface:#ffffff; --fg:#1a2228; --muted:#5b6770; --line:#d7dce0;
+  --accent:#0f6b6b; --accent-soft:#dff0ef; --warn:#9a5b00; --warn-soft:#fbf0db; --ok:#1d6b3a;
+  --display:"IBM Plex Serif",Georgia,serif; --body:"IBM Plex Sans",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#12171a; --surface:#1a2125; --fg:#e4e9ec; --muted:#98a4ab; --line:#2f393f;
+  --accent:#5fc4c0; --accent-soft:#17383a; --warn:#e2b25e; --warn-soft:#3a2e15; --ok:#6fcf8f; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#12171a; --surface:#1a2125; --fg:#e4e9ec; --muted:#98a4ab; --line:#2f393f;
+  --accent:#5fc4c0; --accent-soft:#17383a; --warn:#e2b25e; --warn-soft:#3a2e15; --ok:#6fcf8f; color-scheme:dark }
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:32px 64px}
+main{max-width:46rem;margin:0 auto;display:flex;flex-direction:column;gap:40px}
+h1{font-family:var(--display);font-weight:500;font-size:2rem;line-height:1.2;margin:0;text-wrap:balance}
+h2{font-family:var(--display);font-weight:500;font-size:1.35rem;margin:0;text-wrap:balance}
+h3{font-size:1.05rem;font-weight:600;margin:0;text-wrap:balance}
+p{margin:0} section{display:flex;flex-direction:column;gap:14px}
+.eyebrow{font-family:var(--mono);font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.lede{font-size:1.1rem}
+.muted{color:var(--muted)} code{font-family:var(--mono);font-size:.88em;overflow-wrap:anywhere}
+ul{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:8px}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:34rem;font-size:.93rem}
+th,td{text-align:left;vertical-align:top;padding:9px 12px;border-bottom:1px solid var(--line)}
+th{font-family:var(--mono);font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:500}
+.status{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line);
+  padding-block:10px;display:flex;flex-wrap:wrap;gap:6px 18px;align-items:baseline;font-size:.9rem}
+.status b{font-variant-numeric:tabular-nums}
+#save{font-family:var(--mono);font-size:.78rem;color:var(--muted)}
+.banner{background:var(--warn-soft);color:var(--warn);padding:10px 14px;border-radius:6px;font-size:.92rem}
+.dec{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:18px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.dec.done{border-color:var(--accent)}
+.dec .id{font-family:var(--mono);font-size:.75rem;color:var(--muted);letter-spacing:.06em}
+.dec .why{font-size:.94rem;color:var(--muted)}
+.opts{display:flex;flex-direction:column;gap:6px}
+.opt{display:flex;gap:10px;align-items:flex-start;padding:9px 11px;border:1px solid var(--line);border-radius:6px;cursor:pointer}
+.opt:hover{border-color:var(--accent)}
+.opt:has(input:checked){background:var(--accent-soft);border-color:var(--accent)}
+.opt:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:2px}
+.opt input{margin-top:.3em;accent-color:var(--accent)}
+.opt span{min-width:0}
+.rec{font-family:var(--mono);font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-left:6px;white-space:nowrap}
+textarea{width:100%;box-sizing:border-box;min-height:3.2em;resize:vertical;font:inherit;font-size:.94rem;color:var(--fg);
+  background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px}
+textarea:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.row{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between}
+button.clear{font:inherit;font-size:.82rem;background:none;border:0;color:var(--muted);text-decoration:underline;cursor:pointer;padding:0}
+.stamp{font-family:var(--mono);font-size:.72rem;color:var(--muted)}
+.group{display:flex;flex-direction:column;gap:14px}
+</style>
+
+<main>
+  <header style="display:flex;flex-direction:column;gap:12px">
+    <span class="eyebrow">MX17 papers · written 2026-11-10</span>
+    <h1>One Paper II or two, and what it changes in Paper I</h1>
+    <p class="lede">Recommendation: two papers. The split you describe as IIa and IIb is what the repo already holds, as <code>papers/paper2/</code> and <code>papers/tpc_mixing_review/</code>. What is left to decide is where the cut goes.</p>
+    <p class="muted">Pick an option in each block below and add a note if you want. Choices save as you make them, and a later Claude session reads them from this page.</p>
+  </header>
+
+  <div class="status" id="status"><span><b id="count">0</b> of <b id="total">0</b> decided</span><span id="save">loading saved choices…</span></div>
+  <div class="banner" id="banner" hidden></div>
+
+  <section>
+    <h2>Why two papers</h2>
+    <ul>
+      <li><b>The claims are now distinct.</b> Paper II's original headline was "resistive strips make hit times fail". The P0 study (2026-11-05) retired that: a metallic readout in the same gas keeps most of the bias (X compression 1.17–1.22 against 1.20–1.28 for the full model), and resistive spreading adds only on Y.</li>
+      <li><b>IIa</b> claims that a waveform forward fit gives about 1° on five chambers, and shows how to calibrate it.</li>
+      <li><b>IIb</b> claims that any single time per strip biases the angle as C/N² + b, measures and decomposes C (7.0 on X, 11.7 on Y), and shows that the published 15–30 % capacitive coupling is neither needed nor seen.</li>
+      <li><b>The readers differ.</b> IIa is for people who use or copy the reconstruction. IIb is for anyone running a strip µTPC with a hit readout.</li>
+      <li><b>Length.</b> IIa is planned at about 10 pages for NIM A and the IIb draft is 24 pages. Merged, the general result ends up at the back of a detector-specific methods paper.</li>
+      <li><b>Maturity.</b> Paper I cites the companion for every result, and that dependence is entirely on IIa. IIb still has open items (listed below). Merged, those would hold up Paper I's companion.</li>
+    </ul>
+    <p class="muted">The main argument for one paper is the duplicate-headline risk that <code>papers/JOURNAL_STRATEGY.md</code> already rules out. Two papers handle it by giving each number one owner.</p>
+  </section>
+
+  <section>
+    <h2>Proposed cut</h2>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Material</th><th>IIa · paper2/</th><th>IIb · tpc_mixing_review/</th></tr></thead>
+      <tbody>
+        <tr><td>Hit-time bias</td><td>One figure and one paragraph as motivation, citing IIb</td><td>Owns the 20–30 % compression, C = 7.0 / 11.7, the arm decomposition, four chambers</td></tr>
+        <tr><td>Forward model, calibration, floor, fleet, SPS known angle</td><td>Owns</td><td>Cites</td></tr>
+        <tr><td>Hits against waveforms</td><td>One table: H0, H2c, W on the same events</td><td>Full tiers, literature remedies, pitch / shaping / threshold scans, toy, survey</td></tr>
+        <tr><td>What a hit readout must record</td><td>One sentence</td><td>Owns (Paper II §6.1 moves here)</td></tr>
+      </tbody>
+    </table></div>
+    <p>H2c is the forward model fitted to hit lists. On det3 it reaches 1.20° (X) and 1.28° (Y) against 1.04° and 1.01° for waveforms, so IIa's message becomes "the model is what matters, waveforms help". The best model-free remedy in IIb reaches 1.5–2.0°.</p>
+  </section>
+
+  <section>
+    <h2>What is still open in IIb</h2>
+    <ul>
+      <li>The draft has corrections found against its own tables that are not yet applied (list in <code>HANDOFF.md</code>).</li>
+      <li>The toy, the universal fit and the full draft have had no independent read.</li>
+      <li>The 6 % (X) and 10 % (Y) same-time floor has no identified origin.</li>
+      <li>The law is tested only on strip µTPCs. The literature comparison is a factor 1.7 on four measured points.</li>
+      <li>Two condor DAGs (SPS H2c rows, V7/V8 tiers) were not scored at the last wrap-up.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>What changes in Paper I</h2>
+    <p>Only IIa is needed to submit Paper I. Nothing below has been edited yet. The first three are in the Overleaf-shared Paper I.</p>
+    <ul>
+      <li><b><code>paper1/sections/02_design.tex</code> lines 15–18 are wrong as written.</b> They still say "delayed copies of its neighbours' (~29 % at τ≈47 ns)" and conclude "For a TPC alone we might not choose it again". The copy-kernel wording is retired, and dropping the resistive layer would remove only the Y excess.</li>
+      <li><b>§3.4 (<code>03_setups.tex</code> lines 73–77)</b> already has the right mechanism. It needs its citation split: the bias to IIb, the model to IIa.</li>
+      <li><b><code>paper1/main.tex</code> line 51</b> carries the stale <code>\requote{1.15–2.51°}</code>. It should take the pass-1 numbers that IIa owns.</li>
+      <li><b><code>paper2/main.tex</code></b> title, abstract note and §3 intent still carry the "on resistive strips… delayed copies" claim.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Decisions</h2>
+    <div class="group" id="decisions"></div>
+  </section>
+</main>
+
+<script>
+const DECISIONS = [
+ {id:"d01-split", q:"One paper or two?", why:"Everything below assumes two. If you pick one paper, the cut questions fall away and the open IIb items become Paper II's.",
+  opts:[["two","Two papers: IIa (reconstruction) and IIb (the bias law and survey)",1],["one","One merged Paper II"],["later","Not ready to decide; say what is missing in the note"]]},
+ {id:"d02-h2c", q:"Where does H2c go?", why:"H2c is IIa's model applied to hits, but it answers IIb's question of what a hit readout can recover.",
+  opts:[["iia-table","IIa as one table row (H0, H2c, W); IIb cites it and shows its scans",1],["iib","All of it in IIb"],["iia-full","All of it in IIa, including the variant and SPS scans"]]},
+ {id:"d03-readout", q:"Where does \"what a hit readout must record\" go?", why:"Currently Paper II §6.1, still unwritten. The pitch, shaping and threshold scans that feed it are scored.",
+  opts:[["iib","IIb owns it; IIa keeps one sentence",1],["iia","Stays in IIa"],["both","Short version in IIa, full version in IIb"]]},
+ {id:"d04-owner", q:"Which paper owns the compression numbers?", why:"The 20–30 % and C = 7.0 / 11.7 should be measured in one place and cited from the other.",
+  opts:[["iib","IIb owns; IIa shows one motivating figure and cites",1],["iia","IIa owns; IIb cites and generalises"]]},
+ {id:"d05-timing", q:"When does IIb go out?", why:"IIb has the open items listed above. Paper I depends only on IIa.",
+  opts:[["follow","A few weeks after I and IIa, so its open items don't set the date",1],["same","Same arXiv day as I and IIa"],["first","IIb first, since its draft is furthest along"]]},
+ {id:"d06-framing", q:"How is IIb framed?", why:"The mechanism is tested on strip µTPCs only; for pad TPCs and LAr it is predicted invisible, not measured.",
+  opts:[["measurement","A measurement with a literature survey",1],["review","A review across TPC families"]]},
+ {id:"d07-venue", q:"Where does IIb go?", why:"IIa stays at NIM A (short, focused). The IIb draft is 24 pages, which fits JINST better than NIM A.",
+  opts:[["jinst","JINST",1],["nima","NIM A, cut to length"],["epjc","EPJ C"],["later","Decide after the draft corrections"]]},
+ {id:"d08-reputation", q:"Does the first-author reasoning move to IIb?", why:"JOURNAL_STRATEGY.md calls Paper II the reputation-building paper because its claim is general. That general claim now lives in IIb.",
+  opts:[["move","Yes: IIb is the one to be first author on if it is only one",1],["keep","No: keep it on IIa"],["both","First author on both; no change needed"]]},
+ {id:"d09-design", q:"Paper I design lesson (02_design.tex)", why:"The current text blames the resistive layer for the hit-time bias. A metallic readout would keep most of it.",
+  opts:[["reword","Reword: the resistive layer adds to the bias in one view and costs little once waveforms are fitted",1],["keep-fixed","Keep \"we might not choose it again\" but correct the mechanism"],["stephan","Raise it with Stephan before changing anything"]]},
+ {id:"d10-naming", q:"What do we call them?", why:"The repo and HANDOFF say \"Paper III\" for the review draft.",
+  opts:[["i-ii-iii","Keep I / II / III internally; choose public titles at submission",1],["iia-iib","Rename to IIa / IIb everywhere now"]]},
+ {id:"d11-go", q:"What should the next session do?", why:"Doc updates are JOURNAL_STRATEGY.md and the Paper II outline plan. Paper I edits need an Overleaf status and pull first.",
+  opts:[["all","Update the strategy and outline docs, and make the Paper I and Paper II text edits",1],["docs","Update the docs only; leave paper text alone"],["none","Nothing yet"]]},
+ {id:"d12-other", q:"Anything else", why:"Other points to settle, or instructions that fit none of the blocks above.", opts:[]}
+];
+
+const state = {};            // id -> {choice, note, updatedAt}
+let db = null, ready = false;
+const $ = s => document.querySelector(s);
+const LS = "paper-split-draft";
+function lsGet(){ try{ return JSON.parse(localStorage.getItem(LS)||"{}") }catch(e){ return {} } }
+function lsSet(){ try{ localStorage.setItem(LS, JSON.stringify(state)) }catch(e){} }
+
+function build(){
+  const root = $("#decisions");
+  DECISIONS.forEach((d,i)=>{
+    const el = document.createElement("div"); el.className="dec"; el.id="dec-"+d.id;
+    const head = document.createElement("div"); head.className="row";
+    const idl = document.createElement("span"); idl.className="id"; idl.textContent = "D"+String(i+1).padStart(2,"0");
+    const stamp = document.createElement("span"); stamp.className="stamp"; stamp.id="stamp-"+d.id;
+    head.append(idl, stamp);
+    const h = document.createElement("h3"); h.textContent = d.q;
+    const why = document.createElement("p"); why.className="why"; why.textContent = d.why;
+    el.append(head,h,why);
+    if(d.opts.length){
+      const opts = document.createElement("div"); opts.className="opts"; opts.setAttribute("role","radiogroup"); opts.setAttribute("aria-label",d.q);
+      d.opts.forEach(([val,label,rec])=>{
+        const l = document.createElement("label"); l.className="opt";
+        const inp = document.createElement("input"); inp.type="radio"; inp.name=d.id; inp.value=val; inp.id=d.id+"-"+val;
+        inp.addEventListener("change",()=>save(d.id,{choice:val}));
+        const sp = document.createElement("span"); sp.textContent = label;
+        if(rec){ const r=document.createElement("span"); r.className="rec"; r.textContent="recommended"; sp.append(r) }
+        l.append(inp,sp); opts.append(l);
+      });
+      el.append(opts);
+    }
+    const ta = document.createElement("textarea"); ta.id="note-"+d.id; ta.placeholder = d.opts.length ? "Note (optional): your own answer, a condition, a question back" : "Write here";
+    ta.setAttribute("aria-label","Note for: "+d.q);
+    let t; ta.addEventListener("input",()=>{ clearTimeout(t); t=setTimeout(()=>save(d.id,{note:ta.value}),900) });
+    ta.addEventListener("blur",()=>{ clearTimeout(t); if((state[d.id]?.note||"")!==ta.value) save(d.id,{note:ta.value}) });
+    el.append(ta);
+    if(d.opts.length){
+      const foot = document.createElement("div"); foot.className="row";
+      const b = document.createElement("button"); b.className="clear"; b.type="button"; b.textContent="Clear choice";
+      b.addEventListener("click",()=>save(d.id,{choice:""}));
+      foot.append(b); el.append(foot);
+    }
+    root.append(el);
+  });
+  $("#total").textContent = DECISIONS.filter(d=>d.opts.length).length;
+}
+
+function render(){
+  let n=0;
+  DECISIONS.forEach(d=>{
+    const s = state[d.id]||{};
+    d.opts.forEach(([val])=>{ const i=document.getElementById(d.id+"-"+val); if(i) i.checked = s.choice===val });
+    const ta = document.getElementById("note-"+d.id);
+    if(ta && document.activeElement!==ta && ta.value!==(s.note||"")) ta.value = s.note||"";
+    const decided = d.opts.length ? !!s.choice : !!(s.note||"").trim();
+    if(d.opts.length && s.choice) n++;
+    document.getElementById("dec-"+d.id).classList.toggle("done",decided);
+    document.getElementById("stamp-"+d.id).textContent = s.updatedAt ? "saved "+String(s.updatedAt).slice(0,16).replace("T"," ") : "";
+  });
+  $("#count").textContent = n;
+}
+
+async function save(id, patch){
+  state[id] = Object.assign({choice:"",note:""}, state[id], patch, {updatedAt:new Date().toISOString()});
+  const d = DECISIONS.find(x=>x.id===id);
+  const label = (d.opts.find(o=>o[0]===state[id].choice)||[])[1]||"";
+  render(); lsSet();
+  if(!db){ $("#save").textContent = "kept in this browser only"; return }
+  $("#save").textContent = "saving…";
+  try{
+    await db.doc("decisions/"+id).set({question:d.q, choice:state[id].choice, choiceLabel:label, note:state[id].note, updatedAt:state[id].updatedAt});
+    $("#save").textContent = "saved";
+  }catch(e){
+    $("#save").textContent = "not saved";
+    const b=$("#banner"); b.hidden=false;
+    b.textContent = "That change did not save ("+(e&&e.code||"error")+"). It is kept in this browser. Try again, or tell Claude your choices in the session.";
+  }
+}
+
+build(); Object.assign(state, lsGet()); render();
+
+(async()=>{
+  const timer = setTimeout(()=>{ if(!ready){ $("#save").textContent="saved choices did not load"; } },10000);
+  try{ db = await window.claude?.use?.("db") }catch(e){ db=null }
+  if(!db){
+    clearTimeout(timer); ready=true;
+    $("#save").textContent="kept in this browser only";
+    const b=$("#banner"); b.hidden=false;
+    b.textContent="This view cannot save to the shared record. Choices are kept in this browser only, so Claude will not see them. Open the page on claude.ai while signed in.";
+    return;
+  }
+  db.collection("decisions").onSnapshot(snap=>{
+    clearTimeout(timer); ready=true;
+    snap.docs.forEach(doc=>{ const v=doc.data()||{}; const cur=state[doc.id];
+      if(!cur || !cur.updatedAt || String(v.updatedAt||"")>=String(cur.updatedAt)) state[doc.id]={choice:v.choice||"",note:v.note||"",updatedAt:v.updatedAt||""} });
+    render(); if($("#save").textContent.startsWith("loading")) $("#save").textContent = snap.docs.length ? "saved choices loaded" : "nothing recorded yet";
+  }, e=>{ clearTimeout(timer); ready=true; $("#save").textContent="saved choices did not load"; });
+})();
+</script>

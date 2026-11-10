@@ -1,5 +1,22 @@
 # Handoff
 
+## Paper II: one paper or two — decisions waiting on Dylan (2026-11-10, dylan-MS-7C84)
+
+**Resume:** read Dylan's choices from the decision page, then act on D11 (which says how much to do).
+
+Decision page: https://claude.ai/artifact/GPYyBp8UmXDK5wgt3z31zu (source `papers/paper_split_decision/index.html`; republish from
+another session with `url`). Dylan records twelve blocks there (D01 split … D11 what the next session does, D12 free text). Read them
+with the `ArtifactData` tool: `action: "list"`, `collection: "decisions"`, that URL. Each document is
+`{question, choice, choiceLabel, note, updatedAt}`, id = the block id (`d01-split` …). Empty collection = nothing decided yet.
+The option keys and my recommendation for each are in the `DECISIONS` array of the source file.
+
+Recommendation given: two papers. IIa = `papers/paper2/` (forward model, calibration, fleet; H0/H2c/W as one table),
+IIb = `papers/tpc_mixing_review/` (owns the compression numbers, C/N^2 + b, remedies, readout requirements, survey); IIb follows
+I + IIa. Nothing was edited. Pending text fixes if he agrees: `paper1/sections/02_design.tex:15-18` (retired "delayed copies 29 % at
+47 ns" wording and the design lesson), `03_setups.tex:73-77` (split the citation), `paper1/main.tex:51` (stale `\requote`),
+`paper2/main.tex` title/abstract/§3 intent, `papers/JOURNAL_STRATEGY.md`, `papers/paper2/OUTLINE_PLAN_2026-11-05.md`. Paper I is
+Overleaf-shared: `papers/overleaf.sh status paper1` and `pull` first.
+
 ## TPC single-time-bias review paper ("Paper III") and the coupling-study review — updated 2026-11-09 (dylan-MS-7C84)
 
 **Resume:** Paper III slides published; Dylan is reading them and decides next; then fix the draft (list below), score DAGs.
