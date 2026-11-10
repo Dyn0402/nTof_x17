@@ -362,9 +362,25 @@ redeployed (dylan-cern-site 91d4386). Inputs on the desktop: $WORK_DATA/claude-j
 - Deck: `WORK_DATA=~/work_data .venv/bin/python papers/paper1/make_figures_deck.py --out <html>` then
   `dylan-cern-site/scripts/add-note.py <html> --slug mx17-paper1-figures --force --deploy`.
 
-## n_TOF pass 1: reprocess the n_TOF tracks on the final chain — updated 2026-11-08 (dylan-Yoga)
+## n_TOF pass 1: reprocess the n_TOF tracks on the final chain — updated 2026-11-10 (dylan-MS-7C84)
 
-**Resume:** full pass RUNNING (4636418 main, 4636419/20 side, 4638252 run_89 D); when done: account, audit_eos, N-G1, ledger, stage 3.
+**Resume:** pass RUNNING again after an 11-10 stall fix; check 4636418 isn't idle-stuck, then account, audit_eos, N-G1.
+
+**11-10 (dylan-MS-7C84): main cluster stalled, fixed.** At 12:55: main 9,028/15,550 done exit 0 (+ proc 1727's
+exit 1, already replaced by 4638252), 0 held, 0 running since 04:23. All 2,000 materialised idle jobs (procs
+9029–11028) had CERN's requirement transform applied a second time: `PreVerRequirements` → `PreLocal` → `PreAfs` →
+`PreCvmfs` → `PreVer`, a cycle, so 0 of 5,297 slots matched (`-better-analyze`). The cluster factory ad and every
+finished job were intact. Cause presumed CERN-side (schedd bigbird101 event ~11-09 evening), not confirmed; nothing
+of ours edited the jobs. Fixed with `condor_qedit` (values copied from the factory ad):
+`rerun/ntof/condor/fix_req_cycle.sh` (`bash fix_req_cycle.sh all` on lxplus; touches only idle jobs whose
+Requirements still names PreVerRequirements). 93 jobs running a minute after. Side clusters 4636419/20 were never
+affected (99 done on L1; 99 + 198 idle, matching, waiting for slots).
+- **The AFS user log is stale since 11-09 17:47.** The schedd writes `/var/spool/userlogs/dneff/.../ntof.log` and
+  syncs to AFS; the sync stopped (same event, presumably). ~1,000 completions are missing from the AFS copy. Until it
+  catches up, account with `condor_history 4636418 -limit 20000 -af JobStatus ExitCode | sort | uniq -c` (slow: use
+  `timeout 170`), not the `001`/`005` log count in step 1 below.
+- Recheck for the cycle: `condor_q 4636418 -af:r Requirements | sort | uniq -c` (good starts `(TARGET.Hostgroup`,
+  bad is `(OpSysAndVer =?= "AlmaLinux9") && PreVerRequirements`). Rate after fix suggests ~1.5–2 more days (estimate).
 
 **Goal:** reconstruct every n_TOF trigger of ours with the pass-1 bench/SPS algorithm, calibrated in situ, with every
 n_TOF lesson in code or registry. Plan, decisions and every result: `rerun/ntof/NTOF_PASS_PLAN_2026-11-02.md`
@@ -386,7 +402,7 @@ At 11-08 ~15:30: about 2,400 of 15,550 main jobs done, 665 running, 0 held of ou
 file census on the bench and SPS decoded sets, whose job scripts still use `cp`.
 
 **Next steps (current):**
-1. `ssh lxplus` → `condor_q 4636418 4636419 4636420 -totals`; watch for holds (`012`) and wall-time kills (`009`). When
+1. `ssh lxplus` → `condor_q 4636418 4636419 4636420 -totals`; if main is all idle, check the requirements cycle (11-10 above); watch for holds (`012`) and wall-time kills (`009`). When
    done: compare `001` vs `005` per cluster in `~/x17rerun/ntof/pass1/log/ntof.log`, check a `.meta.json` per job line,
    read the `.err` of every failure and explain it. `lxstore status` after.
 2. N-G1 on the pass's own run_145 / run_149: wall-confirmed fraction per arm, A–C line s68 vs is2_v2, source y (−31/−35), G5.
