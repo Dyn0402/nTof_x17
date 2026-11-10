@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Paper I audit</title><style>
+:root{--ink:#1c2330;--mut:#5d6776;--line:#d9dee6;--bg:#fbfbfc;--card:#fff;--key:#0b5cad;--warn:#b3541e}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:28px 16px 80px}
+h1{font-size:28px;line-height:1.2;margin:0 0 6px}
+h2{font-size:21px;margin:44px 0 10px;padding-top:14px;border-top:1px solid var(--line)}
+h3{font-size:17px;margin:22px 0 6px}
+p{margin:8px 0}
+.sub{color:var(--mut);font-size:14px;margin-bottom:18px}
+code{font:13px ui-monospace,Menlo,Consolas,monospace;background:#eef1f5;padding:1px 4px;border-radius:3px;overflow-wrap:anywhere}
+.verdict{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--key);border-radius:8px;padding:10px 18px 12px}
+.verdict ol{margin:6px 0;padding-left:22px}.verdict li{margin:7px 0}
+svg{width:100%;height:auto;display:block;margin:6px 0 2px}
+.st{font:600 12px system-ui,sans-serif;fill:#1c2330}.sl{font:9.5px system-ui,sans-serif;fill:#3b4350}.sk{font:700 9.5px system-ui,sans-serif;fill:#fff}
+.cap{color:var(--mut);font-size:13.5px;margin:2px 0 10px}
+.sec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin:14px 0}
+.sec h3{margin:0}.pp{color:var(--mut);font-size:13px;font-weight:400;margin-left:8px;white-space:nowrap}
+.claim{margin:6px 0 10px;font-size:15.5px}
+.figs{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px;margin:8px 0}
+.fig{border:1px solid var(--line);border-radius:8px;padding:6px;background:#fff;font-size:12.5px;line-height:1.35}
+.fig img{width:100%;height:132px;object-fit:contain;display:block;background:#fff}
+.tag{display:inline-block;font-size:11px;font-weight:600;border-radius:10px;padding:1px 8px;margin-right:5px;color:#fff;white-space:nowrap}
+.t-keep{background:#2f7d4f}.t-merge{background:#62708a}.t-rebuild{background:#b3541e}.t-new{background:#7a4fb0}.t-app{background:#8a8a8a}
+.sec ul{margin:6px 0 0;padding-left:20px;font-size:14.5px}.sec li{margin:4px 0}
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px;margin:8px 0}
+th,td{border-bottom:1px solid var(--line);padding:7px 8px;text-align:left;vertical-align:top}
+th{font-size:12.5px;color:var(--mut);font-weight:600;white-space:nowrap}
+td.n{white-space:nowrap;font-weight:600}
+td img{width:150px;height:auto;display:block;border:1px solid var(--line);border-radius:4px}
+details{margin:10px 0}summary{cursor:pointer;font-weight:600}
+.st1{font-size:11.5px;font-weight:600;border-radius:10px;padding:1px 8px;white-space:nowrap}
+.s-ex{background:#dcefe2;color:#1d5a36}.s-re{background:#fde7d3;color:#8a3f10}.s-tx{background:#e6e9f2;color:#39456a}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:18px}@media(max-width:760px){.two{grid-template-columns:1fr}}
+.note{color:var(--mut);font-size:14px}
+ul.in{margin:0;padding-left:18px}ul.in li{margin:3px 0}
+table.w3 td:nth-child(1){width:17%}table.w3 td:nth-child(2){width:50%}
+</style></head><body><main>
+<h1>Paper I audit: organisation, key figures, what to add</h1>
+<div class="sub">10 November 2026 · the Overleaf version of that day (same as repo <code>main</code>, 18f3aad8) · 47 pages, 52 figures.
+Figure and section numbers are the current ones.</div>
+
+<div class="verdict"><ol>
+<li><b>The content is there. The weight is in the wrong places.</b> The introduction names the track angle as the figure of merit.
+The paper then gives it about 50 words (§7.1, on page 21 of a 30-page body), against 2,500 words on efficiency accounting, 1,000 more in appendix A, and 1,900 on the bow.
+The order follows how the analysis was done, not what a reader needs first.</li>
+<li><b>Your eight figures are the right core, with two qualifications.</b> A second reader, given only the PDF and not your list, also put
+Fig. 21 first and picked 9, 14, 16 and 7. It did not pick 15, 17 or 18, and it ranked three results you left out above them: everything flat over a
+factor 13 in gain (Fig. 10), the bow (Figs. 23, 24) and the edge (Fig. 25). My own view sits between the two: 15 and 16 are the best argument in the
+paper, 17 supports them, 18 is the one of your eight least about this detector, and the bow earns one body figure.</li>
+<li><b>Fig. 21 undersells the main result.</b> Half of it is a diagonal line. Chamber B, a beam point at 25&deg;, the fact that the reference adds at
+most 0.14&deg;, and the comparison with the hit-time method all exist in the repo and none is in the figure or its 50 words.</li>
+<li><b>Proposed order: follow the measurement, tan&nbsp;&theta;&nbsp;=&nbsp;w/v<sub>d</sub>.</b> Calibration from the gas (15–18), then the angle (21), then
+efficiency (7, 9), then two particles (14), then the chamber as built. Every results section opens on one of your key figures. About 21 body pages and
+18 figures, from 30 and 27; appendices from 17 pages to about 10.</li>
+<li><b>29 numbers or statements disagree between places.</b> Most are bookkeeping. A few change what a reader concludes: the gap (30&nbsp;mm designed,
+28.2 measured, never discussed), two versions of the timing curve, two gain-doubling voltages, and three descriptions of what the resistive layer does.</li>
+<li><b>The largest additions need no new data</b>: the rebuilt Fig. 21, a table of the five chambers, the material budget (which may show the chamber is
+already below its own scattering floor), and a two-track separation curve from overlaid real muons.</li>
+</ol></div>
+
+<h2>Where the pages go now, and where they would go</h2>
+<svg viewBox="0 0 901 118" role="img" aria-label="Now">
+<text x="4" y="12" class="st">Now: 47 pages</text>
+<rect x="4" y="58" width="36.5" height="26" fill="#8fa8c8" rx="2"/>
+<line x1="22.25" x2="22.25" y1="58" y2="84" stroke="#fff" stroke-width=".6" opacity=".7"/>
+<text x="23.0" y="97" class="sl" text-anchor="middle">Intro</text>
+<rect x="42" y="58" width="55.5" height="26" fill="#b7c4d6" rx="2"/>
+<line x1="60.25" x2="60.25" y1="58" y2="84" stroke="#fff" stroke-width=".6" opacity=".7"/>
+<line x1="79.25" x2="79.25" y1="58" y2="84" stroke="#fff" stroke-width=".6" opacity=".7"/>
+<text x="70.5" y="110" class="sl" text-anchor="middle">Design</text>
+<rect x="99" y="58" width="55.5" height="26" fill="#c9d3df" rx="2"/>
+<line x1="117.25" x2="117.25" y1="58" y2="84" stroke="#fff" stroke-width=".6" opacity=".7"/>
+<line x1="136.25" x2="136.25" y1="58" y2="84" stroke="#fff" stroke-width=".6" opacity=".7"/>
+<text x="127.5" y="97" class="sl" text-anchor="middle">Setups</text>
+<rect x="156" y="58" width="17.5" height="26" fill="#d9c7a3" rx="2"/>
+<text x="165.5" y="110" class="sl" text-anchor="middle">Oper.</text>
+<rect x="175" y="58" width="150.5" height="26" fill="#e2a45f" rx="2"/>
+<line x1="193.25" x2="193.25" y1="58" y2="84" stroke="#fff" stroke-width=".6" opacity=".7"/>
+<line x1="212.25" x2="212.25" y1="58" y2="84" stroke="#fff" stroke-width=".6" opacity=".7"/>
+<line x1="231.25" x2="231.25" y1="58" y2="84" stroke="#fff" stroke-width=".6" opacity=".7"/>
+<line x1="250.25" x2="250.25" y1="58" y2="84" stroke="#fff" stroke-width=".6" opacity=".7"/>
+<line x1="269.25" x2="269.25" y1="58" y2="84" stroke="#fff" stroke-width=".6" opacity=".7"/>
+<line x1="288.25" x2="288.25" y1="58" y2="84" stroke="#fff" stroke-width=".6" opacity=".7"/>
+<line x1="307.25" x2="307.25" y1="58" y2="84" stroke="#fff" stroke-width=".6" opacity=".7"/>
+<text x="251.0" y="97" class="sl" text-anchor="middle">Efficiency</text>
+<rect x="327" y="58" width="55.5" height="26" fill="#69a8a0" rx="2"/>
+<line x1="345.25" x2="345.25" y1="58" y2="84" stroke="#fff" stroke-width=".6" opacity=".7"/>
+<line x1="364.25" x2="364.25" y1="58" y2="84" stroke="#fff" stroke-width=".6" opacity=".7"/>
+<text x="355.5" y="110" class="sl" text-anchor="middle">Gas</text>
+<rect x="384" y="58" width="36.5" height="26" fill="#3f6fb0" rx="2"/>
+<line x1="402.25" x2="402.25" y1="58" y2="84" stroke="#fff" stroke-width=".6" opacity=".7"/>
+<text x="403.0" y="97" class="sl" text-anchor="middle">Angle, pos.</text>
+<rect x="422" y="58" width="93.5" height="26" fill="#9a8cc2" rx="2"/>
+<line x1="440.25" x2="440.25" y1="58" y2="84" stroke="#fff" stroke-width=".6" opacity=".7"/>
+<line x1="459.25" x2="459.25" y1="58" y2="84" stroke="#fff" stroke-width=".6" opacity=".7"/>
+<line x1="478.25" x2="478.25" y1="58" y2="84" stroke="#fff" stroke-width=".6" opacity=".7"/>
+<line x1="497.25" x2="497.25" y1="58" y2="84" stroke="#fff" stroke-width=".6" opacity=".7"/>
+<text x="469.5" y="110" class="sl" text-anchor="middle">Bow, edge</text>
+<rect x="517" y="58" width="17.5" height="26" fill="#c9a0b8" rx="2"/>
+<text x="526.5" y="97" class="sl" text-anchor="middle">Time</text>
+<rect x="536" y="58" width="17.5" height="26" fill="#b5b5b5" rx="2"/>
+<text x="545.5" y="110" class="sl" text-anchor="middle">E</text>
+<rect x="555" y="58" width="169.5" height="26" fill="#e6d2b5" rx="2"/>
+<line x1="573.25" x2="573.25" y1="58" y2="84" stroke="#fff" stroke-width=".6" opacity=".7"/>
+<line x1="592.25" x2="592.25" y1="58" y2="84" stroke="#fff" stroke-width=".6" opacity=".7"/>
+<line x1="611.25" x2="611.25" y1="58" y2="84" stroke="#fff" stroke-width=".6" opacity=".7"/>
+<line x1="630.25" x2="630.25" y1="58" y2="84" stroke="#fff" stroke-width=".6" opacity=".7"/>
+<line x1="649.25" x2="649.25" y1="58" y2="84" stroke="#fff" stroke-width=".6" opacity=".7"/>
+<line x1="668.25" x2="668.25" y1="58" y2="84" stroke="#fff" stroke-width=".6" opacity=".7"/>
+<line x1="687.25" x2="687.25" y1="58" y2="84" stroke="#fff" stroke-width=".6" opacity=".7"/>
+<line x1="706.25" x2="706.25" y1="58" y2="84" stroke="#fff" stroke-width=".6" opacity=".7"/>
+<text x="640.5" y="97" class="sl" text-anchor="middle">Appendix A: loss classes</text>
+<rect x="726" y="58" width="150.5" height="26" fill="#dedede" rx="2"/>
+<line x1="744.25" x2="744.25" y1="58" y2="84" stroke="#fff" stroke-width=".6" opacity=".7"/>
+<line x1="763.25" x2="763.25" y1="58" y2="84" stroke="#fff" stroke-width=".6" opacity=".7"/>
+<line x1="782.25" x2="782.25" y1="58" y2="84" stroke="#fff" stroke-width=".6" opacity=".7"/>
+<line x1="801.25" x2="801.25" y1="58" y2="84" stroke="#fff" stroke-width=".6" opacity=".7"/>
+<line x1="820.25" x2="820.25" y1="58" y2="84" stroke="#fff" stroke-width=".6" opacity=".7"/>
+<line x1="839.25" x2="839.25" y1="58" y2="84" stroke="#fff" stroke-width=".6" opacity=".7"/>
+<line x1="858.25" x2="858.25" y1="58" y2="84" stroke="#fff" stroke-width=".6" opacity=".7"/>
+<text x="802.0" y="110" class="sl" text-anchor="middle">Appendices B–F</text>
+<rect x="878" y="58" width="17.5" height="26" fill="#f0f0f0" rx="2"/>
+<text x="887.5" y="97" class="sl" text-anchor="middle">Refs</text>
+<line x1="165.5" x2="165.5" y1="50" y2="63" stroke="#111" stroke-width="1.2"/>
+<rect x="158.2" y="35" width="14.6" height="15" rx="7.5" fill="#111"/>
+<text x="165.5" y="46" class="sk" text-anchor="middle">7</text>
+<line x1="203.5" x2="203.5" y1="50" y2="63" stroke="#111" stroke-width="1.2"/>
+<rect x="196.2" y="35" width="14.6" height="15" rx="7.5" fill="#111"/>
+<text x="203.5" y="46" class="sk" text-anchor="middle">9</text>
+<line x1="298.5" x2="298.5" y1="50" y2="63" stroke="#111" stroke-width="1.2"/>
+<rect x="288.4" y="35" width="20.2" height="15" rx="7.5" fill="#111"/>
+<text x="298.5" y="46" class="sk" text-anchor="middle">14</text>
+<line x1="336.5" x2="336.5" y1="50" y2="63" stroke="#111" stroke-width="1.2"/>
+<rect x="326.4" y="35" width="20.2" height="15" rx="7.5" fill="#111"/>
+<text x="336.5" y="46" class="sk" text-anchor="middle">15</text>
+<line x1="355.5" x2="355.5" y1="33" y2="63" stroke="#111" stroke-width="1.2"/>
+<rect x="334.2" y="18" width="42.599999999999994" height="15" rx="7.5" fill="#111"/>
+<text x="355.5" y="29" class="sk" text-anchor="middle">16, 17</text>
+<line x1="374.5" x2="374.5" y1="50" y2="63" stroke="#111" stroke-width="1.2"/>
+<rect x="364.4" y="35" width="20.2" height="15" rx="7.5" fill="#111"/>
+<text x="374.5" y="46" class="sk" text-anchor="middle">18</text>
+<line x1="412.5" x2="412.5" y1="50" y2="63" stroke="#111" stroke-width="1.2"/>
+<rect x="402.4" y="35" width="20.2" height="15" rx="7.5" fill="#111"/>
+<text x="412.5" y="46" class="sk" text-anchor="middle">21</text>
+</svg>
+<svg viewBox="0 0 901 118" role="img" aria-label="Proposed">
+<text x="4" y="12" class="st">Proposed: 32 pages</text>
+<rect x="4" y="58" width="36.5" height="26" fill="#8fa8c8" rx="2"/>
+<line x1="22.25" x2="22.25" y1="58" y2="84" stroke="#fff" stroke-width=".6" opacity=".7"/>
+<text x="23.0" y="97" class="sl" text-anchor="middle">Intro</text>
+<rect x="42" y="58" width="55.5" height="26" fill="#b7c4d6" rx="2"/>
+<line x1="60.25" x2="60.25" y1="58" y2="84" stroke="#fff" stroke-width=".6" opacity=".7"/>
+<line x1="79.25" x2="79.25" y1="58" y2="84" stroke="#fff" stroke-width=".6" opacity=".7"/>
+<text x="70.5" y="110" class="sl" text-anchor="middle">Chambers</text>
+<rect x="99" y="58" width="36.5" height="26" fill="#c9d3df" rx="2"/>
+<line x1="117.25" x2="117.25" y1="58" y2="84" stroke="#fff" stroke-width=".6" opacity=".7"/>
+<text x="118.0" y="97" class="sl" text-anchor="middle">Setups</text>
+<rect x="137" y="58" width="55.5" height="26" fill="#69a8a0" rx="2"/>
+<line x1="155.25" x2="155.25" y1="58" y2="84" stroke="#fff" stroke-width=".6" opacity=".7"/>
+<line x1="174.25" x2="174.25" y1="58" y2="84" stroke="#fff" stroke-width=".6" opacity=".7"/>
+<text x="165.5" y="110" class="sl" text-anchor="middle">Gas, gap</text>
+<rect x="194" y="58" width="55.5" height="26" fill="#3f6fb0" rx="2"/>
+<line x1="212.25" x2="212.25" y1="58" y2="84" stroke="#fff" stroke-width=".6" opacity=".7"/>
+<line x1="231.25" x2="231.25" y1="58" y2="84" stroke="#fff" stroke-width=".6" opacity=".7"/>
+<text x="222.5" y="97" class="sl" text-anchor="middle">Tracking</text>
+<rect x="251" y="58" width="55.5" height="26" fill="#e2a45f" rx="2"/>
+<line x1="269.25" x2="269.25" y1="58" y2="84" stroke="#fff" stroke-width=".6" opacity=".7"/>
+<line x1="288.25" x2="288.25" y1="58" y2="84" stroke="#fff" stroke-width=".6" opacity=".7"/>
+<text x="279.5" y="110" class="sl" text-anchor="middle">Efficiency</text>
+<rect x="308" y="58" width="36.5" height="26" fill="#d98c8c" rx="2"/>
+<line x1="326.25" x2="326.25" y1="58" y2="84" stroke="#fff" stroke-width=".6" opacity=".7"/>
+<text x="327.0" y="97" class="sl" text-anchor="middle">2 particles</text>
+<rect x="346" y="58" width="36.5" height="26" fill="#9a8cc2" rx="2"/>
+<line x1="364.25" x2="364.25" y1="58" y2="84" stroke="#fff" stroke-width=".6" opacity=".7"/>
+<text x="365.0" y="110" class="sl" text-anchor="middle">As built</text>
+<rect x="384" y="58" width="17.5" height="26" fill="#b5b5b5" rx="2"/>
+<text x="393.5" y="97" class="sl" text-anchor="middle">Sum.</text>
+<rect x="403" y="58" width="188.5" height="26" fill="#dedede" rx="2"/>
+<line x1="421.25" x2="421.25" y1="58" y2="84" stroke="#fff" stroke-width=".6" opacity=".7"/>
+<line x1="440.25" x2="440.25" y1="58" y2="84" stroke="#fff" stroke-width=".6" opacity=".7"/>
+<line x1="459.25" x2="459.25" y1="58" y2="84" stroke="#fff" stroke-width=".6" opacity=".7"/>
+<line x1="478.25" x2="478.25" y1="58" y2="84" stroke="#fff" stroke-width=".6" opacity=".7"/>
+<line x1="497.25" x2="497.25" y1="58" y2="84" stroke="#fff" stroke-width=".6" opacity=".7"/>
+<line x1="516.25" x2="516.25" y1="58" y2="84" stroke="#fff" stroke-width=".6" opacity=".7"/>
+<line x1="535.25" x2="535.25" y1="58" y2="84" stroke="#fff" stroke-width=".6" opacity=".7"/>
+<line x1="554.25" x2="554.25" y1="58" y2="84" stroke="#fff" stroke-width=".6" opacity=".7"/>
+<line x1="573.25" x2="573.25" y1="58" y2="84" stroke="#fff" stroke-width=".6" opacity=".7"/>
+<text x="498.0" y="110" class="sl" text-anchor="middle">Appendices A–E</text>
+<rect x="593" y="58" width="17.5" height="26" fill="#f0f0f0" rx="2"/>
+<text x="602.5" y="97" class="sl" text-anchor="middle">Refs</text>
+<line x1="146.5" x2="146.5" y1="50" y2="63" stroke="#111" stroke-width="1.2"/>
+<rect x="125.2" y="35" width="42.599999999999994" height="15" rx="7.5" fill="#111"/>
+<text x="146.5" y="46" class="sk" text-anchor="middle">15, 16</text>
+<line x1="165.5" x2="165.5" y1="33" y2="63" stroke="#111" stroke-width="1.2"/>
+<rect x="155.4" y="18" width="20.2" height="15" rx="7.5" fill="#111"/>
+<text x="165.5" y="29" class="sk" text-anchor="middle">17</text>
+<line x1="184.5" x2="184.5" y1="50" y2="63" stroke="#111" stroke-width="1.2"/>
+<rect x="174.4" y="35" width="20.2" height="15" rx="7.5" fill="#111"/>
+<text x="184.5" y="46" class="sk" text-anchor="middle">18</text>
+<line x1="203.5" x2="203.5" y1="33" y2="63" stroke="#111" stroke-width="1.2"/>
+<rect x="193.4" y="18" width="20.2" height="15" rx="7.5" fill="#111"/>
+<text x="203.5" y="29" class="sk" text-anchor="middle">21</text>
+<line x1="260.5" x2="260.5" y1="50" y2="63" stroke="#111" stroke-width="1.2"/>
+<rect x="253.2" y="35" width="14.6" height="15" rx="7.5" fill="#111"/>
+<text x="260.5" y="46" class="sk" text-anchor="middle">7</text>
+<line x1="279.5" x2="279.5" y1="33" y2="63" stroke="#111" stroke-width="1.2"/>
+<rect x="272.2" y="18" width="14.6" height="15" rx="7.5" fill="#111"/>
+<text x="279.5" y="29" class="sk" text-anchor="middle">9</text>
+<line x1="336.5" x2="336.5" y1="50" y2="63" stroke="#111" stroke-width="1.2"/>
+<rect x="326.4" y="35" width="20.2" height="15" rx="7.5" fill="#111"/>
+<text x="336.5" y="46" class="sk" text-anchor="middle">14</text>
+</svg>
+<p class="cap">One cell is one page, both strips on the same scale. Black labels are your eight key figures at the page they appear on. Now: the first arrives on page 9, the most important on
+page 22, and the efficiency section with appendix A takes 17 pages. Proposed: the gas figures open the results on page 8 and the angle follows on page 11.
+Page counts for the proposal are targets; the current count is with all draft notes hidden and about a third of the prose still unwritten, so the real paper would be longer than 47.</p>
+
+<h2>Why it reads the way it does</h2>
+<div class="two"><div>
+<h3>One topic, many places</h3>
+<p>The same scan or data set is cut by observable and spread over the paper, so no single place carries the point.</p>
+<ul>
+<li><b>Chamber A's HV scan</b> is in Figs. 7a, 10, 26a and 45, and argued in §4, §5.3, §8 and appendices C and F.</li>
+<li><b>Timing</b> is in §5.3, §8, appendix C and appendix F.</li>
+<li><b>The geometry as built</b> (gap, bow, fringe, passivation) is in §2.1, §5.2, §6, §7.5 and §7.6.</li>
+<li><b>Chamber E and the beam test</b> are in §3.2, §6, §7.4, §9 and appendix D.</li>
+<li><b>Event displays</b>: Figs. 5, 12, 13, 28 and 29–42. Six of the fourteen single displays repeat the panels of Fig. 28.</li>
+</ul></div><div>
+<h3>Effort shows, importance doesn't</h3>
+<p>Words of running text per section (captions and draft notes left out): efficiency 2,480; bow 1,860; introduction 725; setups 690; design 445; angle, position and beam cross-check together 365; edge 280; gas 205; operation 205; timing 60.</p>
+<ul>
+<li>§5.3 is one 1.5-page paragraph that goes from maps to discharges to gain to timing to angle against charge.</li>
+<li>§5.5 and §5.6 tell the history of the reconstruction (&ldquo;in its first version it rarely fired&rdquo;). That is Paper II, or nowhere.</li>
+<li>§5 to §7 are still notes with bold run-in heads: up to forty numbers in a paragraph, and no sentence saying which one matters.</li>
+<li>The paper ends on chamber E's defect, then an empty conclusion. There is no summary table.</li>
+</ul></div></div>
+
+<h2>Proposed structure, section by section</h2>
+<p class="note">Thumbnails are the current figures. Green: keep. Grey-blue: merge. Orange: rebuild. Grey: to an appendix.
+If you prefer the conventional order, move §6 (operating point and efficiency) in front of §4; nothing else changes.</p>
+<div class="sec"><h3>1 · Introduction<span class="pp">1.5 pp</span></h3><p class="claim">Why the angle is the figure of merit, why a compact TPC, why resistive.</p><div class="figs">
+<div class="fig"><img src="thumbs/experiment_layout.png" alt="experiment_layout" loading="lazy"><span class="tag t-keep">keep</span>now Fig. 1</div>
+</div><ul><li>End with the results in one paragraph. The paper never states them up front (the abstract is still a note), and the last paragraph is only a roadmap.</li><li>One sentence on which pairs land in a single chamber. Fig. 1 draws the pair in two chambers, so a reader does not know why the two-particle study (your third result) matters.</li></ul></div>
+<div class="sec"><h3>2 · The chambers<span class="pp">3 pp (Stephan's text still to come)</span></h3><p class="claim">What was built, layer by layer.</p><div class="figs">
+<div class="fig"><img src="thumbs/chamber_stack.png" alt="chamber_stack" loading="lazy"><span class="tag t-merge">merge</span>now Fig. 2<br>with Fig. 3a,b into one figure</div>
+<div class="fig"><img src="thumbs/readout_layout.png" alt="readout_layout" loading="lazy"><span class="tag t-merge">merge</span>now Fig. 3<br>drop panel (c), the fan-out</div>
+</div><ul><li>Fig. 2's 200-word caption is a parts list. Make it a table (layer, material, thickness, X/X0) with a short caption. The paper calls the chamber a low-material tracker and never gives the material.</li><li>§2.1 Design choices quotes results (charge balance, angles, dark current, fringe) before the detector and the setups are described. State the choices here; judge them in the conclusions.</li><li>Replace &ldquo;delayed copies (~29&nbsp;% at &tau;&nbsp;&asymp;&nbsp;47&nbsp;ns)&rdquo;: it is the retired description and contradicts §3.4.</li></ul></div>
+<div class="sec"><h3>3 · Setups, data and reconstruction<span class="pp">2.5 pp</span></h3><p class="claim">Two setups, five chambers, one reconstruction; what one muon looks like.</p><div class="figs">
+<div class="fig"><img src="thumbs/bench_setup.png" alt="bench_setup" loading="lazy"><span class="tag t-merge">merge</span>now Fig. 4<br>with the SPS drawing (Fig. 49) as panel (b)</div>
+<div class="fig"><img src="thumbs/sps_setup.png" alt="sps_setup" loading="lazy"><span class="tag t-merge">merge</span>now Fig. 49<br>comes up from appendix D</div>
+<div class="fig"><img src="thumbs/reco_example.png" alt="reco_example" loading="lazy"><span class="tag t-merge">merge</span>now Fig. 5<br>with Fig. 12a: one muon, both views, data and model</div>
+</div><ul><li>Define once, here: reference track, interior, s<sub>68</sub>, the operating HV. Today s<sub>68</sub> is first defined in the caption of Fig. 21 and used from §2.1; &ldquo;interior&rdquo; is used in §3.3 and defined in §5.2.</li><li>§3.3 lists Run 1 against Run 2 in eight numbers the reader cannot yet parse. One sentence, and the unused time-series figure (<code>det_a_timeseries</code>) in an appendix, says the same.</li></ul></div>
+<div class="sec"><h3>4 · Drift velocity, gap and gas<span class="pp">3 pp · opens the results</span></h3><p class="claim">The chamber calibrates itself. Two independent velocities and a geometric gap agree to 2&nbsp;%; they lie on one Magboltz curve with 0.97&nbsp;% water; the water dries over hours, so v<sub>d</sub> is measured per run; oxygen shows as a falling column.</p><div class="figs">
+<div class="fig"><img src="thumbs/two_velocities.png" alt="two_velocities" loading="lazy"><span class="tag t-keep">keep</span>now Fig. 15<br>your key figure</div>
+<div class="fig"><img src="thumbs/gas_vE.png" alt="gas_vE" loading="lazy"><span class="tag t-keep">keep</span>now Fig. 16<br>add the other chambers' points (exists: gas_vE_timing)</div>
+<div class="fig"><img src="thumbs/gas_drying.png" alt="gas_drying" loading="lazy"><span class="tag t-keep">keep</span>now Fig. 17<br>say C and D share a gas line, if they do: that is what (c) shows</div>
+<div class="fig"><img src="thumbs/attachment_charge.png" alt="attachment_charge" loading="lazy"><span class="tag t-keep">keep</span>now Fig. 18<br>frame as: the same method finds oxygen where there is some</div>
+<div class="fig"><img src="thumbs/attachment.png" alt="attachment" loading="lazy"><span class="tag t-app">to appendix</span>now Fig. 19<br>history of the SPS gas</div>
+</div><ul><li>Write it. Today this section is about 200 words of notes for five figures; efficiency has 2,500 for seven.</li><li>Add the missing paragraph on the gap: the design says 30&nbsp;mm (§1, Figs. 1, 2), the data say 28.2&nbsp;mm, and nobody says so. The bow (centre 1.3–1.9&nbsp;mm deeper) belongs in the same paragraph.</li></ul></div>
+<div class="sec"><h3>5 · Tracking performance<span class="pp">3 pp · the centre of the paper</span></h3><p class="claim">About 1&deg; per view from one chamber, the chamber's own, flat in angle, gain and drift field; about 120&nbsp;&micro;m; about 40&nbsp;ns.</p><div class="figs">
+<div class="fig"><img src="thumbs/angle_resolution.png" alt="angle_resolution" loading="lazy"><span class="tag t-rebuild">rebuild</span>now Fig. 21<br>the main figure: see item 1 under Better plots</div>
+<div class="fig"><img src="thumbs/tracking_perf_all.png" alt="tracking_perf_all" loading="lazy"><span class="tag t-merge">merge</span>now Fig. 46<br>all chambers, into Fig. 21</div>
+<div class="fig"><img src="thumbs/bench_position_res.png" alt="bench_position_res" loading="lazy"><span class="tag t-merge">merge</span>now Fig. 20<br>with Fig. 22 into one position figure</div>
+<div class="fig"><img src="thumbs/sps_resolution.png" alt="sps_resolution" loading="lazy"><span class="tag t-merge">merge</span>now Fig. 22</div>
+<div class="fig"><img src="thumbs/hv_metrics.png" alt="hv_metrics" loading="lazy"><span class="tag t-merge">merge</span>now Fig. 10<br>panels a, c, d + timing (Figs. 26a, 45): what the gain buys</div>
+<div class="fig"><img src="thumbs/timing.png" alt="timing" loading="lazy"><span class="tag t-merge">merge</span>now Fig. 26</div>
+</div><ul><li>§7.1 is about 50 words today. It needs about a page: what the number is, that the reference adds at most 0.11–0.14&deg;, that Run 2 is out of sample, whether the bow correction is in it, and what limits it.</li><li>Timing joins here (angle, position, time), instead of sitting after the bow and the edge.</li></ul></div>
+<div class="sec"><h3>6 · Operating point and efficiency<span class="pp">3 pp</span></h3><p class="claim">A well-built chamber reaches its plateau before discharges cost anything. 94.8&nbsp;% of single tracks over the full area; the hardware accounts for 0.6&nbsp;pt of the loss.</p><div class="figs">
+<div class="fig"><img src="thumbs/hv_scan.png" alt="hv_scan" loading="lazy"><span class="tag t-keep">keep</span>now Fig. 7<br>your key figure; same x range in every panel</div>
+<div class="fig"><img src="thumbs/efficiency_map.png" alt="efficiency_map" loading="lazy"><span class="tag t-keep">keep</span>now Fig. 9<br>your key figure; say which data set (see the table of disagreements)</div>
+<div class="fig"><img src="thumbs/loss_budget.png" alt="loss_budget" loading="lazy"><span class="tag t-keep">keep</span>now Fig. 11</div>
+</div><ul><li>One efficiency number in the body. Today chamber A has more than a dozen (91.5 to 97.0&nbsp;%).</li><li>The definition in one paragraph; Table 2, the &delta;-ray size classes and the radius argument go to the appendix.</li><li>Dark current (Fig. 6) and recovery (Fig. 43) are one sentence each here, with the figures in an appendix.</li></ul></div>
+<div class="sec"><h3>7 · Two particles in one chamber<span class="pp">2 pp</span></h3><p class="claim">Equal charge on X and Y pairs the views correctly in 97.7&nbsp;%. Two separate tracks are found as often as one. Overlap in one view is the hard case.</p><div class="figs">
+<div class="fig"><img src="thumbs/two_particle.png" alt="two_particle" loading="lazy"><span class="tag t-keep">keep</span>now Fig. 13<br>panels (a), (b); (c) is a loss class, to the gallery</div>
+<div class="fig"><img src="thumbs/evd_showcase.png" alt="evd_showcase" loading="lazy"><span class="tag t-merge">merge</span>now Fig. 12<br>12b duplicates 13a in kind</div>
+<div class="fig"><img src="thumbs/charge_balance.png" alt="charge_balance" loading="lazy"><span class="tag t-merge">merge</span>now Fig. 8<br>becomes panel (a) of the pairing figure: the balance is why pairing works</div>
+<div class="fig"><img src="thumbs/xy_pairing.png" alt="xy_pairing" loading="lazy"><span class="tag t-keep">keep</span>now Fig. 14<br>your key figure; add the charge-asymmetry and time panels</div>
+</div><ul><li>Results only. The development history (&ldquo;in its first version it rarely fired&rdquo;, &ldquo;an earlier selection managed 80&nbsp;%&rdquo;, the veto rescue) is Paper II material.</li><li>New: efficiency against the separation of the two tracks, and the opening-angle resolution, from overlaid real muons (done once on the earlier reconstruction; see the opportunities).</li></ul></div>
+<div class="sec"><h3>8 · The chamber as built: bow and edges<span class="pp">2 pp</span></h3><p class="claim">Every readout board is dished by 1.3–1.9&nbsp;mm, seen three independent ways; correcting it gains 16&nbsp;% in angle. The unpassivated sides fringe over 20–30&nbsp;mm, which sets the fiducial.</p><div class="figs">
+<div class="fig"><img src="thumbs/bow_profiles.png" alt="bow_profiles" loading="lazy"><span class="tag t-rebuild">rebuild</span>now Fig. 23<br>show data, not five panels of fitted parabolas</div>
+<div class="fig"><img src="thumbs/bow_closure.png" alt="bow_closure" loading="lazy"><span class="tag t-merge">merge</span>now Fig. 24<br>the convincing panel; keep it</div>
+<div class="fig"><img src="thumbs/edge_turnon.png" alt="edge_turnon" loading="lazy"><span class="tag t-keep">keep</span>now Fig. 25</div>
+</div><ul><li>One page of bow in the body. Alternatives, stability, plausibility and the transfer to the beam (most of its 1,900 words) become an appendix that answers one question: is the bow real?</li></ul></div>
+<div class="sec"><h3>9 · Summary and conclusions<span class="pp">1 p</span></h3><p class="claim">The five chambers in one table; what varies between boards; the design choices judged; requirements met or not.</p><div class="figs">
+<div class="fig"><img src="thumbs/det4_stripes.png" alt="det4_stripes" loading="lazy"><span class="tag t-app">to appendix</span>now Fig. 27<br>Fig. 9e already shows the stripes; this map defines region R for the beam appendix</div>
+</div><ul><li>A table of the five chambers (efficiency at the run HV and at the scan optimum, angle X/Y, position, time, dish depth, water, dark current). The paper has no summary table.</li><li>Chamber E's stripes as a full section is a weak ending. A paragraph here, the map in the beam-test appendix.</li><li>§5.6 Avenues for improvement becomes three sentences here.</li></ul></div>
+<div class="sec"><h3>Appendices<span class="pp">about 10 pp, each answering one question</span></h3>
+<ul>
+<li><b>A · How is the efficiency defined, and where does each lost track go?</b> Definition and radius (Figs. 50, 51), Table 2, Table 3, one two-page gallery of the loss classes.</li>
+<li><b>B · Discharges and currents.</b> Recovery (Fig. 43), dark current (Figs. 6, 44).</li>
+<li><b>C · Gain and timing in detail.</b> Figs. 45, 47, 52, the charge spectrum and gain curves, the ten-hour stability.</li>
+<li><b>D · Is the bow real?</b> Alternatives, stability over nineteen runs, plausibility, transfer to the beam.</li>
+<li><b>E · The beam test of chamber E.</b> Stripes and region R (Fig. 27), gas history (Fig. 19).</li>
+</ul>
+<p class="note">To Paper II, or cut: the development of the two-track fit, the discharge-veto rescue, the saturated-blob model tests, §5.6, the X neighbour asymmetry (§7.3: no figure, hypothesis &ldquo;unproven&rdquo;, effect at most 5&nbsp;&micro;m), and the signal-to-noise against walk argument.</p></div>
+
+<h2>Your eight key figures</h2>
+<div class="tw"><table><tr><th>Fig.</th><th></th><th>What it is, and whether I agree</th><th>What holds it back</th></tr><tr><td class="n">21</td><td><img src="thumbs/angle_resolution.png" alt="angle_resolution" loading="lazy"></td><td><b>Angular resolution of chamber A</b><br>Agree: the main result. Weakest presentation of your eight.</td><td>Half the figure is a diagonal line. It does not show the residual distribution, chamber B, anything beyond &plusmn;20&deg;, or what the 1&deg; consists of. Rebuild it (item 1 under Better plots).</td></tr><tr><td class="n">9</td><td><img src="thumbs/efficiency_map.png" alt="efficiency_map" loading="lazy"></td><td><b>Efficiency maps, five chambers</b><br>Agree. Honest and readable at a glance.</td><td>The caption says &ldquo;golden-run&rdquo; and &ldquo;pool of 30 rows, 70,470 rays&rdquo; in one breath, and its 92.6&nbsp;% is none of the numbers used elsewhere. C and D are shown 15 and 65&nbsp;V above their own optimum, which makes them look worse than Fig. 7 says they are.</td></tr><tr><td class="n">14</td><td><img src="thumbs/xy_pairing.png" alt="xy_pairing" loading="lazy"></td><td><b>X/Y pairing by charge</b><br>Agree. One message, specific to this readout.</td><td>Only the charge discriminant is drawn, though &ldquo;charge + time&rdquo; is the number quoted. The section around it is mostly reconstruction history, and the paper never says why two tracks in one chamber matter.</td></tr><tr><td class="n">15</td><td><img src="thumbs/two_velocities.png" alt="two_velocities" loading="lazy"></td><td><b>Two velocities and the gap</b><br>Agree. With Fig. 16, the best argument in the paper: three independent quantities close.</td><td>Nothing to fix in the figure. The text does not say that 28.2&nbsp;mm is 1.8&nbsp;mm short of the design.</td></tr><tr><td class="n">16</td><td><img src="thumbs/gas_vE.png" alt="gas_vE" loading="lazy"></td><td><b>v<sub>d</sub>(E) against Magboltz</b><br>Agree.</td><td>Could carry the other chambers' points with their water curves (the unused <code>gas_vE_timing</code> has them).</td></tr><tr><td class="n">17</td><td><img src="thumbs/gas_drying.png" alt="gas_drying" loading="lazy"></td><td><b>The gas dries overnight</b><br>Agree, as support: it is why v<sub>d</sub> is measured per run.</td><td>It shows C and D, the two discharge-limited chambers, not A. The x axis runs to 15&nbsp;h for a &ldquo;night&rdquo;.</td></tr><tr><td class="n">18</td><td><img src="thumbs/attachment_charge.png" alt="attachment_charge" loading="lazy"></td><td><b>Charge against drift time: attachment</b><br>A good figure, but the one of your eight least about this detector.</td><td>It is chamber E in the SPS gases, the cross-check data set. The independent reader moved 17–19 to an appendix. I would keep it only as the closing paragraph of the gas section.</td></tr><tr><td class="n">7</td><td><img src="thumbs/hv_scan.png" alt="hv_scan" loading="lazy"></td><td><b>HV scans: plateau against discharges</b><br>Agree.</td><td>Panels have different x ranges; chamber C's long-run star sits off its own curve. Fig. 10b repeats panel (a); Fig. 48 repeats all of it.</td></tr></table></div>
+<h3>Results you did not list that deserve more room</h3>
+<div class="tw"><table><tr><th>Fig.</th><th>Result</th><th>Why it should be more visible</th></tr><tr><td class="n">23 / 24</td><td><b>The bow</b></td><td>The independent reader ranked it third: new, general, on all five chambers. I agree it earns one body figure. Not as drawn: Fig. 23 is five panels of fitted parabolas with no data points.</td></tr><tr><td class="n">10</td><td><b>Flat over a factor 13 in gain</b></td><td>The independent reader ranked it second. Efficiency, angle and position do not move from 425 to 490&nbsp;V; only the time does. That is an operating-margin result and belongs next to the angle.</td></tr><tr><td class="n">11</td><td><b>Loss budget</b></td><td>The compact answer to &ldquo;where does the 5&nbsp;% go&rdquo;. It replaces most of §5.4 and appendix A in the body.</td></tr><tr><td class="n">25</td><td><b>Edge turn-on</b></td><td>Justifies the fiducial every headline number uses.</td></tr></table></div>
+
+<h2>Better plots and analyses, in order of value</h2>
+<p class="note">Nothing here needs new data. Green: the numbers or the figure already exist. Orange: an analysis to re-run on what we have. Blue: text or a drawing.</p>
+<div class="tw"><table><tr><th>What</th><th>Why, and what already exists</th></tr><tr><td class="n" style="white-space:normal">1. Rebuild Fig. 21 as the paper's main figure<br><span class="st1 s-ex">numbers exist</span></td><td><ul class='in'><li><b>Panel (a):</b> the residual &theta;<sub>fit</sub>&nbsp;&minus;&nbsp;&theta;<sub>ref</sub>, X and Y, on a log scale with s<sub>68</sub> marked, so the tails are visible.</li><li><b>Panel (b):</b> s<sub>68</sub> against angle for A and B, plus a beam point at 25&deg;. Chamber E's inclined view at SPS reads 0.96–1.10&deg; with the beam itself as the reference. That is another setup, chamber and gas, beyond the bench's &plusmn;20&deg;. Two versions of the number exist (<code>gb_m3_angle</code>, and the Paper II hits study); it needs one clean one.</li><li><b>Panel (c):</b> all five chambers, X and Y (now Fig. 46 in the appendix).</li><li><b>In the text:</b> the reference and scattering add at most 0.11&deg; (X) and 0.14&deg; (Y) (<code>rerun/model_audit/followups/gb_m3_angle</code>), so the 1&deg; is the chamber's own. Run 2 is out of sample and gives the same number. The resolution is flat over a factor 13 in gain and from 166 to 366&nbsp;V/cm (<code>rerun/paper1_res/report/figures/res_vs_drift.png</code>).</li><li><b>Optional, and worth it:</b> one grey line for the best hit-time method on the same events (2.1 / 2.7&deg;, the Paper II result). It shows in one glance why the waveform fit matters.</li></ul></td></tr><tr><td class="n" style="white-space:normal">2. Say what the 1&deg; is made of<br><span class="st1 s-ex">numbers exist</span></td><td>The budget exists (<code>rerun/paper1_floor/README.md</code>): reference negligible, ideal-model simulation 0.3–0.46&deg;, saturation and bright tails 12–37&nbsp;% of the excess, and a remainder that behaves as event-to-event charge-pattern fluctuation larger than the simulation makes. Three sentences and a pointer to Paper II. Today the headline section says only that 0.6&deg; is &ldquo;not identified&rdquo;, which raises the question and leaves it.</td></tr><tr><td class="n" style="white-space:normal">3. Material budget, and the 1&deg; against scattering<br><span class="st1 s-tx">text or drawing only</span></td><td>No X/X0 exists anywhere in the repo. From the thicknesses in the Fig. 2 caption I get about 0.10&nbsp;% X0 in front of the drift volume (60&nbsp;&micro;m Mylar 0.021, 50&nbsp;&micro;m Kapton 0.018, 9&nbsp;&micro;m copper 0.063), which scatters an 8&nbsp;MeV electron by about 2.2&deg; (1.3&deg; without the copper), against 1.7&deg; for the 20&nbsp;cm of air quoted in the introduction. This is my estimate, and the copper thickness is marked &ldquo;assumed&rdquo;: check it. If it holds, the conclusion writes itself: the chamber's 1&deg; is below the scattering in its own entrance foils and the air at every lepton energy of interest. It also says the cathode copper matters more than the unexplained 0.6&deg;.</td></tr><tr><td class="n" style="white-space:normal">4. A table of the five chambers<br><span class="st1 s-ex">numbers exist</span></td><td>Efficiency (run HV and scan optimum), angle X/Y, position, time, dish depth, water, dark current. Every number is already in the text or <code>rerun/PAPER1_NUMBERS_2026-10-31.md</code>.</td></tr><tr><td class="n" style="white-space:normal">5. The gap: 30 designed, 28.2 measured<br><span class="st1 s-tx">text or drawing only</span></td><td>One paragraph in §4, with the bow. Two independent methods agree on 28.2&nbsp;mm, which makes the 1.8&nbsp;mm shortfall a result, not an embarrassment.</td></tr><tr><td class="n" style="white-space:normal">6. Two-track separation and the opening-angle resolution<br><span class="st1 s-re">analysis on existing data</span></td><td>Overlaying two real single-muon events at a chosen separation gives the probability of finding both against separation, and the resolution of the opening angle of a pair in one chamber. It was done on chamber A with the earlier reconstruction (<code>rerun/multiparticle/</code>, 26 Oct): nothing resolved below 12&nbsp;mm by the standard chain, 28/43/50&nbsp;% at 0–6/6–12/12–18&nbsp;mm with the joint fit, and an opening-angle &sigma; of 1.47&deg; above 24&nbsp;mm. Re-run on the final reconstruction, this is the figure that turns §7 into a two-track study. It is a batch job, not a laptop one.</td></tr><tr><td class="n" style="white-space:normal">7. The bow, from data<br><span class="st1 s-re">analysis on existing data</span></td><td>A measured map of the mesh height for chamber A in cells, profiles with binned points and the fit, the dish depth of the five chambers as five points, and the closure plot (Fig. 24). A map of the angle bias before and after the correction would show the effect directly. The fit products exist in <code>fb_bow_maps</code>.</td></tr><tr><td class="n" style="white-space:normal">8. Pairing: when it works<br><span class="st1 s-re">analysis on existing data</span></td><td>Correct-pairing fraction against the charge ratio of the two particles (the text says 100&nbsp;% above a factor 1.65, 95&nbsp;% when similar) and the time-difference distribution as a second panel of Fig. 14.</td></tr><tr><td class="n" style="white-space:normal">9. Charge spectrum and gain curve<br><span class="st1 s-ex">numbers exist</span></td><td><code>rerun/paper1_charge/figures/</code> has the track-charge spectra and the gain curves of four chambers, in working style. §4 is titled &ldquo;gain&rdquo; and shows neither. State that the absolute gain is not calibrated (no charge calibration of the electronics exists).</td></tr><tr><td class="n" style="white-space:normal">10. Stability over ten hours<br><span class="st1 s-ex">numbers exist</span></td><td><code>papers/paper1/figures/det_a_timeseries.pdf</code> is made and unused: charge, efficiency, position, angle and time flat through Runs 1 and 2 while v<sub>d</sub> rises as the gas dries. It is the chamber-A version of Fig. 17 and a standard figure for a detector paper. Appendix, or panel (d) of Fig. 17.</td></tr><tr><td class="n" style="white-space:normal">11. Efficiency against angle and drift field<br><span class="st1 s-re">analysis on existing data</span></td><td>Against drift field the numbers exist (84&nbsp;% at 100&nbsp;V, 92–94&nbsp;% from 300 to 1100&nbsp;V); against angle nothing exists. Both are one-panel plots a referee expects.</td></tr><tr><td class="n" style="white-space:normal">12. Compare with other detectors<br><span class="st1 s-tx">text or drawing only</span></td><td>No number in the paper is set against the literature (ATLAS NSW micro-TPC, the T2K resistive Micromegas TPCs, charge-dispersion readouts). One paragraph in the conclusions.</td></tr></table></div>
+
+<h2>Numbers and statements that disagree</h2>
+<p class="note">Each row is the same quantity quoted differently in two or more places. Some differ for a reason (another denominator, another data set); the paper does not say so, and a referee will stop at each.</p>
+<h3>These change what a reader concludes</h3><div class="tw"><table class="w3"><tr><th>Quantity</th><th>What the paper says, and where</th><th>Note</th></tr>
+<tr><td class="n" style="white-space:normal">Drift gap</td><td>30&nbsp;mm in §1, Fig. 1 and Fig. 2 (&ldquo;30.000&nbsp;mm, nominal&rdquo;); 28.2&nbsp;&plusmn;&nbsp;0.5 and 28.19&nbsp;&plusmn;&nbsp;0.19&nbsp;mm measured in §6; chamber E 27.9 or 28.6&nbsp;mm in the caption of Fig. 19.</td><td>Never discussed. The bow section adds that the centre is 1.3–1.9&nbsp;mm further from the cathode than a point 150&nbsp;mm out.</td></tr>
+<tr><td class="n" style="white-space:normal">Time resolution against HV</td><td>Fig. 26a: uncorrelated part about 83&nbsp;ns and event time about 102&nbsp;ns at 425&nbsp;V. Fig. 45a and §5.3: 109 and 105&nbsp;ns.</td><td>Two versions of one curve, one in the body and one in the appendix.</td></tr>
+<tr><td class="n" style="white-space:normal">Gain doubling</td><td>16.7&nbsp;V in §4 (behind I&nbsp;&prop;&nbsp;G<sup>1.25</sup>) and Fig. 44; 18.8&nbsp;V in §5.3 and Fig. 10a.</td><td>&ldquo;A factor 13 from 425 to 490&nbsp;V&rdquo; fits neither (15 or 11).</td></tr>
+<tr><td class="n" style="white-space:normal">What the resistive layer does</td><td>§2.1: delayed copies, ~29&nbsp;% at &tau;&nbsp;&asymp;&nbsp;47&nbsp;ns. §3.4: diffusion, the prompt footprint and RC spreading. §7.3: a copy 0.13 of the centre pulse, about 110&nbsp;ns late.</td><td>§2.1 is the retired description.</td></tr>
+<tr><td class="n" style="white-space:normal">Dead time after a discharge</td><td>Below 1.2&nbsp;ms (§4); &ldquo;fitted below 0.1&nbsp;s&rdquo; (appendix B).</td><td></td></tr>
+<tr><td class="n" style="white-space:normal">Dark current</td><td>&ldquo;No measurable ohmic part&rdquo; (§4); &ldquo;a leakage floor of about 0.2&nbsp;&micro;A&rdquo; (Fig. 6 caption).</td><td></td></tr>
+<tr><td class="n" style="white-space:normal">Range of the field fringe</td><td>&ldquo;Decays within ~10&nbsp;mm of the edges&rdquo; (§7.5, as an argument for the bow); &ldquo;fringes over 20–30&nbsp;mm&rdquo; (§2.1, §7.6).</td><td></td></tr>
+<tr><td class="n" style="white-space:normal">What the 1&deg; includes</td><td>§7.1 does not say whether the bow correction (16&nbsp;% gain, §7.5) is applied. &ldquo;Interior&rdquo; is &ge;&nbsp;8&nbsp;mm from the y sides (§5.2), but §7.6 says angles need &ge;&nbsp;30&nbsp;mm.</td><td></td></tr>
+<tr><td class="n" style="white-space:normal">Angle error budget</td><td>§5.3: the fit's own error is &sigma;<sub>tan</sub>&nbsp;=&nbsp;0.014–0.021, which is 0.8–1.2&deg;. §7.1: 0.56–0.65&deg; is unexplained.</td><td>A reader cannot reconcile the two; the paper gives no budget.</td></tr>
+<tr><td class="n" style="white-space:normal">Run 2 drift velocity</td><td>37.2&nbsp;&micro;m/ns (§3.3). That is also the scan value at 390&nbsp;V/cm (§6); Run 2 ran at 355&nbsp;V/cm, and the unused time series shows 36.2–36.6.</td><td>Check: possibly a copied number.</td></tr>
+<tr><td class="n" style="white-space:normal">C and D</td><td>Called production defects (§5.3). Their long runs are 15 and 65&nbsp;V above their own optimum, where Fig. 7 has them near 85 and 90&nbsp;%.</td><td>A referee will ask whether it is the board or the operating point.</td></tr>
+</table></div>
+<h3>Efficiency: too many versions of one number</h3><div class="tw"><table class="w3"><tr><th>Quantity</th><th>What the paper says, and where</th><th>Note</th></tr>
+<tr><td class="n" style="white-space:normal">A, interior, the track the reconstruction keeps</td><td>92.6&nbsp;% (§5.3, Fig. 9), 92.3&nbsp;% (§5.2), 92.29&nbsp;% (Table 3).</td><td>Fig. 9 is a pool of 30 &ldquo;rows&rdquo; (70,470 rays), not Runs 1 and 2 (29,398).</td></tr>
+<tr><td class="n" style="white-space:normal">A, interior, single track</td><td>95.7&nbsp;% (§5.2, §5.4, appendix E); 95.94&nbsp;% (Table 2).</td><td>Table 2 removes the reference and geometry classes; §5.2 says nothing is removed.</td></tr>
+<tr><td class="n" style="white-space:normal">A, interior, all tracks</td><td>95.1 (Fig. 50), 95.31 (Table 2), 95.48 / 95.26 (§3.3).</td><td></td></tr>
+<tr><td class="n" style="white-space:normal">Hardware floor; edge cost</td><td>0.6&nbsp;% (§5.4, §5.6) against 0.72&nbsp;% (appendix A). 0.9&nbsp;pt (§5.4, §7.6) against 1.5&nbsp;pt (§5.6).</td><td>Different denominators, same words.</td></tr>
+<tr><td class="n" style="white-space:normal">Plateau of A</td><td>91–94&nbsp;% (Fig. 7 caption); 90–94&nbsp;% (§5.3).</td><td></td></tr>
+<tr><td class="n" style="white-space:normal">Merged-projection events</td><td>146, 176, 195 and 232 in different places. &ldquo;620 to 662, 232 to 176&rdquo; does not conserve events (852, 838). &ldquo;0.8&nbsp;% of tracks&rdquo; (§5.6) against 0.46&nbsp;% (Table 3).</td><td></td></tr>
+<tr><td class="n" style="white-space:normal">Two-particle samples</td><td>931 (§5.5), 276 (§5.4), 567 (Fig. 14), with no sentence connecting them. Class (i): 95.6&nbsp;&plusmn;&nbsp;0.8 (Fig. 13) against 95.9&nbsp;&plusmn;&nbsp;0.8 (Table 2).</td><td></td></tr>
+<tr><td class="n" style="white-space:normal">Pairing on A by the standard reconstruction</td><td>96.6&nbsp;% and 95.9&nbsp;% in the same subsection.</td><td>The sentence &ldquo;The production reconstruction makes the same choice&hellip;&rdquo; is printed twice.</td></tr>
+</table></div>
+<h3>Other numbers</h3><div class="tw"><table class="w3"><tr><th>Quantity</th><th>What the paper says, and where</th><th>Note</th></tr>
+<tr><td class="n" style="white-space:normal">Angle</td><td>A, X: 0.98&deg; (§2.1) and 0.99&deg; (§7.1). B: 1.03/1.08&deg; (§2.1) and 1.05/1.13&deg; (§7.1). Abstract: 1.15–2.51&deg;.</td><td>0.82–0.94&deg; by charge decile (§5.3) is below the headline with no explanation.</td></tr>
+<tr><td class="n" style="white-space:normal">Position</td><td>Abstract: 176&nbsp;&micro;m, 0.30 of the pitch. §7.4: 138 / 120&nbsp;&micro;m. Core 0.50/0.51&nbsp;mm (§3.3), 0.55/0.53 (appendix E).</td><td></td></tr>
+<tr><td class="n" style="white-space:normal">Charge balance</td><td>Abstract 0.49/0.53; text 0.485/0.513. D's spread 0.116 (§2.1, §5.1) against &sigma;(ln) 0.109 in the Fig. 8 caption, which is about 0.027 in f.</td><td></td></tr>
+<tr><td class="n" style="white-space:normal">Active area</td><td>399.4 &minus; 18.0 &minus; 18.7 = 362.7&nbsp;mm; quoted 359.9. The x edge is at 398.6&nbsp;mm in §7.6.</td><td></td></tr>
+<tr><td class="n" style="white-space:normal">Water</td><td>Fig. 19's band is labelled A–D, 0.42–1.00&nbsp;%, but 0.42 is chamber E (§6).</td><td></td></tr>
+<tr><td class="n" style="white-space:normal">Time at fixed amplitude</td><td>44&nbsp;&plusmn;&nbsp;5 to 30&nbsp;&plusmn;&nbsp;4&nbsp;ns is called &ldquo;barely changes&rdquo;. It is the uncorrelated part in §5.3 and the event time in appendix F.</td><td></td></tr>
+<tr><td class="n" style="white-space:normal">Bow gain</td><td>&ldquo;3–29&nbsp;% per view&rdquo; and &ldquo;2–29&nbsp;% on the X views&rdquo; in one sentence.</td><td></td></tr>
+<tr><td class="n" style="white-space:normal">Discharge</td><td>A chip with &ge;&nbsp;8 strips over 3000&nbsp;ADC (Fig. 7); more than 50 strips (the veto, §5.4). About 4&nbsp;% of triggers at 490&nbsp;V against a 0.47&nbsp;% loss.</td><td>Say how the two relate.</td></tr>
+<tr><td class="n" style="white-space:normal">Dangling references</td><td>&ldquo;Noise bands (G<sup>1.4–1.6</sup>, appendix A)&rdquo; is not in appendix A. §3.2 promises the angle scale at 25.4&deg; and the footprint at normal incidence; §7.4 has neither.</td><td></td></tr>
+<tr><td class="n" style="white-space:normal">Operating points</td><td>&ldquo;480/480/440&nbsp;V&rdquo; (§4 placeholder); long runs at 490–495&nbsp;V; optima 480 and 430&nbsp;V (Fig. 7).</td><td></td></tr>
+</table></div>
+
+<h2>Internal language a reader will not follow</h2>
+<div class="tw"><table><tr><th>Kind</th><th>Where</th></tr><tr><td class="n" style="white-space:normal">File paths and line numbers in text and captions</td><td>Tables 2 and 3, §5.5 (four), §5.6, §7.5 (<code>xcheck.py</code>, <code>summary.py</code>, <code>ref_bow_bound.py</code>), appendix E (<code>budget.py:174</code>), Fig. 37</td></tr><tr><td class="n" style="white-space:normal">A name and a date in body text</td><td>&ldquo;(Dylan 2026-11-02)&rdquo; in §7.6. It is plain text, so it survives when the draft notes are hidden.</td></tr><tr><td class="n" style="white-space:normal">Pipeline words</td><td>pass 1, the pass, re-pass, pre-pass, golden run, rows, plateau pools, production pick, multi-track credit, bench switch, A1, &ldquo;outlier class FIT&rdquo;</td></tr><tr><td class="n" style="white-space:normal">Hardware shorthand</td><td>M3 (Fig. 4, appendix E, Fig. 52), DUT, FEU, CM, ZS and RAW, L4–L7, run numbers 55/63/71/149, &ldquo;June boards&rdquo;, &ldquo;capsule focus&rdquo;</td></tr><tr><td class="n" style="white-space:normal">Never defined</td><td>ladder, column, head-on stack, box model, seed gap, rail, w<sub>0</sub>, k (Fig. 17), K (§7.3), &ldquo;trigger term&rdquo; (Fig. 47)</td></tr><tr><td class="n" style="white-space:normal">One symbol, two meanings</td><td>f (charge fraction; back-plane resolution), R (matching radius; region), v and v<sub>d</sub>, q and Q</td></tr><tr><td class="n" style="white-space:normal">One thing, three names</td><td>resist HV, resistive-strip HV, mesh voltage. Dates as 6-27 with no year. &ldquo;Paper II&rdquo; and [1].</td></tr></table></div>
+
+<details><summary>All 52 figures, one line each</summary><div class="tw"><table><tr><th>Fig.</th><th>What</th><th>Verdict</th></tr><tr><td class="n">1</td><td>experiment layout and TPC principle</td><td>keep</td></tr><tr><td class="n">2</td><td>chamber cross-section</td><td>merge with 3; caption becomes a table</td></tr><tr><td class="n">3</td><td>readout board</td><td>merge with 2; drop (c)</td></tr><tr><td class="n">4</td><td>cosmic bench</td><td>merge with 49</td></tr><tr><td class="n">5</td><td>one muon: data and model</td><td>merge with 12a</td></tr><tr><td class="n">6</td><td>dark current of A</td><td>appendix, with 44 (log y)</td></tr><tr><td class="n">7</td><td>efficiency and discharges against HV</td><td><b>key</b>: keep, opens §6</td></tr><tr><td class="n">8</td><td>X/Y charge balance</td><td>merge into the pairing figure (14)</td></tr><tr><td class="n">9</td><td>efficiency maps</td><td><b>key</b>: keep</td></tr><tr><td class="n">10</td><td>A against HV: charge, efficiency, angle, position</td><td>merge with 26a/45 into one &ldquo;against gain&rdquo; figure; (b) repeats 7a</td></tr><tr><td class="n">11</td><td>where the single-track loss goes</td><td>keep in the body</td></tr><tr><td class="n">12</td><td>one muon; two muons</td><td>12a merges with 5, 12b with 13a</td></tr><tr><td class="n">13</td><td>three two-particle displays</td><td>keep (a), (b); (c) to the gallery</td></tr><tr><td class="n">14</td><td>pairing by charge</td><td><b>key</b>: keep, add panels</td></tr><tr><td class="n">15</td><td>two velocities and the gap</td><td><b>key</b>: keep</td></tr><tr><td class="n">16</td><td>v(E) and Magboltz</td><td><b>key</b>: keep</td></tr><tr><td class="n">17</td><td>drying overnight</td><td><b>key</b>: keep</td></tr><tr><td class="n">18</td><td>attachment in the column</td><td><b>key</b>: keep, as the end of §4</td></tr><tr><td class="n">19</td><td>water and O<sub>2</sub> at SPS against time</td><td>appendix (beam test)</td></tr><tr><td class="n">20</td><td>bench position resolution</td><td>merge with 22; panel (b) is hard to read</td></tr><tr><td class="n">21</td><td>angular resolution</td><td><b>key</b>: rebuild</td></tr><tr><td class="n">22</td><td>position resolution in the beam</td><td>merge with 20</td></tr><tr><td class="n">23</td><td>mesh height, five chambers</td><td>rebuild from data, merge with 24</td></tr><tr><td class="n">24</td><td>tilt measured against predicted</td><td>keep as a panel</td></tr><tr><td class="n">25</td><td>edges: efficiency, angle bias, column</td><td>keep</td></tr><tr><td class="n">26</td><td>time resolution</td><td>merge into the &ldquo;against gain&rdquo; figure; (a) disagrees with 45a</td></tr><tr><td class="n">27</td><td>chamber E stripes at SPS</td><td>appendix (beam test)</td></tr><tr><td class="n">28</td><td>six loss classes</td><td>one two-page gallery of all classes</td></tr><tr><td class="n">29–42</td><td>fourteen single-event displays</td><td>cut: six repeat the panels of 28; the rest join the gallery</td></tr><tr><td class="n">43</td><td>efficiency and charge after a discharge</td><td>appendix; it is the only evidence for &ldquo;no dead time&rdquo;</td></tr><tr><td class="n">44</td><td>dark current, all boards</td><td>appendix, with 6</td></tr><tr><td class="n">45</td><td>time and angle scale against HV</td><td>merge with 10 and 26</td></tr><tr><td class="n">46</td><td>angular resolution, all chambers</td><td>promote: into Fig. 21</td></tr><tr><td class="n">47</td><td>timing, all chambers</td><td>appendix; panel (c) is the summary</td></tr><tr><td class="n">48</td><td>alternative to Fig. 7</td><td>delete</td></tr><tr><td class="n">49</td><td>SPS setup</td><td>merge with 4</td></tr><tr><td class="n">50</td><td>efficiency against matching radius</td><td>appendix</td></tr><tr><td class="n">51</td><td>residual distributions</td><td>appendix</td></tr><tr><td class="n">52</td><td>time against drift field</td><td>appendix</td></tr></table></div></details>
+
+<h2>What the independent reader said</h2>
+<p>I gave a second Claude instance only the compiled PDF and asked it to referee the paper cold: no list of key figures, none of my notes. Its ranking of the figures that carry the paper:</p>
+<p><b>21</b>, 10, 23 (+24), <b>9</b>, 25, 11, <b>14</b>, 20, <b>16</b>, <b>7</b>. Bold are yours.</p>
+<ul>
+<li><b>Where it agrees with you:</b> Fig. 21 is the result, and the reader meets it 21 pages in. The maps, the pairing figure, v(E) and the HV scan are in its ten.</li>
+<li><b>Where it differs:</b> it would send Figs. 17, 18 and 19 to an appendix and keep only Fig. 16 (with 15c folded in) for the gas. It rated the bow, the flat response against gain, and the edge higher than any gas figure.</li>
+<li><b>Its order</b> was the conventional one: gas and calibration, operation, efficiency, tracking, two particles, timing, chamber-to-chamber variation. Mine differs only in putting tracking straight after the calibration it depends on.</li>
+<li><b>What it asked for as a referee</b> matches the list above: a material budget, the chamber's own angular resolution with the reference removed, a hit-time result on the same data, binned data for the bow, efficiency against two-track separation, absolute gain and electronics, a table of the five chambers, the SPS angle result promised in §3.2, and a comparison with the literature.</li>
+</ul>
+
+<h2>How this audit was done, and what it did not check</h2>
+<ul>
+<li>I read every section file, built the paper (47 pages with the draft notes hidden), and looked at every page and figure. The Overleaf head and the repo were identical, so nothing was pulled or pushed.</li>
+<li>The disagreements were found by reading, and by the independent reader; I checked each one against the text. I did not re-derive any number from the data, so where two values disagree I do not say which is right.</li>
+<li>The scattering estimate in the opportunities is mine, from the thicknesses in the Fig. 2 caption. Treat it as a prompt to check, not a result.</li>
+<li>Stephan's sections (§2.2–2.5) are empty, so the design and production half of the title could not be assessed.</li>
+<li>I did not check the references or the reference list.</li>
+</ul>
+</main></body></html>

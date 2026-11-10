@@ -7,6 +7,7 @@ The two companion papers of `mx_june_cosmic_qa/PAPER_PLAN.md`, as LaTeX, at outl
 | `paper1/` | I. Detector & performance (cosmic bench + det4 at SPS) | linked 2026-10-19 (`https://git.overleaf.com/6ad61186fe591228d14dac68`) |
 | `mpgd26_proceedings/` | MPGD2026 proceedings (JINST, 5 pages, due 2027-01-17) | linked 2026-10-20 (`https://git.overleaf.com/6ad72207b122b98dea142d04`) |
 | `infn_in2p3_2026_abstract/` | abstract draft, INFN–IN2P3 detector R&D conference (Frascati, Dec 2026), not submitted | — |
+| `paper1_audit/` | audit of Paper I (2026-11-10): organisation, key figures, numbers that disagree, plots to add. Open `report.html`; `make_report.py` builds it (and its untracked `thumbs/`) | not synced |
 | `paper2/` | II. Reconstruction: why hit times fail, the waveform forward model, hits vs waveforms | not linked yet |
 
 Journals (decided 2026-11-01): Paper I → JINST, Paper II → NIM A; reasoning in `JOURNAL_STRATEGY.md`.
