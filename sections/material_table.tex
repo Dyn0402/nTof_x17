@@ -1,0 +1,26 @@
+% Numbers: figs/out/material_budget.json (figs/make_material_budget.py). Highland, per projection, electron momentum.
+\begin{table}[tbp]
+  \centering\small
+  \caption{Material between the target and the end of the drift gap at normal incidence, and the multiple scattering
+  it causes: rms angle $\theta_0$ per projection for electrons of 4, 8 and 16\,MeV kinetic energy (Highland formula;
+  the summed rows apply it to the summed thickness). The aluminisation of the window is ignored. $^\dagger$: the copper
+  thickness of the cathode is assumed.}
+  \label{tab:material}
+  \begin{tabular}{llrrrr}
+    \hline
+     & & & \multicolumn{3}{c}{$\theta_0$ [\textdegree] at} \\
+    layer & thickness & $x/X_0$ [\%] & 4\,MeV & 8\,MeV & 16\,MeV \\
+    \hline
+    air, target to window & 200\,mm & 0.066 & 3.24 & 1.70 & 0.88 \\
+    entrance window, Mylar & 60\,\textmu m & 0.021 & 1.72 & 0.90 & 0.47 \\
+    gas gap & 5\,mm & 0.004 & 0.70 & 0.37 & 0.19 \\
+    drift cathode, Kapton & 50\,\textmu m & 0.018 & 1.55 & 0.82 & 0.42 \\
+    drift cathode, copper$^\dagger$ & 9\,\textmu m & 0.063 & 3.16 & 1.66 & 0.85 \\
+    \hline
+    in front of the drift volume & & 0.171 & 5.49 & 2.88 & 1.48 \\
+    \quad without the copper$^\dagger$ & & 0.109 & 4.27 & 2.24 & 1.15 \\
+    \hline
+    drift gas, Ar/iC$_4$H$_{10}$ 95/5 & 28.2\,mm & 0.024 & 1.83 & 0.96 & 0.49 \\
+    \hline
+  \end{tabular}
+\end{table}
