@@ -90,15 +90,27 @@ and pairs two tracks without a third coordinate.
 \end{figure}
 
 \subsection{How close two tracks can be}\label{sec:separation}
-\IfFileExists{sections/two_track_separation_text.tex}{\input{sections/two_track_separation_text}}{%
-\analysis{SEP}{efficiency against the separation of two tracks, and the resolution of the opening angle of a pair in one
-chamber, from overlaid real single-muon events on the final reconstruction. Done once on an earlier reconstruction
-(26 October: nothing resolved below 12\,mm by the standard chain, 28/43/50\,\% at 0--6/6--12/12--18\,mm with the joint fit,
-opening angle to 1.47\textdegree{} above 24\,mm). An agent is assessing a re-run; if it needs the batch system the job is
-prepared under \texttt{papers/paper1\_v2/figs/two\_track\_batch/}.}
+Real two-particle events cannot say how close two tracks may come before they are no longer resolved: the second
+particle has no reference, and the separation is unknown exactly where the tracks merge. The measurement is made by
+overlay instead. The waveforms of two real single-muon events of chamber~A are added, with their own positions, and
+the sum is passed through the same reconstruction; each muon keeps its own reference track.
+\tbw{Result: the probability that both muons are reconstructed against their separation in the closer view
+(\crefp{fig:separation}{a}), and the resolution of the opening angle of the pair (\crefp{fig:separation}{b}).}
+\analysis{SEP}{not yet run on the final reconstruction. The overlay script and a batch job are written and tested
+(\texttt{papers/paper1\_v2/figs/make\_two\_track\_separation.py}, \texttt{figs/two\_track\_batch/README.md}): 2\,400 overlays,
+about 6 core-hours, which is over the limit for the laptop, and submitting needs a login on lxplus. A test of 8 overlays
+per bin ran end to end: an overlay with an empty partner returns the single-track result (8 of 8 found, 0.91\textdegree{}
+X), both muons were reconstructed in every overlay above 18\,mm, and the opening angle of resolved pairs came out near
+1.5\textdegree{} in space; with 8 events per bin none of this is quotable. On an earlier reconstruction (26 October) the
+standard chain resolved nothing below 12\,mm, the joint fit 28/43/50\,\% at 0--6/6--12/12--18\,mm, and the opening angle
+was measured to 1.47\textdegree{} above 24\,mm. Caveats to state with the result: both particles are minimum-ionising muons
+within $\pm20$\textdegree, the noise is added twice, the sum saturates at the ADC limit of the first event, and the two
+events have independent triggers.}
 \begin{figure}[tbp]
   \centering
   \figorbox{two_track_separation}{probability of resolving both tracks against their separation; resolution of the opening angle}
-  \caption{\tbw{two-track separation from overlaid muons}}
+  \caption{\tbw{Two-track performance of chamber~A from overlays of two single-muon events. (a) Probability that both
+  muons are reconstructed, against their separation at mid-gap in the closer view. (b) Resolution of the opening angle
+  of the pair. (c) Error on the reconstructed separation.}}
   \label{fig:separation}
-\end{figure}}
+\end{figure}

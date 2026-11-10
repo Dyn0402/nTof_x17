@@ -140,8 +140,8 @@ column, the first electrons, made next to the mesh: a small part of the signal, 
 noise. The angle is fitted to the whole column, every strip and every sample. Two measurements support this. Track
 by track, among unsaturated tracks of the scan points below 510\,V, the angle residual does not depend on the charge
 of the track over a factor 17 in charge. And in a fixed window of early amplitude the uncorrelated time changes only
-from $44\pm5$\,ns at 435\,V to $30\pm4$\,ns at 490\,V, against a factor 3.5 overall: most of its dependence on the
-voltage is the size of the signal. The event time in the same window still falls, from $82\pm8$ to $39\pm4$\,ns, so
+from $44\pm5$\,ns at 435\,V to $30\pm4$\,ns at 490\,V, against a factor of about four over the same voltages for all
+signal sizes: most of its dependence on the voltage is the size of the signal. The event time in the same window still falls, from $82\pm8$ to $39\pm4$\,ns, so
 the part common to the two views has a dependence on the voltage that the amplitude does not account for.
 \askDylan{Three corrections from the HV rundown (\texttt{figs/out/gain\_scan.json}): (1) the time values against HV are now
 those of reference-matched tracks, as everywhere else in the paper (83/102\,ns at 425\,V); the old text and one appendix
@@ -150,7 +150,9 @@ does not describe the curve; 16.7\,V came from a fit pulled by the long run and 
 ``At fixed amplitude the HV barely matters'' holds for the uncorrelated part only (and a constant is disfavoured at
 2.6$\sigma$ even there); the event time still falls. The old claim that the common part ``does not fall'' is about the drift
 field (\cref{app:gain}), not the voltage. The angle-by-charge-decile numbers (0.82--0.94\textdegree{} X, 0.72--0.87\textdegree{} Y) have
-no producer in the repo, so they are not quoted.}
+no producer in the repo, so they are not quoted; the sentence ``does not depend on the charge of the track over a factor
+17'' rests on the same missing script and needs re-deriving or dropping. The fixed-window numbers are on all clean
+triggers, not on reference-matched tracks.}
 Two limits apply. The angular resolution includes the small reference term, which could hide a change in the
 chamber's own; and the statement holds down to 425\,V, $1/13$ of the gain of the long runs, below which the scan does
 not go. For operation the consequence is margin: the chamber could run well below 490\,V with no loss of efficiency,

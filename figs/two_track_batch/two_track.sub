@@ -1,0 +1,16 @@
+# Chamber A two-track overlay, 8 shards (papers/paper1_v2/figs/two_track_batch/README.md). NOT YET SUBMITTED.
+#   cd ~/x17rerun/two_track && condor_submit code=/afs/cern.ch/user/d/dneff/x17rerun/code_<commit> two_track.sub
+executable     = $(code)/papers/paper1_v2/figs/two_track_batch/job.sh
+arguments      = $(code) $(Process) 8
+output         = log/tt_$(Process).out
+error          = log/tt_$(Process).err
+log            = log/tt.log
+request_cpus   = 4
+request_memory = 4000
+request_disk   = 6000000
+environment    = "REQUEST_CPUS=4 PYTHONDONTWRITEBYTECODE=1"
++JobFlavour    = "longlunch"
+should_transfer_files = NO
+requirements   = (Machine != "b9g42p2031.cern.ch")
+max_retries    = 1
+queue 8
