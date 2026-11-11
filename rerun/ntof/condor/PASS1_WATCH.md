@@ -80,3 +80,4 @@ The pass is done when `watch_pass1.sh` prints `(none)` for all three clusters. T
 | 11-11 11:20 | 11,008 / 1,974 / 26 | 102 done, 36 run / 198 idle | second cycle (1,980 jobs from proc 11029, stuck since 06:22) repaired; slots match again |
 | 11-11 11:25 | ~11,0xx / 1,975 / 25 | 35 run, 60 idle / 198 idle | babysit session start; 1 cyclic job on main repaired (0 bad after); held 0 |
 | 11-11 12:47 | n/a / 1,937 / 63 | 28 run, 60 idle / 198 idle | 12 cyclic jobs on main repaired (0 bad after); held 0 |
+| 11-11 18:47 | n/a / 1,759 / 241 | 0 run, 60 idle / 198 idle | 50 cyclic jobs on main repaired (0 bad after); held 0 |
