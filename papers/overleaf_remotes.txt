@@ -1,0 +1,5 @@
+# paper  Overleaf git URL. overleaf.sh adds the remote overleaf-<paper> from here when a clone lacks it,
+# so every machine pushes without a manual `git remote add`. `overleaf.sh link` appends a line.
+# Auth: the Overleaf git token in ~/.git-credentials (one token covers every project of the account).
+paper1     https://git.overleaf.com/6ad61186fe591228d14dac68
+paper1_v2  https://git.overleaf.com/6af3a464cb8d4f7336894eac

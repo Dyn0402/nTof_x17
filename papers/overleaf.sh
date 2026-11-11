@@ -28,6 +28,14 @@ cmd=${1:-}; paper=${2:-}; flag=${3:-}
 remote=overleaf-$paper
 prefix=papers/$paper
 
+# The remote comes from papers/overleaf_remotes.txt (tracked), so a fresh clone or another machine needs no setup.
+url_of() { awk -v p="$paper" '$1 == p { print $2 }' papers/overleaf_remotes.txt 2>/dev/null; }
+if [[ $cmd != link ]] && ! git remote get-url "$remote" >/dev/null 2>&1; then
+  u=$(url_of)
+  [[ -n $u ]] || { echo "no Overleaf URL for $paper in papers/overleaf_remotes.txt (run: $0 link $paper <url>)"; exit 1; }
+  git remote add "$remote" "$u" && echo "added remote $remote -> $u (from papers/overleaf_remotes.txt)"
+fi
+
 clean() {
   git diff --quiet && git diff --cached --quiet || { echo "commit or stash your changes first"; exit 1; }
 }
@@ -57,7 +65,8 @@ git-subtree-dir: $prefix
 git-subtree-mainline: $(git rev-parse HEAD)
 git-subtree-split: $tip")
   git merge -q --ff-only "$join"
-  echo "linked $prefix <-> $remote ($url)"
+  [[ -n $(url_of) ]] || printf '%-10s %s\n' "$paper" "$url" >> papers/overleaf_remotes.txt
+  echo "linked $prefix <-> $remote ($url); commit papers/overleaf_remotes.txt so other machines pick it up"
   ;;
 pull)
   clean
