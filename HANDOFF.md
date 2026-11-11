@@ -383,7 +383,7 @@ redeployed (dylan-cern-site 91d4386). Inputs on the desktop: $WORK_DATA/claude-j
 - Deck: `WORK_DATA=~/work_data .venv/bin/python papers/paper1/make_figures_deck.py --out <html>` then
   `dylan-cern-site/scripts/add-note.py <html> --slug mx17-paper1-figures --force --deploy`.
 
-## n_TOF pass 1: reprocess the n_TOF tracks on the final chain — updated 2026-11-10 (dylan-MS-7C84)
+## n_TOF pass 1: reprocess the n_TOF tracks on the final chain — updated 2026-11-11 (dylan-MS-7C84)
 
 **Resume:** pass RUNNING. Keep it moving with the checklist `rerun/ntof/condor/PASS1_WATCH.md` (`watch_pass1.sh` on lxplus
 checks and auto-repairs); when all clusters are empty: account, audit_eos, N-G1 (steps below).
