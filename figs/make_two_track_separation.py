@@ -468,19 +468,19 @@ def plot(res, name='two_track_separation'):
         return (np.array([b[key]['p'] for b in B]), np.array([b[key]['err_lo'] for b in B]),
                 np.array([b[key]['err_hi'] for b in B]))
     p, el, eh = P('reconstructed')
-    ax[0].errorbar(xc, p, yerr=[el, eh], xerr=xe, fmt='o', color=col, ms=4, lw=1.0, label='both reco.')
+    ax[0].errorbar(xc, p, yerr=[el, eh], xerr=xe, fmt='o', color=col, ms=4, lw=1.0, label='both reconstructed')
     p2, el2, eh2 = P('resolved')
     ax[0].errorbar(xc, p2, yerr=[el2, eh2], xerr=xe, fmt='s', color=col, mfc='white', ms=4, lw=0.8,
-                   label='both found')
+                   label='both found, no pairing')
     ch = res['check_noise']['eff']
-    ax[0].axhline(ch ** 2, color=ps.MUTED, lw=0.9, ls=':', label='check$^2$')
+    ax[0].axhline(ch ** 2, color=ps.MUTED, lw=0.9, ls=':', label='single-track check')
     fwd, inv = (lambda v: np.sqrt(np.clip(v, 0, None))), (lambda v: np.square(v))
     for a in ax:
         a.set_xscale('function', functions=(fwd, inv))
         a.set_xlim(0, 82); a.set_xticks([0, 6, 12, 24, 40, 80])
     fig.supxlabel('separation of the two tracks in the closer view (mm)', fontsize=ps.BASE_PT)
     ax[0].set_ylim(0, 1.05); ax[0].set_ylabel('probability')
-    ax[0].legend(loc='lower right', fontsize=7, handlelength=1.2, bbox_to_anchor=(1.0, 0.02))
+    ax[0].legend(loc='center right', fontsize=7, handlelength=1.2, bbox_to_anchor=(1.0, 0.34), frameon=False)
     def arr(key):
         return np.array([b.get(key, np.nan) for b in B], float)
     ok = arr('open_s68_deg')
@@ -490,7 +490,7 @@ def plot(res, name='two_track_separation'):
     ax[1].errorbar(xc * 0.97, arr('dth_y_s68_deg'), yerr=arr('dth_y_s68_err'), fmt='v', color=ps.ACCENT, mfc='white',
                    ms=3.5, lw=0.8, label='Y projection')
     ax[1].set_ylabel('opening-angle resolution $s_{68}$ (deg)'); ax[1].set_ylim(0, None)
-    ax[1].legend(loc='upper right', fontsize=7)
+    ax[1].legend(loc='lower center', fontsize=7, ncol=1, frameon=False)
     ax[2].errorbar(xc, arr('sep_s68_mm'), yerr=arr('sep_s68_err'), xerr=xe, fmt='o', color=col, ms=4, lw=1.0,
                    label='$s_{68}$')
     ax[2].plot(xc, arr('sep_bias_mm'), 's', color=col, mfc='white', ms=4, label='median (bias)')
