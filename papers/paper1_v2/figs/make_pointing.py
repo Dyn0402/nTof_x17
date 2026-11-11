@@ -3,22 +3,22 @@
 
     .venv/bin/python papers/paper1_v2/figs/make_pointing.py [--out papers/paper1_v2/figs/out/pointing] [--n 200000]
 
-Toy (no data are read). Geometry along the chamber normal (mcs_common): target at 0, window at 200 mm, 60 um Mylar,
-5.0 mm gas gap, cathode (50 um Kapton + 9 um Cu, assumed), drift gas 28.2 mm (measured), readout plane at
-d = 233.3 mm, the plane where the position is measured.
+Toy (no data are read). Kept general on purpose (Dylan 2026-11-11): the argument must hold for any X17 search with a
+chamber of this kind, so the figure uses only the air between target and chamber and a generic source size, not the
+foils of this chamber or the n_TOF 3He capsule. Geometry (mcs_common): target at 0, window at 200 mm, readout plane
+at d = 233.3 mm, the plane where the position is measured.
 
-(a) One chamber and the 3He volume to scale, with one lepton whose deflection is exaggerated (8 deg drawn). Two
+(a) One chamber and a target to scale, with one lepton whose deflection in the air is exaggerated (8 deg drawn). Two
     estimates of its initial direction: the measured local angle (extrapolated back, it misses the origin by b), and
-    the line from an assumed origin (centre of the volume) to the measured position.
-(b) Error of each estimate, one projection, against the kinetic energy of the lepton. Lines are analytic
-    (scatter_pointing, scatter_chord); points are scatter_toy, which throws leptons through the layers. Right axis:
-    the same error as a mass error for a pair at the X17 edge with both leptons alike (sqrt(2) x dm/dtheta).
-    Redrawn 2026-11-11: the earlier (b), pointing against angular resolution for four position resolutions, showed
-    only eq. (1); its numbers are still written to the json (pointing_mm, toy) because the text quotes them.
+    the line from an assumed origin (centre of the target) to the measured position.
+(b) Error of each estimate, one projection, against the kinetic energy of the lepton, for a chamber of TH_REQ = 1 deg
+    and 200 mm of air. Lines are analytic (scatter_pointing, scatter_chord on AIR); points are scatter_toy. The
+    assumed-origin estimate is drawn for two source sizes (ORIGINS).
 
-Pointing toy (json only): tracks thrown isotropically from a point target into the efficient area; position smeared
-by sigma_x, projected angle by sigma_theta; miss distance = impact parameter in that projection, s68. At normal
-incidence this is sqrt(sigma_x^2 + (d sigma_theta)^2); over the acceptance the path is d/cos(alpha), ~10 % more.
+The json also keeps the numbers that include the foils (scattering_in_front_of_gas, two_estimators: sections 3.3 and
+6.2) and the pointing toy (tracks thrown isotropically into the efficient area, position smeared by sigma_x, angle by
+sigma_theta, s68 of the impact parameter: sqrt(sigma_x^2 + (d sigma_theta)^2) at normal incidence, ~10 % more over
+the acceptance).
 """
 import argparse
 import json
@@ -39,8 +39,9 @@ SIG_TH = np.arange(0.0, 3.01, 0.25)    # deg
 MEAS = dict(theta_x=0.99, theta_y=0.90, x_intr=0.12, x_core=0.5)
 Q68 = 0.6826894921
 TH_CH = 0.95                           # chamber angle resolution used for the pair numbers (mean of X and Y)
-ORIGINS = (5.0, 15.0)                  # rms origin error [mm]: 3He bore across the beam, along the beam
-R_BORE = 10.0                          # 3He bore radius [mm] (MX17_Full_Geant SimConfig.hh, per STEP)
+TH_REQ = 1.0                           # the requirement drawn in (b) [deg]
+ORIGINS = (2.0, 10.0)                  # rms size of the source [mm] drawn in (b): a beam spot, an extended target
+R_BORE = 10.0                          # radius of the target drawn in (a) [mm] (generic extended source)
 
 
 def throw(n, rng):
@@ -69,24 +70,27 @@ def analytic(sx, sth_deg, d=D):
     return np.sqrt(sx ** 2 + (d * np.radians(sth_deg)) ** 2)
 
 
-def scatter_pointing(T):
+AIR = mc.LAYERS[:1]                    # the air between target and window, alone
+
+
+def scatter_pointing(T, layers=mc.LAYERS):
     """rms back-extrapolation miss [mm] and total theta0 [deg] from the material in front of the drift gas."""
-    xs = np.array([mc.x_over_X0(m, t) for _, _, m, t, _, _ in mc.LAYERS])
+    xs = np.array([mc.x_over_X0(m, t) for _, _, m, t, _, _ in layers])
     th = mc.highland(xs.sum(), T)
     var = 0.0
-    for (_, _, m, t, z0, _), x in zip(mc.LAYERS, xs):
+    for (_, _, m, t, z0, _), x in zip(layers, xs):
         z1 = z0 + t
         var += th ** 2 * x / xs.sum() * (z0 * z0 + z0 * z1 + z1 * z1) / 3.0
     return float(np.sqrt(var)), float(np.degrees(th))
 
 
-def scatter_chord(T, zm=D):
+def scatter_chord(T, zm=D, layers=mc.LAYERS):
     """rms error [rad] of the direction target -> measured position (origin known exactly) from the same material:
     a kick at distance s moves the position at zm by (zm - s) * kick, so the direction by (1 - s/zm) * kick."""
-    xs = np.array([mc.x_over_X0(m, t) for _, _, m, t, _, _ in mc.LAYERS])
+    xs = np.array([mc.x_over_X0(m, t) for _, _, m, t, _, _ in layers])
     th = mc.highland(xs.sum(), T)
     var = 0.0
-    for (_, _, m, t, z0, _), x in zip(mc.LAYERS, xs):
+    for (_, _, m, t, z0, _), x in zip(layers, xs):
         u0, u1 = zm - z0, zm - z0 - t
         var += th ** 2 * x / xs.sum() * (u0 * u0 + u0 * u1 + u1 * u1) / 3.0 / zm ** 2
     return float(np.sqrt(var))
@@ -120,18 +124,18 @@ def two_estimators(th_ch_deg=TH_CH, sx=0.12, m_x=16.8, e_tot=20.58):
     return out
 
 
-def scatter_toy(T, n, rng, th_ch_deg=TH_CH, sx=MEAS['x_intr'], origins=ORIGINS, n_air=50):
+def scatter_toy(T, n, rng, th_ch_deg=TH_CH, sx=MEAS['x_intr'], origins=ORIGINS, n_air=50, layers=mc.LAYERS):
     """Toy check of the two direction estimates, one projection, normal incidence. Each lepton starts on the axis,
     takes Gaussian kicks in the layers in front of the gas (air in n_air steps, each foil one kick; Highland on the
     total, shared by x/X0 as in scatter_pointing) and is measured at the readout plane.
     Returns s68 [deg] of (local angle - initial direction) and of (position - assumed origin)/d - initial direction,
     the second for each rms origin error in `origins`."""
-    xs = np.array([mc.x_over_X0(m, t) for _, _, m, t, _, _ in mc.LAYERS])
+    xs = np.array([mc.x_over_X0(m, t) for _, _, m, t, _, _ in layers])
     th = mc.highland(xs.sum(), T)
     ang = np.zeros(n)
     pos = np.zeros(n)
     z = 0.0
-    for (_, _, m, t, z0, _), x in zip(mc.LAYERS, xs):
+    for (_, _, m, t, z0, _), x in zip(layers, xs):
         k = n_air if t > 1.0 else 1
         for i in range(k):
             zk = z0 + (i + 0.5) * t / k
@@ -154,9 +158,8 @@ def side_view(ax):
     y0, y1 = -28.0, 150.0
     ax.add_patch(mp.Rectangle((mc.Z_DRIFT0, y0), mc.G_DRIFT, y1 - y0, fc='#e8eef8', ec='none', zorder=1))
     ax.plot([mc.D_WIN] * 2, [y0, y1], color=ink, lw=0.9, zorder=3)                 # window
-    ax.plot([mc.Z_CATH] * 2, [y0, y1], color=ink, lw=0.9, zorder=3)                # cathode
     ax.add_patch(mp.Rectangle((D, y0), 1.7, y1 - y0, fc='#7f8a99', ec='none', zorder=2))   # readout board
-    ax.text(mc.D_WIN + 2, y1 + 3, 'window,\ncathode', ha='right', va='bottom', fontsize=7, color=ink,
+    ax.text(mc.D_WIN + 2, y1 + 3, 'window', ha='right', va='bottom', fontsize=7, color=ink,
             linespacing=0.95)
     ax.text(mc.Z_DRIFT0 + mc.G_DRIFT / 2 + 2, y1 + 3, 'drift\n28 mm', ha='left', va='bottom', fontsize=7, color=ink,
             linespacing=0.95)
@@ -165,10 +168,10 @@ def side_view(ax):
     ax.plot(0, 0, '+', ms=5, mew=0.8, color=cO, zorder=7)
     org = np.array([0.0, 6.0])
     ax.plot(*org, 'o', ms=2.6, color=ink, zorder=8)
-    ax.text(0, R_BORE + 3, r'$^3$He, 20 mm', fontsize=7, ha='center', va='bottom', color=ink)
+    ax.text(0, R_BORE + 3, 'target', fontsize=7, ha='center', va='bottom', color=ink)
     # true path: initial direction t0, a smooth bend in the air and a kink at the foils
     t0 = 0.36
-    bend_air, kink = np.radians(2.5), np.radians(5.5)
+    bend_air, kink = np.radians(8.0), np.radians(0.0)
     za = np.linspace(0, mc.D_WIN, 60)
     ang_a = np.arctan(t0) + bend_air * (za / mc.D_WIN) ** 1.0
     ya = org[1] + np.concatenate([[0], np.cumsum(np.tan(0.5 * (ang_a[1:] + ang_a[:-1])) * np.diff(za))])
@@ -199,10 +202,10 @@ def side_view(ax):
     rot = lambda t: float(np.degrees(np.arctan(t)))
     kw = dict(rotation_mode='anchor', ha='center', fontsize=7)
     zt = 118
-    ax.text(zt, org[1] + t0 * zt + 9, 'path, and its initial direction', rotation=rot(t0), va='bottom',
+    ax.text(zt, org[1] + t0 * zt + 19, 'path, and its initial direction', rotation=rot(t0), va='bottom',
             color=ink, **kw)
     zt = 100
-    ax.text(zt, yb + np.tan(a_gas) * zt - 5, 'measured angle, extrapolated', rotation=rot(np.tan(a_gas)), va='top',
+    ax.text(zt, yb + np.tan(a_gas) * zt - 7, 'measured angle, extrapolated', rotation=rot(np.tan(a_gas)), va='top',
             color=cL, **kw)
     ax.text(zs[0] - 5, ys[1] + 8, 'measured\nsegment', ha='right', va='bottom', fontsize=7, color=cL,
             linespacing=0.95)
@@ -212,7 +215,7 @@ def side_view(ax):
     yd = yb - 12
     ax.annotate('', xy=(D, yd), xytext=(0, yd), arrowprops=dict(arrowstyle='<->', color=mut, lw=0.7, shrinkA=0,
                                                                 shrinkB=0))
-    ax.text(D / 2, yd - 3, f'd = {D:.0f} mm', ha='center', va='top', fontsize=7, color=mut)
+    ax.text(D / 2, yd - 3, f'air, d = {D:.0f} mm to the readout', ha='center', va='top', fontsize=7, color=mut)
     ax.set_xlim(-30, D + 6)
     ax.set_ylim(yd - 16, y1 + 26)
     ax.set_aspect('equal')
@@ -235,48 +238,60 @@ def main():
     toy = {sx: [pointing_toy(tx, sx, s, rng) for s in SIG_TH] for sx in SIG_X}
 
     fig = plt.figure(figsize=(ps.FULL[0], 3.0))
-    axa = fig.add_axes([0.0, 0.02, 0.50, 0.96])
-    axb = fig.add_axes([0.585, 0.15, 0.325, 0.80])
+    axa = fig.add_axes([0.0, 0.02, 0.48, 0.96])
+    axb = fig.add_axes([0.595, 0.15, 0.275, 0.80])
     drawn = side_view(axa)
 
-    # (b) error on the initial direction of one lepton, one projection, against its kinetic energy
+    # (b) error on the initial direction of one lepton, one projection, against its kinetic energy.
+    # Only the air between target and window scatters here: the argument does not depend on the foils of a chamber.
     cL, cO = ps.DET_COLOR['det3'], ps.ACCENT
-    scat = {T: scatter_pointing(T) for T in (4, 8, 16)}
+    scat = {T: scatter_pointing(T) for T in (4, 8, 16)}            # all layers, for the json (section 3.3 / 6.2)
     Tf = np.linspace(3.0, 16.5, 120)
-    th0 = np.array([scatter_pointing(T)[1] for T in Tf])
-    chs = np.degrees([scatter_chord(T) for T in Tf])
+    th0 = np.array([scatter_pointing(T, AIR)[1] for T in Tf])
+    chs = np.degrees([scatter_chord(T, layers=AIR) for T in Tf])
     pos_deg = float(np.degrees(MEAS['x_intr'] / D))
-    axb.axhspan(MEAS['theta_y'], MEAS['theta_x'], color=cL, alpha=0.22, lw=0, zorder=2)
-    axb.plot(Tf, th0, color=ps.MUTED, lw=0.9, ls=(0, (4, 2)), zorder=3)
-    axb.plot(Tf, np.hypot(th0, TH_CH), color=cL, lw=1.4, zorder=5)
-    for o, ls in zip(ORIGINS, ('-', (0, (5, 2)))):
-        axb.plot(Tf, np.sqrt(chs ** 2 + pos_deg ** 2 + np.degrees(o / D) ** 2), color=cO, lw=1.4, ls=ls, zorder=4)
+    axb.axhline(TH_REQ, color=cL, lw=0.9, ls=(0, (4, 2)), zorder=3)
+    axb.plot(Tf, th0, color=ps.MUTED, lw=1.2, zorder=3)
+    axb.plot(Tf, np.hypot(th0, TH_REQ), color=cL, lw=1.5, zorder=5)
+    for o, ls in zip(ORIGINS, ((0, (1, 1.2)), (0, (5, 2)))):
+        axb.plot(Tf, np.sqrt(chs ** 2 + pos_deg ** 2 + np.degrees(o / D) ** 2), color=cO, lw=1.2, ls=ls, zorder=4)
     axb.axhline(pos_deg, color=ps.INK, lw=0.8, ls=(0, (1, 1.5)), zorder=3)
     T_TOY = (4, 6, 8, 10, 12, 14, 16)
-    toy2 = {T: scatter_toy(T, a.n, rng) for T in T_TOY}
+    toy2 = {T: scatter_toy(T, a.n, rng, th_ch_deg=TH_REQ, layers=AIR) for T in T_TOY}
     axb.plot(T_TOY, [toy2[T][0] for T in T_TOY], ls='none', marker='o', ms=3.4, color=cL, zorder=6)
     for o, mk_ in zip(ORIGINS, ('s', 'D')):
         axb.plot(T_TOY, [toy2[T][1][o] for T in T_TOY], ls='none', marker=mk_, ms=3.0, mfc='white', mec=cO,
                  mew=0.9, zorder=6)
-    lab = dict(fontsize=7, linespacing=0.95)
-    axb.text(5.0, 5.0, 'measured angle', color=cL, ha='left', va='bottom', **lab)
-    axb.text(16.3, 7.2, 'dashed grey: scattering alone', color=ps.MUTED, ha='right', va='top', **lab)
-    axb.text(16.3, 3.95, 'origin to 15 mm', color=cO, ha='right', va='bottom', **lab)
-    axb.text(3.3, 1.5, 'origin to 5 mm', color=cO, ha='left', va='top', **lab)
-    axb.text(16.3, 0.52, 'chamber angle', color=cL, ha='right', va='center', **lab)
-    axb.text(16.3, pos_deg + 0.08, 'chamber position', color=ps.INK, ha='right', va='bottom', **lab)
+    lab = dict(fontsize=7, linespacing=0.95, ha='left', va='center', clip_on=False)
+    xe = 16.75                                                     # curve labels, outside the right edge
+    axb.text(xe, 2.50, 'origin known\nto 10 mm', color=cO, **lab)
+    axb.text(xe, 1.42, 'measured\nangle', color=cL, **lab)
+    axb.text(xe, 0.95, 'air alone', color=ps.MUTED, **lab)
+    axb.text(xe, 0.58, 'to 2 mm', color=cO, **lab)
+    axb.text(3.25, 1.04, '1° chamber', color=cL, fontsize=7, ha='left', va='bottom')
+    axb.text(16.3, pos_deg + 0.06, 'position, 0.12 mm', color=ps.INK, fontsize=7, ha='right', va='bottom')
     axb.set_xlim(3.0, 16.5)
-    axb.set_ylim(0, 7.5)
+    axb.set_ylim(0, 4.6)
     axb.set_xticks([4, 8, 12, 16])
     axb.set_xlabel('lepton kinetic energy (MeV)')
     axb.set_ylabel('error on the initial direction (°)')
     te = two_estimators()
-    k_m = np.sqrt(2) * te['kinematics']['dm_per_deg_MeV']          # MeV of mass per degree, both leptons alike
-    axr = axb.secondary_yaxis('right', functions=(lambda v: v * k_m, lambda v: v / k_m))
-    axr.set_ylabel('mass error of a pair (MeV)')
-    axr.set_yticks([0, 0.2, 0.4, 0.6, 0.8, 1.0])
+    air = {f'{T}MeV': dict(theta_air_deg=round(scatter_pointing(T, AIR)[1], 2),
+                           local_deg=round(float(np.hypot(scatter_pointing(T, AIR)[1], TH_REQ)), 2),
+                           origin_scatter_deg=round(float(np.degrees(scatter_chord(T, layers=AIR))), 2),
+                           source_breakeven_mm=round(float(D * np.radians(np.sqrt(
+                               scatter_pointing(T, AIR)[1] ** 2 + TH_REQ ** 2
+                               - np.degrees(scatter_chord(T, layers=AIR)) ** 2))), 1))
+           for T in (4, 8, 12, 16)}
+    from scipy.optimize import brentq
+    air['T_where_air_equals_requirement_MeV'] = round(float(brentq(
+        lambda T: scatter_pointing(T, AIR)[1] - TH_REQ, 5, 30)), 1)
+    air['kinematics'] = {f'E{E:g}': dict(min_opening_deg=round(float(np.degrees(2 * np.arcsin(16.8 / E))), 1),
+                                         dm_per_deg_MeV=round(float(16.8 / (2 * np.tan(np.arcsin(16.8 / E)))
+                                                                    * np.radians(1.0)), 3))
+                         for E in (20.58, 18.15)}
     axa.text(0.0, 1.0, '(a)', transform=axa.transAxes, fontsize=ps.BASE_PT, fontweight='bold', va='top', ha='left')
-    axb.text(-0.25, 1.04, '(b)', transform=axb.transAxes, fontsize=ps.BASE_PT, fontweight='bold', va='top',
+    axb.text(-0.28, 1.04, '(b)', transform=axb.transAxes, fontsize=ps.BASE_PT, fontweight='bold', va='top',
              ha='left')
 
     ps.save(fig, a.out)
@@ -298,10 +313,11 @@ def main():
                                                     equiv_sigma_theta_deg=round(float(np.degrees(s / D)), 2))
                                     for T, (s, th) in scat.items()},
         two_estimators=te,
+        air_only=air,
         panel_a=drawn,
-        toy_directions=dict(n=a.n, origins_mm=list(ORIGINS), mass_MeV_per_deg=round(float(k_m), 4),
+        toy_directions=dict(n=a.n, origins_mm=list(ORIGINS), layers='air only', chamber_deg=TH_REQ,
                             s68_deg={f'{T}MeV': dict(local=round(v[0], 3), **{f'origin{o:g}mm': round(w, 3) for o, w in v[1].items()}) for T, v in toy2.items()},
-                            analytic_deg={f'{T}MeV': dict(local=round(float(np.hypot(scatter_pointing(T)[1], TH_CH)), 3), **{f'origin{o:g}mm': round(float(np.sqrt(np.degrees(scatter_chord(T)) ** 2 + pos_deg ** 2 + np.degrees(o / D) ** 2)), 3) for o in ORIGINS}) for T in T_TOY}),
+                            analytic_deg={f'{T}MeV': dict(local=round(float(np.hypot(scatter_pointing(T, AIR)[1], TH_REQ)), 3), **{f'origin{o:g}mm': round(float(np.sqrt(np.degrees(scatter_chord(T, layers=AIR)) ** 2 + pos_deg ** 2 + np.degrees(o / D) ** 2)), 3) for o in ORIGINS}) for T in T_TOY}),
         toy=dict(n_tracks=a.n, sigma_theta_deg=SIG_TH.round(3).tolist(),
                  s68_mm={f'{sx:g}': np.round(v, 3).tolist() for sx, v in toy.items()}),
         notes='pointing = s68 of the impact parameter in one projection; analytic = normal incidence '

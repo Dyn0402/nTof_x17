@@ -11,10 +11,10 @@
   "theta0.90_x0.5": 3.7
  },
  "pointing_toy_acceptance_mm": {
-  "theta0.99_x0.12": 4.46,
-  "theta0.99_x0.5": 4.5,
-  "theta0.90_x0.12": 4.07,
-  "theta0.90_x0.5": 4.1
+  "theta0.99_x0.12": 4.48,
+  "theta0.99_x0.5": 4.49,
+  "theta0.90_x0.12": 4.08,
+  "theta0.90_x0.5": 4.08
  },
  "sigma_x_equiv_to_1deg_mm": 4.07,
  "theta_equiv_to_0p5mm_deg": 0.123,
@@ -85,6 +85,43 @@
   },
   "notes": "per projection; local = scattering in front of the gas (+) chamber angle; chord = direction from an exactly known origin to the position at the readout plane; breakeven = origin error at which the two are equal; opening = sqrt(2) x one direction (two tracks, in-plane component); the fourth energy is the kinetic energy of each lepton of a symmetric pair"
  },
+ "air_only": {
+  "4MeV": {
+   "theta_air_deg": 3.24,
+   "local_deg": 3.39,
+   "origin_scatter_deg": 2.02,
+   "source_breakeven_mm": 11.1
+  },
+  "8MeV": {
+   "theta_air_deg": 1.7,
+   "local_deg": 1.97,
+   "origin_scatter_deg": 1.06,
+   "source_breakeven_mm": 6.8
+  },
+  "12MeV": {
+   "theta_air_deg": 1.16,
+   "local_deg": 1.53,
+   "origin_scatter_deg": 0.72,
+   "source_breakeven_mm": 5.5
+  },
+  "16MeV": {
+   "theta_air_deg": 0.87,
+   "local_deg": 1.33,
+   "origin_scatter_deg": 0.54,
+   "source_breakeven_mm": 4.9
+  },
+  "T_where_air_equals_requirement_MeV": 13.9,
+  "kinematics": {
+   "E20.58": {
+    "min_opening_deg": 109.4,
+    "dm_per_deg_MeV": 0.104
+   },
+   "E18.15": {
+    "min_opening_deg": 135.5,
+    "dm_per_deg_MeV": 0.06
+   }
+  }
+ },
  "panel_a": {
   "drawn_deflection_deg": 8.0,
   "origin_offset_mm": 6.0
@@ -92,82 +129,83 @@
  "toy_directions": {
   "n": 200000,
   "origins_mm": [
-   5.0,
-   15.0
+   2.0,
+   10.0
   ],
-  "mass_MeV_per_deg": 0.1471,
+  "layers": "air only",
+  "chamber_deg": 1.0,
   "s68_deg": {
    "4MeV": {
-    "local": 5.569,
-    "origin5mm": 2.497,
-    "origin15mm": 4.275
+    "local": 3.38,
+    "origin2mm": 2.069,
+    "origin10mm": 3.16
    },
    "6MeV": {
-    "local": 3.892,
-    "origin5mm": 1.941,
-    "origin15mm": 3.957
+    "local": 2.44,
+    "origin2mm": 1.471,
+    "origin10mm": 2.82
    },
    "8MeV": {
-    "local": 3.028,
-    "origin5mm": 1.677,
-    "origin15mm": 3.869
+    "local": 1.968,
+    "origin2mm": 1.165,
+    "origin10mm": 2.663
    },
    "10MeV": {
-    "local": 2.524,
-    "origin5mm": 1.542,
-    "origin15mm": 3.819
+    "local": 1.696,
+    "origin2mm": 0.989,
+    "origin10mm": 2.602
    },
    "12MeV": {
-    "local": 2.169,
-    "origin5mm": 1.453,
-    "origin15mm": 3.764
+    "local": 1.53,
+    "origin2mm": 0.87,
+    "origin10mm": 2.557
    },
    "14MeV": {
-    "local": 1.933,
-    "origin5mm": 1.396,
-    "origin15mm": 3.744
+    "local": 1.413,
+    "origin2mm": 0.791,
+    "origin10mm": 2.537
    },
    "16MeV": {
-    "local": 1.761,
-    "origin5mm": 1.365,
-    "origin15mm": 3.736
+    "local": 1.327,
+    "origin2mm": 0.732,
+    "origin10mm": 2.517
    }
   },
   "analytic_deg": {
    "4MeV": {
-    "local": 5.573,
-    "origin5mm": 2.509,
-    "origin15mm": 4.285
+    "local": 3.392,
+    "origin2mm": 2.078,
+    "origin10mm": 3.179
    },
    "6MeV": {
-    "local": 3.895,
-    "origin5mm": 1.943,
-    "origin15mm": 3.979
+    "local": 2.444,
+    "origin2mm": 1.473,
+    "origin10mm": 2.821
    },
    "8MeV": {
-    "local": 3.035,
-    "origin5mm": 1.682,
-    "origin15mm": 3.859
+    "local": 1.973,
+    "origin2mm": 1.168,
+    "origin10mm": 2.675
    },
    "10MeV": {
-    "local": 2.517,
-    "origin5mm": 1.54,
-    "origin15mm": 3.799
+    "local": 1.701,
+    "origin2mm": 0.988,
+    "origin10mm": 2.601
    },
    "12MeV": {
-    "local": 2.175,
-    "origin5mm": 1.455,
-    "origin15mm": 3.765
+    "local": 1.528,
+    "origin2mm": 0.871,
+    "origin10mm": 2.559
    },
    "14MeV": {
-    "local": 1.935,
-    "origin5mm": 1.4,
-    "origin15mm": 3.744
+    "local": 1.411,
+    "origin2mm": 0.791,
+    "origin10mm": 2.533
    },
    "16MeV": {
-    "local": 1.76,
-    "origin5mm": 1.363,
-    "origin15mm": 3.731
+    "local": 1.328,
+    "origin2mm": 0.734,
+    "origin10mm": 2.516
    }
   }
  },
