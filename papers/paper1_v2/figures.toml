@@ -270,8 +270,8 @@ source = "papers/paper1_v2/figs/out/loss_gallery_2.pdf"
 producer = "WORK_DATA=~/work_data .venv/bin/python papers/paper1_v2/figs/make_displays_v2.py --only loss_gallery"
 
 [fig.two_track_separation]
-title = "Two-track separation from overlaid real muons: probability of resolving both against separation; opening-angle resolution"
-state = "placeholder"
-section_state = "open"
-note = "needs a batch run on the final reconstruction: papers/paper1_v2/figs/two_track_batch/ (see its README)"
-producer = ".venv/bin/python papers/paper1_v2/figs/make_two_track_separation.py"
+title = "Two-track separation from overlaid real muons: probability of reconstructing both against separation; opening-angle resolution; separation error"
+state = "current"
+source = "papers/paper1_v2/figs/out/two_track_separation.pdf"
+producer = "WORK_DATA=~/work_data .venv/bin/python papers/paper1_v2/figs/make_two_track_separation.py plot --work ~/work_data/claude-jobs/v2_twotrack/batch --prefix run   # shards from the condor run, figs/two_track_batch/README.md (cluster 4666850, 2026-11-11; outputs on EOS x17rerun/paper1_v2/two_track)"
+note = "2 400 overlays of chamber A Run 1 muons on the final reconstruction; numbers out/two_track_separation.json"

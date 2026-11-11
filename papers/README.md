@@ -136,10 +136,9 @@ A reorganised copy of Paper I, made after the audit in `paper1_audit/`. `paper1/
   `paper1_v2/figs/out/two_particle_numbers.md` and `paper1_v2/figs/out/gain_scan.json`. Decisions left for Dylan are
   `\askDylan` boxes in the text.
 - **Build:** `cd papers/paper1_v2 && ~/bin/latexmk -pdf main.tex` (47 pages with the draft notes hidden, 60 with them).
-- **Open, needs Dylan:**
-  1. Two-track separation figure: the overlay job (`paper1_v2/figs/two_track_batch/README.md`) was submitted on
-     2026-11-11 as condor cluster 4666850 (code `~/x17rerun/code_2a99f017_twotrack`, a trimmed archive; logs
-     `~/x17rerun/two_track/log`; outputs EOS `x17rerun/paper1_v2/two_track/`).
+- **Two-track separation** (section 8.4): run 2026-11-11 as condor cluster 4666850 (8 jobs, 8 normal exits, no errors;
+  code `~/x17rerun/code_2a99f017_twotrack`, a trimmed archive; outputs EOS `x17rerun/paper1_v2/two_track/`, local copy
+  `~/work_data/claude-jobs/v2_twotrack/batch`). Figure: `make_two_track_separation.py plot --work <dir> --prefix run`.
 - **Overleaf:** linked 2026-11-11 to its own project "MX17 Paper I v2 (reorganised)"
   (`https://git.overleaf.com/6af3a464cb8d4f7336894eac`); `papers/overleaf.sh status|pull|push paper1_v2` as for paper1.
   Not shared with Stephan yet.

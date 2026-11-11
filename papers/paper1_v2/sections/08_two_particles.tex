@@ -93,24 +93,39 @@ and pairs two tracks without a third coordinate.
 Real two-particle events cannot say how close two tracks may come before they are no longer resolved: the second
 particle has no reference, and the separation is unknown exactly where the tracks merge. The measurement is made by
 overlay instead. The waveforms of two real single-muon events of chamber~A are added, with their own positions, and
-the sum is passed through the same reconstruction; each muon keeps its own reference track.
-\tbw{Result: the probability that both muons are reconstructed against their separation in the closer view
-(\crefp{fig:separation}{a}), and the resolution of the opening angle of the pair (\crefp{fig:separation}{b}).}
-\analysis{SEP}{not yet run on the final reconstruction. The overlay script and a batch job are written and tested
-(\texttt{papers/paper1\_v2/figs/make\_two\_track\_separation.py}, \texttt{figs/two\_track\_batch/README.md}): 2\,400 overlays,
-about 6 core-hours, which is over the limit for the laptop, and submitting needs a login on lxplus. A test of 8 overlays
-per bin ran end to end: an overlay with an empty partner returns the single-track result (8 of 8 found, 0.91\textdegree{}
-X), both muons were reconstructed in every overlay above 18\,mm, and the opening angle of resolved pairs came out near
-1.5\textdegree{} in space; with 8 events per bin none of this is quotable. On an earlier reconstruction (26 October) the
-standard chain resolved nothing below 12\,mm, the joint fit 28/43/50\,\% at 0--6/6--12/12--18\,mm, and the opening angle
-was measured to 1.47\textdegree{} above 24\,mm. Caveats to state with the result: both particles are minimum-ionising muons
-within $\pm20$\textdegree, the noise is added twice, the sum saturates at the ADC limit of the first event, and the two
-events have independent triggers.}
+the sum is passed through the same reconstruction; each muon keeps its own reference track. Both muons were
+reconstructed alone, so the result is relative to the single-track efficiency; an overlay with an empty partner
+returns the single-track result (200 of 200 found, with the single-track resolution).
+
+\Crefp{fig:separation}{a} shows the probability that both muons are reconstructed, each within 5\,mm of its own
+reference and with its two views paired correctly, against the separation of the two tracks in the view where they are
+closer. Above 18\,mm it is 94 to 96\,\%. Between 3 and 18\,mm it falls from $74\pm3$\,\% to $53\pm3$\,\%, and below
+3\,mm, about four strip pitches, it is $11\pm2$\,\%. Without the requirement on the pairing the numbers are 2 to 7 points
+higher, so resolving the two tracks is the limit and pairing them is not.
+
+When both are reconstructed, the opening angle of the pair is measured to 1.2 to 1.5\textdegree{} in space at every
+separation (\crefp{fig:separation}{b}), close to $\sqrt2$ times the resolution of one track, and their separation to
+0.8 to 1.1\,mm above 3\,mm (\crefp{fig:separation}{c}). A chamber therefore measures the opening angle of a pair it
+contains about as well as two independent tracks allow, down to a separation of 18\,mm, and with falling efficiency
+below.
+
+Three caveats apply. Both particles are minimum-ionising muons within $\pm20$\textdegree{} of the normal; the electronic
+noise is added twice under the second track; and the summed signal saturates at the limit of the ADC. The two tracks
+start at the same time, which is right for a pair from one decay and not for an accidental coincidence.
+\askDylan{Run 2026-11-11 on the final reconstruction: 2\,400 overlays of Run~1 muons, 300 per bin, plus 200 single and 200
+empty-partner checks (\texttt{figs/out/two\_track\_separation.json}; batch job in \texttt{figs/two\_track\_batch/}). Against the
+26 October run on the earlier reconstruction (joint fit 28/43/50\,\% at 0--6/6--12/12--18\,mm) the final chain does better
+at 6--18\,mm (64--74\,\%); the definitions differ slightly (5\,mm from the reference here, 2\,mm from the donor's own fit
+there; with the old definition the numbers are 14/57/63/65/74\,\% in the five lowest bins). The step at 18\,mm is not
+explained in the text; it is where two columns stop touching.}
 \begin{figure}[tbp]
   \centering
-  \figorbox{two_track_separation}{probability of resolving both tracks against their separation; resolution of the opening angle}
-  \caption{\tbw{Two-track performance of chamber~A from overlays of two single-muon events. (a) Probability that both
-  muons are reconstructed, against their separation at mid-gap in the closer view. (b) Resolution of the opening angle
-  of the pair. (c) Error on the reconstructed separation.}}
+  \includegraphics[width=\linewidth]{two_track_separation}
+  \caption{Two tracks in chamber~A, from overlays of two real single-muon events (300 per bin). (a) Probability that
+  both muons are reconstructed with their views paired correctly (filled), or found in both views without the
+  requirement on pairing (open), against the separation of the two tracks at mid-gap in the view where they are
+  closer; binomial 68\,\% intervals; dotted, the same for a muon overlaid with an empty event. (b) Resolution of the
+  opening angle of the pair ($s_{68}$) in space and in each projection, for pairs with both muons reconstructed.
+  (c) Error on the reconstructed separation: $s_{68}$ (filled) and median (open). The horizontal axis is not linear.}
   \label{fig:separation}
 \end{figure}
