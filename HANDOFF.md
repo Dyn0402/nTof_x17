@@ -385,7 +385,14 @@ redeployed (dylan-cern-site 91d4386). Inputs on the desktop: $WORK_DATA/claude-j
 
 ## n_TOF pass 1: reprocess the n_TOF tracks on the final chain — updated 2026-11-10 (dylan-MS-7C84)
 
-**Resume:** pass RUNNING again after an 11-10 stall fix; check 4636418 isn't idle-stuck, then account, audit_eos, N-G1.
+**Resume:** pass RUNNING. Keep it moving with the checklist `rerun/ntof/condor/PASS1_WATCH.md` (`watch_pass1.sh` on lxplus
+checks and auto-repairs); when all clusters are empty: account, audit_eos, N-G1 (steps below).
+
+**11-11 (dylan-MS-7C84): the cycle recurred.** 1,980 newly materialised jobs (procs 11029 onward) had the same
+cyclic requirements; nothing had started since 06:22. Repaired at 11:15 (`fix_req_cycle.sh all`, 1,980 jobs). By
+`condor_history`: main 11,008 done (11,007 exit 0 + proc 1727), 0 held. 4636419: 102 done; 4636420: 0 done, all
+idle, good requirements. The rewrite seems to hit every new materialisation batch, so it is likely to come back
+until all 15,550 are materialised (~2,560 to go).
 
 **11-10 (dylan-MS-7C84): main cluster stalled, fixed.** At 12:55: main 9,028/15,550 done exit 0 (+ proc 1727's
 exit 1, already replaced by 4638252), 0 held, 0 running since 04:23. All 2,000 materialised idle jobs (procs
