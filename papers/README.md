@@ -72,6 +72,8 @@ Each paper is its own Overleaf project, kept in step with `papers/<paper>/` by `
    (plain text in `~/.git-credentials`) or libsecret.
 3. `papers/overleaf.sh link paper1 https://git.overleaf.com/<id>`. This replaces the blank project's files with
    ours as a fast-forward and records the link in this repo. Commit any local changes first.
+   It also adds the URL to `papers/overleaf_remotes.txt` (commit it): on any other machine or clone, `overleaf.sh`
+   adds the `overleaf-<paper>` remote from that file on first use, so nothing needs setting up there.
 4. In Overleaf: Share → add Stephan as Editor. Turn **Track changes** on for everyone (Review → Track changes).
    In the project settings, choose pdfLaTeX, and choose `main.tex` as the main document.
 
