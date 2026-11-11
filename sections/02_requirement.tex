@@ -2,7 +2,8 @@
 \sectionstate{partial}{new section (Dylan 2026-11-10: ``a diagram and section for arguing why angular resolution is most
 important \ldots{} a quick toy simulation with visualization''). Toy and figure: \texttt{papers/paper1\_v2/figs/make\_pointing.py},
 numbers in \texttt{figs/out/pointing.json}; scattering from \texttt{figs/out/material\_budget.json}. 2026-11-11: opening
-angle and pointing separated, mass relation added, the origin-constraint paragraph redone with scattering.}
+angle and pointing separated, mass relation added, the origin-constraint paragraph redone with scattering; Fig. 2
+redrawn the same day (new sketch without the inset, (b) is now direction error against lepton energy).}
 \intent{Before the detector is described: a chamber sees a short piece of track far from the target, so the angle, not
 the position, decides both how well the opening angle of a pair is known (the mass) and how well a track points to its
 origin (the vertex). Two requirements, one quantity; scattering sets the scale for both.}
@@ -19,10 +20,10 @@ misses its origin by
 With $d=233$\,mm from the target to the readout plane, an angle error of 1\textdegree{} is 4.1\,mm at the target.
 A position error of 0.5\,mm is 1.5\,\% of the variance beside it, and the 0.12\,mm that the chambers reach
 (\cref{sec:position}) is 0.1\,\%: the position would have to be as poor as 4\,mm to matter as much as one degree. The
-lever arm is eight times the length of the segment, and that ratio is why the angle dominates. \Cref{fig:pointing}
-shows it to scale, and a toy simulation that throws tracks from the target over the acceptance of a chamber, smears the
-measured position and slope and extrapolates them back reproduces \cref{eq:pointing} (\crefp{fig:pointing}{b}; the toy
-lies slightly above the line because inclined tracks have a longer lever arm).
+lever arm is eight times the length of the segment, and that ratio is why the angle dominates. A toy simulation that
+throws tracks from the target over the acceptance of a chamber, smears the measured position and slope and
+extrapolates them back reproduces \cref{eq:pointing}, about 10\,\% above it because inclined tracks have a longer
+lever arm.
 
 The angle serves two purposes, and they are not the same requirement. The first is the opening angle $\theta$ of
 the pair, which gives its mass. The two leptons share the energy $E$ of the transition, and with
@@ -40,19 +41,19 @@ on the distance to the target.
 What sets the useful scale for $\sigma_\theta$ is scattering before the measurement. In the 20\,cm of air between
 the target and the window an 8\,MeV electron is deflected by 1.7\textdegree{} rms in each projection, and the window and
 the cathode of the chamber add to it: 2.9\textdegree{} in all at 8\,MeV, 5.5\textdegree{} at 4\,MeV and 1.5\textdegree{} at
-16\,MeV (\cref{tab:material}). That scattering is itself an angle error, of 4.5 to 17\,mm at the target (arrows in
-\crefp{fig:pointing}{b}). It enters the opening angle in full: for a pair that shares the energy equally, with one
+16\,MeV (\cref{tab:material}). That scattering is itself an angle error, of 4.5 to 17\,mm at the target, and it is
+larger than the chamber's at every energy (\crefp{fig:pointing}{b}). It enters the opening angle in full: for a pair that shares the energy equally, with one
 lepton in each of two chambers, a chamber resolution of 1\textdegree{} alone would give the opening angle to
 1.3\textdegree{} (0.14\,MeV), and with the scattering it is 3.6\textdegree{} (0.38\,MeV).
 
-A direction can also be taken from the position in the chamber and an assumed origin, and scattering affects that
-direction less. A deflection in the foils just in front of the gas hardly moves the position, and one in the air moves
+A direction can also be taken from the position in the chamber and an assumed origin (\crefp{fig:pointing}{a}), and
+scattering affects that direction less. A deflection in the foils just in front of the gas hardly moves the position, and one in the air moves
 it by only part of the lever arm, so this direction is scattered by 1.2\textdegree{} at 8\,MeV where the local angle
 is scattered by 2.9\textdegree. Its error is otherwise the uncertainty of the origin divided by $d$. Against a local
 angle of 1\textdegree{} it would be better only for an origin known to 4\,mm. Against the local angle with its
 scattering the limit is 21, 11 and 7\,mm at 4, 8 and 16\,MeV. The $^3$He volume is 20\,mm across and 60\,mm long:
 about 5\,mm rms across the beam, inside the limit at every energy, and about 15\,mm along it, inside the limit only
-for the softest leptons. The best estimate of the opening angle therefore combines the two, with the local angle
+for the softest leptons (\crefp{fig:pointing}{b}). The best estimate of the opening angle therefore combines the two, with the local angle
 carrying the most weight for the hard leptons and along the beam. The position resolution is 0.03\textdegree{} over
 this lever arm and limits neither.
 \askDylan{New 2026-11-11 (your question on pointing against opening angle). The $^3$He bore, 20\,mm diameter and
@@ -66,14 +67,17 @@ volume. \Cref{sec:tracking} gives what the chambers deliver against this.
 
 \begin{figure}[tbp]
   \centering
-  \figorbox[width=0.9\linewidth]{pointing}{to-scale side view and toy pointing resolution}
-  \caption{Why the angle. (a) One chamber to scale, seen from the side: the measured segment, 28\,mm long, lies
-  233\,mm from the target. Inset, at the target and to scale: toy back-extrapolations for an angle error of
-  1\textdegree{} with an exact position (blue), and for a position error of 0.5\,mm with an exact angle (orange).
-  (b) Pointing resolution at the target ($s_{68}$ of the miss distance in one projection) against the angular
-  resolution, for four position resolutions. Points: toy simulation over the acceptance of a chamber. Lines:
-  \cref{eq:pointing} at normal incidence. Square: the chambers of this paper (\cref{sec:tracking}). Arrows: the
-  pointing error from multiple scattering in the material in front of the drift gas (\cref{tab:material}) for electrons
-  of 4, 8 and 16\,MeV.}
+  \figorbox[width=0.9\linewidth]{pointing}{to-scale side view and direction error against lepton energy}
+  \caption{What the angle is worth. (a) One chamber and the $^3$He volume to scale, with one lepton (black; its
+  deflection in the air and the foils is drawn about three times too large for an 8\,MeV electron). The chamber measures a
+  segment 28\,mm long, 233\,mm from the target. Its angle, extrapolated back (blue, dashed), misses the origin by $b$.
+  The line from an assumed origin, the centre of the volume, to the measured position (orange) is a second estimate of
+  the initial direction (dotted). (b) Error on the initial direction of one lepton in one projection against its
+  kinetic energy. Blue: the measured angle, which is the scattering in front of the drift gas (grey, dashed) and the
+  angular resolution of the chamber (band, \cref{sec:tracking}). Orange: the assumed origin and the measured position,
+  for an origin known to 5\,mm and to 15\,mm rms, the $^3$He volume across and along the beam. Dotted: the position
+  resolution of the chamber over this lever arm. Lines are analytic and points a toy simulation that scatters leptons
+  through the layers of \cref{tab:material}. Right axis: the error on the mass at the X17 edge from the opening angle
+  of a pair whose two leptons each have the error on the left.}
   \label{fig:pointing}
 \end{figure}
