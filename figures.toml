@@ -8,9 +8,9 @@
 [fig.experiment_layout]
 title = "The measurement the chambers were built for, schematic: (a) top-down, target, four TPCs at 20 cm, two scintillator layers each, one pair; (b) one chamber in section (nominal 30 mm gap)"
 state = "current"
-source = "papers/paper1/figs/out/experiment_layout.pdf"
-producer = ".venv/bin/python papers/paper1/figs/make_experiment_layout.py"
-note = "2026-11-06: new Fig. 1 (Dylan, feedback note Fig. 1): top-down layout + the old tpc_principle panel (a) as the blow-up. Distances rounded from MX17_Full_Geant SimConfig.hh; no data."
+source = "papers/paper1_v2/figs/out/experiment_layout.pdf"
+producer = ".venv/bin/python papers/paper1_v2/figs/make_experiment_layout.py"
+note = "2026-11-06: new Fig. 1 (Dylan, feedback note Fig. 1): top-down layout + the old tpc_principle panel (a) as the blow-up. 2026-11-11: v2 copy of the script: rectangular scintillators, scint. 2 30 % thinner, pair at 100 deg, target label moved. No data."
 
 [fig.chamber_stack]
 title = "MX17 chamber cross-section: (a) the whole chamber to scale in z; (b) amplification region and readout board enlarged"
