@@ -172,9 +172,22 @@ resim/depth/phase scripts pad by 4 strips, chambers_C.py does not. The det3 temp
 
 **Key files:** `hits_daq/coupling/` (`observables.py`, `fit_kernel.py`, `run_fits.sh`, `profile.py`, `boundary.py`, `extra.py`, `make_report.py`, `physics/`), `hits_daq/coupling_scan.py`, `hits_daq/condor/make_ana_dag.py` (stages `spsrow`, `estim`), `papers/paper2/HITS_DAQ_PLAN_2026-11-05.md`.
 
-## Paper I text from the feedback note — updated 2026-11-06 (dylan-MS-7C84)
+## Paper I text from the feedback note — updated 2026-11-11 (dylan-MS-7C84)
 
-**Resume:** Paper I text from Dylan's hub note; all `- [ ]` items answered through round 3; next: read the note for new ones.
+**Resume:** Paper I (now v2) from Dylan's hub note; Fig. 1 round done 11-11; next: open `- [ ]` items (v_d, appendix A).
+
+**2026-11-11 (this session):**
+- Fig. 1 feedback applied to **paper1_v2 only** (paper1 untouched): own copy `papers/paper1_v2/figs/make_experiment_layout.py`
+  (rectangular scintillators, scint. 2 8 → 5.6 cm, pair 100° with e+ well inside the bottom TPC, "target" label moved);
+  caption "a thicker one". Commits adb8a513, Overleaf v2 pushed (0b432fb0). Note items checked with 💬.
+- `overleaf.sh` now adds a missing `overleaf-<paper>` remote from the tracked `papers/overleaf_remotes.txt` (045bfe75;
+  `link` appends to it). Auto mode had refused a manual `git remote add`.
+- **Waiting on Dylan:** a project `.claude/settings.json` allowing `papers/overleaf.sh status|pull|push|sync *` and
+  denying `* --now*` (Claude may not write its own permission rules). Without it the classifier may block a push.
+- After every push `status` shows 1 "Overleaf-only commit" (the subtree split): the next `pull` merges it with no diff.
+- Hub (`~/workspace`, 6314aef + a03db27): checked to-dos fold behind a "✓ N done" chip per heading in every note
+  (display only). Item ticked while open stays visible until reopen.
+- Still unchecked in the note's "Dylan's Notes": v_d everywhere; no B–E column in appendix A. Not acted on (not asked).
 
 **Goal:** write Paper I's text from Dylan's hub note `~/.claude-hub/notes/dylan/archive/Paper I Feedback.md`
 (workflow: "The feedback note" in `papers/README.md`). Act only on unchecked `- [ ]`; answer each with a 💬.
