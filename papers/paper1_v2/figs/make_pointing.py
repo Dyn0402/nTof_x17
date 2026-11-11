@@ -8,12 +8,14 @@ chamber of this kind, so the figure uses only the air between target and chamber
 foils of this chamber or the n_TOF 3He capsule. Geometry (mcs_common): target at 0, window at 200 mm, readout plane
 at d = 233.3 mm, the plane where the position is measured.
 
-(a) One chamber and a target to scale, with one lepton whose deflection in the air is exaggerated (8 deg drawn). Two
-    estimates of its initial direction: the measured local angle (extrapolated back, it misses the origin by b), and
-    the line from an assumed origin (centre of the target) to the measured position.
-(b) Error of each estimate, one projection, against the kinetic energy of the lepton, for a chamber of TH_REQ = 1 deg
-    and 200 mm of air. Lines are analytic (scatter_pointing, scatter_chord on AIR); points are scatter_toy. The
-    assumed-origin estimate is drawn for two source sizes (ORIGINS).
+(a) One chamber and an extended target to scale, with one lepton whose deflection in the air is exaggerated (8 deg
+    drawn). Its measured local angle, extrapolated back, misses the origin by b.
+(b) Error of the measured angle as an estimate of the initial direction, one projection, against the kinetic energy of
+    the lepton, for a chamber of TH_REQ = 1 deg and 200 mm of air. Line analytic (scatter_pointing on AIR), points
+    scatter_toy.
+Dylan 2026-11-12: the source is taken as extended, so the direction has to come from the chamber; the estimate from an
+assumed origin and the measured position (compact source) is no longer drawn. Its numbers stay in the json
+(air_only.source_breakeven_mm, toy_directions) for the one sentence the text keeps about a compact source.
 
 The json also keeps the numbers that include the foils (scattering_in_front_of_gas, two_estimators: sections 3.3 and
 6.2) and the pointing toy (tracks thrown isotropically into the efficient area, position smeared by sigma_x, angle by
@@ -154,7 +156,7 @@ def side_view(ax):
     """One chamber and the target to scale. The deflection of the drawn lepton is exaggerated (KINK in all)."""
     import matplotlib.patches as mp
     ink, mut = ps.INK, ps.MUTED
-    cL, cO = ps.DET_COLOR['det3'], ps.ACCENT
+    cL = ps.DET_COLOR['det3']
     y0, y1 = -28.0, 150.0
     ax.add_patch(mp.Rectangle((mc.Z_DRIFT0, y0), mc.G_DRIFT, y1 - y0, fc='#e8eef8', ec='none', zorder=1))
     ax.plot([mc.D_WIN] * 2, [y0, y1], color=ink, lw=0.9, zorder=3)                 # window
@@ -165,7 +167,6 @@ def side_view(ax):
             linespacing=0.95)
     # the 3He volume across the beam, to scale; the lepton starts off its centre
     ax.add_patch(mp.Circle((0, 0), R_BORE, fc='#f1f3f6', ec=ink, lw=0.8, zorder=2))
-    ax.plot(0, 0, '+', ms=5, mew=0.8, color=cO, zorder=7)
     org = np.array([0.0, 6.0])
     ax.plot(*org, 'o', ms=2.6, color=ink, zorder=8)
     ax.text(0, R_BORE + 3, 'target', fontsize=7, ha='center', va='bottom', color=ink)
@@ -189,10 +190,6 @@ def side_view(ax):
     # estimate 1: the local angle, extrapolated back to the target plane
     yb = ys[1] - np.tan(a_gas) * D
     ax.plot([0, zs[0]], [yb, ys[0]], color=cL, lw=0.9, ls=(0, (4, 2)), zorder=4)
-    # estimate 2: assumed origin (centre of the volume) to the measured position
-    pm = np.array([zs.mean(), ys.mean()])
-    ax.plot([0, pm[0]], [0, pm[1]], color=cO, lw=0.9, zorder=4)
-    ax.plot(*pm, 'o', ms=3.0, mfc='white', mec=cO, mew=0.9, zorder=7)
     # the miss distance
     ax.annotate('', xy=(-18, yb), xytext=(-18, org[1]),
                 arrowprops=dict(arrowstyle='<->', color=cL, lw=0.7, shrinkA=0, shrinkB=0))
@@ -209,9 +206,6 @@ def side_view(ax):
             color=cL, **kw)
     ax.text(zs[0] - 5, ys[1] + 8, 'measured\nsegment', ha='right', va='bottom', fontsize=7, color=cL,
             linespacing=0.95)
-    ax.annotate('assumed origin\nto measured position', xy=(150, 150 * pm[1] / pm[0]), xytext=(128, 2),
-                fontsize=7, color=cO, ha='left', va='top', linespacing=0.95,
-                arrowprops=dict(arrowstyle='-', color=cO, lw=0.6, shrinkA=1, shrinkB=1))
     yd = yb - 12
     ax.annotate('', xy=(D, yd), xytext=(0, yd), arrowprops=dict(arrowstyle='<->', color=mut, lw=0.7, shrinkA=0,
                                                                 shrinkB=0))
@@ -244,32 +238,22 @@ def main():
 
     # (b) error on the initial direction of one lepton, one projection, against its kinetic energy.
     # Only the air between target and window scatters here: the argument does not depend on the foils of a chamber.
-    cL, cO = ps.DET_COLOR['det3'], ps.ACCENT
+    cL = ps.DET_COLOR['det3']
     scat = {T: scatter_pointing(T) for T in (4, 8, 16)}            # all layers, for the json (section 3.3 / 6.2)
     Tf = np.linspace(3.0, 16.5, 120)
     th0 = np.array([scatter_pointing(T, AIR)[1] for T in Tf])
-    chs = np.degrees([scatter_chord(T, layers=AIR) for T in Tf])
     pos_deg = float(np.degrees(MEAS['x_intr'] / D))
     axb.axhline(TH_REQ, color=cL, lw=0.9, ls=(0, (4, 2)), zorder=3)
     axb.plot(Tf, th0, color=ps.MUTED, lw=1.2, zorder=3)
     axb.plot(Tf, np.hypot(th0, TH_REQ), color=cL, lw=1.5, zorder=5)
-    for o, ls in zip(ORIGINS, ((0, (1, 1.2)), (0, (5, 2)))):
-        axb.plot(Tf, np.sqrt(chs ** 2 + pos_deg ** 2 + np.degrees(o / D) ** 2), color=cO, lw=1.2, ls=ls, zorder=4)
-    axb.axhline(pos_deg, color=ps.INK, lw=0.8, ls=(0, (1, 1.5)), zorder=3)
     T_TOY = (4, 6, 8, 10, 12, 14, 16)
     toy2 = {T: scatter_toy(T, a.n, rng, th_ch_deg=TH_REQ, layers=AIR) for T in T_TOY}
     axb.plot(T_TOY, [toy2[T][0] for T in T_TOY], ls='none', marker='o', ms=3.4, color=cL, zorder=6)
-    for o, mk_ in zip(ORIGINS, ('s', 'D')):
-        axb.plot(T_TOY, [toy2[T][1][o] for T in T_TOY], ls='none', marker=mk_, ms=3.0, mfc='white', mec=cO,
-                 mew=0.9, zorder=6)
     lab = dict(fontsize=7, linespacing=0.95, ha='left', va='center', clip_on=False)
     xe = 16.75                                                     # curve labels, outside the right edge
-    axb.text(xe, 2.50, 'origin known\nto 10 mm', color=cO, **lab)
     axb.text(xe, 1.42, 'measured\nangle', color=cL, **lab)
     axb.text(xe, 0.95, 'air alone', color=ps.MUTED, **lab)
-    axb.text(xe, 0.58, 'to 2 mm', color=cO, **lab)
     axb.text(3.25, 1.04, '1° chamber', color=cL, fontsize=7, ha='left', va='bottom')
-    axb.text(16.3, pos_deg + 0.06, 'position, 0.12 mm', color=ps.INK, fontsize=7, ha='right', va='bottom')
     axb.set_xlim(3.0, 16.5)
     axb.set_ylim(0, 4.6)
     axb.set_xticks([4, 8, 12, 16])
