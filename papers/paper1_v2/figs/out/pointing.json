@@ -13,8 +13,8 @@
  "pointing_toy_acceptance_mm": {
   "theta0.99_x0.12": 4.46,
   "theta0.99_x0.5": 4.5,
-  "theta0.90_x0.12": 4.06,
-  "theta0.90_x0.5": 4.09
+  "theta0.90_x0.12": 4.07,
+  "theta0.90_x0.5": 4.1
  },
  "sigma_x_equiv_to_1deg_mm": 4.07,
  "theta_equiv_to_0p5mm_deg": 0.123,
@@ -84,6 +84,92 @@
    "dm_per_deg_MeV": 0.104
   },
   "notes": "per projection; local = scattering in front of the gas (+) chamber angle; chord = direction from an exactly known origin to the position at the readout plane; breakeven = origin error at which the two are equal; opening = sqrt(2) x one direction (two tracks, in-plane component); the fourth energy is the kinetic energy of each lepton of a symmetric pair"
+ },
+ "panel_a": {
+  "drawn_deflection_deg": 8.0,
+  "origin_offset_mm": 6.0
+ },
+ "toy_directions": {
+  "n": 200000,
+  "origins_mm": [
+   5.0,
+   15.0
+  ],
+  "mass_MeV_per_deg": 0.1471,
+  "s68_deg": {
+   "4MeV": {
+    "local": 5.569,
+    "origin5mm": 2.497,
+    "origin15mm": 4.275
+   },
+   "6MeV": {
+    "local": 3.892,
+    "origin5mm": 1.941,
+    "origin15mm": 3.957
+   },
+   "8MeV": {
+    "local": 3.028,
+    "origin5mm": 1.677,
+    "origin15mm": 3.869
+   },
+   "10MeV": {
+    "local": 2.524,
+    "origin5mm": 1.542,
+    "origin15mm": 3.819
+   },
+   "12MeV": {
+    "local": 2.169,
+    "origin5mm": 1.453,
+    "origin15mm": 3.764
+   },
+   "14MeV": {
+    "local": 1.933,
+    "origin5mm": 1.396,
+    "origin15mm": 3.744
+   },
+   "16MeV": {
+    "local": 1.761,
+    "origin5mm": 1.365,
+    "origin15mm": 3.736
+   }
+  },
+  "analytic_deg": {
+   "4MeV": {
+    "local": 5.573,
+    "origin5mm": 2.509,
+    "origin15mm": 4.285
+   },
+   "6MeV": {
+    "local": 3.895,
+    "origin5mm": 1.943,
+    "origin15mm": 3.979
+   },
+   "8MeV": {
+    "local": 3.035,
+    "origin5mm": 1.682,
+    "origin15mm": 3.859
+   },
+   "10MeV": {
+    "local": 2.517,
+    "origin5mm": 1.54,
+    "origin15mm": 3.799
+   },
+   "12MeV": {
+    "local": 2.175,
+    "origin5mm": 1.455,
+    "origin15mm": 3.765
+   },
+   "14MeV": {
+    "local": 1.935,
+    "origin5mm": 1.4,
+    "origin15mm": 3.744
+   },
+   "16MeV": {
+    "local": 1.76,
+    "origin5mm": 1.363,
+    "origin15mm": 3.731
+   }
+  }
  },
  "toy": {
   "n_tracks": 200000,

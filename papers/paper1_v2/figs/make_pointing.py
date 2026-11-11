@@ -1,25 +1,24 @@
 #!/usr/bin/env python3
-"""make_pointing.py -- Paper I v2: why the angle, not the position, sets how well a chamber points at the target.
+"""make_pointing.py -- Paper I v2, Fig. 2: what the angle of a short segment far from the target is worth.
 
     .venv/bin/python papers/paper1_v2/figs/make_pointing.py [--out papers/paper1_v2/figs/out/pointing] [--n 200000]
 
 Toy (no data are read). Geometry along the chamber normal (mcs_common): target at 0, window at 200 mm, 60 um Mylar,
 5.0 mm gas gap, cathode (50 um Kapton + 9 um Cu, assumed), drift gas 28.2 mm (measured), readout plane at
-d = 233.3 mm. d is the distance from the target to the plane where the position is measured (the readout plane);
-position and slope errors are taken as independent there.
+d = 233.3 mm, the plane where the position is measured.
 
-Tracks are thrown isotropically from a point target into the efficient area (399.4 x 359.9 mm^2) at the window.
-One projection (x, z): the measured position at the readout plane is smeared by N(0, sigma_x), the measured projected
-angle by N(0, sigma_theta); the measured line is extrapolated back and its miss distance is the distance of closest
-approach to the target in that projection (impact parameter, b = x0 cos(alpha)). Pointing resolution = 68th
-percentile of |b| (the s68 used for the measured angle resolution). For normal incidence this is
-sqrt(sigma_x^2 + (d sigma_theta)^2); over the acceptance the path length is d/cos(alpha), so the toy sits a few %
-above that curve.
+(a) One chamber and the 3He volume to scale, with one lepton whose deflection is exaggerated (8 deg drawn). Two
+    estimates of its initial direction: the measured local angle (extrapolated back, it misses the origin by b), and
+    the line from an assumed origin (centre of the volume) to the measured position.
+(b) Error of each estimate, one projection, against the kinetic energy of the lepton. Lines are analytic
+    (scatter_pointing, scatter_chord); points are scatter_toy, which throws leptons through the layers. Right axis:
+    the same error as a mass error for a pair at the X17 edge with both leptons alike (sqrt(2) x dm/dtheta).
+    Redrawn 2026-11-11: the earlier (b), pointing against angular resolution for four position resolutions, showed
+    only eq. (1); its numbers are still written to the json (pointing_mm, toy) because the text quotes them.
 
-Right-hand marks in (b): the pointing smear from multiple scattering in the material IN FRONT of the drift gas
-(air, window, gas gap, cathode; Highland on the total, shared by x/X0 among the layers, each kick at distance s from
-the target moving the back-extrapolation by s * kick; normal incidence). It is not part of the chamber resolution,
-but it is the same kind of error (an angle) and a referee will ask.
+Pointing toy (json only): tracks thrown isotropically from a point target into the efficient area; position smeared
+by sigma_x, projected angle by sigma_theta; miss distance = impact parameter in that projection, s68. At normal
+incidence this is sqrt(sigma_x^2 + (d sigma_theta)^2); over the acceptance the path is d/cos(alpha), ~10 % more.
 """
 import argparse
 import json
@@ -39,6 +38,9 @@ SIG_X = (0.1, 0.5, 1.0, 2.0)
 SIG_TH = np.arange(0.0, 3.01, 0.25)    # deg
 MEAS = dict(theta_x=0.99, theta_y=0.90, x_intr=0.12, x_core=0.5)
 Q68 = 0.6826894921
+TH_CH = 0.95                           # chamber angle resolution used for the pair numbers (mean of X and Y)
+ORIGINS = (5.0, 15.0)                  # rms origin error [mm]: 3He bore across the beam, along the beam
+R_BORE = 10.0                          # 3He bore radius [mm] (MX17_Full_Geant SimConfig.hh, per STEP)
 
 
 def throw(n, rng):
@@ -90,7 +92,7 @@ def scatter_chord(T, zm=D):
     return float(np.sqrt(var))
 
 
-def two_estimators(th_ch_deg=0.95, sx=0.12, m_x=16.8, e_tot=20.58):
+def two_estimators(th_ch_deg=TH_CH, sx=0.12, m_x=16.8, e_tot=20.58):
     """Local angle against (position + known origin), per projection, and what each gives for a pair.
     th_ch_deg: chamber angle resolution (mean of the X and Y views of chamber A)."""
     out = {}
@@ -118,92 +120,104 @@ def two_estimators(th_ch_deg=0.95, sx=0.12, m_x=16.8, e_tot=20.58):
     return out
 
 
+def scatter_toy(T, n, rng, th_ch_deg=TH_CH, sx=MEAS['x_intr'], origins=ORIGINS, n_air=50):
+    """Toy check of the two direction estimates, one projection, normal incidence. Each lepton starts on the axis,
+    takes Gaussian kicks in the layers in front of the gas (air in n_air steps, each foil one kick; Highland on the
+    total, shared by x/X0 as in scatter_pointing) and is measured at the readout plane.
+    Returns s68 [deg] of (local angle - initial direction) and of (position - assumed origin)/d - initial direction,
+    the second for each rms origin error in `origins`."""
+    xs = np.array([mc.x_over_X0(m, t) for _, _, m, t, _, _ in mc.LAYERS])
+    th = mc.highland(xs.sum(), T)
+    ang = np.zeros(n)
+    pos = np.zeros(n)
+    z = 0.0
+    for (_, _, m, t, z0, _), x in zip(mc.LAYERS, xs):
+        k = n_air if t > 1.0 else 1
+        for i in range(k):
+            zk = z0 + (i + 0.5) * t / k
+            pos += ang * (zk - z)
+            z = zk
+            ang += rng.normal(0, th * np.sqrt(x / xs.sum() / k), n)
+    pos += ang * (D - z)
+    local = ang + rng.normal(0, np.radians(th_ch_deg), n)
+    xm = pos + rng.normal(0, sx, n)
+    s68 = lambda v: float(np.degrees(np.quantile(np.abs(v), Q68)))
+    return s68(local), {o: s68((xm - rng.normal(0, o, n)) / D) for o in origins}
+
+
 # ---------------------------------------------------------------------------------------------------------------
-def side_view(ax, rng):
+def side_view(ax):
+    """One chamber and the target to scale. The deflection of the drawn lepton is exaggerated (KINK in all)."""
     import matplotlib.patches as mp
     ink, mut = ps.INK, ps.MUTED
-    cA = ps.DET_COLOR['det3']
-    tan_tr = 0.62                                   # the drawn track: 32 deg
-    # chamber slab (one half, to scale)
-    y0, y1 = -10.0, 200.0
+    cL, cO = ps.DET_COLOR['det3'], ps.ACCENT
+    y0, y1 = -28.0, 150.0
     ax.add_patch(mp.Rectangle((mc.Z_DRIFT0, y0), mc.G_DRIFT, y1 - y0, fc='#e8eef8', ec='none', zorder=1))
-    ax.add_patch(mp.Rectangle((mc.D_WIN, y0), mc.T_GAP5 + mc.T_WIN, y1 - y0, fc='#f4f6f9', ec='none', zorder=1))
-    ax.plot([mc.D_WIN] * 2, [y0, y1], color=cA, lw=1.6, zorder=3)                  # window
+    ax.plot([mc.D_WIN] * 2, [y0, y1], color=ink, lw=0.9, zorder=3)                 # window
     ax.plot([mc.Z_CATH] * 2, [y0, y1], color=ink, lw=0.9, zorder=3)                # cathode
-    ax.plot([D] * 2, [y0, y1], color=ink, lw=0.9, ls=(0, (1, 1.2)), zorder=3)     # readout plane / mesh
     ax.add_patch(mp.Rectangle((D, y0), 1.7, y1 - y0, fc='#7f8a99', ec='none', zorder=2))   # readout board
-    ax.text(mc.D_WIN - 2, 203, 'window', ha='right', va='bottom', fontsize=7, color=cA)
-    ax.text(mc.Z_DRIFT0 + mc.G_DRIFT / 2, 203, 'drift\n28 mm', ha='center', va='bottom', fontsize=7, color=ink,
+    ax.text(mc.D_WIN + 2, y1 + 3, 'window,\ncathode', ha='right', va='bottom', fontsize=7, color=ink,
             linespacing=0.95)
-    # target
-    ax.add_patch(mp.Circle((0, 0), 3.0, fc='white', ec=ink, lw=0.9, zorder=6))
-    ax.plot(0, 0, 'o', ms=1.5, color=ink, zorder=7)
-    ax.text(-4, -9, 'target', fontsize=7, ha='left', va='top', color=ink)
-    # the track: true path in light ink, measured segment heavy, back-extrapolation dashed
-    zz = np.array([0, D + 8])
-    ax.plot(zz, tan_tr * zz, color=ps.ACCENT, lw=0.8, alpha=0.6, zorder=4)
+    ax.text(mc.Z_DRIFT0 + mc.G_DRIFT / 2 + 2, y1 + 3, 'drift\n28 mm', ha='left', va='bottom', fontsize=7, color=ink,
+            linespacing=0.95)
+    # the 3He volume across the beam, to scale; the lepton starts off its centre
+    ax.add_patch(mp.Circle((0, 0), R_BORE, fc='#f1f3f6', ec=ink, lw=0.8, zorder=2))
+    ax.plot(0, 0, '+', ms=5, mew=0.8, color=cO, zorder=7)
+    org = np.array([0.0, 6.0])
+    ax.plot(*org, 'o', ms=2.6, color=ink, zorder=8)
+    ax.text(0, R_BORE + 3, r'$^3$He, 20 mm', fontsize=7, ha='center', va='bottom', color=ink)
+    # true path: initial direction t0, a smooth bend in the air and a kink at the foils
+    t0 = 0.36
+    bend_air, kink = np.radians(2.5), np.radians(5.5)
+    za = np.linspace(0, mc.D_WIN, 60)
+    ang_a = np.arctan(t0) + bend_air * (za / mc.D_WIN) ** 1.0
+    ya = org[1] + np.concatenate([[0], np.cumsum(np.tan(0.5 * (ang_a[1:] + ang_a[:-1])) * np.diff(za))])
+    a_gas = ang_a[-1] + kink
+    zg = np.array([mc.D_WIN, D])
+    yg = ya[-1] + np.tan(a_gas) * (zg - mc.D_WIN)
+    ax.plot(za, ya, color=ink, lw=0.9, zorder=5)
+    ax.plot(zg, yg, color=ink, lw=0.9, zorder=5)
     zs = np.array([mc.Z_DRIFT0, D])
-    ax.plot(zs, tan_tr * zs, color=ps.ACCENT, lw=3.2, solid_capstyle='butt', zorder=5)
-    ax.text(mc.D_WIN - 4, tan_tr * D + 4, 'measured\nsegment', ha='right', va='bottom', fontsize=7, color=ps.ACCENT,
+    ys = ya[-1] + np.tan(a_gas) * (zs - mc.D_WIN)
+    ax.plot(zs, ys, color=cL, lw=3.4, solid_capstyle='butt', zorder=6)
+    # initial direction, continued
+    zz = np.array([0, D])
+    ax.plot(zz, org[1] + t0 * zz, color=mut, lw=0.7, ls=(0, (1, 1.6)), zorder=4)
+    # estimate 1: the local angle, extrapolated back to the target plane
+    yb = ys[1] - np.tan(a_gas) * D
+    ax.plot([0, zs[0]], [yb, ys[0]], color=cL, lw=0.9, ls=(0, (4, 2)), zorder=4)
+    # estimate 2: assumed origin (centre of the volume) to the measured position
+    pm = np.array([zs.mean(), ys.mean()])
+    ax.plot([0, pm[0]], [0, pm[1]], color=cO, lw=0.9, zorder=4)
+    ax.plot(*pm, 'o', ms=3.0, mfc='white', mec=cO, mew=0.9, zorder=7)
+    # the miss distance
+    ax.annotate('', xy=(-18, yb), xytext=(-18, org[1]),
+                arrowprops=dict(arrowstyle='<->', color=cL, lw=0.7, shrinkA=0, shrinkB=0))
+    ax.plot([-21, 0], [yb, yb], color=cL, lw=0.5, zorder=3)
+    ax.plot([-21, 0], [org[1]] * 2, color=cL, lw=0.5, zorder=3)
+    ax.text(-21, (yb + org[1]) / 2, '$b$', ha='right', va='center', fontsize=8, color=cL)
+    rot = lambda t: float(np.degrees(np.arctan(t)))
+    kw = dict(rotation_mode='anchor', ha='center', fontsize=7)
+    zt = 118
+    ax.text(zt, org[1] + t0 * zt + 9, 'path, and its initial direction', rotation=rot(t0), va='bottom',
+            color=ink, **kw)
+    zt = 100
+    ax.text(zt, yb + np.tan(a_gas) * zt - 5, 'measured angle, extrapolated', rotation=rot(np.tan(a_gas)), va='top',
+            color=cL, **kw)
+    ax.text(zs[0] - 5, ys[1] + 8, 'measured\nsegment', ha='right', va='bottom', fontsize=7, color=cL,
             linespacing=0.95)
-    ax.text(105, tan_tr * 105 + 7, 'extrapolation', rotation=np.degrees(np.arctan(tan_tr)), rotation_mode='anchor',
-            ha='center', va='bottom', fontsize=7, color=mut)
-    # distance arrow
-    ya = -24
-    ax.annotate('', xy=(D, ya), xytext=(0, ya), arrowprops=dict(arrowstyle='<->', color=mut, lw=0.7, shrinkA=0,
+    ax.annotate('assumed origin\nto measured position', xy=(150, 150 * pm[1] / pm[0]), xytext=(128, 2),
+                fontsize=7, color=cO, ha='left', va='top', linespacing=0.95,
+                arrowprops=dict(arrowstyle='-', color=cO, lw=0.6, shrinkA=1, shrinkB=1))
+    yd = yb - 12
+    ax.annotate('', xy=(D, yd), xytext=(0, yd), arrowprops=dict(arrowstyle='<->', color=mut, lw=0.7, shrinkA=0,
                                                                 shrinkB=0))
-    ax.text(D / 2, ya - 3, f'd = {D:.0f} mm', ha='center', va='top', fontsize=7, color=mut)
-    ax.set_xlim(-12, D + 10)
-    ax.set_ylim(-40, 225)
+    ax.text(D / 2, yd - 3, f'd = {D:.0f} mm', ha='center', va='top', fontsize=7, color=mut)
+    ax.set_xlim(-30, D + 6)
+    ax.set_ylim(yd - 16, y1 + 26)
     ax.set_aspect('equal')
     ax.axis('off')
-
-    # zoomed inset at the target, to scale: angle error 1 deg (position perfect) vs position error 0.5 mm
-    axi = ax.inset_axes([0.0, 0.50, 0.60, 0.43])
-    W = 7.0
-    n_l = 40
-    a0 = np.arctan(tan_tr)
-    nrm = np.array([-np.sin(a0), np.cos(a0)])       # unit normal to the track
-    zp = D                                          # pivot: the measured point
-    pz = np.array([zp, tan_tr * zp])
-    zline = np.array([-W * 1.6, W * 1.6])
-    for i in range(n_l):
-        da = np.radians(rng.normal(0, 1.0))
-        a = a0 + da
-        # line through the measured point with angle a, drawn near the target in track-aligned coordinates
-        u = np.array([np.cos(a), np.sin(a)])
-        t_ = -pz @ u                                 # parameter of closest approach to the target
-        pc = pz + t_ * u
-        off = pc @ nrm
-        along = np.array([-W * 2, W * 2])
-        axi.plot(along, off + along * np.tan(da), color=cA, lw=0.5, alpha=0.6, zorder=3)
-        dx = rng.normal(0, 0.5)
-        axi.plot(along, np.full(2, dx * np.cos(a0)), color=ps.ACCENT, lw=0.5, alpha=0.55, zorder=4)
-    s_ang = D * np.radians(1.0)
-    axi.axhspan(-s_ang, s_ang, color=cA, alpha=0.08, lw=0, zorder=1)
-    axi.add_patch(mp.Circle((0, 0), 0.35, fc='white', ec=ink, lw=0.7, zorder=6))
-    axi.set_xlim(-W * 1.5, W * 1.5)
-    axi.set_ylim(-W, W)
-    axi.set_aspect('equal')
-    axi.set_xticks([])
-    axi.set_yticks([])
-    for s in axi.spines.values():
-        s.set_visible(True)
-        s.set_color(mut)
-        s.set_linewidth(0.6)
-    axi.grid(False)
-    axi.plot([W * 1.5 - 1.0 - 5, W * 1.5 - 1.0], [-W + 1.0] * 2, color=ink, lw=1.0, zorder=7)
-    axi.text(W * 1.5 - 3.5, -W + 1.5, '5 mm', ha='center', va='bottom', fontsize=6.5, color=ink, zorder=7,
-             bbox=dict(fc='white', ec='none', pad=0.6, alpha=0.85))
-    axi.text(-W * 1.5 + 0.6, W - 0.6, r'$\sigma_\theta = 1°$', ha='left', va='top', fontsize=7, color=cA, zorder=7, bbox=dict(fc='white', ec='none', pad=0.6, alpha=0.85))
-    axi.text(-W * 1.5 + 0.6, -W + 0.6, r'$\sigma_x = 0.5$ mm', ha='left', va='bottom', fontsize=7,
-             color=ps.ACCENT, zorder=7, bbox=dict(fc='white', ec='none', pad=0.6, alpha=0.85))
-    axi.text(W * 1.5 - 0.6, W - 0.6, 'at the target,\nalong the track', ha='right', va='top', fontsize=6.5,
-             color=mut, linespacing=0.95, zorder=7, bbox=dict(fc='white', ec='none', pad=0.6, alpha=0.85))
-    # link the inset to the target
-    from matplotlib.patches import ConnectionPatch
-    ax.add_artist(ConnectionPatch(xyA=(0, 3.5), coordsA=ax.transData, xyB=(0.08, 0.0), coordsB=axi.transAxes,
-                                  color=mut, lw=0.6, ls='--', zorder=2))
+    return dict(drawn_deflection_deg=round(float(np.degrees(bend_air + kink)), 1), origin_offset_mm=float(org[1]))
 
 
 def main():
@@ -221,44 +235,46 @@ def main():
     toy = {sx: [pointing_toy(tx, sx, s, rng) for s in SIG_TH] for sx in SIG_X}
 
     fig = plt.figure(figsize=(ps.FULL[0], 3.0))
-    axa = fig.add_axes([0.0, 0.03, 0.47, 0.95])
-    axb = fig.add_axes([0.58, 0.15, 0.33, 0.80])
-    side_view(axa, np.random.default_rng(7))
+    axa = fig.add_axes([0.0, 0.02, 0.50, 0.96])
+    axb = fig.add_axes([0.585, 0.15, 0.325, 0.80])
+    drawn = side_view(axa)
 
-    cols = ['#0b3d91', '#56B4E9', '#E69F00', '#CC79A7']
-    mk = ['o', 's', '^', 'D']
-    th_f = np.linspace(0, 3.0, 200)
-    for sx, c, m in zip(SIG_X, cols, mk):
-        axb.plot(th_f, analytic(sx, th_f), color=c, lw=1.1, zorder=3)
-        axb.plot(SIG_TH, toy[sx], ls='none', marker=m, color=c, ms=3.6, zorder=4,
-                 label=f'{sx:g} mm')
-    # the measured chamber: theta 0.90-0.99 deg, sigma_x 0.12-0.5 mm
-    lo, hi = analytic(MEAS['x_intr'], MEAS['theta_y']), analytic(MEAS['x_core'], MEAS['theta_x'])
-    axb.add_patch(plt.Rectangle((MEAS['theta_y'], lo), MEAS['theta_x'] - MEAS['theta_y'], hi - lo,
-                                fc='none', ec=ps.ACCENT, lw=1.2, zorder=6))
-    axb.plot([MEAS['theta_y'], MEAS['theta_x']], [lo, hi], ls='none')
-    axb.annotate('this chamber', xy=(MEAS['theta_x'] + 0.03, hi), xytext=(1.2, 2.0), fontsize=7,
-                 color=ps.ACCENT, arrowprops=dict(arrowstyle='-', color=ps.ACCENT, lw=0.7), ha='left')
-    # scattering in front of the gas (marks on the right edge)
+    # (b) error on the initial direction of one lepton, one projection, against its kinetic energy
+    cL, cO = ps.DET_COLOR['det3'], ps.ACCENT
     scat = {T: scatter_pointing(T) for T in (4, 8, 16)}
-    ymax = 13.0
-    for T, (s, th) in scat.items():
-        if s < ymax:
-            axb.annotate('', xy=(3.0, s), xytext=(3.22, s), annotation_clip=False,
-                         arrowprops=dict(arrowstyle='-|>', color=ps.MUTED, lw=0.7, mutation_scale=6))
-            axb.text(3.25, s, f'{T} MeV', fontsize=7, color=ps.MUTED, va='center', ha='left',
-                     transform=axb.transData, clip_on=False)
-        else:
-            axb.text(3.25, ymax, f'{T} MeV:\n{s:.0f} mm', fontsize=7, color=ps.MUTED, va='top', ha='left',
-                     clip_on=False, linespacing=0.95)
-    axb.text(3.05, ymax + 0.25, 'scattering in\nfront of gas', fontsize=6.5, color=ps.MUTED, ha='left',
-             va='bottom', clip_on=False, linespacing=0.95)
-    axb.set_xlim(0, 3.0)
-    axb.set_ylim(0, ymax)
-    axb.set_xlabel(r'angular resolution $\sigma_\theta$ (°)')
-    axb.set_ylabel('pointing resolution at target (mm)')
-    axb.legend(title=r'$\sigma_x$', loc='upper left', fontsize=7, title_fontsize=7, handlelength=1.0,
-               borderaxespad=0.2, labelspacing=0.25)
+    Tf = np.linspace(3.0, 16.5, 120)
+    th0 = np.array([scatter_pointing(T)[1] for T in Tf])
+    chs = np.degrees([scatter_chord(T) for T in Tf])
+    pos_deg = float(np.degrees(MEAS['x_intr'] / D))
+    axb.axhspan(MEAS['theta_y'], MEAS['theta_x'], color=cL, alpha=0.22, lw=0, zorder=2)
+    axb.plot(Tf, th0, color=ps.MUTED, lw=0.9, ls=(0, (4, 2)), zorder=3)
+    axb.plot(Tf, np.hypot(th0, TH_CH), color=cL, lw=1.4, zorder=5)
+    for o, ls in zip(ORIGINS, ('-', (0, (5, 2)))):
+        axb.plot(Tf, np.sqrt(chs ** 2 + pos_deg ** 2 + np.degrees(o / D) ** 2), color=cO, lw=1.4, ls=ls, zorder=4)
+    axb.axhline(pos_deg, color=ps.INK, lw=0.8, ls=(0, (1, 1.5)), zorder=3)
+    T_TOY = (4, 6, 8, 10, 12, 14, 16)
+    toy2 = {T: scatter_toy(T, a.n, rng) for T in T_TOY}
+    axb.plot(T_TOY, [toy2[T][0] for T in T_TOY], ls='none', marker='o', ms=3.4, color=cL, zorder=6)
+    for o, mk_ in zip(ORIGINS, ('s', 'D')):
+        axb.plot(T_TOY, [toy2[T][1][o] for T in T_TOY], ls='none', marker=mk_, ms=3.0, mfc='white', mec=cO,
+                 mew=0.9, zorder=6)
+    lab = dict(fontsize=7, linespacing=0.95)
+    axb.text(5.0, 5.0, 'measured angle', color=cL, ha='left', va='bottom', **lab)
+    axb.text(16.3, 7.2, 'dashed grey: scattering alone', color=ps.MUTED, ha='right', va='top', **lab)
+    axb.text(16.3, 3.95, 'origin to 15 mm', color=cO, ha='right', va='bottom', **lab)
+    axb.text(3.3, 1.5, 'origin to 5 mm', color=cO, ha='left', va='top', **lab)
+    axb.text(16.3, 0.52, 'chamber angle', color=cL, ha='right', va='center', **lab)
+    axb.text(16.3, pos_deg + 0.08, 'chamber position', color=ps.INK, ha='right', va='bottom', **lab)
+    axb.set_xlim(3.0, 16.5)
+    axb.set_ylim(0, 7.5)
+    axb.set_xticks([4, 8, 12, 16])
+    axb.set_xlabel('lepton kinetic energy (MeV)')
+    axb.set_ylabel('error on the initial direction (°)')
+    te = two_estimators()
+    k_m = np.sqrt(2) * te['kinematics']['dm_per_deg_MeV']          # MeV of mass per degree, both leptons alike
+    axr = axb.secondary_yaxis('right', functions=(lambda v: v * k_m, lambda v: v / k_m))
+    axr.set_ylabel('mass error of a pair (MeV)')
+    axr.set_yticks([0, 0.2, 0.4, 0.6, 0.8, 1.0])
     axa.text(0.0, 1.0, '(a)', transform=axa.transAxes, fontsize=ps.BASE_PT, fontweight='bold', va='top', ha='left')
     axb.text(-0.25, 1.04, '(b)', transform=axb.transAxes, fontsize=ps.BASE_PT, fontweight='bold', va='top',
              ha='left')
@@ -281,7 +297,11 @@ def main():
         scattering_in_front_of_gas={f'{T}MeV': dict(theta0_deg=round(th, 2), pointing_rms_mm=round(s, 1),
                                                     equiv_sigma_theta_deg=round(float(np.degrees(s / D)), 2))
                                     for T, (s, th) in scat.items()},
-        two_estimators=two_estimators(),
+        two_estimators=te,
+        panel_a=drawn,
+        toy_directions=dict(n=a.n, origins_mm=list(ORIGINS), mass_MeV_per_deg=round(float(k_m), 4),
+                            s68_deg={f'{T}MeV': dict(local=round(v[0], 3), **{f'origin{o:g}mm': round(w, 3) for o, w in v[1].items()}) for T, v in toy2.items()},
+                            analytic_deg={f'{T}MeV': dict(local=round(float(np.hypot(scatter_pointing(T)[1], TH_CH)), 3), **{f'origin{o:g}mm': round(float(np.sqrt(np.degrees(scatter_chord(T)) ** 2 + pos_deg ** 2 + np.degrees(o / D) ** 2)), 3) for o in ORIGINS}) for T in T_TOY}),
         toy=dict(n_tracks=a.n, sigma_theta_deg=SIG_TH.round(3).tolist(),
                  s68_mm={f'{sx:g}': np.round(v, 3).tolist() for sx, v in toy.items()}),
         notes='pointing = s68 of the impact parameter in one projection; analytic = normal incidence '

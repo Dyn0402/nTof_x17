@@ -159,7 +159,7 @@ note = "Restyled 2026-11-02 (paper_style; gas legend from ps.GAS; unrotated run 
 # --- new in v2 -------------------------------------------------------------
 
 [fig.pointing]
-title = "Why the angle: to-scale side view and toy pointing resolution at the target against angular resolution"
+title = "What the angle is worth: to-scale side view with the two direction estimates, and their error against lepton energy"
 state = "current"
 source = "papers/paper1_v2/figs/out/pointing.pdf"
 producer = ".venv/bin/python papers/paper1_v2/figs/make_pointing.py"
