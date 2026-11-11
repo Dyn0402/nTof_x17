@@ -78,6 +78,46 @@ def scatter_pointing(T):
     return float(np.sqrt(var)), float(np.degrees(th))
 
 
+def scatter_chord(T, zm=D):
+    """rms error [rad] of the direction target -> measured position (origin known exactly) from the same material:
+    a kick at distance s moves the position at zm by (zm - s) * kick, so the direction by (1 - s/zm) * kick."""
+    xs = np.array([mc.x_over_X0(m, t) for _, _, m, t, _, _ in mc.LAYERS])
+    th = mc.highland(xs.sum(), T)
+    var = 0.0
+    for (_, _, m, t, z0, _), x in zip(mc.LAYERS, xs):
+        u0, u1 = zm - z0, zm - z0 - t
+        var += th ** 2 * x / xs.sum() * (u0 * u0 + u0 * u1 + u1 * u1) / 3.0 / zm ** 2
+    return float(np.sqrt(var))
+
+
+def two_estimators(th_ch_deg=0.95, sx=0.12, m_x=16.8, e_tot=20.58):
+    """Local angle against (position + known origin), per projection, and what each gives for a pair.
+    th_ch_deg: chamber angle resolution (mean of the X and Y views of chamber A)."""
+    out = {}
+    th_open = 2 * np.arcsin(m_x / e_tot)
+    dm_per_rad = m_x / (2 * np.tan(th_open / 2))
+    for T in (4, 8, 16, round((e_tot - 2 * 0.511) / 2, 2)):
+        _, th0 = scatter_pointing(T)
+        local = float(np.hypot(th0, th_ch_deg))
+        chord = float(np.hypot(np.degrees(scatter_chord(T)), np.degrees(sx / D)))
+        out[f'{T}MeV'] = dict(
+            local_deg=round(local, 2), chord_scatter_deg=round(chord, 2),
+            origin_breakeven_mm=round(float(D * np.radians(np.sqrt(local ** 2 - chord ** 2))), 1),
+            opening_local_deg=round(np.sqrt(2) * local, 2),
+            dm_local_MeV=round(float(dm_per_rad * np.radians(np.sqrt(2) * local)), 2))
+    out['chamber_only'] = dict(
+        local_deg=th_ch_deg, origin_breakeven_mm=round(float(D * np.radians(th_ch_deg)), 1),
+        opening_deg=round(np.sqrt(2) * th_ch_deg, 2),
+        dm_MeV=round(float(dm_per_rad * np.radians(np.sqrt(2) * th_ch_deg)), 3))
+    out['kinematics'] = dict(m_x_MeV=m_x, e_tot_MeV=e_tot, min_opening_deg=round(float(np.degrees(th_open)), 1),
+                             dm_per_deg_MeV=round(float(dm_per_rad * np.radians(1.0)), 3))
+    out['notes'] = ('per projection; local = scattering in front of the gas (+) chamber angle; chord = direction '
+                    'from an exactly known origin to the position at the readout plane; breakeven = origin error at '
+                    'which the two are equal; opening = sqrt(2) x one direction (two tracks, in-plane component); '
+                    'the fourth energy is the kinetic energy of each lepton of a symmetric pair')
+    return out
+
+
 # ---------------------------------------------------------------------------------------------------------------
 def side_view(ax, rng):
     import matplotlib.patches as mp
@@ -241,6 +281,7 @@ def main():
         scattering_in_front_of_gas={f'{T}MeV': dict(theta0_deg=round(th, 2), pointing_rms_mm=round(s, 1),
                                                     equiv_sigma_theta_deg=round(float(np.degrees(s / D)), 2))
                                     for T, (s, th) in scat.items()},
+        two_estimators=two_estimators(),
         toy=dict(n_tracks=a.n, sigma_theta_deg=SIG_TH.round(3).tolist(),
                  s68_mm={f'{sx:g}': np.round(v, 3).tolist() for sx, v in toy.items()}),
         notes='pointing = s68 of the impact parameter in one projection; analytic = normal incidence '
