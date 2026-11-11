@@ -42,6 +42,49 @@
    "equiv_sigma_theta_deg": 1.11
   }
  },
+ "two_estimators": {
+  "4MeV": {
+   "local_deg": 5.57,
+   "chord_scatter_deg": 2.19,
+   "origin_breakeven_mm": 20.9,
+   "opening_local_deg": 7.88,
+   "dm_local_MeV": 0.82
+  },
+  "8MeV": {
+   "local_deg": 3.03,
+   "chord_scatter_deg": 1.15,
+   "origin_breakeven_mm": 11.4,
+   "opening_local_deg": 4.29,
+   "dm_local_MeV": 0.45
+  },
+  "16MeV": {
+   "local_deg": 1.76,
+   "chord_scatter_deg": 0.59,
+   "origin_breakeven_mm": 6.8,
+   "opening_local_deg": 2.49,
+   "dm_local_MeV": 0.26
+  },
+  "9.78MeV": {
+   "local_deg": 2.56,
+   "chord_scatter_deg": 0.95,
+   "origin_breakeven_mm": 9.7,
+   "opening_local_deg": 3.63,
+   "dm_local_MeV": 0.38
+  },
+  "chamber_only": {
+   "local_deg": 0.95,
+   "origin_breakeven_mm": 3.9,
+   "opening_deg": 1.34,
+   "dm_MeV": 0.139
+  },
+  "kinematics": {
+   "m_x_MeV": 16.8,
+   "e_tot_MeV": 20.58,
+   "min_opening_deg": 109.4,
+   "dm_per_deg_MeV": 0.104
+  },
+  "notes": "per projection; local = scattering in front of the gas (+) chamber angle; chord = direction from an exactly known origin to the position at the readout plane; breakeven = origin error at which the two are equal; opening = sqrt(2) x one direction (two tracks, in-plane component); the fourth energy is the kinetic energy of each lepton of a symmetric pair"
+ },
  "toy": {
   "n_tracks": 200000,
   "sigma_theta_deg": [

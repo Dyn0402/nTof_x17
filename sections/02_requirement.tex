@@ -1,9 +1,11 @@
 \section{What the tracker must measure: the angle}\label{sec:requirement}
 \sectionstate{partial}{new section (Dylan 2026-11-10: ``a diagram and section for arguing why angular resolution is most
 important \ldots{} a quick toy simulation with visualization''). Toy and figure: \texttt{papers/paper1\_v2/figs/make\_pointing.py},
-numbers in \texttt{figs/out/pointing.json}; scattering from \texttt{figs/out/material\_budget.json}.}
+numbers in \texttt{figs/out/pointing.json}; scattering from \texttt{figs/out/material\_budget.json}. 2026-11-11: opening
+angle and pointing separated, mass relation added, the origin-constraint paragraph redone with scattering.}
 \intent{Before the detector is described: a chamber sees a short piece of track far from the target, so the angle, not
-the position, decides how well a track points to its origin and how well the opening angle of a pair is known.}
+the position, decides both how well the opening angle of a pair is known (the mass) and how well a track points to its
+origin (the vertex). Two requirements, one quantity; scattering sets the scale for both.}
 
 A chamber does not see where a particle started. It sees a straight segment about 30\,mm long, 20\,cm away
 (\crefp{fig:pointing}{a}), and everything the experiment wants to know about the track at the target has to be
@@ -22,21 +24,45 @@ shows it to scale, and a toy simulation that throws tracks from the target over 
 measured position and slope and extrapolates them back reproduces \cref{eq:pointing} (\crefp{fig:pointing}{b}; the toy
 lies slightly above the line because inclined tracks have a longer lever arm).
 
-The same holds for the opening angle of a pair. Each direction is measured inside its chamber, so the error on the
-opening angle is that of the two slopes and the position does not enter at first order. A direction could instead be
-taken from the position in the chamber and an assumed origin, with an error of the size of the target divided by $d$.
-That is better than a local angle of 1\textdegree{} only if the origin is known to better than $d\,\sigma_\theta$,
-about 4\,mm; for an extended target it is not, and the measured angles are also what locate the origin.
-\askDylan{The last three sentences are the vertex-constraint argument that was cut from the introduction on 2026-11-06.
-It seems to belong here now; cut it again if you would rather not make it.}
+The angle serves two purposes, and they are not the same requirement. The first is the opening angle $\theta$ of
+the pair, which gives its mass. The two leptons share the energy $E$ of the transition, and with
+$y=(E_+-E_-)/E$ and the electron mass neglected
+\begin{equation}
+  m^2=E^2\,(1-y^2)\,\sin^2(\theta/2)\,.\label{eq:mass}
+\end{equation}
+An X17 of 16.8\,MeV appears as an edge at $\theta=109$\textdegree{}, where one degree of opening angle is 0.10\,MeV
+of mass. Each direction is measured inside its chamber, so the error on the opening angle is that of the two slopes.
+The lever arm $d$ does not enter, and neither does the position. The second purpose is the pointing of
+\cref{eq:pointing}. It tells whether the two tracks come from one point and whether that point lies in the target,
+which rejects background but does not measure the mass. Both improve with $\sigma_\theta$; only the pointing depends
+on the distance to the target.
 
 What sets the useful scale for $\sigma_\theta$ is scattering before the measurement. In the 20\,cm of air between
 the target and the window an 8\,MeV electron is deflected by 1.7\textdegree{} rms in each projection, and the window and
 the cathode of the chamber add to it: 2.9\textdegree{} in all at 8\,MeV, 5.5\textdegree{} at 4\,MeV and 1.5\textdegree{} at
 16\,MeV (\cref{tab:material}). That scattering is itself an angle error, of 4.5 to 17\,mm at the target (arrows in
-\crefp{fig:pointing}{b}). A tracker for these leptons therefore needs an angular resolution of about a degree, a
-position resolution no better than a millimetre, and as little material as possible in front of its drift volume.
-\Cref{sec:tracking} gives what the chambers deliver against this.
+\crefp{fig:pointing}{b}). It enters the opening angle in full: for a pair that shares the energy equally, with one
+lepton in each of two chambers, a chamber resolution of 1\textdegree{} alone would give the opening angle to
+1.3\textdegree{} (0.14\,MeV), and with the scattering it is 3.6\textdegree{} (0.38\,MeV).
+
+A direction can also be taken from the position in the chamber and an assumed origin, and scattering affects that
+direction less. A deflection in the foils just in front of the gas hardly moves the position, and one in the air moves
+it by only part of the lever arm, so this direction is scattered by 1.2\textdegree{} at 8\,MeV where the local angle
+is scattered by 2.9\textdegree. Its error is otherwise the uncertainty of the origin divided by $d$. Against a local
+angle of 1\textdegree{} it would be better only for an origin known to 4\,mm. Against the local angle with its
+scattering the limit is 21, 11 and 7\,mm at 4, 8 and 16\,MeV. The $^3$He volume is 20\,mm across and 60\,mm long:
+about 5\,mm rms across the beam, inside the limit at every energy, and about 15\,mm along it, inside the limit only
+for the softest leptons. The best estimate of the opening angle therefore combines the two, with the local angle
+carrying the most weight for the hard leptons and along the beam. The position resolution is 0.03\textdegree{} over
+this lever arm and limits neither.
+\askDylan{New 2026-11-11 (your question on pointing against opening angle). The $^3$He bore, 20\,mm diameter and
+40\,mm cylinder plus hemispherical caps, is from the Geant4 geometry (\texttt{MX17\_Full\_Geant/include/SimConfig.hh},
+``per STEP''); the rms values assume captures fill it uniformly, which they do not (they sit towards the nose). Numbers:
+\texttt{figs/out/pointing.json}, key \texttt{two\_estimators}.}
+
+A tracker for these leptons therefore needs an angular resolution of about a degree, below the scattering at every
+energy, a position resolution no better than a millimetre, and as little material as possible in front of its drift
+volume. \Cref{sec:tracking} gives what the chambers deliver against this.
 
 \begin{figure}[tbp]
   \centering
