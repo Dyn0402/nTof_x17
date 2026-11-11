@@ -5,7 +5,7 @@
     .venv/bin/python papers/note_outline.py paper1 --write         # rewrite the note (then commit the notes repo)
     .venv/bin/python papers/note_outline.py paper1 --note <path.md>
 
-The note (default: ~/.claude-hub/notes/dylan/archive/Paper I Feedback.md for paper1) gets one heading per item of the
+The note (default: ~/.claude-hub/notes/dylan/archive/Paper I Feedback.md for paper1, Paper I v2 Feedback.md for paper1_v2) gets one heading per item of the
 paper, in paper order, numbered as LaTeX numbers them:
 
     ## 5 Charge balance and efficiency              (\\section; appendix sections are lettered, \\section* unnumbered)
@@ -32,7 +32,8 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 NOTES = Path(os.path.expanduser('~/.claude-hub/notes/dylan/archive'))
-DEFAULT_NOTE = {'paper1': NOTES / 'Paper I Feedback.md', 'paper2': NOTES / 'Paper II Feedback.md'}
+DEFAULT_NOTE = {'paper1': NOTES / 'Paper I Feedback.md', 'paper1_v2': NOTES / 'Paper I v2 Feedback.md',
+                'paper2': NOTES / 'Paper II Feedback.md'}
 UNPLACED = 'Unplaced (headings no longer in the paper)'
 
 

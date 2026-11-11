@@ -147,7 +147,8 @@ A reorganised copy of Paper I, made after the audit in `paper1_audit/`. `paper1/
 
 ## The feedback note and drafting from it (Paper I, from 2026-11-04)
 
-Dylan's hub note `~/.claude-hub/notes/dylan/archive/Paper I Feedback.md` mirrors the paper's outline: one heading per
+Dylan's hub note `~/.claude-hub/notes/dylan/archive/Paper I Feedback.md` (for the reorganised `paper1_v2`:
+`Paper I v2 Feedback.md`, started clean 2026-11-11; `note_outline.py paper1_v2`) mirrors the paper's outline: one heading per
 section, subsection, figure and table, numbered as in the PDF (figures keyed by their file id, as in `figures.toml`).
 
     .venv/bin/python papers/note_outline.py paper1            # dry run
