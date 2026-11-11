@@ -3,7 +3,9 @@
 important \ldots{} a quick toy simulation with visualization''). Toy and figure: \texttt{papers/paper1\_v2/figs/make\_pointing.py},
 numbers in \texttt{figs/out/pointing.json} (key \texttt{air\_only}). 2026-11-11: opening angle and pointing separated,
 mass relation added, Fig. 2 redrawn; then made general (Dylan: no accounting of the n\_TOF capsule or of this chamber's
-window here, the argument must carry to LNL and to a thinner window): air only, generic source size.}
+window here, the argument must carry to LNL and to a thinner window): air only, generic source size. 2026-11-12
+(Dylan): the source is taken as extended; the direction from an assumed origin left out of Fig. 2, the compact case
+kept to one paragraph (break-even 6.8\,mm at 8\,MeV: \texttt{air\_only.source\_breakeven\_mm}).}
 \intent{Before the detector is described: a chamber sees a short piece of track far from the target, so the angle, not
 the position, decides both how well the opening angle of a pair is known (the mass) and how well a track points to its
 origin (the vertex). Two requirements, one quantity. About 1\textdegree{} is enough because the air alone scatters more.
@@ -48,18 +50,11 @@ counted (those of the present chambers are in \cref{sec:material}). A chamber mu
 therefore gain little: at 8\,MeV the direction of the lepton at the target is known to 2.0\textdegree{} with a chamber
 of 1\textdegree{} and to 1.7\textdegree{} with a perfect one.
 
-A direction can also be taken from the position in the chamber and an assumed origin (\crefp{fig:pointing}{a}). Its
-error is the size of the source divided by $d$, and a smaller share of the scattering, because a deflection in the
-air moves the position by only part of the lever arm: 1.1\textdegree{} at 8\,MeV where the measured angle has
-1.7\textdegree. For a source of 2\,mm, such as a beam spot on a thin target, this is the better estimate at every
-energy, and the measured angle then checks that the track comes from the source. For a source of 10\,mm, such as a
-gas target in a neutron beam, the measured angle is the better estimate above about 5\,MeV, and it is also what
-locates the origin. The two are equal for a source of 11, 7 and 5\,mm at 4, 8 and 16\,MeV. In neither case does
-the position resolution matter: 0.12\,mm over this lever arm is 0.03\textdegree.
-\askDylan{2026-11-11, second pass: kept general as you asked (air only, no capsule, no foils). One point I would not
-drop: for a compact source (a beam spot of a few mm, as I understand LNL) the direction from the known origin beats the
-measured angle, so ``the angle matters most'' holds as stated only for an extended source. The paragraph above says
-so in general terms. Cut it and the two orange curves of \cref{fig:pointing} if you would rather not make the point.}
+The argument assumes an extended source, such as a gas target in a neutron beam, so that the direction of a lepton
+has to come from the chamber. If the source is compact, a beam spot of a few millimetres on a thin target, the line
+from the known origin to the measured position is the better estimate of the direction (for a source below
+about 7\,mm rms at 8\,MeV), and the measured angle is left to confirm that the track comes from the source. The chamber
+then matters chiefly through its efficiency.
 
 A tracker for these leptons therefore needs an angular resolution of about a degree, a position resolution no better
 than a millimetre, and as little material as possible in front of its drift volume. \Cref{sec:tracking} gives what
@@ -68,14 +63,12 @@ the chambers deliver against this.
 \begin{figure}[tbp]
   \centering
   \figorbox[width=0.9\linewidth]{pointing}{to-scale side view and direction error against lepton energy}
-  \caption{What the angle is worth. (a) One chamber and a target to scale, with one lepton (black; its deflection in
-  the air is drawn about five times too large for an 8\,MeV electron). The chamber measures a segment 28\,mm long,
-  233\,mm from the target. Its angle, extrapolated back (blue, dashed), misses the origin by $b$. The line from an
-  assumed origin, the centre of the target, to the measured position (orange) is a second estimate of the initial
-  direction (dotted). (b) Error on the initial direction of one lepton in one projection against its kinetic energy,
-  with 20\,cm of air as the only material. Grey: the scattering in the air. Blue: the measured angle, for a chamber
-  of 1\textdegree{} (dashed line). Orange: the assumed origin and the measured position, for a source of 2\,mm and of
-  10\,mm rms. Dotted: a position resolution of 0.12\,mm over this lever arm. Lines are analytic and points a toy
-  simulation that scatters the leptons through the air.}
+  \caption{What the angle is worth. (a) One chamber and an extended target to scale, with one lepton (black; its
+  deflection in the air is drawn about five times too large for an 8\,MeV electron). The chamber measures a segment
+  28\,mm long, 233\,mm from the target. Its angle, extrapolated back (blue, dashed), misses the origin by $b$; the
+  dotted line continues the initial direction. (b) Error of the measured angle on the initial direction of one lepton,
+  in one projection, against its kinetic energy, with 20\,cm of air as the only material. Grey: the scattering in the
+  air, which is what a perfect chamber would give. Blue: a chamber of 1\textdegree{} (dashed line) added to it; the
+  line is analytic and the points a toy simulation that scatters the leptons through the air.}
   \label{fig:pointing}
 \end{figure}
