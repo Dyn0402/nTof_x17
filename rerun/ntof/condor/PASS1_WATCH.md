@@ -82,3 +82,4 @@ The pass is done when `watch_pass1.sh` prints `(none)` for all three clusters. T
 | 11-11 12:47 | n/a / 1,937 / 63 | 28 run, 60 idle / 198 idle | 12 cyclic jobs on main repaired (0 bad after); held 0 |
 | 11-11 18:47 | n/a / 1,759 / 241 | 0 run, 60 idle / 198 idle | 50 cyclic jobs on main repaired (0 bad after); held 0 |
 | 11-11 21:47 | n/a / 1,688 / 312 | 0 run, 60 idle / 198 idle | no cyclic jobs; held 0 |
+| 11-12 10:35 | n/a / 2,000 / 0 (none running since ~05:41) | 4 run, 183 idle / 1 run | STALLED, new variant: all 2,000 idle main jobs have PreVerRequirements = the Requirements text (196 chars, Hostgroup && PreLocalRequirements) instead of the Arch/OpSys/Disk expression, so the chain is cyclic and no slot matches (better-analyze: 0 of 5,317 slots). Requirements itself already has the repaired form, so watch_pass1.sh grep finds 0 and fix_req_cycle.sh all selects nothing. NOT repaired (protocol: stop and report). Held 0, quota 75% |
