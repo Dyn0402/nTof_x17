@@ -72,7 +72,7 @@ def figure(df, J):
     ax = axs[0]
     ser(ax, 'v', 'v', 'v_err', 'o', label='reference ladder')
     ser(ax, 'vcol', 'v_col', 'v_col_err', 'o', filled=False, ls='--', label='column duration', xoff=0.04)
-    ax.set_ylabel('$v$ [µm/ns]'); ax.set_ylim(35.2, 37.1); ax.set_yticks([35.5, 36.0, 36.5, 37.0])
+    ax.set_ylabel(r'$v_\mathrm{d}$ [µm/ns]'); ax.set_ylim(35.2, 37.1); ax.set_yticks([35.5, 36.0, 36.5, 37.0])
     ax.legend(loc='lower right', **leg)
     import gasinv as GI
     E = J['v']['E_Vcm']

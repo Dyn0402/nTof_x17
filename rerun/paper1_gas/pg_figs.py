@@ -139,15 +139,15 @@ def vE():
     xa = np.array([L['drift_V'] / (gap / 10) for L in La]); ya = np.array([L['v_ang'] for L in La])
     ea = np.array([L['v_ang_err'] for L in La])
     ax.errorbar(xa, ya, yerr=ea, fmt='s', ms=4, color=c3, mfc='white', mec=c3, zorder=4,
-                label=r'angle-scale $v$ (M3 ladder)')
+                label=r'angle-scale $v_\mathrm{d}$ (M3 ladder)')
     P = sorted((p for p in sc['points']), key=lambda p: p['E'])
     xt = np.array([p['E'] for p in P]); yt = np.array([p['v'] for p in P]); et = np.array([p['v_err'] for p in P])
-    ax.errorbar(xt, yt, yerr=et, fmt='o', ms=4.5, color=c3, zorder=5, label=r'timing $v = g/T$')
+    ax.errorbar(xt, yt, yerr=et, fmt='o', ms=4.5, color=c3, zorder=5, label=r'timing $v_\mathrm{d} = g/T$')
     for x, y, e in zip(xa, ya, ea):
         rows.append(dict(kind='angle_scale_v', E=x, v=y, v_err=e, magboltz=GI.v_of(w0, x)))
     for x, y, e in zip(xt, yt, et):
         rows.append(dict(kind='timing_v', E=x, v=y, v_err=e, magboltz=GI.v_of(w0, x)))
-    ax.set_ylabel(r'drift velocity $v$ (µm/ns)'); ax.set_ylim(0, 44)
+    ax.set_ylabel(r'drift velocity $v_\mathrm{d}$ (µm/ns)'); ax.set_ylim(0, 44)
     h, l = ax.get_legend_handles_labels()
     order = [3, 2, 0, 1]
     ax.legend([h[i] for i in order], [l[i] for i in order], loc='lower right')
@@ -157,7 +157,7 @@ def vE():
     ar.errorbar(xa, ya / mz(xa), yerr=ea / mz(xa), fmt='s', ms=4, color=c3, mfc='white', mec=c3, zorder=4)
     ar.errorbar(xt, yt / mz(xt), yerr=et / mz(xt), fmt='o', ms=4.5, color=c3, zorder=5)
     ar.set_ylim(0.9, 1.26); ar.set_xlim(20, 415)
-    ar.set_xlabel(r'drift field $E = V/g$ (V/cm)'); ar.set_ylabel(r'$v\,/\,v_{\mathrm{Magboltz}}$')
+    ar.set_xlabel(r'drift field $E = V/g$ (V/cm)'); ar.set_ylabel(r'$v_\mathrm{d}\,/\,v_{\mathrm{d}}^{\mathrm{Magboltz}}$')
     ps.panel_labels([ax, ar])
     ps.save(fig, os.path.join(OUT, 'gas_vE_timing'), data=pd.DataFrame(rows))
 
@@ -190,7 +190,7 @@ def drying():
         for i in range(len(t)):
             rows.append(dict(panel='a/b', det=det, hours_626=t[i], v_um_per_ns=v[i], v_err=ve[i], water=y[i],
                              lo=y[i] - el[i], hi=y[i] + eh[i], E_Vcm=A[det]['E']))
-    axv.set_ylabel(r'drift velocity $v$ (µm/ns)', fontsize=ps.BASE_PT * 0.85)
+    axv.set_ylabel(r'drift velocity $v_\mathrm{d}$ (µm/ns)', fontsize=ps.BASE_PT * 0.85)
     axw.set_ylabel('H$_2$O fraction (%)', fontsize=ps.BASE_PT * 0.85); axw.set_yticks([0, 0.5, 1.0, 1.5]); axw.set_xlabel('time on 6-26 (h)'); axw.set_ylim(0, 1.62)
     axw.set_xlim(0.5, 15.5)
     plt.setp(axv.get_xticklabels(), visible=False)

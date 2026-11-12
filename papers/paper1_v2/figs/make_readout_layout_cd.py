@@ -65,6 +65,11 @@ if ALLPADS:       # every pad, to scale: 0.68 mm squares on a 0.78 mm pitch (thi
                       np.stack([gx + o, gy + o], -1), np.stack([gx - o, gy + o], -1)], -2).reshape(-1, 4, 2)
     axa.add_collection(PolyCollection(quads, facecolors='white', edgecolors=ps.MUTED, linewidths=0.04, zorder=4))
 lo, hi = PASSIVATION_Y_LOW_MM, STRIP_MAX_MM - PASSIVATION_Y_HIGH_MM
+# resistive strips run along y (0.8 mm pitch): every 25th drawn as a faint line, under the passivation hatching
+# (Dylan, v2 feedback note Fig. 3, 2026-11-12: show their direction subtly)
+RS_PITCH, RS_EVERY = 0.800, 25
+xr = np.arange(mx0 + RS_PITCH * RS_EVERY / 2, mx1, RS_PITCH * RS_EVERY)
+axa.add_collection(LineCollection([[(x, mx0), (x, mx1)] for x in xr], colors='#b3bcc7', linewidths=0.35, zorder=4))
 for ya, yb in ((mx0, lo), (hi, mx1)):
     axa.add_patch(Rectangle((mx0, ya), mx1 - mx0, yb - ya, fc='white', ec=ps.INK, hatch='//////', lw=0, alpha=0.9,
                             zorder=5))
@@ -99,6 +104,8 @@ axa.text(C0, 262, '512 $\\times$ 512 pads, 0.78 mm pitch\n(0.68 mm pads, L4)', z
 for ya, yb in ((mx0, lo), (hi, mx1)):
     axa.text(C0 - 70, (ya + yb) / 2, 'passivated', zorder=9, bbox=dict(fc='white', ec='none', pad=0.5),
              fontsize=FS * 0.9, color=ps.INK, ha='center', va='center')
+axa.text(C0, 52, 'resistive strips along $y$ (1 in 25 drawn)', zorder=9, bbox=dict(fc=PADFILL, ec='none', pad=1.0),
+         fontsize=FS * 0.9, color=ps.INK, ha='center', va='center')
 axa.text(C0, 120, 'x sides: not passivated', zorder=9, bbox=dict(fc=PADFILL, ec='none', pad=1.0), **txt)
 for xe, xt in ((6, C0 - 118), (2 * C0 - 6, C0 + 118)):
     axa.annotate('', (xe, 120), (xt, 120), arrowprops=dict(arrowstyle='->', lw=0.6, color=ps.INK, shrinkA=0,

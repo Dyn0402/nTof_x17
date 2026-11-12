@@ -214,11 +214,11 @@ def fig():
                          v_timing=D['fields'][Vd]['v_timing'], T_ns=D['fields'][Vd]['T']))
     ax.legend([hb, hh], ['mean of the four', r'geometric gap $L/\tan\theta$'], loc='upper left', handlelength=1.4)
     ax.set_xlim(150, 420); ax.set_ylim(21.5, 34)
-    ax.set_xlabel(r'drift field $E$ (V/cm)'); ax.set_ylabel(r'gap $g = v\,T$ (mm)')
+    ax.set_xlabel(r'drift field $E$ (V/cm)'); ax.set_ylabel(r'gap $g = v_\mathrm{d}\,T$ (mm)')
     hs = [Line2D([], [], color=shade[Vd], marker='o', ms=3.5,
-                 label=f"{D['fields'][Vd]['E']:.0f} V/cm: $v$ = {D['ladder'][Vd]['v_ang']:.1f}")
+                 label=f"{D['fields'][Vd]['E']:.0f} V/cm: $v_\\mathrm{{d}}$ = {D['ladder'][Vd]['v_ang']:.1f}")
           for Vd in map(str, STACK_V)]
-    ps.legend_above(fig, hs, ncol=4, handlelength=1.4, title=r"field: angle-scale $v$ (µm/ns)", title_fontsize=ps.BASE_PT * 0.85)
+    ps.legend_above(fig, hs, ncol=4, handlelength=1.4, title=r"field: angle-scale $v_\mathrm{d}$ (µm/ns)", title_fontsize=ps.BASE_PT * 0.85)
     ps.panel_labels(axs)
     os.makedirs(OUT, exist_ok=True)
     ps.save(fig, os.path.join(OUT, 'two_velocities'), data=pd.DataFrame(rows))

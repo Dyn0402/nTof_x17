@@ -15,9 +15,9 @@ note = "2026-11-06: new Fig. 1 (Dylan, feedback note Fig. 1): top-down layout + 
 [fig.chamber_stack]
 title = "MX17 chamber cross-section: (a) the whole chamber to scale in z; (b) amplification region and readout board enlarged"
 state = "current"
-source = "papers/paper1/figs/out/chamber_stack.pdf"
-producer = ".venv/bin/python papers/paper1/figs/make_chamber_stack.py"
-note = "2026-11-03: replaces the pyvista render with a 2D technical cross-section; every number from docs/detector_spec/spec.py, dagger = assumed/open there. Layer order below the strips follows the response model."
+source = "papers/paper1_v2/figs/out/chamber_stack.pdf"
+producer = ".venv/bin/python papers/paper1_v2/figs/make_chamber_stack.py"
+note = "2026-11-03: replaces the pyvista render with a 2D technical cross-section; every number from docs/detector_spec/spec.py, dagger = assumed/open there. Layer order below the strips follows the response model. 2026-11-12: v2 copy of the script (v2 feedback note Fig. 3): (a) arrow clear of -HV, Al plate light, zoom box above the arrowheads; (b) vias from the gerbers: one 0.25 mm via per pad drilled L4->L7 (pla2-5), a land in every cell on L5/L6/L7, X strip of the row drawn light behind the cut."
 
 [fig.two_velocities]
 title = "Two drift velocities and the gap: the head-on stack (T = g / v), the reference ladder (slope = v, no gap) and g = v_reference x T per field"
