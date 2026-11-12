@@ -14,6 +14,11 @@ doesn't match what's described here, stop and report it to Dylan. Don't improvis
 | 4638252 | 1 | rerun of main proc 1727 (whose exit 1 is expected and already explained) |
 
 The main cluster keeps at most 2,000 jobs in the queue (`max_materialize`), so new jobs appear as old ones finish.
+**Second variant (11-12, repaired with Dylan's go-ahead):** `Requirements` already looked repaired but
+`PreVerRequirements` held the Requirements text (contains `PreLocalRequirements`), so the chain still looped. The
+detector and `fix_req_cycle.sh` now catch both variants (the fix constraint needs `unparse(PreVerRequirements)`;
+plain `regexp` on the expression errors and sets nothing). If "still bad" is not 0 after a repair, stop and report.
+
 **Known problem:** newly added jobs sometimes get CERN's requirements rewrite applied twice, which creates a cycle
 that matches no slot. The jobs then sit idle forever, with 0 running. It happened on 11-10 and again on 11-11
 (1,980 jobs, procs 11029 onward, stuck from 06:22 to 11:15). The repair is `fix_req_cycle.sh`, which
@@ -83,3 +88,4 @@ The pass is done when `watch_pass1.sh` prints `(none)` for all three clusters. T
 | 11-11 18:47 | n/a / 1,759 / 241 | 0 run, 60 idle / 198 idle | 50 cyclic jobs on main repaired (0 bad after); held 0 |
 | 11-11 21:47 | n/a / 1,688 / 312 | 0 run, 60 idle / 198 idle | no cyclic jobs; held 0 |
 | 11-12 10:35 | n/a / 2,000 / 0 (none running since ~05:41) | 4 run, 183 idle / 1 run | STALLED, new variant: all 2,000 idle main jobs have PreVerRequirements = the Requirements text (196 chars, Hostgroup && PreLocalRequirements) instead of the Arch/OpSys/Disk expression, so the chain is cyclic and no slot matches (better-analyze: 0 of 5,317 slots). Requirements itself already has the repaired form, so watch_pass1.sh grep finds 0 and fix_req_cycle.sh all selects nothing. NOT repaired (protocol: stop and report). Held 0, quota 75% |
+| 11-12 10:47 | n/a / 1,999 / 1 | 4 run, 183 idle / 1 run | repaired the PreVerRequirements variant on all 2,000 idle main jobs (fix_req_cycle.sh + watch_pass1.sh now catch both variants); 0 still bad, slots match (20), first job started 10:46; held 0 |

@@ -12,13 +12,13 @@ for c in $MAIN $SIDES; do
   echo "cluster $c in queue:${n:- (none)}   (1=idle 2=running 5=held)"
 done
 for c in $MAIN $SIDES; do
-  bad=$(condor_q $c -af:r Requirements 2>/dev/null | grep -c 'PreVerRequirements')
+  bad=$(condor_q $c -af:r Requirements PreVerRequirements 2>/dev/null | grep -c 'PreVerRequirements\|PreLocalRequirements.*PreLocalRequirements')
   echo "cluster $c jobs with the cyclic requirement: $bad"
   if [ "$bad" -gt 0 ]; then
     if [ "$c" = "$MAIN" ]; then
       echo "  -> repairing with fix_req_cycle.sh all"
       bash fix_req_cycle.sh all
-      echo "  -> after repair: $(condor_q $c -af:r Requirements | grep -c PreVerRequirements) still bad"
+      echo "  -> after repair: $(condor_q $c -af:r Requirements PreVerRequirements | grep -c 'PreVerRequirements\|PreLocalRequirements.*PreLocalRequirements') still bad"
     else
       echo "  -> SIDE CLUSTER AFFECTED: not auto-fixed (its values may differ). STOP and report."
     fi
