@@ -69,7 +69,7 @@ claim restricted; edge cuts remove a tenth to a quarter (not "a quarter"); 15 % 
 "halves"); §5.4 Y-floor contradiction resolved in favour of the white-noise closure; χ²/ndf of the C/N² + b fit quoted
 (X 51/9, 114/9; Y 5.4/8, 7.5/9); "reproduced to 2 %" qualified (real-residual arms; the clean toy is ~1 unit lower);
 toy vs published stated as a factor 1.6 on the four measured points; Scholer's unshifted 28° test beam (toy 1.10) added
-to Fig. universal and discussed with Klitzner (bib entry `Klitzner2016`: title to be checked). New: §5 "A known angle in
+to Fig. universal and discussed with Klitzner (`Klitzner2016` title checked 11-13 against the PDF; the §4 sentence corrected: his v is tuned on the angle, and the one-layer result is a separate 2D doublet at 30.2°). New: §5 "A known angle in
 the beam" (SPS chamber E, DAG 4646000) and the V7/V8 full-sample numbers in §6 (DAG 4647206).
 `NUMBERS.md` was not regenerated (its inputs are on the desktop's `$WORK_DATA`); the new numbers come from
 `../paper2/hits_daq/DAG_SCORES_2026-11-13.md` and `results/universal.json`, `results/toy_detectors.json`.
