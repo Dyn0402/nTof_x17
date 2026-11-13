@@ -20,18 +20,16 @@ chamber A as the test bed. Complete first draft (24 pages, `pdflatex` + `bibtex`
 - The known-angle point at SPS (chamber E, CO2, 25.4°): hits ladder 7–13 % steeper than W, H2c 1.5–2.0° vs W 1.0–1.1°
   (`../paper2/hits_daq/DAG_SCORES_2026-11-13.md`).
 
-## Outline (measurement first, survey second)
+## Outline (as drafted; `sections/`)
 
-1. Introduction: one time per channel; the claim; MX17 as the test bed (cite I, IIa).
-2. The end-term law C/N^2 + b (derivation; appendix A).
-3. Measurement on chamber A against M3, and on B, D, E (and the SPS known angle).
-4. Decomposition with the IIa forward model; the white-noise toy (appendix B).
-5. Same-time coupling: what the data allow (floor ~6 % X / ~10 % Y per neighbour) and what they exclude (15–30 %).
-6. Remedies at hit level and what a hit readout must record.
-7. Survey: the published strip-µTPC biases on the N axis, with their assumed footprints.
-8. Conclusions and stated limitations (open physics: origin of the same-time floor, chamber E's X, the p0_depth slope).
+1 introduction · 2 formulation (C/N^2 + b) · 3 mechanisms and the observables that separate them · 4 literature by
+detector family · 5 measurements (chamber A against M3; B, D, E; to add: the SPS known-angle point) · 6 remedies scored
+on the same tracks · 7 guidance (what a hit readout must record) · 8 conclusions · A end-term algebra · B the toy.
+For the D06 framing (measurement first) the abstract and title now lead with the measurement (11-13); moving §4 after §6
+is an option, not done: it is the part a referee may want shortened.
 
-r or feeds Paper II.
+Class: `jinstpub.sty` + `JHEP.bst` (copied from `../mpgd26_proceedings/`, 11-13). `main.tex` falls back to Times
+(`mathptmx`) when the newtx fonts are missing, as on the laptop; Overleaf uses newtx.
 
 | file | what |
 |---|---|
