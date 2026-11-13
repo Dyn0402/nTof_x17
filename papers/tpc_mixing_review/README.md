@@ -1,10 +1,37 @@
-# Review paper: one time per channel, charge spreading and the track-angle bias of time-projection readouts
+# Paper IIb ("Paper III" internally): one time per channel, charge spreading and the track-angle bias of time**Status 2026-11-13: this is Paper IIb** (Dylan's decisions D01–D11, `../paper_split_decision/DECISIONS_2026-11-13.md`).
+Framing: **a measurement with a literature survey**, not a review across TPC families (D06). Venue **JINST** (D07),
+Dylan first author. It goes out **a few weeks after Paper I and IIa** (D05), so nothing here blocks them. Internally it
+keeps the name "Paper III" (D10); the public title is chosen at submission.
 
-Started 2026-11-09 at Dylan's request: a literature review across TPC families plus a unified account of how lateral charge
-spreading (diffusion, prompt footprint, capacitive coupling, resistive spreading) biases single-time-per-channel track
-angles, with MX17 chamber A as the test bed. Status: **complete first draft** (22 pages, compiles with `pdflatex` + `bibtex`),
-author list and venue undecided, `\tbw{}` marks the open items. It overlaps with Paper II's §3 and §6; Dylan decides whether
-it becomes a third paper or feeds Paper II.
+Started 2026-11-09 as a review across TPC families plus a unified account of how lateral charge spreading (diffusion,
+prompt footprint, same-time coupling, resistive spreading) biases single-time-per-channel track angles, with MX17
+chamber A as the test bed. Complete first draft (24 pages, `pdflatex` + `bibtex`); `\tbw{}` marks the open items.
+
+## What IIb owns (moved from Paper II)
+
+- The compression numbers: 20–30 % on the drift-time ladder, tan_rec/tan_true - 1 = C/N^2 + b with C = 7.0 (X) / 11.7 (Y)
+  on chamber A and |b| < 0.02, the forward-model decomposition (geometry, footprint, diffusion, RC), the four-chamber C
+  table and the toy law (D04). IIa shows one motivating figure and cites these.
+- The estimator and remedy scans: V0–V8 (incl. V7 charge-weighted, V8 ToT midpoint), robust line, edge cuts, edge shift,
+  neighbour subtraction; the H2c variants and the SPS H2c scans (D02; IIa keeps the single H0 / H2c / W row).
+- **What a hit readout must record** (old Paper II §6.1 / outline §7, D03).
+- The capacitive-coupling tests (position-in-strip, phase closure, depth ratio, chip boundary, ghost census) and the
+  survey of the published strip-µTPC biases (Bortfeldt, Iodice, Flierl, Scholer, Ntekas, Klitzner, Sessa, Farinelli, ...).
+- The known-angle point at SPS (chamber E, CO2, 25.4°): hits ladder 7–13 % steeper than W, H2c 1.5–2.0° vs W 1.0–1.1°
+  (`../paper2/hits_daq/DAG_SCORES_2026-11-13.md`).
+
+## Outline (measurement first, survey second)
+
+1. Introduction: one time per channel; the claim; MX17 as the test bed (cite I, IIa).
+2. The end-term law C/N^2 + b (derivation; appendix A).
+3. Measurement on chamber A against M3, and on B, D, E (and the SPS known angle).
+4. Decomposition with the IIa forward model; the white-noise toy (appendix B).
+5. Same-time coupling: what the data allow (floor ~6 % X / ~10 % Y per neighbour) and what they exclude (15–30 %).
+6. Remedies at hit level and what a hit readout must record.
+7. Survey: the published strip-µTPC biases on the N axis, with their assumed footprints.
+8. Conclusions and stated limitations (open physics: origin of the same-time floor, chamber E's X, the p0_depth slope).
+
+r or feeds Paper II.
 
 | file | what |
 |---|---|
@@ -30,8 +57,8 @@ Inputs (all existing data; nothing new was taken):
 Regenerate: `python scripts/collect_numbers.py && python scripts/make_figures.py && pdflatex main && bibtex main && pdflatex main && pdflatex main`
 (from this directory, with the repo venv).
 
-Open items (also marked `\tbw` in the text): author list; whether to merge with Paper II; V7/V8 and SPS H2c results from the
-condor DAGs 4646000/4647206 (queued at the time of writing) could add a known-angle column to §6; the Y-view same-time
+Open items (also marked `\tbw` in the text): author list; JINST class switch; V7/V8 and SPS H2c are now scored
+(`../paper2/hits_daq/DAG_SCORES_2026-11-13.md`, DAGs 4646000/4647206 finished 11-11) and can go into §6 / the known-angle column; the Y-view same-time
 footprint (narrower than the pass's 0.30 mm) deserves a sentence in Paper II's calibration section; the review memo with the
 answers to the HANDOFF questions is `papers/paper2/hits_daq/REVIEW_COUPLING_2026-11-09.md`.
 

@@ -9,9 +9,11 @@ The two companion papers of `mx_june_cosmic_qa/PAPER_PLAN.md`, as LaTeX, at outl
 | `infn_in2p3_2026_abstract/` | abstract draft, INFN–IN2P3 detector R&D conference (Frascati, Dec 2026), not submitted | — |
 | `paper1_v2/` | Paper I reorganised (2026-11-10): the same content ordered along the measurement (gas and calibration, angle, efficiency, two particles, chamber as built), two new sections (why the angle; what a straight track misses), rebuilt figures. `paper1/` is the version shared with Stephan and is not changed by it. New figure scripts in `paper1_v2/figs/`, numbers run down in `paper1_v2/NUMBERS_RUNDOWN.md` | linked 2026-11-11 (`https://git.overleaf.com/6af3a464cb8d4f7336894eac`) |
 | `paper1_audit/` | audit of Paper I (2026-11-10): organisation, key figures, numbers that disagree, plots to add. Open `report.html`; `make_report.py` builds it (and its untracked `thumbs/`) | not synced |
-| `paper2/` | II. Reconstruction: why hit times fail, the waveform forward model, hits vs waveforms | not linked yet |
+| `paper2/` | IIa. Reconstruction: the waveform forward model, its calibration, the fleet, one H0 / H2c / W table (NIM A) | not linked yet |
+| `tpc_mixing_review/` | IIb ("Paper III" internally). The single-time bias: C/N^2 + b measured and decomposed, remedies, what a hit readout must record, literature survey (JINST, a few weeks after I + IIa) | not linked yet |
+| `paper_split_decision/` | the II → IIa + IIb decision page and Dylan's answers (`DECISIONS_2026-11-13.md`) | — |
 
-Journals (decided 2026-11-01): Paper I → JINST, Paper II → NIM A; reasoning in `JOURNAL_STRATEGY.md`.
+Journals (decided 2026-11-01, split 2026-11-13): Paper I → JINST, IIa → NIM A, IIb → JINST; reasoning in `JOURNAL_STRATEGY.md`.
 
 PAPER_PLAN.md still owns the outline states and the work list. The `.tex` sections carry the same
 state in a box at the top of each section; when a state changes, change both.
