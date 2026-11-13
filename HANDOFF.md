@@ -396,10 +396,17 @@ redeployed (dylan-cern-site 91d4386). Inputs on the desktop: $WORK_DATA/claude-j
 - Deck: `WORK_DATA=~/work_data .venv/bin/python papers/paper1/make_figures_deck.py --out <html>` then
   `dylan-cern-site/scripts/add-note.py <html> --slug mx17-paper1-figures --force --deploy`.
 
-## n_TOF pass 1: reprocess the n_TOF tracks on the final chain — updated 2026-11-11 (dylan-MS-7C84)
+## n_TOF pass 1: reprocess the n_TOF tracks on the final chain — updated 2026-11-13 (dylan-MS-7C84)
 
 **Resume:** pass RUNNING. Keep it moving with the checklist `rerun/ntof/condor/PASS1_WATCH.md` (`watch_pass1.sh` on lxplus
 checks and auto-repairs); when all clusters are empty: account, audit_eos, N-G1 (steps below).
+
+**11-13 10:13 (dylan-MS-7C84): still running, healthy.** Main 13,545 done (13,544 exit 0 + proc 1727), 135 running,
+1,865 idle, 0 held (queue + done = 15,545, 5 short of 15,550: presumably `condor_history` lag; recheck). 473 jobs had
+the cycle again, repaired by `watch_pass1.sh` (0 still bad; a harmless "Failed to set attribute Requirements" line
+appears in that repair). 4636419 finished (198/198 exit 0); 4636420: 15 done, 183 idle; 4638252 done. AFS quota 75%.
+Check log line appended to `PASS1_WATCH.md`. Next check: `ssh lxplus` + `watch_pass1.sh` every 3-4 h, `--hist` daily.
+The cycle keeps recurring on each materialisation batch; expect it until the end. ETA ~1-2 days.
 
 **11-11 (dylan-MS-7C84): the cycle recurred.** 1,980 newly materialised jobs (procs 11029 onward) had the same
 cyclic requirements; nothing had started since 06:22. Repaired at 11:15 (`fix_req_cycle.sh all`, 1,980 jobs). By
