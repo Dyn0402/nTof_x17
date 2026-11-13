@@ -1,25 +1,28 @@
 # Handoff
 
-## Paper II split (one paper or two) — updated 2026-11-10 (dylan-Yoga)
+## Paper II split (one paper or two) — updated 2026-11-13 (dylan-Yoga)
 
-**Resume:** read Dylan's choices from the decision page, then act on D11 (which says how much to do).
+**Resume:** Dylan decided: two papers (IIa NIM A, IIb JINST). Do the doc + Paper I/II text edits in the work list.
 
-Decision page: https://claude.ai/artifact/GPYyBp8UmXDK5wgt3z31zu (source `papers/paper_split_decision/index.html`; republish from
-another session with `url`). Dylan records twelve blocks there (D01 split … D11 what the next session does, D12 free text). Read them
-with the `ArtifactData` tool: `action: "list"`, `collection: "decisions"`, that URL. Each document is
-`{question, choice, choiceLabel, note, updatedAt}`, id = the block id (`d01-split` …). Empty collection = nothing decided yet.
-The option keys and my recommendation for each are in the `DECISIONS` array of the source file.
+**Goal:** split Paper II into IIa (reconstruction, `papers/paper2/`) and IIb (the bias law + survey,
+`papers/tpc_mixing_review/`, still called "Paper III" internally), and bring the strategy docs and Paper I text in line.
 
-Recommendation given: two papers. IIa = `papers/paper2/` (forward model, calibration, fleet; H0/H2c/W as one table),
-IIb = `papers/tpc_mixing_review/` (owns the compression numbers, C/N^2 + b, remedies, readout requirements, survey); IIb follows
-I + IIa. Nothing was edited. Pending text fixes if he agrees: `paper1/sections/02_design.tex:15-18` (retired "delayed copies 29 % at
-47 ns" wording and the design lesson), `03_setups.tex:73-77` (split the citation), `paper1/main.tex:51` (stale `\requote`),
-`paper2/main.tex` title/abstract/§3 intent, `papers/JOURNAL_STRATEGY.md`, `papers/paper2/OUTLINE_PLAN_2026-11-05.md`. Paper I is
-Overleaf-shared: `papers/overleaf.sh status paper1` and `pull` first.
+**Done:**
+- 11-10: decision page built (https://claude.ai/artifact/GPYyBp8UmXDK5wgt3z31zu, source `papers/paper_split_decision/index.html`).
+- 11-12/13: Dylan answered D01–D11 (no notes, D12 empty). Recorded with the full work list in
+  `papers/paper_split_decision/DECISIONS_2026-11-13.md`. All recommended options except D08: first author on both, so the
+  reputation paragraph in `JOURNAL_STRATEGY.md` does not move to IIb.
 
-**Gotchas:** the page's save path was not clicked through (only the empty store was read back); if Dylan says he chose but the
-collection is empty, his view could not save (banner on the page) and he has to give the choices in chat. Dylan decided on 11-09 to
-keep the review as a third paper; this page reopens that at his request, so don't treat 11-09 as final. No background jobs.
+**In progress / where it stopped:** no paper text or strategy doc edited yet. No background jobs.
+
+**Next steps:** the numbered work list in `DECISIONS_2026-11-13.md` (strategy doc, Paper II outline, `paper2/main.tex`,
+IIb framing/class, Paper I design-lesson rewording in `paper1/` and `paper1_v2/`, citation split, stale `\requote`).
+
+**Gotchas / decisions:**
+- This supersedes the 11-09 "keep the review as a third paper" framing; IIb is published a few weeks after I + IIa.
+- Paper I and `paper1_v2` are Overleaf-shared with Stephan: `papers/overleaf.sh status <paper>` and `pull` first; stop on a
+  hold or conflict. The design-lesson text exists in both copies (`paper1/sections/02_design.tex`, `paper1_v2/sections/03_design.tex`).
+- The bias is aggregate-time compression; never reintroduce "delayed copies 29 % at 47 ns" (CLAUDE.md).
 
 ## TPC single-time-bias review paper ("Paper III") and the coupling-study review — updated 2026-11-09 (dylan-MS-7C84)
 
