@@ -26,6 +26,7 @@ note = "ZS rows, pass selection (peak >= 300 ADC, >= 4 strips): X (normal in bot
 # --- 3 Why hit times fail -----------------------------------------------------
 
 [fig.ladder_compression]
+# Moved to IIb (D04, 2026-11-13); IIa keeps only event_waveforms as the motivating figure.
 title = "Drift-time ladder compressed 20-30 % by every hit-time estimator (det3)"
 state = "placeholder"
 section_state = "partial"
@@ -59,6 +60,7 @@ note = "Script 18 used the R&D model (c2/c1 0.17); re-run on the production mode
 # --- 6 Hits vs waveforms ------------------------------------------------------
 
 [fig.tiers_benchmark]
+# After the split IIa shows a table (H0, H2c, W); the all-tier benchmark is IIb (D02).
 title = "Same events, every tier: H0, H1, H2a/b, H2c (forward fit on hits), W"
 state = "placeholder"
 section_state = "open"
@@ -68,6 +70,7 @@ note = "The core new result: R1-R5. sigma_theta vs angle, bias, implied-v flatne
 # --- 7 What a hit readout must record ----------------------------------------
 
 [fig.threshold_neighbours]
+# Moved to IIb (D03, 2026-11-13).
 title = "Hit threshold 3-7 sigma and +-1/+-2 neighbour readout"
 state = "placeholder"
 section_state = "open"

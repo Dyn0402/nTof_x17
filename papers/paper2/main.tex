@@ -1,4 +1,5 @@
-% MX17 Paper II -- reconstruction. Outline stage.
+% MX17 Paper IIa -- reconstruction. Outline stage. (Paper II split 2026-11-13: the bias law and survey are IIb,
+% papers/tpc_mixing_review/; papers/paper_split_decision/DECISIONS_2026-11-13.md.)
 % Journal: NIM A (decided 2026-11-01, papers/JOURNAL_STRATEGY.md); switch to elsarticle.
 % Author list undecided (PAPER_PLAN C4): plain article for now.
 \documentclass[11pt,a4paper]{article}
@@ -17,7 +18,7 @@
 
 \graphicspath{{figures/}}
 
-\title{Reconstructing micro-TPC tracks on resistive strips: why hit times fail, and a waveform forward model}
+\title{Reconstructing micro-TPC tracks on resistive strips with a waveform forward model}
 \author{\tbw{author list -- undecided (C4)}}
 \date{Outline draft, \today}
 
@@ -25,10 +26,11 @@
 \maketitle
 
 \begin{abstract}
-\tbw{Abstract written last. Key points: on resistive strips a per-strip hit time mixes in delayed copies of the
-neighbours' charge (sharing kernel measured head-on in the SPS beam), compressing the drift-time ladder by 20--30\,\%
-for every estimator; a forward model fitted to the waveforms removes the bias and improves $\sigma_\theta$ on every
-plane; how much a hit-based readout can recover, and what it must record.}
+\tbw{Abstract written last. Key points: a forward model of the strip signals (physical RC spreading of the resistive
+layer, prompt footprint, diffusion), calibrated per chamber and run condition from the data alone, fitted to the
+sampled waveforms; track angle and drift depth to $\sim$1\textdegree{} on five chambers in two setups (cosmic bench,
+SPS beam at a known angle), against 2--2.6\textdegree{} for the production hit times and 1.2--2.0\textdegree{} for the
+same model fitted to the hit lists alone. Why single hit times fail is the companion paper (IIb).}
 \end{abstract}
 
 \ifdraftnotes

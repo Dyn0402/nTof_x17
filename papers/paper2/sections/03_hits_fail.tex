@@ -1,18 +1,17 @@
 \section{Why hit times fail}\label{sec:hitsfail}
 \sectionstate{partial}{\texttt{WAVEFORM\_FIRST\_THREADING.md} \S3 (det3); \texttt{THREADING\_DISPLAYS\_2026-07-28.md}; fleet extension R1}
-\intent{Each per-strip hit time is an aggregate of the strip's own charge and delayed copies of its neighbours'
-($\sim$29\,\% at $\tau\approx47$\,ns to $\pm1$). The drift-time ladder is compressed by 20--30\,\%, reads $\sim$4\textdegree{}
-too steep, and the cluster fans away from the track with depth, for rising-edge, CFD and matched-filter times alike.}
-\analysis{R1}{hit tiers on r06 for all five chambers}
+\intent{Motivation only, one figure. A per-strip hit time aggregates charge from several drift depths (diffusion,
+the prompt footprint, and on the Y view the RC spreading along the resistive strip), so the drift-time ladder built
+from hit times is compressed and the reconstructed angle reads too steep, for rising-edge, CFD and matched-filter
+times alike. One event display shows it; the measurement, the end-term law and its decomposition are the companion
+paper IIb, cited here (decision D04, 2026-11-13). Do not quote the old ``delayed copies, 29\,\% at 47\,ns'': that was
+the retired copy kernel's effective fit.}
+\analysis{R1}{moved to IIb; here only the display}
 \begin{figure}[t]
   \centering
   \includegraphics[width=0.85\linewidth]{event_waveforms}
-  \caption{\tbw{The strip waveforms of one cosmic track.}}
+  \caption{\tbw{The strip waveforms of one cosmic track, with the hit-time ladder against the forward-model fit (motivating figure; numbers in IIb).}}
   \label{fig:event_waveforms}
 \end{figure}
-\begin{figure}[t]
-  \centering
-  \includegraphics[width=0.8\linewidth]{ladder_compression}
-  \caption{\tbw{The drift-time ladder from hit times, per estimator, against the reference.}}
-  \label{fig:ladder_compression}
-\end{figure}
+% ladder_compression (five chambers x four estimators) moved to IIb (D04).
+
