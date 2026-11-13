@@ -1,5 +1,28 @@
 # Handoff
 
+## Readout stack from the gerbers: L7, vias, Fig. 3(b) fixes — updated 2026-11-14 (dylan-MS-7C84)
+
+**Resume:** fix the via/L7 errors the gerbers show in Paper I Fig. 3(b), the readout_layout caption and spec.py (overleaf.sh status/pull first).
+
+**Goal:** Dylan asked what L7 is and whether the vias are hollow; answered from the production gerbers with a rotatable 3D view.
+
+**Done:**
+- 3D explainer (16-pad patch, mesh → L7, real gerber positions): site note `~/PycharmProjects/dylan-cern-site/pages/notes/mx17-readout-stack-3d.html`
+  (→ https://dylan-neff.web.cern.ch/notes/mx17-readout-stack-3d.html once deployed), also claude.ai artifact QC7c8kxVhEYoyFFwHWGa2t.
+- Findings, all from `~/CLionProjects/MX17_Geant/design/gerbers/readout_pcb/` (fab file names ≠ board layers; read `TF.FileFunction`):
+  - `DFS3498A_L5.gbr` is board **L7**: inside the active area only a Ø0.65 mm land under every pad (262 144), no traces → its 0.53 coverage.
+  - `DFS3498A_pla2-5.gbr` = "Plated, L4–L7": a Ø0.25 mm plated hole at **every** pad, L4 → L7. L7 is just the via floor. Fill/cap unknown (not in the set).
+  - Every via has a Ø0.5 mm land on L5 **and** L6; only one has a 0.1 × 0.39 mm stub to its bus (Y: +x on L5, X: −y on L6), checkerboard. 131 072 stubs per layer.
+  - Odd strips do **not** go to L7: odd Y strips hop L5→L6 at y = +200.4 mm and fan out on L6; odd X strips hop to L5 (256 + 256 checked). L7 routes nothing.
+
+**Next steps (nothing changed in the repo yet):**
+1. `papers/paper1/figs/make_chamber_stack.py`: draw every via L4→L7 with lands on L5, L6, L7; barrel 0.25 mm.
+2. `papers/paper1/sections/02_design.tex` fig:stack caption: 0.10 mm barrel → 0.25 mm drill, drop the stale "shading … induced-charge profile" sentence; fig:readout caption: "leave the layer by a via to L7" → "hop by a via to the other strip layer".
+3. `papers/paper1/figs/extract_readout_gerber.py` docstring and `docs/detector_spec/spec.py` `pcb_l7` ("fan-out", "artwork not in the set") → "via lands"; `MX17_Geant/design/NEEDED_INPUTS.md` §6 says the same.
+4. Ask Stephan/fab whether the in-pad vias are resin-filled and capped (affects nothing in the analysis, only the figure).
+
+**Gotchas:** parse gerbers with `MX17_Geant/scripts/gerber/gerber_outline.py`; drill files are `pla*`.
+
 ## Paper split I / IIa / IIb: work list done — updated 2026-11-13 pm (dylan-Yoga)
 
 **Resume:** the D01–D11 work list is done. Next: Dylan reads IIb's corrected draft and the IIa skeleton; IIa needs its §6 table built.
