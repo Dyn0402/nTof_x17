@@ -70,14 +70,16 @@ Run 1; Run 2 agrees within 0.1 to 0.2 degrees throughout. The corrections are:
 
 Four things follow (\cref{fig:remedies}).
 
-\emph{The edge treatments act where the bias is and remove a quarter of it.} Cutting or shifting the edge strips lowers the
-raw bias by 10 to 15\,\% at every angle on X and brings the calibrated resolution from \ang{2.06} to \ang{1.97}; the toy
-(\cref{app:toy}) predicts a 24\,\% reduction of $C$ from the edge shift alone, with the difference made up by the real
+\emph{The edge treatments act where the bias is and remove a tenth to a quarter of it.} Cutting or shifting the edge strips
+lowers the raw bias on X by 9 to 17\,\% up to $|\tan\theta| = 0.3$ and by 20 to 25\,\% above and brings the calibrated resolution from \ang{2.06} to \ang{1.97}; the toy
+(\cref{app:toy}) predicts a 24\,\% reduction of $C$ from the edge shift alone, a number for the white-noise toy and not
+for the data, the difference being made up by the real
 chamber's ghosts, which the charge-ratio cut does not catch when they carry a few per cent of the centre strip at the
 same time as it.
 
 \emph{The neighbour subtraction is the strongest single correction, and its best factor is not a capacitance.} Subtracting
-15\,\% of the neighbours' samples halves the calibrated resolution gap on X (\ang{1.69}) and Y (\ang{1.98}); 30\,\% does better on X
+15\,\% of the neighbours' samples closes about 40\,\% of the calibrated resolution gap to the waveform fit on X (\ang{1.69},
+36\,\%) and Y (\ang{1.98}, 42\,\%), and half of it on X with the edge shift (\ang{1.54}); 30\,\% does better on X
 (\ang{1.51}, bias 0.5 to \ang{1.7}) but worse on Y (\ang{2.32}), where the neighbours' signals are the delayed resistive charge and
 subtracting them at the same time removes real charge. The factor that restores the angle on X, 30\,\%, is Flierl's and
 Herrmann's~\cite{Flierl2018,Herrmann2019}, and it is four to five times the same-time coupling that the waveforms allow
@@ -90,7 +92,11 @@ second neighbour and grows with depth.
 \ang{2.48} raw) and a worse one on Y (\ang{3.05}), where the delayed resistive charge pulls a centroid later on the strips it
 reaches. It becomes the best estimator only after the subtraction (\ang{1.78} raw, \ang{1.28} on Y with 15\,\%), because the
 subtraction removes the end charge and leaves an interior that the centroid reads without compression. The prediction of
-\cref{sec:formulation} holds, and it is a statement about the interior term, which here is small.
+\cref{sec:formulation} holds, and it is a statement about the interior term, which here is small. On the full samples of both runs (6\,191 and
+19\,202 planes on X) the charge-weighted time again reads the leading edge's compression (calibrated \ang{2.25} and \ang{2.27}
+against \ang{2.06} and \ang{2.11}). The midpoint of the time over threshold, the other common single time, is worse on every
+view (calibrated \ang{2.7} X, \ang{3.3} Y): its ladder is 1.25 times (X) and 2.3 times (Y) flatter in time than the leading edge's,
+as a falling edge that moves with the amplitude and, on Y, with the resistive tail would make it.
 
 \emph{No hit-level recipe closes the gap to the waveform fit.} The best combination on each view, 30\,\% subtraction on X and
 charge-weighted time with 15\,\% subtraction on Y, leaves the calibrated resolution at \ang{1.5} to \ang{2.0} against \ang{1.0} for the

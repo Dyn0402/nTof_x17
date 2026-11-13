@@ -61,3 +61,15 @@ footprint (narrower than the pass's 0.30 mm) deserves a sentence in Paper II's c
 answers to the HANDOFF questions is `papers/paper2/hits_daq/REVIEW_COUPLING_2026-11-09.md`.
 
 Slide note of the study (unified picture, is there a paper, draft corrections): https://dylan-neff.web.cern.ch/notes/tpc-single-time-bias.html, built by `make_deck.py`.
+
+## Draft corrections applied 2026-11-13 (from the 11-09 self-read, checked against the result files)
+
+RC term is +4.2 on/off (4.6 was Y minus X); chamber D's X (7.2 ± 0.8 vs 5.1) named as an outlier and the "within 10 %"
+claim restricted; edge cuts remove a tenth to a quarter (not "a quarter"); 15 % subtraction closes ~40 % of the gap (not
+"halves"); §5.4 Y-floor contradiction resolved in favour of the white-noise closure; χ²/ndf of the C/N² + b fit quoted
+(X 51/9, 114/9; Y 5.4/8, 7.5/9); "reproduced to 2 %" qualified (real-residual arms; the clean toy is ~1 unit lower);
+toy vs published stated as a factor 1.6 on the four measured points; Scholer's unshifted 28° test beam (toy 1.10) added
+to Fig. universal and discussed with Klitzner (bib entry `Klitzner2016`: title to be checked). New: §5 "A known angle in
+the beam" (SPS chamber E, DAG 4646000) and the V7/V8 full-sample numbers in §6 (DAG 4647206).
+`NUMBERS.md` was not regenerated (its inputs are on the desktop's `$WORK_DATA`); the new numbers come from
+`../paper2/hits_daq/DAG_SCORES_2026-11-13.md` and `results/universal.json`, `results/toy_detectors.json`.

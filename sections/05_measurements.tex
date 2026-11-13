@@ -43,7 +43,9 @@ $\Delta\tan\theta = a/\tan\theta + b\tan\theta$ gives
   \text{X:}\quad a &= 0.0054\ (\text{Run 1}),\ 0.0056\ (\text{Run 2}), & b &= -0.003,\ +0.017, \\
   \text{Y:}\quad a &= 0.0090,\ 0.0088, & b &= -0.019,\ +0.002,
 \end{align*}
-i.e.\ $C = a(L/p)^2 = 7.0$ to $7.3$ on X and $11.4$ to $11.7$ on Y, and an interior term consistent with zero at the
+i.e.\ $C = a(L/p)^2 = 7.0$ to $7.3$ on X and $11.4$ to $11.7$ on Y (the two-parameter form describes Y within its errors,
+$\chi^2/\mathrm{ndf} = 5.4/8$ and $7.5/9$, but not X, $51/9$ and $114/9$, where the binned ratios carry structure beyond the
+end term at the per-mille level of the statistical errors), and an interior term consistent with zero at the
 $\pm 0.02$ level once the data are put on the calibrated angle scale (with the timing velocity instead, every ratio is inflated by
 $k_w - 1$ and $b$ reads $+0.03$ to $+0.05$: a drift-velocity error is indistinguishable from an interior compression, which is why
 a $\mu$TPC cannot calibrate its own drift velocity from the ladder). The $1/N^2$ form is the one of \cref{eq:scaling}: on the
@@ -52,8 +54,9 @@ $|\tan\theta| \approx 0.11$ and $N \approx 4$, the ratio is 1.5 and the angle re
 
 The arms decompose $C$ (\cref{tab:arms}). Geometry alone, the partial strips of the strip width with a point-like footprint and
 no diffusion, gives $C = 2.3$; the \SI{0.30}{mm} footprint raises it to 3.8; diffusion with the floor footprint gives 5.4; both
-together give 6.9, the data's 7.0 on X. On Y the resistive spreading adds 4.6 more ($C = 11.5$ against the data's 11.7); with
-twice the spreading constant $C$ would be 17. The same ingredients in the white-noise toy give 1.3, 2.8, 4.3 and 6.0
+together give 6.9, the data's 7.0 on X. On Y the resistive spreading adds 4.2 (the model without and with $D_{RC}$, 7.3 and
+11.5, against the data's 11.7; the Y--X difference of 4.6 also contains the views' different footprints); with twice the
+spreading constant $C$ would be 17. The same ingredients in the white-noise toy give 1.3, 2.8, 4.3 and 6.0
 (\cref{app:toy}): each ingredient contributes the same increment, and the arms sit about one unit above the toy because they
 carry the real residual (\cref{sec:ghosts}).
 
@@ -95,7 +98,8 @@ geometry itself. Fine strips are not the cause; coarser ones make it worse.
   Run 1 (markers; filled X, open Y) and for the model arms (lines, exact truth). (b) The same as ratio $-1$ against the number of
   strips in the column, with the published strip-$\mu$TPC points converted from the quoted set and reconstructed angles with
   each chamber's gap and pitch (stars: measured; diamonds: circuit or gas-only simulations). Dotted lines: $C/N^2$ for $C = 2.3$
-  (geometry), 7 (data X) and 12 (data Y).}
+  (geometry), 7 (data X) and 12 (data Y). Open star with arrow: Scholer's NSW test beam at \ang{28}, which peaks at the set
+  angle (ratio $-$ 1 = 0, off the axis)~\cite{Scholer2021}; cross: the toy at the same point, 1.10 (\cref{sec:literature}).}
   \label{fig:universal}
 \end{figure}
 
@@ -134,7 +138,8 @@ Y planes do not fill the bins) against the model's 10.4, 10.4 and 8.2, and the i
 with and without the RC term in the model, is 4.9, 4.5 and 2.1 in the order of $D_{RC}$. The data follow: chamber E, with the
 smallest spreading constant, has the smallest $C_Y$ and the largest $C_X$. Over the inclined planes as a whole the single
 slope ratios of~\cite{paperII} order the four chambers with $D_{RC}$ on Y, 1.27, 1.37, 1.42 and 1.53 for E, A, B and D against
-the model's 1.48, 1.43, 1.49 and 1.54, while on X all four read 1.17 to 1.20. Chamber E's X value is the one outlier: it is the
+the model's 1.48, 1.43, 1.49 and 1.54, while on X all four read 1.17 to 1.20. Two X values are outliers. Chamber D reads $7.2 \pm 0.8$ against the model's 5.1 on only 177 planes (2.6 standard
+deviations). Chamber E is the
 chamber with dead and low-gain bands and a measured column 2.5~mm short~\cite{paperI}, its model over-predicts its hit bias at
 large angles~\cite{paperII}, and its clean sample is the least representative. The toy law of \cref{eq:Claw} with each
 chamber's $D_p$ gives 6.8, 6.5, 5.8 and 6.2 on X, within a unit of the data on A, B and D.
@@ -170,6 +175,20 @@ chamber's $D_p$ gives 6.8, 6.5, 5.8 and 6.2 on X, within a unit of the data on A
   $C_Y$ minus the model's RC-off value.}
   \label{fig:chambers}
 \end{figure}
+
+\subsection{A known angle in the beam}\label{sec:knownangle}
+
+Chamber E was also read in the SPS H4 beam on a stage turned by \ang{25.4} ($N \approx 16$ to 17 on the inclined view, allowing for its short column), in CO$_2$-based
+gas at four drift fields, 3\,000 tracks per setting~\cite{paperI}. There is no reference track, and the column-duration drift
+velocity is not available on these rows (the column outlasts the 64-sample window), so the comparison is between the hit
+ladder and the waveform fit on the same planes, the waveform fit being itself checked against the stage angle
+on the CF$_4$ rows that do have a column velocity ($0.98 \pm 0.03$ of $\tan\ang{25.4}$~\cite{paperI}). The median ratio of the leading-edge slope to the waveform-fit slope is
+1.13, 1.10, 1.09 and 1.08 at drift fields from the lowest to the highest, and 1.07 on a fifth row; the robust line reads 1.03 to
+1.05. At this $N$ the bench law, $1 + C/N^2$ with chamber E's or chamber A's $C_Y$, gives 1.03 to 1.05: the beam rows read steeper
+than the bench law predicts, in a different gas, and the compression falls with drift field; we have not modelled these rows. The forward model fitted to the hit lists of these planes reads a ratio of 0.98 with the row's own drift velocity,
+but an angle resolution of \ang{1.5} to \ang{2.0} against \ang{1.0} to \ang{1.1} for the waveform fit, a third of the planes falling
+more than \ang{5} away.
+\tbw{decide whether the beam excess over the bench law (gas, field, $N$ from the stage) needs its own arm, or stays a stated observation}
 
 \subsection{Lateral sharing against drift depth}\label{sec:depth}
 
@@ -219,8 +238,8 @@ the centre the two are $0.37/0.22$; at the edge $0.84/0.10$. The Gaussian model 
 side near the centre, and under-predicts the far side at the edge (0.07 against $0.10 \pm 0.01$); a pure nearest-neighbour
 coupling of 13\,\% with a \SI{33}{\micro\metre} footprint, the kernel that replaces $\sigma_0$ at equal waveform $\chi^2$, is too low on the
 near side near the centre (0.33) and too high on the far side at the edge (0.13); a kernel with a \SI{0.25}{mm} footprint and a
-6\,\% same-time term matches all three bins on both sides. On Y the data's far share at the edge (0.12) is below every model and
-no same-time floor is required.
+6\,\% same-time term matches all three bins on both sides. On Y the data's far share at the edge (0.12) is below every arm of this panel, but these arms carry the data's own residual,
+which contains any unmodelled floor; against a white-noise truth (the closure below) Y needs a floor as well.
 
 The phase is the fitted position, and a fit that leans towards the brighter neighbour could create a near/far asymmetry
 in symmetric data. \Cref{fig:phase}b closes this on 2\,900 planes per view: windows regenerated with a known truth (a

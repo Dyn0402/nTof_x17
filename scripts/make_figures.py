@@ -130,10 +130,19 @@ def universal():
         meas = 'LTspice' not in l['label'] and 'MC' not in l['label']
         ax[1].plot(l['N'], l['ratio'] - 1, marker='*' if meas else 'D', color='#D55E00', ms=7 if meas else 4.5, ls='none', mec='k', mew=0.4,
                    label='published strip µTPCs (measured)' if l['label'].startswith('Bortfeldt 2014 FSM 10° (meas.)') else ('published (simulated)' if l['label'] == 'Bortfeldt 2014 FSM 10° (LTspice)' else None))
+    # Scholer 2021 NSW test beam at 28 deg: peak at the true angle (ratio - 1 = 0, off the log axis): drawn as an upper
+    # limit at the bottom of the axis, with the toy's 1.10 at the same N (NSW-like, VMM peak time) for comparison.
+    n_sch = 5.0 * np.tan(np.radians(28.0)) / 0.4
+    ax[1].annotate('', xy=(n_sch, 4.6e-3), xytext=(n_sch, 1.2e-2), arrowprops=dict(arrowstyle='->', color='#D55E00', lw=0.9))
+    ax[1].plot(n_sch, 1.2e-2, marker='*', mfc='white', mec='#D55E00', mew=0.9, ms=7, ls='none',
+               label='Scholer 2021 test beam 28° (no shift)')
+    ax[1].plot(n_sch, 0.10, marker='x', color='#D55E00', ms=5, ls='none', label='toy at the same point (1.10)')
     ax[0].set(xlabel=r'$|\tan\theta|$ (reference)', ylabel=r'$\tan\theta_{\rm hits}\,/\,\tan\theta_{\rm true}$', ylim=(0.95, 2.6), xlim=(0.03, 0.42))
-    ax[1].set(xscale='log', yscale='log', xlabel=r'$N = L\tan\theta/p$ (strips in the column)', ylabel='ratio $-$ 1', ylim=(4e-3, 6), xlim=(1.2, 22))
+    ax[1].set(xscale='log', yscale='log', xlabel=r'$N = L\tan\theta/p$ (strips in the column)', ylabel='ratio $-$ 1', ylim=(4e-3, 120), xlim=(1.2, 22))
     ax[0].legend(fontsize=6.2, loc='upper right')
-    ax[1].legend(fontsize=6.2, loc='lower left')
+    h1, l1 = ax[1].get_legend_handles_labels()
+    keep = [i for i, t in enumerate(l1) if not t.startswith(('model', 'geometry'))]   # lines: see panel (a)
+    ax[1].legend([h1[i] for i in keep], [l1[i] for i in keep], fontsize=5.8, loc='upper right', framealpha=0.9)
     ax[0].set_title('(a) compression against angle', loc='left')
     ax[1].set_title(r'(b) against column length: ratio $-$ 1 $\simeq C/N^2$', loc='left')
     fig.tight_layout()
