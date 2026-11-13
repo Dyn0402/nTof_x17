@@ -12,12 +12,13 @@ or a Y strip, instead of two stacked strip layers, so that both views see the sa
 the charge is $f=0.485$ (A) and $0.513$ (B), with an event-to-event spread of 0.014--0.032 (D 0.116, its X
 readout fault). How much the balance matters for tracking is not measured; its only cost we know of is one more copper
 layer in the material budget.
-\textbf{(2) A resistive Micromegas in TPC mode.} The resistive layer spreads the charge and delays it: each strip's
-signal carries delayed copies of its neighbours' (${\sim}29\,\%$ at $\tau\approx47$\,ns to $\pm1$ strip). That compresses
-the drift-time ladder when strip times are used, and is the reason the reconstruction fits the waveforms with a
-charge-spreading model (Paper~II). For a TPC alone we might not choose it again. In a high-rate or harsh
-environment, however, it quenches discharges and keeps the chamber alive and live (no measurable dead time per discharge
-on the bench, \cref{sec:operation}), so on balance it may still be the right choice.
+\textbf{(2) A resistive Micromegas in TPC mode.} The resistive layer protects the chamber against discharges, which a
+pulsed, high-intensity facility makes likely: on the bench a discharge costs no measurable dead time
+(\cref{sec:operation}). It also spreads the charge of each avalanche along the resistive strips. In a TPC that adds, in
+one view, to the mixing of charge from different drift depths onto each strip that diffusion and the footprint of the
+avalanche already cause, and so to the bias of per-strip hit times~\cite{paperIIb}. Once the waveforms are fitted with
+a model of the charge spreading (\cref{sec:reco}) it costs little: the view read along the resistive strips is not
+systematically worse than the other (\cref{sec:tracking}).
 \textbf{(3) Resistive strips rather than a uniform resistive layer.} A continuous resistive layer was tried
 first: it came out with too low a resistance, and current flowed through ``hot spots''. Resistive strips with the
 strip ends passivated allowed a higher resistance and far less current. \emph{Stephan: the measured resistances and
