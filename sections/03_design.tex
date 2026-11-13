@@ -17,14 +17,12 @@ or a Y strip, instead of two stacked strip layers, so that both views see the sa
 (\crefp{fig:chamber}{d}). The cost is one more copper layer in the board.
 
 \textbf{(2) A resistive Micromegas in TPC mode.} The resistive layer protects the chamber against discharges, which a
-pulsed, high-intensity facility makes likely. It also spreads the charge of each avalanche along the resistive strips.
-In a TPC that adds, in one view, to the mixing of charge from different drift depths onto each strip that diffusion
-and the footprint of the avalanche already cause, and it is one reason the reconstruction fits the waveforms with a
-model of the charge spreading instead of fitting per-strip times (\cref{sec:reco}).
-\askDylan{Rewritten 2026-11-10. The paper1 text said each strip carries ``delayed copies of its neighbours' (${\sim}29\,\%$
-at $\tau\approx47$\,ns)'' and ``for a TPC alone we might not choose it again''. The first is the retired copy-kernel
-description and contradicts \cref{sec:reco}; the second is no longer supported (a metallic readout in the same gas keeps
-most of the bias; the resistive layer adds only in Y). The design lesson is decision D09 on the Paper~II split page.}
+pulsed, high-intensity facility makes likely: on the bench a discharge costs no measurable dead time
+(\cref{app:discharges}). It also spreads the charge of each avalanche along the resistive strips. In a TPC that adds, in
+one view, to the mixing of charge from different drift depths onto each strip that diffusion and the footprint of the
+avalanche already cause, and so to the bias of per-strip hit times~\cite{paperIIb}. Once the waveforms are fitted with
+a model of the charge spreading (\cref{sec:reco}) it costs little: the view read along the resistive strips is not
+systematically worse than the other (\cref{sec:tracking}).
 
 \textbf{(3) Resistive strips rather than a uniform resistive layer.} A continuous resistive layer was tried
 first: it came out with too low a resistance, and current flowed through ``hot spots''. Resistive strips with the
