@@ -1,28 +1,27 @@
 # Handoff
 
-## Paper II split (one paper or two) — updated 2026-11-13 (dylan-Yoga)
+## Paper split I / IIa / IIb: work list done — updated 2026-11-13 pm (dylan-Yoga)
 
-**Resume:** Dylan decided: two papers (IIa NIM A, IIb JINST). Do the doc + Paper I/II text edits in the work list.
+**Resume:** the D01–D11 work list is done. Next: Dylan reads IIb's corrected draft and the IIa skeleton; IIa needs its §6 table built.
 
-**Goal:** split Paper II into IIa (reconstruction, `papers/paper2/`) and IIb (the bias law + survey,
-`papers/tpc_mixing_review/`, still called "Paper III" internally), and bring the strategy docs and Paper I text in line.
+**Done 11-13 (all committed and pushed to `origin main`; Overleaf paper1 `fcfe1d83`, paper1_v2 `66011a95`):**
+- DAGs 4646000 / 4647206 accounted (120/120, 22/22, one start each, exit 0) and scored: `papers/paper2/hits_daq/DAG_SCORES_2026-11-13.md`.
+  SPS chamber E at 25.4°: hits ladder 7–13 % steeper than W; H2c with row v ratio 0.98 but s68 1.5–2.0° (W 1.0–1.1°).
+  det3 V7 (charge-weighted) = V0, V8 (ToT midpoint) worse everywhere.
+- `JOURNAL_STRATEGY.md`, `paper2/OUTLINE_PLAN_2026-11-05.md` (now IIa), `tpc_mixing_review/README.md` (now IIb), `papers/README.md`.
+- IIa `paper2/`: title, abstract, intro, §3 = one motivating figure, §6 = one H0/H2c/W table, §7 cut to a sentence.
+- IIb `tpc_mixing_review/`: jinstpub + JHEP.bst (Times fallback when newtx is missing), abstract reframed as a
+  measurement, all 11-09 draft corrections applied, Scholer 28° + Klitzner, new §5 known-angle subsection, V7/V8 in §6.
+- Paper I (both copies): D09 design lesson, bias cited to new `paperIIb`, `paperII` retitled as IIa; stale abstract
+  `\requote` replaced (paper1 only; v2 had none).
 
-**Done:**
-- 11-10: decision page built (https://claude.ai/artifact/GPYyBp8UmXDK5wgt3z31zu, source `papers/paper_split_decision/index.html`).
-- 11-12/13: Dylan answered D01–D11 (no notes, D12 empty). Recorded with the full work list in
-  `papers/paper_split_decision/DECISIONS_2026-11-13.md`. All recommended options except D08: first author on both, so the
-  reputation paragraph in `JOURNAL_STRATEGY.md` does not move to IIb.
+**Next steps:** build IIa's §6 table (det3 numbers in `hits_daq/results/ana1106_*`, SPS in `sps_h2crow_score.json`);
+regenerate IIb's `NUMBERS.md` and the depth/phase/remedies figures on the desktop (inputs on `$WORK_DATA`); check the
+`Klitzner2016` bib title; decide the IIb `\tbw` on the beam rows reading steeper than the bench law. Hub to-do "Think about
+splitting up? Ask Gianpiero" is Dylan's to tick.
 
-**In progress / where it stopped:** no paper text or strategy doc edited yet. No background jobs.
-
-**Next steps:** the numbered work list in `DECISIONS_2026-11-13.md` (strategy doc, Paper II outline, `paper2/main.tex`,
-IIb framing/class, Paper I design-lesson rewording in `paper1/` and `paper1_v2/`, citation split, stale `\requote`).
-
-**Gotchas / decisions:**
-- This supersedes the 11-09 "keep the review as a third paper" framing; IIb is published a few weeks after I + IIa.
-- Paper I and `paper1_v2` are Overleaf-shared with Stephan: `papers/overleaf.sh status <paper>` and `pull` first; stop on a
-  hold or conflict. The design-lesson text exists in both copies (`paper1/sections/02_design.tex`, `paper1_v2/sections/03_design.tex`).
-- The bias is aggregate-time compression; never reintroduce "delayed copies 29 % at 47 ns" (CLAUDE.md).
+**Gotchas:** `git pull --rebase` across the Overleaf merge commits replays them (conflict): use `git pull --ff-only` / merge.
+The MPGD26 proceedings abstract still says "delayed charge sharing" (not touched; it's a separate paper).
 
 ## TPC single-time-bias review paper ("Paper III") and the coupling-study review — updated 2026-11-09 (dylan-MS-7C84)
 
