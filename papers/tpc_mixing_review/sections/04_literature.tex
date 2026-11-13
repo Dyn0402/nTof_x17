@@ -52,7 +52,14 @@ trace inside the MM gas gap combined with the diffusion of the ionisation electr
 \ang{10}~\cite{Ntekas2016}. Scholer's NSW digitisation, with diffusion on and charge sharing switched off, peaks \ang{7} high for
 tracks above \ang{25}, an offset he attributes to ``the positions of the first and last ionizations above the corresponding
 strips'' and leaves to ``further investigation''; with sharing on the peak moves higher, and his own test beam at \ang{28} shows no
-shift at all~\cite{Scholer2021}. Herrmann, on a full-size NSW module, adopts a 30\,\% coupling correction from Lösel's
+shift at all~\cite{Scholer2021}. That test beam is the one published measurement that lies below the no-coupling
+toy of \cref{app:toy}, which on the NSW-like geometry with the VMM peak time gives a tangent ratio of 1.10 at \ang{28}, a
+peak about \ang{2} high; his own simulation, \ang{7} high, misses it by more. Two differences are not checked: the quoted value is
+the peak of a distribution with a long tail towards larger angles (resolution \ang{7.1} about the peak), not the median our
+ratios use, and a $6\times$ r.m.s.\ threshold that drops the faint end strips acts as an edge cut (\cref{sec:remedies}).
+Klitzner, with floating strips in the fast gas Ne:CF$_4$, finds the angle too large at drift fields below 300~V/cm, but
+on one layer only: ``all other layers reconstruct a slightly smaller angle than expected''~\cite{Klitzner2016}. These are
+the two published cases where the bias is absent or reversed; neither author explains them, and we cannot either. Herrmann, on a full-size NSW module, adopts a 30\,\% coupling correction from Lösel's
 simulation~\cite{Loesel2017} and Flierl's analysis, and states the mechanism in strip-count terms: without the correction ``no
 mean-time difference is in the range expected from the drift velocity'', and ``the time difference is biased for lower
 inclination due to the low number of affected strips''~\cite{Herrmann2019}. The only other mechanism statement we found is a
@@ -114,8 +121,9 @@ its purpose is to measure the inclination that the calibration would have to kno
 \subsection{What survives the survey}
 
 A transparent toy with drift diffusion, the strip geometry and a small induction footprint, and no coupling of any kind,
-reproduces the published biases of the NSW-type, floating-strip and GEM chambers within the uncertainty of their assumed
-footprints (\cref{tab:toydet}); the circuit model's predictions at \ang{20} to \ang{40} and the diffusion-only toy differ by
+reproduces the published biases of the NSW-type, floating-strip and GEM chambers to within a factor 1.6 in the excess
+$\tan\theta_{\rm rec}/\tan\theta - 1$ on the four measured points (toy over published 1.6, 1.3, 0.8 and 0.6, \cref{tab:toydet}), with no
+free parameter beyond an assumed footprint and diffusion; the circuit model's predictions at \ang{20} to \ang{40} and the diffusion-only toy differ by
 less than 0.05 in the tangent ratio. The angle, in other words, never contained the information that would have identified
 the coupling.
 
