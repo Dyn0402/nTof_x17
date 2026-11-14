@@ -437,10 +437,24 @@ redeployed (dylan-cern-site 91d4386). Inputs on the desktop: $WORK_DATA/claude-j
 - Deck: `WORK_DATA=~/work_data .venv/bin/python papers/paper1/make_figures_deck.py --out <html>` then
   `dylan-cern-site/scripts/add-note.py <html> --slug mx17-paper1-figures --force --deploy`.
 
-## n_TOF pass 1: reprocess the n_TOF tracks on the final chain — updated 2026-11-13 (dylan-MS-7C84)
+## n_TOF pass 1: reprocess the n_TOF tracks on the final chain — updated 2026-11-14 (dylan-Yoga)
 
 **Resume:** pass RUNNING. Keep it moving with the checklist `rerun/ntof/condor/PASS1_WATCH.md` (`watch_pass1.sh` on lxplus
 checks and auto-repairs); when all clusters are empty: account, audit_eos, N-G1 (steps below).
+
+**11-14 ~12:00 (dylan-Yoga): 199 JOBS HELD on main, NOT yet dealt with (next session: look at this first).** Queue: main 5 idle /
+57 running / 199 held; 4636419 empty; 4636420 175 running (so ~15,290 of 15,550 main done, not confirmed with `--hist`).
+Hold reason on all 199: `Transfer output files failure ... writing to file .../log/4636418.<proc>.out: (errno 27) File too large`
+(hold code 12/27). Mostly arm D, run_162 (196), run_160 (3), run_158 (1: proc 14801), procs 14801-15527, acquisitions 260809-260810.
+**Their results are complete:** for all 200 held arg sets the four EOS files (`.parquet`, `.candidates.parquet`, `.splits.parquet`,
+`.meta.json`) exist in the stage2 out dir (ntof_stage.sh copies them before exiting; proc 14801 exited 0 after 7.2 h). Only the
+sandbox stdout/err return to AFS failed. Normal `.out` files are ~520 B and none exist for the held procs; AFS quota 75%, `ulimit -f`
+unlimited, so the limit is on the schedd spool side (not readable from lxplus: `condor_config_val -name bigbird101` fails).
+Unknown: why the sandbox file is oversized (something in stdout/err is huge, or a spool limit). Not checked: held jobs' wall times
+vs normal, whether the `.meta.json` of a held job looks sane. 5 cyclic-requirement jobs were repaired (0 still bad).
+**Nothing else was changed on condor; nothing released or removed.** Options: leave held until the rest finishes, or `condor_rm` the
+199 and count them done (needs Dylan's go-ahead; releasing would just rerun 7 h jobs into the same hold). Then `--hist` to settle the
+5-job count gap, `lxstore status`, `audit_eos.py outputs`.
 
 **11-13 10:13 (dylan-MS-7C84): still running, healthy.** Main 13,545 done (13,544 exit 0 + proc 1727), 135 running,
 1,865 idle, 0 held (queue + done = 15,545, 5 short of 15,550: presumably `condor_history` lag; recheck). 473 jobs had
