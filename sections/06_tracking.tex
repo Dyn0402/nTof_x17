@@ -26,7 +26,7 @@ quoted.}
 which the calibration never saw, gives $0.99^\circ$ and $0.90^\circ$.
 
 \emph{It does not depend on the angle.} Across the $\pm20$\textdegree{} that the bench provides, the resolution stays
-within about 0.15\textdegree{} of its mean (\crefp{fig:angle}{b}). In the beam, with chamber~E yawed by
+within about 0.15\textdegree{} of its mean (\crefp{fig:angle}{c}). In the beam, with chamber~E yawed by
 25.4\textdegree{}, the angle scale is $0.98\pm0.03$ of the known angle~\cite{paperII}, so the scale holds beyond the
 reach of the bench.
 \analysis{SPS25}{a resolution at 25\textdegree{} with the beam as reference is not quoted: the two existing numbers (0.96--0.99\textdegree{} on an
@@ -37,13 +37,12 @@ selection and unclipped $s_{68}$ on the CF$_4$ runs that have a column-measured 
 varies across the chamber (\cref{sec:bow}). The correction is part of the calibration. Without it chamber~A reads
 1.10\textdegree{} and 1.07\textdegree.
 
-The residual is not Gaussian (\crefp{fig:angle}{a}). Beyond its core lies a flat floor: 3.4\,\% of tracks in each
+The residual is not Gaussian (\crefp{fig:angle}{b}). Beyond its core lies a flat floor: 3.4\,\% of tracks in each
 view are more than 5\textdegree{} off, and these are fits far steeper than the track, not a wider core. They are the
 events of \cref{sec:straight}, in which a $\delta$-ray or a second deposit pulls a straight-line fit.
 
-Chamber~B, the second good chamber, reaches $1.05^\circ$ and $1.13^\circ$, also flat in angle
-(\crefp{fig:angle}{b}). Chambers C, D and E reach $1.26/1.51^\circ$, $1.23/1.46^\circ$ and $2.41/2.08^\circ$
-(\crefp{fig:angle}{c}); these three were calibrated on the runs they are quoted on, and they are the chambers with
+Chamber~B, the second good chamber, reaches $1.05^\circ$ and $1.13^\circ$, also flat in angle (not shown).
+Chambers C, D and E reach $1.26/1.51^\circ$, $1.23/1.46^\circ$ and $2.41/2.08^\circ$; these three were calibrated on the runs they are quoted on, and they are the chambers with
 defects of \cref{sec:datasets} (\cref{fig:effmap}).
 
 \paragraph{What it is compared with.} A conventional micro-TPC analysis fits a straight line to one time per strip.
@@ -61,13 +60,14 @@ correction: 1.04/1.01\textdegree), which is why it is not drawn in \cref{fig:ang
 
 \begin{figure}[tbp]
   \centering
-  \figorbox{angle_resolution_v2}{residual distribution, resolution against angle for A and B, all chambers}
-  \caption{Angular resolution on cosmic muons. (a) The residual $\theta_\mathrm{fit}-\theta_\mathrm{ref}$ of
-  chamber~A (Runs 1 and 2, 25\,400 reference-matched single tracks per view), X filled and Y open, per degree on a
-  logarithmic scale; vertical lines, the median $\pm\,s_{68}$. Beyond $\pm15$\textdegree{} lie 2.5\,\% (X) and 2.6\,\% (Y)
-  of the tracks. (b) $s_{68}$ in 2\textdegree{} bins of the reference angle for chambers A and B, X solid and Y dashed;
-  bootstrap errors. (c) $s_{68}$ of each chamber in its interior, X filled and Y open. $s_{68}$ is the 68th percentile of
-  $|\theta_\mathrm{fit}-\theta_\mathrm{ref}-\mathrm{median}|$, with no clipping.}
+  \figorbox{angle_resolution_v2}{fitted against reference angle, residual distribution, resolution against angle, chamber A}
+  \caption{Angular resolution of chamber~A on cosmic muons (Runs 1 and 2, 25\,400 reference-matched single tracks per
+  view). (a) Fitted angle $\theta_\mathrm{fit}$ against the reference angle $\theta_\mathrm{ref}$, X and Y views
+  together, in 0.5\textdegree{} cells (logarithmic scale; empty cells white); dashed, $\theta_\mathrm{fit}=\theta_\mathrm{ref}$.
+  (b) The residual $\theta_\mathrm{fit}-\theta_\mathrm{ref}$, X filled and Y open, per degree on a logarithmic scale;
+  vertical lines, the median $\pm\,s_{68}$. Beyond $\pm15$\textdegree{} lie 2.5\,\% (X) and 2.6\,\% (Y) of the tracks.
+  (c) $s_{68}$ in 2\textdegree{} bins of the reference angle, X solid and Y dashed; bootstrap errors. $s_{68}$ is the 68th
+  percentile of $|\theta_\mathrm{fit}-\theta_\mathrm{ref}-\mathrm{median}|$, with no clipping.}
   \label{fig:angle}
 \end{figure}
 
