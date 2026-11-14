@@ -73,8 +73,11 @@ Commit it with a short message and push `origin main`.
 
 The pass is done when `watch_pass1.sh` prints `(none)` for all three clusters. Then:
 
-1. Run `watch_pass1.sh --hist` and record the final counts. Main should total 15,550 completed (15,549 exit 0 +
-   proc 1727). 4636419/20 should be 198 exit 0 each, and 4638252 one exit 0.
+1. Run `watch_pass1.sh --hist` and record the final counts. Main should total 15,550 (15,549 exit 0 + proc 1727),
+   of which **205 show as removed (`JobStatus 3`), not completed**: the errno-27 holds, removed 11-14 ~14:45 on Dylan's
+   decision. Each had exited 0 with its four EOS files complete; count them done from
+   `~/x17rerun/ntof/pass1/held_errno27_2026-11-14.txt` (ProcId, ExitCode 0, wall time, args), so main = 15,345 completed
+   + 205 from the list. 4636419/20 should be 198 exit 0 each, and 4638252 one exit 0.
 2. Run `ssh lxplus lxstore status` and record the quota.
    Then deploy the xrootd version of the job script (repo `rerun/ntof/condor/ntof_stage.sh`, tested 11-14 with condor
    smoke 4672368, `regress.py` PASS against the 11-07 smoke): `scp rerun/ntof/condor/ntof_stage.sh lxplus:x17rerun/ntof/pass1/`
@@ -100,3 +103,4 @@ The pass is done when `watch_pass1.sh` prints `(none)` for all three clusters. T
 | 11-14 ~12:00 | ~15,290 (not confirmed) / 5 / 57 | 19 empty / 20: 175 run | 5 cyclic jobs on main repaired (0 still bad); **199 HELD** (errno 27 File too large writing log/<id>.out, mostly run_162 arm D); EOS outputs of all complete; not released; quota 75%. See HANDOFF.md |
 | 11-14 12:15 | 15,293 terminated in `ntof.log` / 5 / 47 | 19 empty / 20: 23 done, 175 run | **Cause of the holds found:** `log/` reached the AFS directory limit (35,557 entries, ~64k name slots); `touch` there failed with errno 27. 205 held (procs in `held_errno27_2026-11-14.txt`), all exit 0 with complete EOS outputs. 4,530 pre-freeze `.out`/`.err` moved to `log_prefreeze_2026-11/` at 12:08; last hold 12:06:18, 4 jobs finished normally after. Not released, not removed (Dylan's call). `rerun/condor/README.md` |
 | 11-14 14:16 | ~15,333 / 0 / 12 | 19 empty / 20: 147 run | no cyclic jobs; 205 held (same errno-27 set, none new since 12:06); `fix_req_cycle.sh` now reads the values from the factory ad (identical for 4636418) and takes a cluster |
+| 11-14 14:45 | — / 0 / 6 | — | **205 errno-27 held jobs `condor_rm`'d** (Dylan's decision; list = queue, all exit 0, EOS complete); counted done from `held_errno27_2026-11-14.txt` |

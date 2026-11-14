@@ -437,17 +437,17 @@ redeployed (dylan-cern-site 91d4386). Inputs on the desktop: $WORK_DATA/claude-j
 - Deck: `WORK_DATA=~/work_data .venv/bin/python papers/paper1/make_figures_deck.py --out <html>` then
   `dylan-cern-site/scripts/add-note.py <html> --slug mx17-paper1-figures --force --deploy`.
 
-## n_TOF pass 1: reprocess the n_TOF tracks on the final chain — updated 2026-11-14 (dylan-Yoga)
+## n_TOF pass 1: reprocess the n_TOF tracks on the final chain — updated 2026-11-14 (dylan-MS-7C84)
 
-**Resume:** pass RUNNING. Keep it moving with the checklist `rerun/ntof/condor/PASS1_WATCH.md` (`watch_pass1.sh` on lxplus
-checks and auto-repairs); when all clusters are empty: account, audit_eos, N-G1 (steps below).
+**Resume:** pass finishing (main 6 running, side 4636420 ~147); when empty: `--hist`, deploy new `ntof_stage.sh`, audit_eos, N-G1.
+Checklist `rerun/ntof/condor/PASS1_WATCH.md` ("When it's finished"); the 205 errno-27 jobs were removed and count as done.
 
 **11-14 14:30 (dylan-MS-7C84, follow-up):** queue main 12 running / 0 idle / 205 held (no hold since 12:06), side 4636420 147
 running. Done: `ntof_stage.sh` rewritten to stage over xrootd (`eosio in/out`, `xrdfs ls` for the globs; condor smoke 4672368
 exit 0, `regress.py` PASS against the 11-07 smoke); repo only, deploy after the pass (`PASS1_WATCH.md` "When it's finished").
 The `condor_submit` shim's `logdir=` check was broken (a `$(logdir:log)` default overrode the command line, so every fresh
 logdir was refused); fixed, deployed, tested (claude-skills `5182ff9`). `fix_req_cycle.sh` takes a cluster and reads the
-factory ad. Still open: the 205 held (Dylan), the end-of-pass steps, bench/SPS scripts still on `cp` (listed in
+factory ad. **14:45: the 205 held jobs were `condor_rm`'d on Dylan's decision and count as done from `held_errno27_2026-11-14.txt`** (in `--hist` they show as removed). Still open: the end-of-pass steps, bench/SPS scripts still on `cp` (listed in
 claude-skills `EOS_JOB_IO.md`), LNL `~/condor/lnl/pipe/logs` 86 % (x17_facility_search; the shim now refuses its next large
 submission into it).
 
