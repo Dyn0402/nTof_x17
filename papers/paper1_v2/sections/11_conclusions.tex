@@ -11,7 +11,8 @@ section 5.6 in three sentences (the long version is in \cref{app:moved}).}
   \centering\small
   \caption{The five chambers on the cosmic bench (chamber~E's position resolution is from the beam). Efficiencies are
   kept-track efficiencies in the interior (\cref{sec:effdef}); chamber~A's single-track efficiency over the full active
-  area is 94.8\,\%. C, D and E were calibrated on the runs they are quoted on. Dashes: not measured.}
+  area is 94.8\,\%. C, D and E were calibrated on the runs they are quoted on. Dashes: not measured. The scan row is a single short
+  scan point per chamber (150--770 rays), an indication only for C and D (\cref{sec:hvscan}).}
   \label{tab:summary}
   \setlength{\tabcolsep}{4.5pt}
   \begin{tabular}{lccccc}
@@ -20,8 +21,8 @@ section 5.6 in three sentences (the long version is in \cref{app:moved}).}
     \hline
     long run, resist / drift HV [V] & 490 / 1000 & 495 / 1000 & 495 / 700 & 495 / 700 & 495 / 600 \\
     efficiency at the long-run voltage [\%] & 92.3 & 90.3 & 74.4 & 68.0 & 40.9 \\
-    efficiency at the best voltage [\%] & 93.8 & 92.2 & 85.8 & 89.8 & -- \\
-    best voltage [V] & 470 & 480 & 480 & 430 & -- \\
+    highest point of the voltage scan [\%] & $93.8\pm0.9$ & $92.2\pm1.0$ & $85.8\pm1.9$ & $89.8\pm2.5$ & -- \\
+    its voltage ($\pm5$) [V] & 470 & 480 & 480 & 430 & -- \\
     angular resolution X / Y [\textdegree] & 0.99 / 0.90 & 1.05 / 1.13 & 1.26 / 1.51 & 1.23 / 1.46 & 2.41 / 2.08 \\
     position resolution X / Y [\textmu m] & 128 / 113 & 163 / 176 & -- & -- & 138 / 120 \\
     event time; uncorrelated part [ns] & 41; 22 & 42; 28 & 78; 53 & 46; 26 & -- \\
@@ -43,9 +44,9 @@ It detects 94.8\,\% of single tracks over its full area, pairs the two views of 
 97.7\,\%, reconstructs both of two tracks more than 18\,mm apart in 95\,\% of cases with their opening angle known to
 1.3\textdegree, resolves positions to about 120\,\textmu m and times to 40\,ns.
 
-\paragraph{What varies between chambers.} Two of five chambers, A and B, reach this. Chambers C and D reach 86 and
-90\,\% efficiency at their best voltage but have no plateau: discharges set in before it, and at the voltage of the
-long runs they cost 17 and 24\,\% of the tracks. Chamber~D also has a fault on half of its X readout, and 62\,\% of the area
+\paragraph{What varies between chambers.} Two of five chambers, A and B, reach this. Chambers C and D have no plateau: discharges set in
+before it, and at the voltage of the long runs they cost 17 and 24\,\% of the tracks. In short scans both were more
+efficient at lower voltage, around 85 to 90\,\% (\cref{sec:hvscan}). Chamber~D also has a fault on half of its X readout, and 62\,\% of the area
 of chamber~E does not amplify, in stripes (\cref{app:beam}). What does not vary is the geometry: all five boards are dished by 1.3 to 1.9\,mm, and all five share the charge equally between
 the views.
 \askStephan{What distinguishes boards A and B from C, D and E in production? This paragraph is where the paper should say

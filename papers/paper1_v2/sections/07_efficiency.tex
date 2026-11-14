@@ -4,7 +4,9 @@
 bookkeeping checked in \texttt{papers/paper1\_v2/figs/out/two\_particle\_numbers.md} and \texttt{NUMBERS\_RUNDOWN.md}. v2 2026-11-10:
 the old sections 4 and 5.2--5.4 in three pages; one efficiency number per area; the definition, the selection variants and the
 loss classes are in \cref{app:effdef}; the two-particle material is \cref{sec:twoparticle}.}
-\intent{Where the chambers run and why, how efficient each is, and for the best chamber where every lost track goes.}
+\intent{Where the chambers run and why, how efficient each is, and for the best chamber where every lost track goes.
+The efficiency maps of the five chambers are in \cref{sec:datasets} (moved 2026-11-14), so that C, D and E are explained
+before any of their numbers.}
 
 \subsection{What ``detected'' means}\label{sec:effdef}
 The denominator is every event with one clean reference track whose ray crosses the active area of the chamber.
@@ -23,13 +25,19 @@ discharge here is a trigger in which at least one readout chip has eight or more
 Chamber~A reaches its plateau before discharges cost anything. Its efficiency is within one point of its maximum from
 460 to 490\,V and stays between 91 and 94\,\% from 425 to 500\,V, while the fraction of reference tracks lost to a
 discharge stays below 1\,\% up to 490\,V. Chamber~B behaves the same way, 10\,V higher. Chambers C and D do not reach a
-plateau: at their best voltage, 480 and 430\,V, they are at 86 and 90\,\% and already lose 1.5--2.4\,\% of the tracks
-to discharges, and they fall from there. The long runs of \cref{tab:datasets} were taken before the scans were
-analysed, at 490--495\,V, which is 10\,V above the best voltage for chamber~A, 15\,V for B and C and 65\,V for D; at
-495\,V chambers C and D lose 17 and 24\,\% of their tracks to discharges.
-\askDylan{This matters for how C and D are described. At 495\,V they look like 74 and 68\,\% chambers; at their own
-optimum they are 86 and 90\,\% chambers. The text now says both. D's 89.8\,\% at 430\,V is from 147 rays and it is not
-verified that it uses the same half of X as its 68.0\,\% (rundown item 6).}
+plateau. Both are more efficient below the voltage of their long runs: chamber~C rises to $85.8\pm1.9$\,\% at 480\,V,
+and chamber~D lies between 87 and 90\,\% from 425 to 435\,V. There they already lose 1.5--2.4\,\% of the tracks to
+discharges, and above they fall. These numbers are indications, not efficiencies of the two chambers: a scan point is 10
+or 20 minutes of data, 250--720 reference rays for chamber~C and 120--340 for D, each point is uncertain by 1.4 to 3.5
+points, and those of chamber~D scatter by more than that from one voltage to the next. The long runs of
+\cref{tab:datasets} were taken before the scans were analysed, at 490--495\,V. That is about 10\,V above the best
+voltage for chamber~A, 15\,V for B and C and 65\,V for D, each known to $\pm5$\,V; at 495\,V chambers C and D lose 17
+and 24\,\% of their tracks to discharges.
+\askDylan{Reworded 2026-11-14: the scan numbers of C and D are no longer given as what the chambers reach. C: 84.1(14) at
+465\,V, 85.8(19) at 480\,V, 81.8(15) at 485\,V. D: 86.6(19), 89.8(25), 89.0(18), 82.2(35), 88.0(18) at 425, 430, 435, 440,
+445\,V. D's scan points and its 68.0\,\% long run are rows of one table with one ray selection
+(\texttt{rerun/paper1\_ops/results/tradeoff.csv}, column \texttt{n\_ig}), and D has 0.4--0.5 of C's rays at equal triggers,
+so the scan uses the same half of X as the long run.}
 
 Two more facts about operation are documented in \cref{app:discharges}. A discharge costs no measurable dead time:
 integrated over the first 0.1\,s after a discharge, the lost time is $0.2\pm0.6$\,ms for chamber~A (below 1.2\,ms at
@@ -49,24 +57,10 @@ follows the gain, about 1\,\textmu A for chamber~A at 490\,V.
 \end{figure}
 
 \subsection{Five chambers}\label{sec:fleet}
-\Cref{fig:effmap} maps the efficiency of the five chambers. Chambers A and B are uniform over their active area. The
-other three show the production defects that the rest of this paper leaves aside: whole-plane discharges on chambers C
-and D, a fault of the X readout on half of chamber~D, and stripes of chamber~E that do not amplify
-(\cref{app:beam}). In the interior and at the voltage of the long runs, the kept-track efficiency is 92.3\,\% for
-chamber~A, 90.3\,\% for B, 74.4\,\% for C, 68.0\,\% for D (on the good half of its X readout) and 40.9\,\% for E
-(71.3\,\% in its live bands). No single loss class takes more than 1.7\,\% of the tracks of chambers A and B.
-
-\begin{figure}[tbp]
-  \centering
-  \includegraphics[width=0.92\linewidth]{efficiency_map}
-  \caption{Kept-track efficiency maps of the five chambers (8\,mm disk on a 2\,mm grid; axes in cm), on one scale.
-  Each map pools all runs of its chamber within 3 points of the efficiency of its long run, at the drift field of that
-  run: for chamber~A 30 runs and scan points with 70\,470 reference rays, of which Runs 1 and 2 are two; for C and D
-  the pool includes scan points at lower voltage. Solid box: active area; white dashed: interior; hatched on (a): the
-  passivated strip ends, outside the active area. (d) Chamber~D: a fault of the X readout affects channels 0--255, so
-  only the right half (orange box) is quoted. Blank: outside the active area or fewer than 15 rays.}
-  \label{fig:effmap}
-\end{figure}
+The five chambers and their defects were introduced with the maps of \cref{fig:effmap} (\cref{sec:datasets}). In
+numbers: in the interior and at the voltage of the long runs, the kept-track efficiency is 92.3\,\% for chamber~A,
+90.3\,\% for B, 74.4\,\% for C, 68.0\,\% for D (on the good half of its X readout) and 40.9\,\% for E (71.3\,\% in its
+live bands). No single loss class takes more than 1.7\,\% of the tracks of chambers A and B.
 
 \subsection{Chamber A: single-track efficiency and where the loss goes}\label{sec:single}
 To ask how efficient the chamber is for one track, events with a second particle in the chamber have to be set
