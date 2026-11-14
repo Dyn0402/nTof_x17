@@ -442,6 +442,15 @@ redeployed (dylan-cern-site 91d4386). Inputs on the desktop: $WORK_DATA/claude-j
 **Resume:** pass RUNNING. Keep it moving with the checklist `rerun/ntof/condor/PASS1_WATCH.md` (`watch_pass1.sh` on lxplus
 checks and auto-repairs); when all clusters are empty: account, audit_eos, N-G1 (steps below).
 
+**11-14 14:30 (dylan-MS-7C84, follow-up):** queue main 12 running / 0 idle / 205 held (no hold since 12:06), side 4636420 147
+running. Done: `ntof_stage.sh` rewritten to stage over xrootd (`eosio in/out`, `xrdfs ls` for the globs; condor smoke 4672368
+exit 0, `regress.py` PASS against the 11-07 smoke); repo only, deploy after the pass (`PASS1_WATCH.md` "When it's finished").
+The `condor_submit` shim's `logdir=` check was broken (a `$(logdir:log)` default overrode the command line, so every fresh
+logdir was refused); fixed, deployed, tested (claude-skills `5182ff9`). `fix_req_cycle.sh` takes a cluster and reads the
+factory ad. Still open: the 205 held (Dylan), the end-of-pass steps, bench/SPS scripts still on `cp` (listed in
+claude-skills `EOS_JOB_IO.md`), LNL `~/condor/lnl/pipe/logs` 86 % (x17_facility_search; the shim now refuses its next large
+submission into it).
+
 **11-14 12:15 (dylan-MS-7C84): the holds are explained and stopped; the held jobs wait for Dylan's choice.** `log/` on AFS
 reached the AFS directory limit (35,557 entries ≈ 64k name slots; `touch` in it failed with errno 27). It is not a spool
 limit and no file is large (this corrects the "Unknown" in the note below). 205 jobs held (ids in

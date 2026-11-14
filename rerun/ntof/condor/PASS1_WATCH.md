@@ -76,6 +76,10 @@ The pass is done when `watch_pass1.sh` prints `(none)` for all three clusters. T
 1. Run `watch_pass1.sh --hist` and record the final counts. Main should total 15,550 completed (15,549 exit 0 +
    proc 1727). 4636419/20 should be 198 exit 0 each, and 4638252 one exit 0.
 2. Run `ssh lxplus lxstore status` and record the quota.
+   Then deploy the xrootd version of the job script (repo `rerun/ntof/condor/ntof_stage.sh`, tested 11-14 with condor
+   smoke 4672368, `regress.py` PASS against the 11-07 smoke): `scp rerun/ntof/condor/ntof_stage.sh lxplus:x17rerun/ntof/pass1/`
+   and `ssh lxplus rm x17rerun/ntof/pass1/ntof_stage_eosio_test.sh`. Never overwrite it while jobs run: bash reads a
+   running script from the file as it goes.
 3. **Stop here and tell Dylan the pass has finished.** The next steps (`audit_eos.py outputs`, checking a
    `.meta.json` per job, reading each failure's `.err`, N-G1, the D run_104 L1/L2 choice) need judgement. They're
    listed in `HANDOFF.md` § "n_TOF pass 1" and belong to a full analysis session.
@@ -95,3 +99,4 @@ The pass is done when `watch_pass1.sh` prints `(none)` for all three clusters. T
 | 11-13 10:13 | 13,545 (13,544 exit 0 + proc 1727) / 1,865 / 135 | 19: 198 done / 20: 15 done, 183 idle | 473 cyclic jobs on main repaired (0 still bad; the Requirements-attribute set printed a harmless failure); held 0; quota 75%. Queue + done = 15,545, 5 short of 15,550 (history lag, to recheck) |
 | 11-14 ~12:00 | ~15,290 (not confirmed) / 5 / 57 | 19 empty / 20: 175 run | 5 cyclic jobs on main repaired (0 still bad); **199 HELD** (errno 27 File too large writing log/<id>.out, mostly run_162 arm D); EOS outputs of all complete; not released; quota 75%. See HANDOFF.md |
 | 11-14 12:15 | 15,293 terminated in `ntof.log` / 5 / 47 | 19 empty / 20: 23 done, 175 run | **Cause of the holds found:** `log/` reached the AFS directory limit (35,557 entries, ~64k name slots); `touch` there failed with errno 27. 205 held (procs in `held_errno27_2026-11-14.txt`), all exit 0 with complete EOS outputs. 4,530 pre-freeze `.out`/`.err` moved to `log_prefreeze_2026-11/` at 12:08; last hold 12:06:18, 4 jobs finished normally after. Not released, not removed (Dylan's call). `rerun/condor/README.md` |
+| 11-14 14:16 | ~15,333 / 0 / 12 | 19 empty / 20: 147 run | no cyclic jobs; 205 held (same errno-27 set, none new since 12:06); `fix_req_cycle.sh` now reads the values from the factory ad (identical for 4636418) and takes a cluster |
