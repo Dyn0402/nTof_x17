@@ -323,6 +323,32 @@ LESSONS = [
      'nodes differs in the last digits (angles ~1e-5 deg, positions ~1e-6 mm; error columns of near-singular fits much '
      'more). Same node: byte-identical. The earlier "bit-identical to the desktop" was the same hardware.',
      'compare pass outputs with a tolerance, never by bytes (rerun/condor/README.md)', 'doc'),
+    ('2026-11-06', 'process', 'The "37 lost jobs, all EOS I/O" of the n_TOF pre-freeze were 32 wall-time kills: a run_79/81 '
+     'beam acquisition takes more than the 8 h of flavour workday at 4 cores, and condor_qedit MaxRuntime does not extend '
+     'a running job. The cause was assigned from the failure seen the day before, not from the 009 abort events.',
+     'ntof.sub defaults to flavour tomorrow; before naming a cause, read the event code and reason of each failed job in '
+     'the user log (009 abort, 012 hold, 004 evict) (rerun/condor/README.md "What went wrong on the n_TOF pass")', 'chain'),
+    ('2026-11-08', 'inputs', '5 of 31,496 re-decoded files were cut on EOS (each on a 64 KiB boundary) by cp through the '
+     'FUSE mount, with exit 0, a passing size check and EOS calling them healthy. analyze_waveforms then exited 0 on the '
+     'cut file with a pedestal-only hits file.',
+     'eosput / eosio (xrootd, server-checked adler32) in redecode and rehit; root_complete on inputs; audit_eos.py. '
+     'ntof_stage.sh still reads and writes with cp (unchanged while the pass ran): audit_eos.py outputs at the end of '
+     'the pass, then move it and the bench/SPS job scripts to eosio', 'open'),
+    ('2026-11-10', 'process', 'With max_materialize, each batch of newly materialised jobs on bigbird101 got CERN\'s '
+     'requirements transform a second time from 11-09 on (PreVerRequirements chain cyclic, two variants): 0 of ~5,300 '
+     'slots matched and the main cluster sat idle three times (6-8 h each) until repaired with condor_qedit. Clusters '
+     'fully materialised at submission (198 jobs under maxmat 2000) were never hit. Cause on CERN\'s side presumed, not '
+     'confirmed. The AFS user log also stopped syncing for days, so 001/005 counts from it were wrong.',
+     'rerun/ntof/condor/fix_req_cycle.sh + watch_pass1.sh (cluster-specific); for the next large submission do not use '
+     'max_materialize: submit fully materialised chunks or a DAG with maxidle, and account with condor_history when the '
+     'user log is behind', 'doc'),
+    ('2026-11-14', 'process', 'One flat AFS log directory shared by 25 clusters since 11-04 reached the AFS directory '
+     'limit (64,449 name slots; a name over 15 characters takes two) at 35,557 entries. Every file creation then failed '
+     'with errno 27 "File too large", and condor held 205 finished main jobs (code 12) with their stdout lost, although '
+     'quota was 75 % and every file small. Their EOS outputs were complete. Shorter names (the side cluster\'s '
+     '4636420.NNN.out) still fitted, which hid the pattern.',
+     'ntof.sub takes logdir= (one directory per submission); the lxplus condor_submit shim refuses a submission whose AFS '
+     'log directory would pass 25,000 entries; lxstore status lists directories filling up (claude-skills)', 'chain'),
 ]
 
 # (claimed, claim, corrected, by what)

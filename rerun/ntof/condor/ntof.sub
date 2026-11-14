@@ -1,18 +1,27 @@
-# n_TOF pass 1, one (acquisition, arm) per job: condor_submit ntof.sub code=<code dir> jobfile=<jobs.txt> [cpus=4] [mem=8000]
+# n_TOF pass 1, one (acquisition, arm) per job:
+#   mkdir log_<name> && condor_submit ntof.sub code=<code dir> jobfile=<jobs.txt> logdir=log_<name> [cpus=4] [mem=8000]
+# logdir: a NEW directory for each submission. An AFS directory holds ~64,000 name slots (two per name over 15
+# characters, so ~16,000 jobs' .out + .err); sharing log/ across 25 clusters filled it on 2026-11-14 and condor held
+# 205 finished jobs with errno 27 "File too large". The condor_submit shim refuses a directory that would pass 25,000.
+# flavour: tomorrow (24 h) by default. A run_79/81 beam acquisition takes more than workday's 8 h at 4 cores and is
+# killed (009); condor_qedit MaxRuntime does not rescue a running job (2026-11-06).
 # jobs.txt lines: <run> <subrun> <tag> <arm> <bundle dir> <out dir> [extra ntof_reco.py args]   (make_ntof_jobs.py)
 executable     = $ENV(HOME)/x17rerun/ntof/pass1/ntof_stage.sh
 arguments      = $(code) $(args)
-output         = log/$(Cluster).$(ProcId).out
-error          = log/$(Cluster).$(ProcId).err
-log            = log/ntof.log
+output         = $(logdir:log)/$(Cluster).$(ProcId).out
+error          = $(logdir:log)/$(Cluster).$(ProcId).err
+log            = $(logdir:log)/ntof.log
 request_cpus   = $(cpus:4)
 request_memory = $(mem:8000)
 request_disk   = 4 GB
 environment    = "NTOF_JOBS=$(cpus:4) PYTHONDONTWRITEBYTECODE=1"
-+JobFlavour    = "$(flavour:workday)"
++JobFlavour    = "$(flavour:tomorrow)"
 max_retries    = 2
 should_transfer_files = NO
 # a worker whose EOS FUSE mount times out reading the archive (pass1 10-30: all 18 status-126 failures)
 requirements   = (Machine != "b9g42p2031.cern.ch")
+# max_materialize: from 2026-11-09 each newly materialised batch on bigbird101 got CERN's requirements transform
+# twice (cyclic PreVerRequirements, no slot matches; fix_req_cycle.sh). Clusters fully materialised at submission were
+# never hit: for a large job list prefer chunks of <= maxmat jobs, and check `condor_q -af:r Requirements` if all idle.
 max_materialize = $(maxmat:400)
 queue args from $(jobfile)

@@ -52,6 +52,9 @@ Read the output:
 2. **Cyclic requirement on 4636419 or 4636420.** The script won't fix those. Stop and report.
 3. **"HELD JOBS".** Don't release them. Copy the hold reasons into the report and stop. "Disk quota exceeded"
    means AFS is full: run `ssh lxplus lxstore status` and include its output.
+   `(errno 27) File too large` on a `log/….out` path means the AFS **directory** is full (64k name slots), not a
+   large file and not quota: `lxstore status` lists such directories. Seen 11-14 (205 jobs); cause and what was done
+   are in `rerun/condor/README.md` § "The AFS directory limit". The held jobs' EOS outputs are complete.
 4. **Running count.** If main shows no `2=` (nothing running) while there are idle jobs, the requirements are all
    good, and the latest job start is over 2 hours old, run
    `ssh lxplus 'condor_q 4636418 -constraint "JobStatus==1" -af ClusterId ProcId | head -1'`, then
@@ -91,3 +94,4 @@ The pass is done when `watch_pass1.sh` prints `(none)` for all three clusters. T
 | 11-12 10:47 | n/a / 1,999 / 1 | 4 run, 183 idle / 1 run | repaired the PreVerRequirements variant on all 2,000 idle main jobs (fix_req_cycle.sh + watch_pass1.sh now catch both variants); 0 still bad, slots match (20), first job started 10:46; held 0 |
 | 11-13 10:13 | 13,545 (13,544 exit 0 + proc 1727) / 1,865 / 135 | 19: 198 done / 20: 15 done, 183 idle | 473 cyclic jobs on main repaired (0 still bad; the Requirements-attribute set printed a harmless failure); held 0; quota 75%. Queue + done = 15,545, 5 short of 15,550 (history lag, to recheck) |
 | 11-14 ~12:00 | ~15,290 (not confirmed) / 5 / 57 | 19 empty / 20: 175 run | 5 cyclic jobs on main repaired (0 still bad); **199 HELD** (errno 27 File too large writing log/<id>.out, mostly run_162 arm D); EOS outputs of all complete; not released; quota 75%. See HANDOFF.md |
+| 11-14 12:15 | 15,293 terminated in `ntof.log` / 5 / 47 | 19 empty / 20: 23 done, 175 run | **Cause of the holds found:** `log/` reached the AFS directory limit (35,557 entries, ~64k name slots); `touch` there failed with errno 27. 205 held (procs in `held_errno27_2026-11-14.txt`), all exit 0 with complete EOS outputs. 4,530 pre-freeze `.out`/`.err` moved to `log_prefreeze_2026-11/` at 12:08; last hold 12:06:18, 4 jobs finished normally after. Not released, not removed (Dylan's call). `rerun/condor/README.md` |

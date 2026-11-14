@@ -442,6 +442,17 @@ redeployed (dylan-cern-site 91d4386). Inputs on the desktop: $WORK_DATA/claude-j
 **Resume:** pass RUNNING. Keep it moving with the checklist `rerun/ntof/condor/PASS1_WATCH.md` (`watch_pass1.sh` on lxplus
 checks and auto-repairs); when all clusters are empty: account, audit_eos, N-G1 (steps below).
 
+**11-14 12:15 (dylan-MS-7C84): the holds are explained and stopped; the held jobs wait for Dylan's choice.** `log/` on AFS
+reached the AFS directory limit (35,557 entries ≈ 64k name slots; `touch` in it failed with errno 27). It is not a spool
+limit and no file is large (this corrects the "Unknown" in the note below). 205 jobs held (ids in
+`~/x17rerun/ntof/pass1/held_errno27_2026-11-14.txt`), each exit 0 after one run with all four EOS files complete; only
+their stdout/err are lost. At 12:08 the 4,530 `.out`/`.err` of the finished pre-freeze clusters were moved to
+`~/x17rerun/ntof/pass1/log_prefreeze_2026-11/`; no hold since. **Open (Dylan):** `condor_rm` the 205 and count them done
+from the id list (recommended), or `condor_release` them (reruns ~850 wall-hours × 4 cores, gets their stdout back).
+Review of the pass's problems and the guards added: `rerun/condor/README.md` § "What went wrong on the n_TOF pass".
+New guards: `ntof.sub logdir=`, the lxplus `condor_submit` shim (refuses a full AFS log directory), `lxstore status`.
+Also seen: `~/condor/lnl/pipe/logs` (LNL pipeline) is at 86 % of its slots.
+
 **11-14 ~12:00 (dylan-Yoga): 199 JOBS HELD on main, NOT yet dealt with (next session: look at this first).** Queue: main 5 idle /
 57 running / 199 held; 4636419 empty; 4636420 175 running (so ~15,290 of 15,550 main done, not confirmed with `--hist`).
 Hold reason on all 199: `Transfer output files failure ... writing to file .../log/4636418.<proc>.out: (errno 27) File too large`

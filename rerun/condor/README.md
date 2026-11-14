@@ -102,3 +102,39 @@ a passing size check. EOS calls such a file healthy, because it checksums what a
 here) uploads over XRootD with a server-checked adler32 atomically and re-reads the size and checksum. `root_complete FILE...` is a
 stdlib check that a ROOT file is as long as its header says: use it on inputs of tools that exit 0 on a cut file. Evidence and the
 list of files: `rerun/ntof/NTOF_PASS_PLAN_2026-11-02.md`, "11-08".
+
+## What went wrong on the n_TOF pass, and what now guards it (review 2026-11-14)
+
+The reconstruction itself ran clean: main cluster 4636418 had 15,549 job starts for 15,545 started jobs (4 extra), one
+non-empty `.err` (proc 1727, the cut input file of 11-08). Every stall was operational.
+
+| When | What happened | Cost | Our doing? | Guard now |
+|---|---|---|---|---|
+| 10-29 → 11-05 | Jobs imported the venv through EOS FUSE (top of this page) | ~half of all job starts, a week of "flakes" | yes | `lockpy`, hook, `condor_submit` shim |
+| 11-06 | 32 run_79/81 jobs killed at the 8 h `workday` limit, first reported as EOS I/O | one day, a wrong entry in the handoff | yes | `ntof.sub` defaults to `tomorrow`; read the `009`/`012` reason before naming a cause |
+| 11-08 | 5 of 31,496 re-decoded files cut on EOS by `cp` through FUSE (section above) | 5 acquisitions re-decoded, hits re-run | yes | `eosput`/`eosio`, `root_complete`, `audit_eos.py`. **Open:** `ntof_stage.sh` and the bench/SPS job scripts still use `cp` |
+| 11-10, 11-11, 11-12 (and smaller repeats) | Newly materialised jobs had a cyclic `PreVerRequirements` chain: 0 slots matched | three stalls of 6–8 h; a babysitting session for 4 days | presumed CERN-side; triggered only with `max_materialize` | `fix_req_cycle.sh`, `watch_pass1.sh` (specific to 4636418). Next time: fully materialised chunks |
+| 11-09 → ~11-13 | AFS user log stopped syncing | counts from `ntof.log` were wrong; `condor_history` used instead | no | account with `condor_history` when the log's mtime is old |
+| 11-14 | AFS log directory full (below) | 205 finished jobs held, their stdout lost | yes | `logdir=` per submission, shim refusal, `lxstore status` |
+
+### The AFS directory limit (2026-11-14)
+
+**Hold reason:** `Transfer output files failure ... writing to file .../log/4636418.<proc>.out: (errno 27) File too large`,
+hold code 12 / subcode 27. Nothing was too large. An AFS directory has 64,449 name slots; a name of up to 15 characters
+takes one, longer names take one more per 32 characters. `log/` held the `.out` and `.err` of all 25 clusters since
+11-04: 35,557 entries, 28,578 of them with 16–17 character names → ~64,100 slots. `touch log/x` failed with the same
+error at 75 % quota. `4636420.184.out` (15 characters) could still be created after `4636418.15275.out` (17) could not,
+because single slots were left but no pairs.
+
+**What the held jobs are.** Each ran once, exited 0 (mean 4.1 h) and copied its four output files to EOS before the hold
+(checked for all 205: present, non-empty, no `.part`, written after the job started). Only stdout/stderr were lost.
+Releasing a held job runs it again from the start. Their ids: `~/x17rerun/ntof/pass1/held_errno27_2026-11-14.txt` on lxplus.
+
+**Done 11-14 12:08:** the `.out`/`.err` of the 21 finished pre-freeze clusters (4,530 files) moved to
+`~/x17rerun/ntof/pass1/log_prefreeze_2026-11/`. `log/` is at 92 % of its slots, enough for the jobs still to finish.
+The last hold was at 12:06:18; the next four jobs to finish terminated normally with their `.out` written. Nothing was released or removed.
+
+**Rule:** one log directory per submission (`logdir=log_<name>`), never one shared directory for a campaign. At
+~16,000 jobs with `<cluster>.<proc>.out` + `.err` a single cluster fills a directory on its own: split the job list.
+The lxplus `condor_submit` shim counts the directory's entries plus two per job to be queued and refuses above 25,000
+(`CONDOR_LOGDIR_OK=1` overrides once); `lxstore status` lists AFS directories above 40 % of their slots.
