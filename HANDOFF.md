@@ -1,27 +1,41 @@
 # Handoff
 
-## Readout stack from the gerbers: L7, vias, Fig. 3(b) fixes — updated 2026-11-14 (dylan-MS-7C84)
+## Readout stack from the gerbers: L7, vias, 3D figure draft — updated 2026-11-14 (dylan-MS-7C84)
 
-**Resume:** fix the via/L7 errors the gerbers show in Paper I Fig. 3(b), the readout_layout caption and spec.py (overleaf.sh status/pull first).
+**Resume:** Dylan decides whether Fig. 3(b)+(d) of paper1_v2 become one 3D panel; if yes write the matplotlib version. paper1 (old draft) fixes still open.
 
-**Goal:** Dylan asked what L7 is and whether the vias are hollow; answered from the production gerbers with a rotatable 3D view.
+**Goal:** Dylan asked what L7 is, whether the vias are hollow, and whether a 3D view would be clearer than the 2D panels of Fig. 3.
 
 **Done:**
-- 3D explainer (16-pad patch, mesh → L7, real gerber positions): site note `~/PycharmProjects/dylan-cern-site/pages/notes/mx17-readout-stack-3d.html`
-  (→ https://dylan-neff.web.cern.ch/notes/mx17-readout-stack-3d.html once deployed), also claude.ai artifact QC7c8kxVhEYoyFFwHWGa2t.
+- 3D note (16-pad patch, mesh → L7, real gerber positions): `~/PycharmProjects/dylan-cern-site/pages/notes/mx17-readout-stack-3d.html`,
+  live at https://dylan-neff.web.cern.ch/notes/mx17-readout-stack-3d.html (site repo `master`, pushed, deployed 11-14).
+  11-14 second session: mesh is one plain weave (was two flat grids), views fit the window, labels beside the model, orthographic
+  "Section" view, new "Peeled (figure draft)" view (each layer above the pads starts one pad row further back, FR4 hidden).
+  The claude.ai artifact copy (QC7c8kxVhEYoyFFwHWGa2t) is the old version, not updated.
+- Draft render of the peeled view: `/media/ucla/work/nTof_x17/fig3_3d_draft/readout_stack_peeled_draft.png` (regenerable: headless Chrome screenshot of the note).
+- Recommendation given to Dylan: replace v2 Fig. 3 (b) and (d) by one 3D panel, keep (a) and (c) 2D; dimensions stay in `tab:layers`. Not decided yet.
 - Findings, all from `~/CLionProjects/MX17_Geant/design/gerbers/readout_pcb/` (fab file names ≠ board layers; read `TF.FileFunction`):
   - `DFS3498A_L5.gbr` is board **L7**: inside the active area only a Ø0.65 mm land under every pad (262 144), no traces → its 0.53 coverage.
-  - `DFS3498A_pla2-5.gbr` = "Plated, L4–L7": a Ø0.25 mm plated hole at **every** pad, L4 → L7. L7 is just the via floor. Fill/cap unknown (not in the set).
-  - Every via has a Ø0.5 mm land on L5 **and** L6; only one has a 0.1 × 0.39 mm stub to its bus (Y: +x on L5, X: −y on L6), checkerboard. 131 072 stubs per layer.
-  - Odd strips do **not** go to L7: odd Y strips hop L5→L6 at y = +200.4 mm and fan out on L6; odd X strips hop to L5 (256 + 256 checked). L7 routes nothing.
+  - `DFS3498A_pla2-5.gbr` = "Plated, L4–L7": a Ø0.25 mm plated hole at **every** pad, L4 → L7. Fill/cap unknown (not in the set).
+  - Every via has a Ø0.5 mm land on L5 **and** L6; only one has a 0.1 × 0.39 mm stub to its bus (Y: +x on L5, X: −y on L6), checkerboard.
+  - Odd strips do **not** go to L7: odd Y strips hop L5→L6 at y = +200.4 mm and fan out on L6; odd X strips hop to L5 (256 + 256 checked).
+  - Why L7 exists (inference, not stated in the files): L4–L7 is an ordinary four-layer board and the pad via is its through-hole.
+    L8 (`DFS3498A_Bot`) has no copper, only the outline; three working layers come with a fourth (double-sided cores); L7 lands are
+    larger (0.65 vs 0.5 mm) as usual on the exit face; ~0.55 copper on the back against 0.76 on the pad face helps flatness.
+  - Layer map: L1 `3498A_bulk`, L2 `top-resist`, L3 `top-cu` (guard ring), L4 pads, L5 Y, L6 X, L7 lands, L8 empty; `pla1-2` = L3–L4 vias (1225).
 
-**Next steps (nothing changed in the repo yet):**
-1. `papers/paper1/figs/make_chamber_stack.py`: draw every via L4→L7 with lands on L5, L6, L7; barrel 0.25 mm.
-2. `papers/paper1/sections/02_design.tex` fig:stack caption: 0.10 mm barrel → 0.25 mm drill, drop the stale "shading … induced-charge profile" sentence; fig:readout caption: "leave the layer by a via to L7" → "hop by a via to the other strip layer".
-3. `papers/paper1/figs/extract_readout_gerber.py` docstring and `docs/detector_spec/spec.py` `pcb_l7` ("fan-out", "artwork not in the set") → "via lands"; `MX17_Geant/design/NEEDED_INPUTS.md` §6 says the same.
-4. Ask Stephan/fab whether the in-pad vias are resin-filled and capped (affects nothing in the analysis, only the figure).
+**Next steps:**
+1. If Dylan wants the 3D panel: a matplotlib script in `papers/paper1_v2/figs/` reading the gerber extract (vector output, flat colours,
+   a few dimension arrows, sparser mesh; decide whether to draw all three lands per via or only the connected one + L7). Overleaf status/pull first.
+2. paper1_v2 Fig. 3(b) is already right (vias L4→L7, lands on every layer). The **old `paper1`** is not:
+   `papers/paper1/figs/make_chamber_stack.py` (vias end at their strip layer), `02_design.tex` fig:stack caption (0.10 mm barrel → 0.25 mm drill,
+   stale "shading … induced-charge profile" sentence), fig:readout caption ("leave the layer by a via to L7" → hop to the other strip layer).
+3. `papers/paper1/figs/extract_readout_gerber.py` docstring and `docs/detector_spec/spec.py` `pcb_l7` ("fan-out") → "via lands"; `MX17_Geant/design/NEEDED_INPUTS.md` §6 the same.
+4. Ask Stephan/fab for the stack-up drawing: are the in-pad vias filled and capped, and is the back face sealed by a blank laminate.
 
-**Gotchas:** parse gerbers with `MX17_Geant/scripts/gerber/gerber_outline.py`; drill files are `pla*`.
+**Gotchas:** parse gerbers with `MX17_Geant/scripts/gerber/gerber_outline.py`; drill files are `pla*`. To screenshot the note headless:
+`google-chrome --headless=new --use-gl=angle --use-angle=swiftshader --enable-unsafe-swiftshader --virtual-time-budget=5000 --screenshot=…`
+on a copy with a script that clicks the preset button (`v-pap`, `v-fig`, …). After editing the note: `python3 scripts/build.py && ./scripts/deploy-eos.sh` in the site repo.
 
 ## Paper split I / IIa / IIb: work list done — updated 2026-11-13 pm (dylan-Yoga)
 
