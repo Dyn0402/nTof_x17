@@ -208,14 +208,14 @@ producer = "WORK_DATA=~/work_data .venv/bin/python papers/paper1_v2/figs/make_di
 note = "WORK_DATA=~/work_data; replaces reco_example + evd_showcase(a)"
 
 [fig.gas_vE_all]
-title = "Drift velocity against field: chamber A's scan and the long-run points of B-E, each with its Magboltz water curve"
+title = "Drift velocity against field: chamber A's scan and its Magboltz water fit (B-E long-run points dropped 2026-11-14; --others draws them)"
 state = "current"
 source = "papers/paper1_v2/figs/out/gas_vE_all.pdf"
 producer = ".venv/bin/python papers/paper1_v2/figs/make_gas_vE_all.py"
 note = "needs figs/_gas_labels.py next to it; water fractions from rerun/paper1_gas/results/summary.json"
 
 [fig.angle_resolution_v2]
-title = "Angular resolution: residual distribution (A), s68 against angle (A, B), all five chambers"
+title = "Angular resolution, chamber A: theta_fit vs theta_ref 2D, residual distribution, s68 against angle (B-E dropped from the figure 2026-11-14, kept in the json)"
 state = "current"
 source = "papers/paper1_v2/figs/out/angle_resolution_v2.pdf"
 producer = "WORK_DATA=~/work_data .venv/bin/python papers/paper1_v2/figs/make_angle_resolution_v2.py"

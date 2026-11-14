@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
-"""make_gas_vE_all.py -- Paper I v2: drift velocity against field, chamber A's scan plus one long-run point for each
-of chambers B-E (agent, 2026-11-10).
+"""make_gas_vE_all.py -- Paper I v2: drift velocity against field, chamber A's scan (agent, 2026-11-10).
+
+2026-11-14 (Dylan, feedback note): the long-run points of B-E and their water curves are no longer drawn. One point
+per chamber at one field is always matched by adjusting its water, so it tests nothing. Pass --others to draw them
+again; their numbers are still written to out/gas_vE_all.json (the text quotes them as equivalent water).
 
     .venv/bin/python papers/paper1_v2/figs/make_gas_vE_all.py
 
@@ -42,7 +45,8 @@ rows = []
 
 # thin curves at the other chambers' water, labelled by water fraction (drawn first, under chamber A's)
 OTH = ('det2', 'det6', 'det7', 'det4')                              # B, C, D, E
-for det in OTH:
+SHOW_OTH = '--others' in sys.argv
+for det in (OTH if SHOW_OTH else ()):
     w = S[det]['water']
     col = ps.DET_COLOR[det]
     ax.plot(E, [GI.v_of(w, e) for e in E], '-', color=col, lw=0.7, alpha=0.9, zorder=2)
@@ -63,7 +67,7 @@ for x, y, e in zip(xt, yt, et):
     rows.append(dict(kind='A_timing_v', E=x, v=y, v_err=e, magboltz=GI.v_of(w0, x)))
 
 # chambers B-E: one long-run timing point each, in their own colour and marker
-for det in OTH:
+for det in (OTH if SHOW_OTH else ()):
     s = S[det]
     col = ps.DET_COLOR[det]
     ax.errorbar([s['E']], [s['v']], yerr=[s['v_err']], fmt=ps.DET_MARKER[det], ms=4.5, color=col, mec=col, zorder=6,
@@ -85,7 +89,7 @@ ar.errorbar(xt, yt / mz(xt), yerr=et / mz(xt), fmt='o', ms=4.5, color=c3, zorder
 ar.set_ylim(0.9, 1.26); ar.set_xlim(20, 415)
 ar.set_xlabel(r'drift field $E = V/g$ (V/cm)'); ar.set_ylabel(r'$v_\mathrm{d}\,/\,v_{\mathrm{d}}^{\mathrm{Magboltz}}$')
 ps.panel_labels([ax, ar])
-if '--nolabels' not in sys.argv:
+if SHOW_OTH and '--nolabels' not in sys.argv:
     exec(open(Path(__file__).with_name('_gas_labels.py')).read())
 out = Path(__file__).resolve().parent / 'out' / 'gas_vE_all'
 ps.save(fig, out, data=pd.DataFrame(rows))

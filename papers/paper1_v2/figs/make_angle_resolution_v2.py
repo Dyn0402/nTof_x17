@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Paper I v2, figure angle_resolution_v2: the bench angular resolution, three panels.
 
-(a) chamber A residual theta_fit - theta_ref, X and Y, Runs 1 + 2 summed, log scale, s68 marked (no inset: it
-    covered the peak).
-(b) s68 per 2-deg bin of theta_ref, chamber A (X, Y) and chamber B (X, Y).
-(c) s68 of all five chambers, X and Y (dot plot).
+Chamber A only (2026-11-14, Dylan's feedback note; B and C-E were drawn until then and stay in the json):
+(a) theta_fit against theta_ref, X and Y together, 0.5-deg cells, log colour (the 2D of the first version).
+(b) residual theta_fit - theta_ref, X and Y, Runs 1 + 2 summed, log scale, s68 marked.
+(c) s68 per 2-deg bin of theta_ref, X and Y.
 
 Selection and s68 exactly as rerun/paper1_res/angle_resolution.py: the per_event.npz of mx_june_wft/03_angles
 (interior_good, one good reference ray per event, reference recipe chi2 < 1 and NClus = 4), theta = atan(tan),
@@ -154,9 +154,25 @@ def main():
 
     # ------------------------------------------------------------------ figure
     ps.use()
-    fig, (a1, a2, a3) = ps.fig_for('full', height=2.75, ncols=3,
-                                   gridspec_kw=dict(width_ratios=[1.25, 1.25, 0.72]))
+    # 2026-11-14 (Dylan, feedback note): chamber A only; the 2D theta_fit vs theta_ref of the first version is back
+    # as (a). B and C-E stay in the json and the text, no longer drawn.
+    fig, (a0, a1, a2) = ps.fig_for('full', height=2.6, ncols=3, gridspec_kw=dict(width_ratios=[1, 1.08, 1.08]))
     cA = ps.color('det3')
+    # (a) theta_fit against theta_ref, X and Y together, 0.5-deg cells, log colour (as rerun/paper1_res/angle_resolution.py)
+    from matplotlib.colors import LogNorm, LinearSegmentedColormap
+    e2 = np.arange(-LIM, LIM + 0.01, 0.5)
+    H = sum(np.histogram2d(A[p].ref.to_numpy(), A[p].fit.to_numpy(), [e2, e2])[0] for p in 'xy')
+    cm = LinearSegmentedColormap.from_list('blues', ['#e8eef7', cA])
+    im = a0.pcolormesh(e2, e2, np.ma.masked_equal(H, 0).T, cmap=cm, norm=LogNorm(vmin=1, vmax=H.max()), rasterized=True)
+    a0.plot([-LIM, LIM], [-LIM, LIM], ls=(0, (3, 2)), color='#e07b00', lw=0.6, alpha=0.85)
+    a0.set_xlim(-LIM, LIM); a0.set_ylim(-LIM, LIM)
+    a0.set_xticks([-20, -10, 0, 10, 20]); a0.set_yticks([-20, -10, 0, 10, 20])
+    a0.set_xlabel(r'$\theta_{\rm ref}$ [deg]'); a0.set_ylabel(r'$\theta_{\rm fit}$ [deg]')
+    a0.grid(False)
+    cax = a0.inset_axes([0.86, 0.06, 0.05, 0.34])
+    cb = fig.colorbar(im, cax=cax)
+    cb.ax.tick_params(labelsize=7, length=2, pad=1); cb.set_label('tracks', fontsize=7, labelpad=1)
+    res['A']['n_beyond_2d_window'] = int(len(A['x']) + len(A['y']) - H.sum())
     # (a) residual histogram, log
     # 0.25-deg bins in the core, 1-deg bins in the tails, drawn per degree
     edges = np.unique(np.round(np.concatenate([np.arange(-15, -5, 1.0), np.arange(-5, 5.001, 0.25),
@@ -194,7 +210,7 @@ def main():
     # the fraction beyond +-15 deg goes in the caption (fx, fy in the json)
     # inset theta_fit vs theta_ref tried and dropped (2026-11-10): it covers the peak at full width
     # (b) s68 vs theta_ref, A and B
-    for d, R, off in (('det3', res['A'], -0.25), ('det2', res['B'], 0.25)):
+    for d, R, off in (('det3', res['A'], 0.0),):
         for p in 'xy':
             bb = [b for b in R[p]['by_ref_bin'] if b['s68'] is not None]
             kw = ps.det(d, view=p)
@@ -204,29 +220,11 @@ def main():
                         zorder=5 if d == 'det3' else 3, **kw)
             csv += [dict(panel='b', chamber=ps.NAME[d], view=p.upper(), x=b['center'], n=b['n'], s68=b['s68'],
                          s68_err=b['s68_err']) for b in bb]
-    a2.set_xlim(-LIM - 1, LIM + 1); a2.set_ylim(0.6, 1.6)
-    a2.set_xticks([-20, -10, 0, 10, 20]); a2.set_yticks([0.6, 0.8, 1.0, 1.2, 1.4, 1.6])
+    a2.set_xlim(-LIM - 1, LIM + 1); a2.set_ylim(0.0, 1.6)
+    a2.set_xticks([-20, -10, 0, 10, 20]); a2.set_yticks([0, 0.4, 0.8, 1.2, 1.6])
     a2.set_xlabel(r'$\theta_{\rm ref}$ [deg]'); a2.set_ylabel(r'angular resolution $s_{68}$ [deg]')
-    # (c) all chambers
-    order = list(ps.DETS)        # A..E top to bottom
-    for i, d in enumerate(order):
-        yv = len(order) - 1 - i
-        for p, dy in (('x', 0.13), ('y', -0.13)):
-            c = ch[d][p]
-            kw = ps.det(d, view=p, line=False)
-            kw.pop('label'); kw.pop('zorder')
-            a3.errorbar([c['s68']], [yv + dy], xerr=[c['err']], ms=4.2, elinewidth=0.8, ls='none', **kw)
-            csv.append(dict(panel='c', chamber=ps.NAME[d], view=p.upper(), s68=c['s68'], s68_err=c['err'], n=c['n']))
-    a3.set_yticks(range(len(order))); a3.set_yticklabels([ps.NAME[d] for d in order[::-1]])
-    a3.set_ylim(-0.6, len(order) - 0.4)
-    a3.set_xlim(0.7, 2.6); a3.set_xticks([1.0, 1.5, 2.0, 2.5])
-    a3.set_xlabel(r'$s_{68}$ [deg]'); a3.set_ylabel('chamber')
-    a3.grid(axis='y', visible=False)
-    ps.panel_labels([a1, a2, a3])
-    hd = ps.det_handles(('det3', 'det2', 'det6', 'det7', 'det4'), line=False)
-    for h_ in hd:
-        h_.set_linestyle('none')
-    ps.legend_above(fig, hd + ps.view_handles(color=ps.INK), ncol=7, handlelength=2.2)
+    ps.panel_labels([a0, a1, a2])
+    ps.legend_above(fig, ps.view_handles(color=cA), ncol=2, handlelength=2.2)
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     ps.save(fig, OUT, data=pd.DataFrame(csv))
     # numbers read from other products (not recomputed here), for the text; see the docstrings of the cited files
