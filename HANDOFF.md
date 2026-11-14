@@ -2,7 +2,9 @@
 
 ## Readout stack from the gerbers: L7, vias, 3D figure draft — updated 2026-11-14 (dylan-MS-7C84)
 
-**Resume:** Dylan decides whether Fig. 3(b)+(d) of paper1_v2 become one 3D panel; if yes write the matplotlib version. paper1 (old draft) fixes still open.
+**Resume:** paper1 (old draft) fixes still open (step 2 below). paper1_v2 Fig. 3 is done (11-14, dylan-Yoga): (a) chamber | (b) board on top,
+(c) the peeled 3D view full width, `papers/paper1_v2/figs/make_readout_stack_3d.py` (headless-Chrome render of the note copy in
+`figs/render3d/`, labels in matplotlib; `--no-render` recomposes). Synced to Overleaf. If the 3D note changes, recopy it into `figs/render3d/`.
 
 **Goal:** Dylan asked what L7 is, whether the vias are hollow, and whether a 3D view would be clearer than the 2D panels of Fig. 3.
 
@@ -25,7 +27,7 @@
   - Layer map: L1 `3498A_bulk`, L2 `top-resist`, L3 `top-cu` (guard ring), L4 pads, L5 Y, L6 X, L7 lands, L8 empty; `pla1-2` = L3–L4 vias (1225).
 
 **Next steps:**
-1. If Dylan wants the 3D panel: a matplotlib script in `papers/paper1_v2/figs/` reading the gerber extract (vector output, flat colours,
+1. ~~3D panel~~ done as a render, not a matplotlib redraw (was: a matplotlib script in `papers/paper1_v2/figs/` reading the gerber extract (vector output, flat colours,
    a few dimension arrows, sparser mesh; decide whether to draw all three lands per via or only the connected one + L7). Overleaf status/pull first.
 2. paper1_v2 Fig. 3(b) is already right (vias L4→L7, lands on every layer). The **old `paper1`** is not:
    `papers/paper1/figs/make_chamber_stack.py` (vias end at their strip layer), `02_design.tex` fig:stack caption (0.10 mm barrel → 0.25 mm drill,
