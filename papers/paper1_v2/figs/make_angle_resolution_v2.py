@@ -156,72 +156,90 @@ def main():
     ps.use()
     # 2026-11-14 (Dylan, feedback note): chamber A only; the 2D theta_fit vs theta_ref of the first version is back
     # as (a). B and C-E stay in the json and the text, no longer drawn.
-    fig, (a0, a1, a2) = ps.fig_for('full', height=2.6, ncols=3, gridspec_kw=dict(width_ratios=[1, 1.08, 1.08]))
+    # 2026-11-14 (second round): two rows, the 2D across the top; (b) linear with a Gaussian fit to the core
+    # (the log scale did not say anything the text needs); (c) 0.2-deg ticks so 1.0 deg is a gridline.
+    from matplotlib.colors import LogNorm, LinearSegmentedColormap
+    from scipy.optimize import curve_fit
+    layout = os.environ.get('ANGRES_LAYOUT', 'top')
+    if layout == 'top':
+        fig = plt.figure(figsize=(ps.WIDTH['full'], 4.6), layout='constrained')
+        gs = fig.add_gridspec(2, 2, height_ratios=[1.0, 1.0])
+        a0 = fig.add_subplot(gs[0, :]); a1 = fig.add_subplot(gs[1, 0]); a2 = fig.add_subplot(gs[1, 1])
+    else:  # 'left': square 2D spanning both rows on the left, (b) and (c) stacked on the right
+        fig = plt.figure(figsize=(ps.WIDTH['full'], 4.0), layout='constrained')
+        gs = fig.add_gridspec(2, 2, width_ratios=[1.25, 1.0])
+        a0 = fig.add_subplot(gs[:, 0]); a1 = fig.add_subplot(gs[0, 1]); a2 = fig.add_subplot(gs[1, 1])
     cA = ps.color('det3')
     # (a) theta_fit against theta_ref, X and Y together, 0.5-deg cells, log colour (as rerun/paper1_res/angle_resolution.py)
-    from matplotlib.colors import LogNorm, LinearSegmentedColormap
     e2 = np.arange(-LIM, LIM + 0.01, 0.5)
     H = sum(np.histogram2d(A[p].ref.to_numpy(), A[p].fit.to_numpy(), [e2, e2])[0] for p in 'xy')
     cm = LinearSegmentedColormap.from_list('blues', ['#e8eef7', cA])
     im = a0.pcolormesh(e2, e2, np.ma.masked_equal(H, 0).T, cmap=cm, norm=LogNorm(vmin=1, vmax=H.max()), rasterized=True)
     a0.plot([-LIM, LIM], [-LIM, LIM], ls=(0, (3, 2)), color='#e07b00', lw=0.6, alpha=0.85)
     a0.set_xlim(-LIM, LIM); a0.set_ylim(-LIM, LIM)
-    a0.set_xticks([-20, -10, 0, 10, 20]); a0.set_yticks([-20, -10, 0, 10, 20])
+    a0.set_xticks(np.arange(-20, 21, 5 if layout == 'top' else 10)); a0.set_yticks([-20, -10, 0, 10, 20])
     a0.set_xlabel(r'$\theta_{\rm ref}$ [deg]'); a0.set_ylabel(r'$\theta_{\rm fit}$ [deg]')
     a0.grid(False)
-    cax = a0.inset_axes([0.86, 0.06, 0.05, 0.34])
-    cb = fig.colorbar(im, cax=cax)
-    cb.ax.tick_params(labelsize=7, length=2, pad=1); cb.set_label('tracks', fontsize=7, labelpad=1)
+    cb = fig.colorbar(im, ax=a0, pad=0.01, fraction=0.025 if layout == 'top' else 0.05, aspect=15)
+    cb.ax.tick_params(labelsize=7, length=2, pad=1); cb.set_label('tracks per cell', fontsize=7, labelpad=1)
     res['A']['n_beyond_2d_window'] = int(len(A['x']) + len(A['y']) - H.sum())
-    # (a) residual histogram, log
-    # 0.25-deg bins in the core, 1-deg bins in the tails, drawn per degree
-    edges = np.unique(np.round(np.concatenate([np.arange(-15, -5, 1.0), np.arange(-5, 5.001, 0.25),
-                                               np.arange(6, 15.001, 1.0)]), 6))
+    # (b) residual, linear, 0.2-deg bins over +-6 deg; a Gaussian fitted to the core |d - median| < 2 s68
+    # (counts-weighted least squares), drawn solid over the fit range and dashed beyond it
+    GB, GW, GR = 0.2, 2.0, 6.0
+    edges = np.arange(-GR, GR + 1e-6, GB)
     cen = 0.5 * (edges[1:] + edges[:-1])
-    wid = np.diff(edges)
+    gauss = lambda x, N, mu, s: N * np.exp(-0.5 * ((x - mu) / s) ** 2)  # noqa: E731
     csv = []
+    lines = []
+    hmax = 0.0
     for p in 'xy':
         dd = (A[p].fit - A[p].ref).to_numpy()
         h, _ = np.histogram(dd, edges)
-        k = h > 0
+        s, m = res['A'][p]['s68'], res['A'][p]['median']
+        k = np.abs(cen - m) < GW * s
+        P, _ = curve_fit(gauss, cen[k], h[k], p0=[h.max(), m, s], sigma=np.sqrt(np.maximum(h[k], 1)))
+        P[2] = abs(P[2])
+        chi2 = float(np.sum((h[k] - gauss(cen[k], *P)) ** 2 / np.maximum(h[k], 1)))
+        n_g = float(P[0] * P[2] * np.sqrt(2 * np.pi) / GB)
+        res['A'][p]['gauss_core'] = dict(window=f'|d - median| < {GW} s68, {GB}-deg bins', mu=float(P[1]),
+                                         sigma=float(P[2]), chi2=chi2, ndf=int(k.sum() - 3),
+                                         frac_in_gauss=n_g / len(dd), s68_over_sigma=s / float(P[2]))
         kw = ps.det('det3', view=p, line=False)
         kw.pop('label'); kw.pop('zorder')
-        a1.plot(cen[k], h[k] / wid[k], ls='none', ms=2.6, mew=0.7, **kw)
-        s, m = res['A'][p]['s68'], res['A'][p]['median']
-        for sgn in (-1, 1):
-            a1.axvline(m + sgn * s, color=cA, lw=0.9, ls=ps.VIEW_LS[p], alpha=0.8, zorder=0)
-        csv += [dict(panel='a', view=p.upper(), x=c, lo=lo, hi=hi, n=int(n), per_deg=n / w_)
-                for c, lo, hi, n, w_ in zip(cen, edges[:-1], edges[1:], h, wid)]
+        a1.plot(cen, h / 1e3, ls='none', ms=2.6, mew=0.7, zorder=3, **kw)
+        xf = np.linspace(-GR, GR, 400)
+        inn = np.abs(xf - m) <= GW * s
+        a1.plot(xf[inn], gauss(xf[inn], *P) / 1e3, color=cA, lw=1.0, ls=ps.VIEW_LS[p], zorder=2)
+        a1.plot(xf, gauss(xf, *P) / 1e3, color=cA, lw=0.6, ls=':', alpha=0.7, zorder=1)
+        g = res['A'][p]['gauss_core']
+        lines.append(f'{p.upper()}: $\\sigma$ = {g["sigma"]:.2f}$^\\circ$, {100 * g["frac_in_gauss"]:.0f} % of tracks')
+        hmax = max(hmax, h.max() / 1e3)
+        csv += [dict(panel='b', view=p.upper(), x=c, lo=lo, hi=hi, n=int(n), gauss=float(gauss(c, *P)))
+                for c, lo, hi, n in zip(cen, edges[:-1], edges[1:], h)]
         far = np.abs(dd) > 15
         res['A'][p]['n_outside_plot_15deg'] = int(far.sum())
         res['A'][p]['frac_outside_plot_15deg'] = float(far.mean())
+        res['A'][p]['frac_outside_plot_6deg'] = float(np.mean(np.abs(dd) > GR))
         fa = np.abs(deg(np.tan(np.radians(A[p].fit.to_numpy()))))[np.abs(dd) > 10]
         res['A'][p]['far10_abs_theta_fit_p10_p50_p90'] = [float(v) for v in np.percentile(fa, [10, 50, 90])]
         res['A'][p]['max_abs_residual'] = float(np.abs(dd).max())
-    a1.set_yscale('log')
-    a1.set_xlim(-15, 15); a1.set_ylim(2, 3e4)
-    a1.set_xticks([-15, -10, -5, 0, 5, 10, 15])
+    a1.set_xlim(-GR, GR); a1.set_ylim(0, 1.42 * hmax)  # headroom for the fit box
+    a1.set_xticks([-6, -4, -2, 0, 2, 4, 6])
     a1.set_xlabel(r'$\theta_{\rm fit}-\theta_{\rm ref}$ [deg]')
-    a1.set_ylabel(r'tracks per degree')
-    sx, sy = res['A']['x']['s68'], res['A']['y']['s68']
-    fx = 100 * res['A']['x']['frac_outside_plot_15deg']; fy = 100 * res['A']['y']['frac_outside_plot_15deg']
-    a1.text(0.97, 0.97, f'$s_{{68}}$\nX {sx:.2f}$^\\circ$\nY {sy:.2f}$^\\circ$', transform=a1.transAxes,
-            ha='right', va='top', fontsize=8, color=ps.INK)
-    # the fraction beyond +-15 deg goes in the caption (fx, fy in the json)
-    # inset theta_fit vs theta_ref tried and dropped (2026-11-10): it covers the peak at full width
-    # (b) s68 vs theta_ref, A and B
-    for d, R, off in (('det3', res['A'], 0.0),):
-        for p in 'xy':
-            bb = [b for b in R[p]['by_ref_bin'] if b['s68'] is not None]
-            kw = ps.det(d, view=p)
-            kw.pop('label'); kw.pop('zorder')
-            kw.update(ms=3.4 if d == 'det3' else 3.0, elinewidth=0.8, lw=1.2 if d == 'det3' else 1.0)
-            a2.errorbar([b['center'] + off for b in bb], [b['s68'] for b in bb], yerr=[b['s68_err'] for b in bb],
-                        zorder=5 if d == 'det3' else 3, **kw)
-            csv += [dict(panel='b', chamber=ps.NAME[d], view=p.upper(), x=b['center'], n=b['n'], s68=b['s68'],
-                         s68_err=b['s68_err']) for b in bb]
-    a2.set_xlim(-LIM - 1, LIM + 1); a2.set_ylim(0.0, 1.6)
-    a2.set_xticks([-20, -10, 0, 10, 20]); a2.set_yticks([0, 0.4, 0.8, 1.2, 1.6])
+    a1.set_ylabel(r'tracks per %.1f$^\circ$ [$10^3$]' % GB)
+    a1.text(0.03, 0.97, 'Gaussian fit to the core\n' + '\n'.join(lines), transform=a1.transAxes, ha='left', va='top',
+            fontsize=7.5, color=ps.INK, linespacing=1.3)
+    # (c) s68 vs theta_ref
+    for p in 'xy':
+        bb = [b for b in res['A'][p]['by_ref_bin'] if b['s68'] is not None]
+        kw = ps.det('det3', view=p)
+        kw.pop('label'); kw.pop('zorder')
+        kw.update(ms=3.4, elinewidth=0.8, lw=1.2)
+        a2.errorbar([b['center'] for b in bb], [b['s68'] for b in bb], yerr=[b['s68_err'] for b in bb], zorder=5, **kw)
+        csv += [dict(panel='c', chamber=ps.NAME['det3'], view=p.upper(), x=b['center'], n=b['n'], s68=b['s68'],
+                     s68_err=b['s68_err']) for b in bb]
+    a2.set_xlim(-LIM - 1, LIM + 1); a2.set_ylim(0.0, 1.5)
+    a2.set_xticks([-20, -10, 0, 10, 20]); a2.set_yticks(np.arange(0, 1.41, 0.2))
     a2.set_xlabel(r'$\theta_{\rm ref}$ [deg]'); a2.set_ylabel(r'angular resolution $s_{68}$ [deg]')
     ps.panel_labels([a0, a1, a2])
     ps.legend_above(fig, ps.view_handles(color=cA), ncol=2, handlelength=2.2)
