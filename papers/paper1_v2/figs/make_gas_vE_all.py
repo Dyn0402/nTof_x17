@@ -37,7 +37,9 @@ w0, (wlo, whi) = sc['fixed']['water'], sc['fixed']['water_68']
 c3 = ps.DET_COLOR['det3']
 r2 = lambda x: f'{x:.2f}'
 
-fig, (ax, ar) = ps.fig_for(4.3, height=3.5, nrows=2, sharex=True, gridspec_kw=dict(height_ratios=[2.3, 1]))
+# 2026-11-14 (Dylan, feedback note: every figure at full width): (a) and (b) side by side at full text width
+# (was 4.3 in wide, (b) under (a)).
+fig, (ax, ar) = ps.fig_for('full', height=2.7, ncols=2, gridspec_kw=dict(width_ratios=[1.35, 1]))
 E = np.linspace(25, 410, 160)
 vm = np.array([GI.v_of(w0, e) for e in E])
 lo = np.array([GI.v_of(wlo, e) for e in E]); hi = np.array([GI.v_of(whi, e) for e in E])
@@ -80,13 +82,14 @@ LAB = {'det4': 120, 'det7': 100, 'det2': 140, 'det6': 180}
 ax.set_ylabel(r'drift velocity $v_\mathrm{d}$ (µm/ns)'); ax.set_ylim(0, 44)
 h, l = ax.get_legend_handles_labels()
 order = [3, 2, 0, 1]
-ax.legend([h[i] for i in order], [l[i] for i in order], loc='lower right')
+ax.legend([h[i] for i in order], [l[i] for i in order], loc='lower left', bbox_to_anchor=(0.43, 0.0), borderaxespad=0.3)
 mz = lambda x: np.array([GI.v_of(w0, e) for e in x])
 ar.axhline(1.0, color=ps.MODEL, lw=1.0)
 ar.fill_between(E, np.minimum(lo, hi) / vm, np.maximum(lo, hi) / vm, color=ps.MODEL, alpha=0.12, lw=0)
 ar.errorbar(xa, ya / mz(xa), yerr=ea / mz(xa), fmt='s', ms=4, color=c3, mfc='white', mec=c3, zorder=4)
 ar.errorbar(xt, yt / mz(xt), yerr=et / mz(xt), fmt='o', ms=4.5, color=c3, zorder=5)
-ar.set_ylim(0.9, 1.26); ar.set_xlim(20, 415)
+ar.set_ylim(0.9, 1.26); ar.set_xlim(20, 415); ax.set_xlim(20, 415)
+ax.set_xlabel(r'drift field $E = V/g$ (V/cm)')
 ar.set_xlabel(r'drift field $E = V/g$ (V/cm)'); ar.set_ylabel(r'$v_\mathrm{d}\,/\,v_{\mathrm{d}}^{\mathrm{Magboltz}}$')
 ps.panel_labels([ax, ar])
 if SHOW_OTH and '--nolabels' not in sys.argv:

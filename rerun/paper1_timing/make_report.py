@@ -205,6 +205,42 @@ def fig_driftscan(ws):
     ps.save(fig, os.path.join(F, 'timing_driftscan'), data=pd.DataFrame(rows))
 
 
+def fig_driftscan_wide(ws):
+    """Paper I v2 figure `timing_driftscan_wide` (paper1 keeps `timing_driftscan`, fig_driftscan): chamber A's drift-field scan at 490 V (M3-matched,
+    rows_matched.csv). (a) event time and (X-Y)/sqrt2 in ns; (b) the event time in mm of drift (x the row's timing v).
+    300 V has no mm (the column overruns the readout window, no timing v). 2026-11-14: full text width, two panels
+    (was one 4.3-in panel with a twin axis; Dylan, feedback note: every figure at full width)."""
+    import sys
+    sys.path.insert(0, os.path.join(HERE, '..', '..', 'papers'))
+    import paper_style as ps
+    from matplotlib.lines import Line2D
+    ps.use()
+    fig, ax = ps.fig_for('full', height=2.5, nrows=1, ncols=2)
+    a, b = ax
+    rows = []
+    ds = [r for r in ws.get('drift_scan', []) if r['n'] >= 150]
+    if ds:
+        E = np.array([r['E_Vcm'] for r in ds])
+        a.errorbar(E, [r['sigma_evt'] for r in ds], yerr=[r['sigma_evt_err'] for r in ds], elinewidth=0.8,
+                   **ps.det('det3', view='x', ms=3.5))
+        a.errorbar(E, [r['sigma_xy'] for r in ds], yerr=[r['sigma_xy_err'] for r in ds], elinewidth=0.8,
+                   **ps.det('det3', view='y', ms=3.5))
+        a.set_ylim(0, 120)
+        a.set_ylabel(r'$\sigma$ (s68) [ns]')
+        a.legend(handles=[Line2D([], [], color=ps.color('det3'), marker='o', ls='-', label='event time'),
+                          Line2D([], [], color=ps.color('det3'), marker='o', mfc='white', ls='--',
+                                 label=r'$(t_X-t_Y)/\sqrt{2}$')], loc='upper right')
+        k = np.isfinite([r['evt_mm'] for r in ds])
+        b.plot(E[k], np.array([r['evt_mm'] for r in ds])[k], color=ps.color('det3'), marker='o', ms=3.5, ls='-', lw=1.0)
+        b.set_ylim(0, 2.4); b.set_ylabel(r'event time $\sigma$ [mm of drift]')
+        for x in (a, b):
+            x.set_xlim(80, 410); x.set_xlabel('drift field [V/cm]')
+        ps.panel_labels([a, b])
+        rows += [dict(panel='driftscan', x=r['E_Vcm'], drift_V=r['drift_V'], sigma_evt=r['sigma_evt'], sigma_xy=r['sigma_xy'],
+                      evt_mm=r['evt_mm'], v=r['v']) for r in ds]
+    ps.save(fig, os.path.join(F, 'timing_driftscan_wide'), data=pd.DataFrame(rows))
+
+
 def fig_angle():
     ang = jload('angle.json')
     fig, ax = plt.subplots(1, 2, figsize=(10, 3.8))
@@ -283,7 +319,7 @@ def table(df, cols, fmt=None):
 def main():
     m = load()
     amp = jload('amplitude.json'); sps = jload('sps_timing.json'); ang = jload('angle.json'); t0p = jload('t0_position.json')
-    fig_paper(m, amp, sps); fig_main(m, amp); fig_driftscan(jload('walk_snr.json')); fig_angle(); ds = fig_drift(m)
+    fig_paper(m, amp, sps); fig_main(m, amp); fig_driftscan(jload('walk_snr.json')); fig_driftscan_wide(jload('walk_snr.json')); fig_angle(); ds = fig_drift(m)
     rows = pd.read_csv(os.path.join(R, 'rows.csv'))
     g = []
     for d in ('mx17_2', 'mx17_3', 'mx17_7', 'mx17_6', 'mx17_4'):

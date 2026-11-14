@@ -136,6 +136,12 @@ A reorganised copy of Paper I, made after the audit in `paper1_audit/`. `paper1/
 - **Figures:** `.venv/bin/python papers/make_figures.py paper1_v2`. Reused figures keep their paper1 producer; new ones
   have their script in `paper1_v2/figs/make_*.py` and write to `paper1_v2/figs/out/` (pdf + a json of the numbers).
   `paper1_v2/figs/AGENT_RULES.md` is the brief the figure agents worked to.
+- **Figure width (standard from 2026-11-14, Dylan):** every figure spans the full text width. Draw it with
+  `ps.fig_for('full', ...)` (6.1 in, the JINST text width; ~6.2 in as a PDF) and include it with
+  `width=\linewidth` (or a plain `\figorbox{id}{...}`), never a fraction of it, so all figures print with the same
+  type size. A figure that has too little to fill the width gets another layout (panels side by side), not a smaller
+  include; a tall one gets a shorter height. Only images that share a row (`\hfill`) are exempt. `make_figures.py
+  paper1_v2` ends with a width check that lists every exception (include width, and PDFs under 6.0 in wide).
 - **Numbers:** disagreements between places were run down in `paper1_v2/NUMBERS_RUNDOWN.md`,
   `paper1_v2/figs/out/two_particle_numbers.md` and `paper1_v2/figs/out/gain_scan.json`. Decisions left for Dylan are
   `\askDylan` boxes in the text.

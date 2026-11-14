@@ -147,6 +147,40 @@ def build(paper, only=None, run=False, listing=False):
         print(f"  {fid:<{w}}  {made:<28}  {s}")
 
 
+FULL_IN = 6.0        # a figure PDF narrower than this was not drawn at full width (ps.WIDTH['full'] = 6.1 in -> ~6.2 in PDF)
+WIDTH_CHECKED = ("paper1_v2",)
+
+
+def width_check(paper):
+    """Paper I v2 standard (Dylan, feedback note 2026-11-14): every figure is drawn at full width (paper_style
+    ps.fig_for('full'), 6.1 in) and included at width=\\linewidth, so all of them span the text and their type prints
+    at one size. A figure that does not need the width gets a different layout (panels side by side), never a smaller
+    include. Two images sharing a row (\\hfill) are exempt. Prints the exceptions; returns their number."""
+    import re
+    bad = []
+    for tex in sorted((HERE / paper / "sections").glob("*.tex")):
+        for n, line in enumerate(tex.read_text().splitlines(), 1):
+            if line.lstrip().startswith("%") or "\\hfill" in line:
+                continue
+            for m in re.finditer(r"\\(includegraphics|figorbox)(\[[^\]]*\])?\{([^}]+)\}", line):
+                opt, name = (m.group(2) or ""), m.group(3)
+                if m.group(1) == "includegraphics" and "width=\\linewidth" not in opt:
+                    bad.append(f"{tex.name}:{n}  {name}: included with {opt or 'no width'}, not width=\\linewidth")
+                elif m.group(1) == "figorbox" and opt and "width=\\linewidth" not in opt:
+                    bad.append(f"{tex.name}:{n}  {name}: included with {opt}, not width=\\linewidth")
+                pdf = HERE / paper / "figures" / f"{name}.pdf"
+                if pdf.exists():
+                    out = subprocess.run(["pdfinfo", str(pdf)], capture_output=True, text=True).stdout
+                    mm = re.search(r"Page size:\s+([\d.]+) x", out)
+                    if mm and float(mm.group(1)) / 72 < FULL_IN:
+                        bad.append(f"{tex.name}:{n}  {name}: drawn {float(mm.group(1)) / 72:.2f} in wide (< {FULL_IN}); "
+                                   "redraw with ps.fig_for('full')")
+    print(f"\n{paper}: figure width check: " + ("all full width" if not bad else f"{len(bad)} exception(s)"))
+    for b in bad:
+        print("  " + b)
+    return len(bad)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("paper", choices=PAPERS + ["all"])
@@ -156,6 +190,8 @@ def main():
     a = ap.parse_args()
     for p in PAPERS if a.paper == "all" else [a.paper]:
         build(p, a.only, a.run, a.list)
+        if p in WIDTH_CHECKED:
+            width_check(p)
 
 
 if __name__ == "__main__":
