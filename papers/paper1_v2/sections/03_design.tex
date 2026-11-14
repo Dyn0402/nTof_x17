@@ -14,7 +14,7 @@ Four choices set these chambers apart from a standard bulk Micromegas.
 
 \textbf{(1) Pads for an equal X/Y charge share.} The readout is a single plane of square pads, each routed to an X
 or a Y strip, instead of two stacked strip layers, so that both views see the same charge
-(\crefp{fig:chamber}{d}). The cost is one more copper layer in the board.
+(\crefp{fig:chamber}{c}). The cost is one more copper layer in the board.
 
 \textbf{(2) A resistive Micromegas in TPC mode.} The resistive layer protects the chamber against discharges, which a
 pulsed, high-intensity facility makes likely: on the bench a discharge costs no measurable dead time
@@ -30,7 +30,7 @@ strip ends passivated allowed a higher resistance and far less current. \emph{St
 currents of the uniform-layer boards, if they exist.}
 
 \textbf{(4) Strip direction and passivation.} The strips run along $y$ and end at the two $y$ edges, where their
-terminations are passivated (covered) over 18.0 and 18.7\,mm (\crefp{fig:chamber}{c}). \emph{Stephan: why the
+terminations are passivated (covered) over 18.0 and 18.7\,mm (\crefp{fig:chamber}{b}). \emph{Stephan: why the
 passivation is needed (the termination / HV connection at the strip ends, and discharges there?).} This removes about
 10\,\% of the area. The orientation was chosen mainly for where that loss falls: at the top and bottom of the chamber,
 not on the sides that face the neighbouring chambers at n\_TOF. Better resolution was also expected across the strips
@@ -102,22 +102,23 @@ where the resistive strips are terminated?}
 
 \begin{figure}[tbp]
   \centering
-  \includegraphics[width=\linewidth]{chamber_stack}\\[4pt]
-  \includegraphics[width=\linewidth]{readout_layout_cd}
+  \includegraphics{chamber_stack_a}\hfill\includegraphics{readout_layout_b}\\[6pt]
+  \includegraphics{readout_stack_3d}
   \caption{A chamber. (a) Cross-section through the centre of the active area, $z$ to scale and $x$ cut off on the right
   (the chamber is 440\,mm wide): window, gas gap, drift cathode, the drift gap with an inclined muon whose ionisation
-  electrons drift to the mesh, the readout board, Rohacell, back foil and the aluminium plate. (b) The boxed region at
-  30 times the scale of (a) in $z$, with $z$ stretched 2.2 times against $x$, cut through a row of pad centres: mesh,
-  amplification gap (33\,kV/cm at 490\,V), resistive strips, insulator, pads, and the Y and X strips joined to
-  alternate pads. Every pad has one plated via, drilled from the pad layer to L7, with a copper land on each layer it
-  crosses; a land joins a strip only on that strip's own layer. The Y strips cross the cut, each reached by a short
-  stub along it; the X strip of the row runs along $x$ half a pitch behind the cut (light). The weave and the position
-  of the resistive strips against the pads are schematic. (c) The readout board from above, from
-  the production Gerber files: $512\times512$ pads, the Y strips running along $y$ to two connectors on the $+y$ edge and
-  the X strips along $x$ to two connectors on the $+x$ edge; the resistive strips run along $y$ (faint lines, one in
-  25 drawn) and are passivated at their ends (hatched). (d) A window of pads: each is connected to a Y or an X strip in a checkerboard, so every strip
-  collects every second pad along its length. L4, L5 and L6 in the labels are the copper layers of the board that carry the pads, the Y strips and
-  the X strips; under the active area L7 carries only the lands at the foot of the vias. Dimensions: \cref{tab:layers}.}
+  electrons drift to the mesh, the readout board, Rohacell, back foil and the aluminium plate. (b) The readout board
+  from above, from the production Gerber files: $512\times512$ pads, the Y strips running along $y$ to two connectors on
+  the $+y$ edge and the X strips along $x$ to two connectors on the $+x$ edge; the resistive strips run along $y$ (faint
+  lines, one in 25 drawn) and are passivated at their ends (hatched). (c) Four by four pads at the centre of the board,
+  from the mesh down to L7, drawn in 3D from the same Gerber files with $z$ stretched 2.2 times against $x$ and $y$:
+  mesh, amplification gap (33\,kV/cm at 490\,V), resistive strips, kapton, pads, and the Y and X strips. Each layer
+  above the pads starts one pad row further back, and the FR4 between the copper layers is not drawn. Every pad has one
+  plated via, drilled from the pad layer to L7, with a copper land on each layer it crosses; a land joins a strip, by a
+  short stub, only on that strip's own layer. Pads alternate between the two views in a checkerboard, so every strip
+  collects every second pad along its length; pad, via and joined land take the colour of their strip, and the lands
+  without a stub are drawn light. L4, L5 and L6 are the copper layers of the board that carry the pads, the Y strips
+  and the X strips; under the active area L7 carries only the lands at the foot of the vias. The weave of the mesh and
+  the position of the resistive strips against the pads are schematic. Dimensions: \cref{tab:layers}.}
   \label{fig:chamber}
 \end{figure}
 

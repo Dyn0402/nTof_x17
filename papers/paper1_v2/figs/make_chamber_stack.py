@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """make_chamber_stack.py -- Paper I v2, fig.chamber_stack: 2D cross-section of an MX17 chamber (Dylan 2026-11-03).
 
-    .venv/bin/python papers/paper1_v2/figs/make_chamber_stack.py
+    .venv/bin/python papers/paper1_v2/figs/make_chamber_stack.py            # (a) + (b)
+    .venv/bin/python papers/paper1_v2/figs/make_chamber_stack.py --only-a   # (a) alone -> out/chamber_stack_a (Fig. 3)
 
 v2 copy of papers/paper1/figs/make_chamber_stack.py (v2 feedback note, Fig. 3, 2026-11-12): (a) E_drift arrow clear of
 the -HV label, Al plate drawn light (it is to scale in z, 8 mm, and not the point), zoom box top above the electron
@@ -32,7 +33,8 @@ HERE = Path(__file__).resolve().parent
 sys.path[:0] = [str(HERE.parents[2] / 'papers')]
 import paper_style as ps                                           # noqa: E402
 
-OUT = HERE / 'out' / 'chamber_stack'
+ONLY_A = '--only-a' in sys.argv     # panel (a) alone, for the v2 Fig. 3 with the 3D panel (2026-11-14)
+OUT = HERE / 'out' / ('chamber_stack_a' if ONLY_A else 'chamber_stack')
 ps.use()
 plt.rcParams['savefig.pad_inches'] = 0.01
 FS = ps.BASE_PT * 0.85
@@ -73,7 +75,8 @@ XI0, XI1 = 1.13, 2.62                    # inner gas; the chamber continues to t
 XF0 = 2.28
 XW = 0.08                                # left wall
 T(0.0, 3.17, '(a)', va='top', fs=ps.BASE_PT, fontweight='bold')
-T(2.86, 3.17, '(b)', va='top', fs=ps.BASE_PT, fontweight='bold')
+if not ONLY_A:
+    T(2.86, 3.17, '(b)', va='top', fs=ps.BASE_PT, fontweight='bold')
 mm = dict(win=(0, 0.06), flange=(0.06, 5.06), cat=(5.06, 5.118), drift=(5.118, 35.118), amp=(35.118, 35.268),
           board=(35.268, 36.968), roh=(36.968, 41.968), myl=(41.968, 41.993), plate=(41.993, 49.993))
 R(XI0, ya(mm['flange'][1]), XI1, ya(mm['flange'][0]), GAS, ec='none')
@@ -123,6 +126,13 @@ fade = np.zeros((2, 64, 4)); fade[..., :3] = 1.0; fade[..., 3] = np.linspace(0, 
 ax.imshow(fade, extent=[XF0, XI1 + 0.01, ya(50.2), 3.07], aspect='auto', zorder=10, interpolation='bilinear')
 ax.set_xlim(0, W); ax.set_ylim(0, H)
 BZ = (XI0 + 0.02, ya(36.2) - 0.05, XF0 - 0.02, ya(32.6))           # top crosses the electron lines above their heads
+if ONLY_A:                                                         # no zoom box: nothing beside it to zoom into
+    WA = XI1 + 0.04                                                # the axes spans the figure: crop it to (a)
+    fig.set_size_inches(WA, H); ax.set_xlim(0, WA)
+    fig.canvas.draw()
+    ps.save(fig, OUT)
+    print('ok', OUT)
+    sys.exit(0)
 R(BZ[0], BZ[1], BZ[2], BZ[3], 'none', ec=MUTED, lw=0.6, z=11, ls=(0, (3, 2)))
 
 # ====================================================================================================== (b)
