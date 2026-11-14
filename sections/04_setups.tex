@@ -2,8 +2,8 @@
 \sectionstate{ready}{\texttt{mx\_june\_cosmic\_qa/MICROTPC\_RUNBOOK.md}; \texttt{sps\_beam\_test\_26/analysis/README.md}. v2 2026-11-10: the
 beam setup drawing joins the bench drawing (\cref{fig:setups}); the run-by-run comparison of Runs 1 and 2 is one
 sentence here and a figure in \cref{app:gain}; the terms used by every later section are defined once in \cref{sec:definitions}.}
-\intent{The two setups and what each can measure, the chambers and runs, the reconstruction in one paragraph, and the
-definitions every result uses.}
+\intent{The two setups and what each can measure, the reconstruction in one paragraph, the definitions every result
+uses, and the five chambers: which are good, which are not, and their runs.}
 
 \subsection{Cosmic bench}
 \tbw{Scintillator trigger, four reference tracking planes, two test slots. DREAM readout, sampling, window. Gas and flow.}
@@ -39,43 +39,6 @@ the position resolution (\cref{sec:position}) and, at an angle the bench does no
   its drift gap at that angle. The drift window faces upstream.}
   \label{fig:setups}
 \end{figure}
-
-\subsection{Chambers and data sets}\label{sec:datasets}
-% Public names (Dylan 2026-11-03). Internal keys, for the analysis code and logbooks:
-%   A = det3 (mx17_3), B = det2 (mx17_2), C = det6 (mx17_6), D = det7 (mx17_7), E = det4 (mx17_4).
-%   Run 1 = sat_det3 (mx17_det3_saturday_scan_6-27-26/long_run_resist_490V_drift_1000V, 6-27 ~22:40 to 6-28 01:30)
-%   Run 2 = p2_det3  (mx17_det3_p2_det1_overnight_6-27-26/long_run_p2_det1_sanity_check, 6-28 01:33 to 08:48)
-Five chambers were tested on the bench. We call them A--E. Chambers A--D later ran together at n\_TOF; chamber E, whose
-readout board has non-amplifying stripes, went to the SPS instead. Chamber A is the subject of this paper; B--E show
-what varies from one board to the next. Each chamber's bench numbers come from its \emph{long run}, a run of several
-hours at fixed voltages (\cref{tab:datasets}). The long runs were taken at 490--495\,V on the resistive strips,
-10--65\,V above the voltage the scans later showed to be best for each chamber (\cref{sec:hvscan}).
-
-Chamber A has two long runs, taken back to back on the night of 27--28 June at the same voltages and in the same slot:
-\textbf{Run~1}, which closed its voltage and drift-field scans, and \textbf{Run~2}, the overnight run that followed. We
-treat them as one data set of 10\,h and 29\,398 reference tracks over the full active area. Taken apart they agree on
-every quantity this paper measures (\cref{app:gain}), with one exception: the drift velocity rose through the night as
-the gas dried (\cref{sec:drying}). The calibration of the reconstruction was made on Run~1 and applied to Run~2 with
-only the drift velocity refitted, so Run~2 is an out-of-sample test. Where a figure needs a single event it is from
-Run~1.
-\begin{table}[tbp]
-  \centering\small
-  \caption{The chambers and their long runs on the bench (Ar/iC$_4$H$_{10}$ 95/5 with water, \cref{sec:gas}).
-  Slot: top $z=702$\,mm, bottom $z=232$\,mm (\crefp{fig:setups}{a}).}
-  \label{tab:datasets}
-  \begin{tabular}{lllll}
-    \hline
-    chamber & long run & slot & resist / drift HV & also used at \\
-    \hline
-    A & Run 1: 27 June, evening & top & 490 / 1000\,V & n\_TOF \\
-      & Run 2: night of 27--28 June & & & \\
-    B & night of 22--23 June & top & 495 / 1000\,V & n\_TOF \\
-    C & night of 26--27 June & bottom & 495 / 700\,V & n\_TOF \\
-    D & night of 26--27 June & top & 495 / 700\,V & n\_TOF \\
-    E & 24 June, day & top & 495 / 600\,V & SPS H4 \\
-    \hline
-  \end{tabular}
-\end{table}
 
 \subsection{Reconstruction}\label{sec:reco}
 \sectionstate{partial}{added 2026-11-06 at Dylan's request (brief, points to Paper~II); \texttt{wft/model.py}, \texttt{wft/reco.py}, \texttt{RECONSTRUCTION\_BASIS.md}.
@@ -122,3 +85,72 @@ is subtracted. It equals $\sigma$ for a Gaussian and, unlike a fitted width, inc
 \textbf{Voltages.} The mesh is at ground. $HV_\mathrm{resist}$, on the resistive strips, sets the gain;
 $HV_\mathrm{drift}$, on the cathode, sets the drift field $E=HV_\mathrm{drift}/g$ with $g$ the measured gap
 (\cref{sec:gap}).
+
+\subsection{The five chambers and their data sets}\label{sec:datasets}
+% Public names (Dylan 2026-11-03). Internal keys, for the analysis code and logbooks:
+%   A = det3 (mx17_3), B = det2 (mx17_2), C = det6 (mx17_6), D = det7 (mx17_7), E = det4 (mx17_4).
+%   Run 1 = sat_det3 (mx17_det3_saturday_scan_6-27-26/long_run_resist_490V_drift_1000V, 6-27 ~22:40 to 6-28 01:30)
+%   Run 2 = p2_det3  (mx17_det3_p2_det1_overnight_6-27-26/long_run_p2_det1_sanity_check, 6-28 01:33 to 08:48)
+Five chambers were tested on the bench. We call them A--E. Chambers A--D later ran together at n\_TOF; chamber E
+went to the SPS instead. Each chamber's bench numbers come from its \emph{long run}, a run of several hours at fixed
+voltages (\cref{tab:datasets}). The long runs were taken at 490--495\,V on the resistive strips, before the voltage
+scans were analysed (\cref{sec:hvscan}).
+
+The five chambers are not alike, and what follows cannot be read without knowing how. \Cref{fig:effmap} maps, for each
+chamber, the fraction of reference rays for which the chamber reconstructs a matched track (the efficiency, defined in
+\cref{sec:effdef}). Chambers A and B are uniform over their active area. The other three are not:
+\begin{itemize}
+  \item \emph{Chambers C and D} discharge over their whole plane. At the 495\,V of their long runs they lose 17 and
+  24\,\% of their tracks to discharges. In short voltage scans both were more efficient at lower voltage
+  (\cref{sec:hvscan}), so part of what the maps show is the voltage they were run at, not the board alone.
+  \item \emph{Chamber D} also has a fault of the X readout on channels 0--255; its numbers are quoted on the other half.
+  \item \emph{Chamber E} has stripes that do not amplify (\cref{app:beam}).
+\end{itemize}
+Chamber~A is the subject of this paper, and chamber~B confirms it. Chambers C, D and E appear where they add
+information that does not depend on these defects: the gas (\cref{sec:gas}), the bow of the boards (\cref{sec:bow})
+and the charge shared between the views (\cref{sec:balance}). Where their tracking numbers are quoted they are worse
+than those of A and B. The defects and the operating voltage are the known differences; how much of the loss in
+angular resolution each one causes has not been studied.
+\askDylan{New paragraph (2026-11-14, with the map moved here from the efficiency section). The last sentence is deliberately
+weak: nothing in the analysis links the discharges or the stripes to the wider angle residual of C, D and E. If you know
+the mechanism (saturated or baseline-shifted strips in the fit, clusters cut by a dead stripe), say so and I will write it.
+Their lower drift field (700 and 600\,V against 1000\,V) is another difference between these runs and those of A and B.}
+
+Chamber A has two long runs, taken back to back on the night of 27--28 June at the same voltages and in the same slot:
+\textbf{Run~1}, which closed its voltage and drift-field scans, and \textbf{Run~2}, the overnight run that followed. We
+treat them as one data set of 10\,h and 29\,398 reference tracks over the full active area. Taken apart they agree on
+every quantity this paper measures (\cref{app:gain}), with one exception: the drift velocity rose through the night as
+the gas dried (\cref{sec:drying}). The calibration of the reconstruction was made on Run~1 and applied to Run~2 with
+only the drift velocity refitted, so Run~2 is an out-of-sample test. Where a figure needs a single event it is from
+Run~1.
+\begin{table}[tbp]
+  \centering\small
+  \caption{The chambers and their long runs on the bench (Ar/iC$_4$H$_{10}$ 95/5 with water, \cref{sec:gas}).
+  Slot: top $z=702$\,mm, bottom $z=232$\,mm (\crefp{fig:setups}{a}). Condition: what \cref{fig:effmap} shows.}
+  \label{tab:datasets}
+  \setlength{\tabcolsep}{4.5pt}
+  \begin{tabular}{llllll}
+    \hline
+    chamber & long run & slot & resist / drift HV & later at & condition \\
+    \hline
+    A & Run 1: 27 June, evening & top & 490 / 1000\,V & n\_TOF & uniform \\
+      & Run 2: night of 27--28 June & & & & \\
+    B & night of 22--23 June & top & 495 / 1000\,V & n\_TOF & uniform \\
+    C & night of 26--27 June & bottom & 495 / 700\,V & n\_TOF & discharges \\
+    D & night of 26--27 June & top & 495 / 700\,V & n\_TOF & discharges; X fault \\
+    E & 24 June, day & top & 495 / 600\,V & SPS H4 & non-amplifying stripes \\
+    \hline
+  \end{tabular}
+\end{table}
+
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=0.92\linewidth]{efficiency_map}
+  \caption{Kept-track efficiency (\cref{sec:effdef}) maps of the five chambers (8\,mm disk on a 2\,mm grid; axes in cm), on one scale.
+  Each map pools all runs of its chamber within 3 points of the efficiency of its long run, at the drift field of that
+  run: for chamber~A 30 runs and scan points with 70\,470 reference rays, of which Runs 1 and 2 are two; for C and D
+  the pool includes scan points at lower voltage. Solid box: active area; white dashed: interior; hatched on (a): the
+  passivated strip ends, outside the active area. (d) Chamber~D: a fault of the X readout affects channels 0--255, so
+  only the right half (orange box) is quoted. Blank: outside the active area or fewer than 15 rays.}
+  \label{fig:effmap}
+\end{figure}
