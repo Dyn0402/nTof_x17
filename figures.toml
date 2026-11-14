@@ -19,6 +19,27 @@ source = "papers/paper1_v2/figs/out/chamber_stack.pdf"
 producer = ".venv/bin/python papers/paper1_v2/figs/make_chamber_stack.py"
 note = "2026-11-03: replaces the pyvista render with a 2D technical cross-section; every number from docs/detector_spec/spec.py, dagger = assumed/open there. Layer order below the strips follows the response model. 2026-11-12: v2 copy of the script (v2 feedback note Fig. 3): (a) arrow clear of -HV, Al plate light, zoom box above the arrowheads; (b) vias from the gerbers: one 0.25 mm via per pad drilled L4->L7 (pla2-5), a land in every cell on L5/L6/L7, X strip of the row drawn light behind the cut."
 
+[fig.chamber_stack_a]
+title = "Fig. 3(a): MX17 chamber cross-section, the whole chamber to scale in z (panel (a) of chamber_stack alone)"
+state = "current"
+source = "papers/paper1_v2/figs/out/chamber_stack_a.pdf"
+producer = ".venv/bin/python papers/paper1_v2/figs/make_chamber_stack.py --only-a"
+note = "2026-11-14: Fig. 3 rebuilt round the 3D readout-stack panel (Dylan): the 2D enlargement (b) and the pad window (d) are replaced by readout_stack_3d; no zoom box."
+
+[fig.readout_layout_b]
+title = "Fig. 3(b): the readout board from the Gerber files (the old panel (c) alone, relabelled (b))"
+state = "current"
+source = "papers/paper1_v2/figs/out/readout_layout_b.pdf"
+producer = ".venv/bin/python papers/paper1_v2/figs/make_readout_layout_cd.py --only-c"
+note = "2026-11-14: Fig. 3 with the 3D panel."
+
+[fig.readout_stack_3d]
+title = "Fig. 3(c): 4 x 4 pads at the board centre, mesh to L7, in 3D (peeled view of the readout-stack 3D note)"
+state = "current"
+source = "papers/paper1_v2/figs/out/readout_stack_3d.pdf"
+producer = ".venv/bin/python papers/paper1_v2/figs/make_readout_stack_3d.py"
+note = "2026-11-14: WebGL render of the 3D note (copy in figs/render3d/, site commit 7a3a071) by headless Chrome at ~660 dpi; labels and legend in matplotlib. --no-render recomposes from the cached render in figs/out/."
+
 [fig.two_velocities]
 title = "Two drift velocities and the gap: the head-on stack (T = g / v), the reference ladder (slope = v, no gap) and g = v_reference x T per field"
 state = "current"
@@ -170,7 +191,7 @@ title = "Readout board from the Gerber files, panels (c), (d) of the chamber fig
 state = "current"
 source = "papers/paper1_v2/figs/out/readout_layout_cd.pdf"
 producer = ".venv/bin/python papers/paper1_v2/figs/make_readout_layout_cd.py"
-note = "copy of papers/paper1/figs/make_readout_layout.py; sits under chamber_stack in one float"
+note = "copy of papers/paper1/figs/make_readout_layout.py; sat under chamber_stack in one float. 2026-11-14: no longer in the paper (Fig. 3 now chamber_stack_a + readout_layout_b + readout_stack_3d)"
 
 [fig.setups]
 title = "The two setups in one figure: (a) cosmic bench, (b) beam test"

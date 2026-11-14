@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """make_readout_layout.py -- Paper I, fig.readout_layout: the readout board, top view (Dylan 2026-11-03).
 
-    .venv/bin/python papers/paper1/figs/make_readout_layout.py
+    .venv/bin/python papers/paper1_v2/figs/make_readout_layout_cd.py            # (c) + (d)
+    .venv/bin/python papers/paper1_v2/figs/make_readout_layout_cd.py --only-c   # board alone as (b) -> out/readout_layout_b
 
 Geometry is the production gerbers (DFS3498A, read by extract_readout_gerber.py into data/readout_gerber_extract.npz,
 committed) plus the measured efficient area (common/mx17_active_area.py, Y passivation 18.0 / 18.7 mm).
@@ -29,7 +30,8 @@ import paper_style as ps                                            # noqa: E402
 from common.mx17_active_area import (PASSIVATION_Y_LOW_MM, PASSIVATION_Y_HIGH_MM, STRIP_MAX_MM)  # noqa: E402
 
 ALLPADS = '--allpads' in sys.argv       # variant: outline every one of the 512 x 512 pads in (a)
-OUT = HERE / 'out' / 'readout_layout_cd'
+ONLY_C = '--only-c' in sys.argv       # the board alone, labelled (b), for the v2 Fig. 3 with the 3D panel (2026-11-14)
+OUT = HERE / 'out' / ('readout_layout_b' if ONLY_C else 'readout_layout_cd')
 E = np.load(DATA / 'readout_gerber_extract.npz')
 C0 = 199.29                         # gerber -> local shift [mm]; pad (0,0) centre
 PITCH, PAD = 0.78, 0.68
@@ -112,8 +114,14 @@ for xe, xt in ((6, C0 - 118), (2 * C0 - 6, C0 + 118)):
                                                               shrinkB=0, mutation_scale=6), zorder=9)
 axa.text(C0, 470, 'Y-strip connectors (+y)', **txt)
 axa.text(473, C0, 'X-strip connectors (+x)', rotation=90, **txt)
-axa.text(0.0, 1.0, '(c)', transform=axa.transAxes, ha='left', va='top', fontsize=ps.BASE_PT, fontweight='bold',
+axa.text(0.0, 1.0, '(b)' if ONLY_C else '(c)', transform=axa.transAxes, ha='left', va='top', fontsize=ps.BASE_PT, fontweight='bold',
          color=ps.INK)
+
+if ONLY_C:
+    fig.canvas.draw()
+    ps.save(fig, OUT)
+    print('ok', OUT)
+    sys.exit(0)
 
 # ---------------------------------------------------------------------------------------------------------- (b)
 axb = at(3.95, 0.85, 1.65, 1.65)
