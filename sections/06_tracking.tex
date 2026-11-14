@@ -37,8 +37,11 @@ selection and unclipped $s_{68}$ on the CF$_4$ runs that have a column-measured 
 varies across the chamber (\cref{sec:bow}). The correction is part of the calibration. Without it chamber~A reads
 1.10\textdegree{} and 1.07\textdegree.
 
-The residual is not Gaussian (\crefp{fig:angle}{b}). Beyond its core lies a flat floor: 3.4\,\% of tracks in each
-view are more than 5\textdegree{} off, and these are fits far steeper than the track, not a wider core. They are the
+The residual is a Gaussian core with a tail (\crefp{fig:angle}{b}). A Gaussian fitted within $\pm2\,s_{68}$ of the
+median has $\sigma=0.92^\circ$ (X) and $0.83^\circ$ (Y) and holds 95 and 94\,\% of the tracks; with 25\,000 tracks the
+core is close to Gaussian but not exactly so ($\chi^2/\mathrm{ndf}=29/17$ and $45/15$), and $s_{68}$ sits 7--8\,\%
+above $\sigma$ because of the tail. The tail is a flat floor: 3.4\,\% of tracks in each view are more than
+5\textdegree{} off, and these are fits far steeper than the track, not a wider core. They are the
 events of \cref{sec:straight}, in which a $\delta$-ray or a second deposit pulls a straight-line fit.
 
 Chamber~B, the second good chamber, reaches $1.05^\circ$ and $1.13^\circ$, also flat in angle (not shown).
@@ -63,9 +66,10 @@ correction: 1.04/1.01\textdegree), which is why it is not drawn in \cref{fig:ang
   \figorbox{angle_resolution_v2}{fitted against reference angle, residual distribution, resolution against angle, chamber A}
   \caption{Angular resolution of chamber~A on cosmic muons (Runs 1 and 2, 25\,400 reference-matched single tracks per
   view). (a) Fitted angle $\theta_\mathrm{fit}$ against the reference angle $\theta_\mathrm{ref}$, X and Y views
-  together, in 0.5\textdegree{} cells (logarithmic scale; empty cells white); dashed, $\theta_\mathrm{fit}=\theta_\mathrm{ref}$.
-  (b) The residual $\theta_\mathrm{fit}-\theta_\mathrm{ref}$, X filled and Y open, per degree on a logarithmic scale;
-  vertical lines, the median $\pm\,s_{68}$. Beyond $\pm15$\textdegree{} lie 2.5\,\% (X) and 2.6\,\% (Y) of the tracks.
+  together, in 0.5\textdegree{} cells (logarithmic colour scale; empty cells white); dashed, $\theta_\mathrm{fit}=\theta_\mathrm{ref}$.
+  (b) The residual $\theta_\mathrm{fit}-\theta_\mathrm{ref}$ in 0.2\textdegree{} bins, X filled and Y open, with a
+  Gaussian fitted within $\pm2\,s_{68}$ of the median (solid for X, dashed for Y, over the fit range; dotted beyond it).
+  Beyond $\pm6$\textdegree{} lie 3.2\,\% (X) and 3.3\,\% (Y) of the tracks.
   (c) $s_{68}$ in 2\textdegree{} bins of the reference angle, X solid and Y dashed; bootstrap errors. $s_{68}$ is the 68th
   percentile of $|\theta_\mathrm{fit}-\theta_\mathrm{ref}-\mathrm{median}|$, with no clipping.}
   \label{fig:angle}

@@ -215,11 +215,11 @@ producer = ".venv/bin/python papers/paper1_v2/figs/make_gas_vE_all.py"
 note = "needs figs/_gas_labels.py next to it; water fractions from rerun/paper1_gas/results/summary.json"
 
 [fig.angle_resolution_v2]
-title = "Angular resolution, chamber A: theta_fit vs theta_ref 2D, residual distribution, s68 against angle (B-E dropped from the figure 2026-11-14, kept in the json)"
+title = "Angular resolution, chamber A: theta_fit vs theta_ref 2D (top row), residual with a Gaussian core fit, s68 against angle (B-E dropped from the figure 2026-11-14, kept in the json)"
 state = "current"
 source = "papers/paper1_v2/figs/out/angle_resolution_v2.pdf"
 producer = "WORK_DATA=~/work_data .venv/bin/python papers/paper1_v2/figs/make_angle_resolution_v2.py"
-note = "WORK_DATA=~/work_data; same selection and statistic as rerun/paper1_res/angle_resolution.py (0.987/0.899 deg); numbers in out/angle_resolution_v2.json"
+note = "WORK_DATA=~/work_data; same selection and statistic as rerun/paper1_res/angle_resolution.py (0.987/0.899 deg); numbers in out/angle_resolution_v2.json. 2026-11-14 round 2: two rows (2D across the top), (b) linear 0.2-deg bins with a Gaussian fit within +-2 s68 (sigma 0.92/0.83 deg, 95/94 %, json A.<view>.gauss_core), (c) 0.2-deg ticks. ANGRES_LAYOUT=left draws the 2D on the left spanning both rows (tried, not used)."
 
 [fig.position_res]
 title = "Position resolution: bench (a, b) and beam (c, d, e) in one figure"
