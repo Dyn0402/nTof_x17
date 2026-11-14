@@ -213,9 +213,21 @@ resim/depth/phase scripts pad by 4 strips, chambers_C.py does not. The det3 temp
 
 **Key files:** `hits_daq/coupling/` (`observables.py`, `fit_kernel.py`, `run_fits.sh`, `profile.py`, `boundary.py`, `extra.py`, `make_report.py`, `physics/`), `hits_daq/coupling_scan.py`, `hits_daq/condor/make_ana_dag.py` (stages `spsrow`, `estim`), `papers/paper2/HITS_DAQ_PLAN_2026-11-05.md`.
 
-## Paper I text from the feedback note — updated 2026-11-11 (dylan-MS-7C84)
+## Paper I text from the feedback note — updated 2026-11-14 (dylan-MS-7C84)
 
-**Resume:** Paper I (now v2) from Dylan's hub note; Fig. 1 round done 11-11; next: open `- [ ]` items (v_d, appendix A).
+**Resume:** Paper I v2 from the hub note "Paper I v2 Feedback"; no open `- [ ]` left on 11-14; next: Dylan's next items.
+
+**2026-11-14 (this session, all pushed to origin + Overleaf v2; note items checked with 💬):**
+- **Fig. 11 angle resolution** (`papers/paper1_v2/figs/make_angle_resolution_v2.py`, f7e9fca7): two rows, the 2D across
+  the top; (b) linear with a Gaussian fit within ±2 s68 (σ 0.92/0.83°, 95/94 % of tracks, χ²/ndf 29/17, 45/15);
+  (c) 0.2° ticks. 6.1 text + caption rewritten; Sec. 9 cites 6.1 for the 3.4 % tail. `ANGRES_LAYOUT=left` = tried layout.
+  Inputs are not local any more: fetch them from EOS (paths in the script docstring) with xrootd, set `WORK_DATA`.
+- **Every figure at full width** (1a57ebf1): all includes `width=\linewidth`; Fig. 8 `gas_vE_all` (a)|(b) side by side;
+  Fig. 32 drift scan as two panels in a new file `rerun/paper1_timing/figures/timing_driftscan_wide.pdf`
+  (`fig_driftscan_wide`; v1 keeps the old one). Rule in `papers/README.md` › Paper I v2 › Figure width;
+  `make_figures.py paper1_v2` ends with a width check. 61 → 63 pages.
+- **Dylan's rules from today:** push paper1_v2 to Overleaf at once (`push paper1_v2 --now`, then `pull`); **never edit
+  `papers/paper1` (v1) again**. Both in memory (`paper1-v2-only-overleaf-now`).
 
 **2026-11-11 (this session):**
 - Fig. 1 feedback applied to **paper1_v2 only** (paper1 untouched): own copy `papers/paper1_v2/figs/make_experiment_layout.py`
