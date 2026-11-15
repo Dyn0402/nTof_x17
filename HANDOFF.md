@@ -451,7 +451,7 @@ redeployed (dylan-cern-site 91d4386). Inputs on the desktop: $WORK_DATA/claude-j
 
 ## n_TOF pass 1: reprocess the n_TOF tracks on the final chain — updated 2026-11-14 (dylan-MS-7C84)
 
-**Resume:** pass finishing (main 6 running, side 4636420 ~147); when empty: `--hist`, deploy new `ntof_stage.sh`, audit_eos, N-G1.
+**Resume:** pass FINISHED 11-15 12:37 (main 15,344 exit 0 + proc 1727 + 205 removed-as-done; 4636419/20 198/198 exit 0 each; 4638252 ok); xrootd `ntof_stage.sh` deployed. Next (analysis session): `audit_eos.py outputs`, a `.meta.json` per job, N-G1, the D run_104 L1/L2 choice.
 Checklist `rerun/ntof/condor/PASS1_WATCH.md` ("When it's finished"); the 205 errno-27 jobs were removed and count as done.
 
 **11-14 14:30 (dylan-MS-7C84, follow-up):** queue main 12 running / 0 idle / 205 held (no hold since 12:06), side 4636420 147
