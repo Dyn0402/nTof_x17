@@ -451,7 +451,7 @@ redeployed (dylan-cern-site 91d4386). Inputs on the desktop: $WORK_DATA/claude-j
 
 ## n_TOF pass 1: reprocess the n_TOF tracks on the final chain — updated 2026-11-14 (dylan-MS-7C84)
 
-**Resume:** pass FINISHED 11-15 12:37 (main 15,344 exit 0 + proc 1727 + 205 removed-as-done; 4636419/20 198/198 exit 0 each; 4638252 ok); xrootd `ntof_stage.sh` deployed. Next (analysis session): `audit_eos.py outputs`, a `.meta.json` per job, N-G1, the D run_104 L1/L2 choice.
+**Resume (11-16):** pass audited complete (`rerun/ntof/audit/PASS1_AUDIT_2026-11-15.md`). D run_104 → **L1** (`rerun/ntof/run104/README.md`): no D latency step on beam (hits), and L1 beats L2 on L2-era beam too (control 4673558, +1.3 % pointing; 1 of 24 jobs still running at 00:02, rerun `d104_latency.py --l1 control_L1 --l2 control_L2 --name control` when it lands). Open (Dylan): re-run D L2-era beam on one beam pin? Then N-G1, ntof_ledger, stage 3.
 Checklist `rerun/ntof/condor/PASS1_WATCH.md` ("When it's finished"); the 205 errno-27 jobs were removed and count as done.
 
 **11-14 14:30 (dylan-MS-7C84, follow-up):** queue main 12 running / 0 idle / 205 held (no hold since 12:06), side 4636420 147
