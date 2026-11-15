@@ -1,0 +1,3 @@
+MISSING /eos/experiment/ntof/data/x17/july_beam/Analysis_pass1/stage2/run_130/stat090_0004/A/run_130_stat090_0004_260803_22H10_002_A.splits.parquet
+MISSING /eos/experiment/ntof/data/x17/july_beam/Analysis_pass1/stage2/run_156/stat090_0023/A/run_156_stat090_0023_260809_07H37_004_A.splits.parquet
+checked 15946 job lines in 3 lists: 3939 problems
