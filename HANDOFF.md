@@ -449,9 +449,25 @@ redeployed (dylan-cern-site 91d4386). Inputs on the desktop: $WORK_DATA/claude-j
 - Deck: `WORK_DATA=~/work_data .venv/bin/python papers/paper1/make_figures_deck.py --out <html>` then
   `dylan-cern-site/scripts/add-note.py <html> --slug mx17-paper1-figures --force --deploy`.
 
-## n_TOF pass 1: reprocess the n_TOF tracks on the final chain — updated 2026-11-14 (dylan-MS-7C84)
+## n_TOF pass 1: reprocess the n_TOF tracks on the final chain — updated 2026-11-16 (dylan-MS-7C84)
 
-**Resume (11-16):** pass audited complete (`rerun/ntof/audit/PASS1_AUDIT_2026-11-15.md`). D run_104 → **L1** (`rerun/ntof/run104/README.md`): no D latency step on beam (hits), and L1 beats L2 on L2-era beam too (control 4673558, +1.3 % pointing; 1 of 24 jobs still running at 00:02, rerun `d104_latency.py --l1 control_L1 --l2 control_L2 --name control` when it lands). Open (Dylan): re-run D L2-era beam on one beam pin? Then N-G1, ntof_ledger, stage 3.
+**Resume (11-16):** pass done + audited; D run_104 → L1. Next: fold in control proc 8, Dylan's call on D L2-era re-run, N-G1.
+
+**11-15/16 (dylan-MS-7C84): pass finished, audited, D run_104 decided.**
+- Finished 11-15 12:37: main 15,344 exit 0 + 205 removed-as-done + proc 1727 (→ 4638252 ok); 4636419/20 198/198 each.
+  Audit `rerun/ntof/audit/PASS1_AUDIT_2026-11-15.md`: 15,946 outputs complete and intact; 3 restarts explained
+  (1727 cut input; 12731 lease expiry; 10581 startd eviction). xrootd `ntof_stage.sh` deployed. AFS `pass1/log/`
+  emptied into `log_pass1_2026-11/` (was 93 % of slots); empty core files removed.
+- D run_104 → **L1** (`rerun/ntof/run104/README.md`): hits show no D latency step on beam (runs 100/102, 104, 106/108
+  equal within ~2 ns); L1 pin also beats L2 on L2-era beam (control **4673558**, 23/24 done: +1.3 % pointing, χ² 23/23).
+  So the L2 pin used for D beam in runs 105–159 fits ~1 % worse; optimum probably between the pins (not scanned).
+- Still running at wrap-up: 4673558 proc 8 (out EOS `Analysis_pass1/tests/d104_control_L1/`, log
+  `~/x17rerun/ntof/pass1/log_s11_d104ctl/`). When it lands: pull into `$WORK_DATA/ntof_pass1/run104/control_L1/`
+  (tar over ssh, as in the README) and `.venv/bin/python rerun/ntof/run104/d104_latency.py --l1 control_L1 --l2 control_L2 --name control`.
+- Next: (1) proc 8 as above; (2) Dylan: re-run D's L2-era beam on one beam pin (L1 or a scanned value), or accept ~1 %;
+  (3) N-G1 on run_145/149; (4) `ntof_ledger.py`, stage 3, P7a v(t). Mark D run_104 L1 in the ledger/registry when building stage 3.
+- Not deleted (Dylan): EOS `Analysis_pass1/tests/`, laptop `~/work_data/ntof_pass1/prefreeze/` (1.9 GB);
+  desktop work dir `$WORK_DATA/ntof_pass1/run104/` (~2.3 GB, copies of EOS) — delete once the D decision is closed.
 Checklist `rerun/ntof/condor/PASS1_WATCH.md` ("When it's finished"); the 205 errno-27 jobs were removed and count as done.
 
 **11-14 14:30 (dylan-MS-7C84, follow-up):** queue main 12 running / 0 idle / 205 held (no hold since 12:06), side 4636420 147
