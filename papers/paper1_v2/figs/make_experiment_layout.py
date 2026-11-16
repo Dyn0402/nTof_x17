@@ -78,6 +78,14 @@ def layout(ax):
     ax.text(12.0 * np.cos(a) + 1.2, 12.0 * np.sin(a), '$e^+$', color=ps.ACCENT, fontsize=8, ha='left', va='center')
     a = np.deg2rad(E_MINUS)
     ax.text(11.0 * np.cos(a), 11.0 * np.sin(a) - 1.6, '$e^-$', color=ps.ACCENT, fontsize=8, ha='center', va='top')
+    # the ionisation each lepton leaves in the chamber it crosses (Dylan 11-16), dots as in (b). Drift arrows were
+    # tried and dropped: the chamber is 0.2 in deep here, and on the near-normal e- they lie on the track itself.
+    blue = ps.DET_COLOR['det3']
+    for ang, axis in ((E_PLUS, 1), (E_MINUS, 0)):       # axis: the coordinate normal to that chamber's window
+        u = np.array([np.cos(np.deg2rad(ang)), np.sin(np.deg2rad(ang))])
+        for d in np.linspace(L_WIN + 0.9, L_WIN + MM_DEPTH - 0.9, 4):
+            p = u * d / abs(u[axis])
+            ax.plot(*p, 'o', ms=1.7, color=blue, zorder=9)
     # 20 cm, horizontal, from the target to the left chamber's window, above the e- track
     ax.annotate('', xy=(-L_WIN, 3.0), xytext=(0, 3.0), arrowprops=dict(arrowstyle='<->', color=mut, lw=0.7,
                                                                        shrinkA=0, shrinkB=0))
@@ -136,6 +144,9 @@ def section(ax, g=GAP_NOMINAL, tan=-0.45, xm=24.0):
     ax.annotate('', xy=(X0 - 1.6, 0), xytext=(X0 - 1.6, g),
                 arrowprops=dict(arrowstyle='<->', color=mut, lw=0.7, shrinkA=0, shrinkB=0))
     ax.text(X0 - 2.3, g / 2, rf'gap $\sim${g:.0f} mm', rotation=90, va='center', ha='right', fontsize=7.5, color=mut)
+    ax.annotate('', xy=(X0 + 1.3, 7.0), xytext=(X0 + 1.3, 0.0), arrowprops=dict(arrowstyle='-|>', color=mut, lw=0.6,
+                                                                       mutation_scale=5, shrinkA=0, shrinkB=0))
+    ax.text(X0 + 2.0, 6.2, '$z$', fontsize=7.5, color=mut, ha='left', va='center')
     ax.text(xs(g * 0.62) + 5.0, g * 0.62, r'$t = t_0 + z/v_d$', fontsize=8, color=ink, ha='left', va='center',
             bbox=dict(fc='white', ec='none', pad=1.0))
     # what is measured: the arrival time on each strip (later for a higher start), a slope across the strips
