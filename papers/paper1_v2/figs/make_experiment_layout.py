@@ -12,6 +12,10 @@ Dylan (feedback note, 1 Introduction / Fig. 1): split the old TPC-principle figu
     scintillator behind each, the beam into the page and one e+e- pair (opening angle 120 deg);
 (b) one chamber in section, enlarged: the old panel (a) of tpc_principle (make_tpc_principle.sketch), drawn in mm with
     the nominal 30 mm gap ("since it's just a diagram").
+2026-11-16 (Dylan): panel (b) is drawn here (section(), no longer make_tpc_principle.sketch): one ionisation cluster
+above each strip the track crosses, a strip against arrival-time ladder under the strips (what is measured: the
+inclination is a slope in time across strips), the stage below the mesh marked "enlarged" with the resistive strips
+in the colour of fig.chamber (c), and the gap labelled "~30 mm" (not exact; chamber A is quoted at 28 mm later).
 The data and fit-model panels moved to fig.reco_example (make_tpc_principle.py --variant reco), in the
 reconstruction subsection.
 
@@ -25,7 +29,8 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path[:0] = [HERE, os.path.join(HERE, '..', '..', 'paper1', 'figs'), os.path.join(HERE, '..', '..')]
 import paper_style as ps  # noqa: E402
-from make_tpc_principle import sketch  # noqa: E402
+
+RES_C = '#3d4144'     # resistive strips, the colour they have in fig.chamber (c) (render3d material)
 
 L_WIN = 20.0          # window front face from the target [cm]
 MM_DEPTH, MM_HALF = 5.0, 18.0
@@ -95,6 +100,62 @@ def layout(ax):
     return (bx + 3.5, -L_WIN + 1.0), (bx + 3.5, -L_WIN - MM_DEPTH - 1.0)
 
 
+def section(ax, g=GAP_NOMINAL, tan=-0.45, xm=24.0):
+    """Panel (b): one chamber in section, in mm (x across the strips, z above the mesh), and the time ladder."""
+    import numpy as np
+    import matplotlib.patches as mp
+    ink, mut, blue = ps.INK, ps.MUTED, ps.DET_COLOR['det3']
+    X0, X1, PITCH, HW = 0.0, 30.0, 2.1, 0.8                  # schematic strips: 14 at 2.1 mm
+    xc = X0 + 1.2 + PITCH * np.arange(14)
+    lab = dict(va='center', ha='left', fontsize=7.5, color=ink)
+    ax.add_patch(mp.Rectangle((X0, 0), X1 - X0, g, fc='#f3f6fb', ec='none', zorder=0))
+    ax.plot([X0, X1], [g, g], color=ink, lw=1.6, zorder=3)
+    ax.text(X1 + 0.6, g, 'cathode', **lab)
+    ax.plot([X0, X1], [0, 0], color=ink, lw=0.9, ls=(0, (1, 1.2)), zorder=3)
+    ax.text(X1 + 0.6, 0, 'mesh', **lab)
+    # below the mesh, enlarged: resistive strips and readout strips
+    for x in xc:
+        ax.add_patch(mp.Rectangle((x - HW, -5.2), 2 * HW, 1.8, fc=RES_C, ec='none', zorder=2))
+        ax.add_patch(mp.Rectangle((x - HW, -10.4), 2 * HW, 1.8, fc='#c98b2b', ec='none', zorder=2))
+    ax.text(X1 + 0.6, -4.3, 'resistive strips', **lab)
+    ax.text(X1 + 0.6, -9.5, 'readout strips', **lab)
+    ax.plot([X0 - 1.0] * 2, [-10.4, -1.2], color=mut, lw=0.7)
+    ax.text(X0 - 1.7, -5.8, 'enlarged', rotation=90, va='center', ha='right', fontsize=7, color=mut)
+    # the lepton
+    xs = lambda zz: xm + tan * zz
+    ax.annotate('', xy=(xs(-2.6), -2.6), xytext=(xs(g + 7.5), g + 7.5),
+                arrowprops=dict(arrowstyle='-|>', color=ps.ACCENT, lw=1.3, mutation_scale=9), zorder=5)
+    ax.text(xs(g + 6.0) + 0.9, g + 6.0, 'lepton', color=ps.ACCENT, fontsize=7.5, va='center', ha='left')
+    # one ionisation cluster above each strip the track crosses, drifting straight down
+    hit = xc[(xc > xs(g) + 0.5) & (xc < xs(0) - 0.5)]
+    zh = (hit - xm) / tan
+    for x, zz in zip(hit, zh):
+        ax.plot(x, zz, 'o', ms=2.4, color=blue, zorder=6)
+        ax.annotate('', xy=(x, 0.6), xytext=(x, zz - 0.6),
+                    arrowprops=dict(arrowstyle='-|>', color=blue, lw=0.6, mutation_scale=5, alpha=0.7), zorder=4)
+    ax.annotate('', xy=(X0 - 1.6, 0), xytext=(X0 - 1.6, g),
+                arrowprops=dict(arrowstyle='<->', color=mut, lw=0.7, shrinkA=0, shrinkB=0))
+    ax.text(X0 - 2.3, g / 2, rf'gap $\sim${g:.0f} mm', rotation=90, va='center', ha='right', fontsize=7.5, color=mut)
+    ax.text(xs(g * 0.62) + 5.0, g * 0.62, r'$t = t_0 + z/v_d$', fontsize=8, color=ink, ha='left', va='center',
+            bbox=dict(fc='white', ec='none', pad=1.0))
+    # what is measured: the arrival time on each strip (later for a higher start), a slope across the strips
+    T0, T1 = -25.5, -14.0                                    # the ladder's time axis, in the sketch's z units
+    tt = T0 + 1.5 + zh / g * (T1 - T0 - 3.0)
+    for x in xc:
+        ax.plot([x, x], [T0, T1], color=ps.GRID, lw=0.6, zorder=1)
+    ax.plot([X0, X1], [T0, T0], color=mut, lw=0.7, zorder=2)
+    ax.annotate('', xy=(X0, T1 + 1.2), xytext=(X0, T0), arrowprops=dict(arrowstyle='-|>', color=mut, lw=0.7,
+                                                                        mutation_scale=6, shrinkA=0, shrinkB=0))
+    ax.text(X0 - 0.9, (T0 + T1) / 2, 'time', rotation=90, va='center', ha='right', fontsize=7.5, color=mut)
+    ax.text((X0 + X1) / 2, T0 - 0.9, 'strip', va='top', ha='center', fontsize=7.5, color=mut)
+    ax.plot(hit, tt, '-', color=blue, lw=0.6, alpha=0.6, zorder=3)
+    ax.plot(hit, tt, 's', ms=3.2, color=blue, zorder=4)
+    ax.text(X1 + 0.6, (T0 + T1) / 2, 'arrival time\non each strip', **lab)
+    ax.set_xlim(X0 - 4.0, X1 + 19.5)
+    ax.set_ylim(T0 - 4.5, g + 9.5)
+    ax.axis('off')
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--out', default=os.path.join(HERE, 'out', 'experiment_layout'))
@@ -103,12 +164,11 @@ def main():
     import matplotlib.pyplot as plt
     from matplotlib.patches import ConnectionPatch
     ps.use()
-    fig = plt.figure(figsize=(ps.FULL[0], 3.0))
+    fig = plt.figure(figsize=(ps.FULL[0], 3.3))
     axa = fig.add_axes([0.0, 0.0, 0.47, 1.0])
     axb = fig.add_axes([0.52, 0.04, 0.48, 0.92])
     top, bot = layout(axa)
-    g = GAP_NOMINAL
-    sketch(axb, g, 1.0, 0.0, (-12.5, g + 12.5), tan=-0.45, particle='lepton', gap_label=f'gap = {g:.0f} mm', vsym='v_d')
+    section(axb)
     for p_a, p_b in ((top, (0.0, 0.98)), (bot, (0.0, 0.02))):
         # drawn with (a), under its detector components (zorder 1), not on top of the figure
         axa.add_artist(ConnectionPatch(xyA=p_a, coordsA=axa.transData, xyB=p_b, coordsB=axb.transAxes,
