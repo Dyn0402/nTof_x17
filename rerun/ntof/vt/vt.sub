@@ -1,0 +1,18 @@
+# P7a v(t), one sub-run per job:
+#   mkdir log_<name> && condor_submit vt.sub code=<code dir> jobfile=<vt_jobs.txt> logdir=log_<name>
+# jobs.txt lines: <run> <subrun> <arms> <tags,...>   (make_vt_jobs.py).  A new log directory per submission.
+executable     = $ENV(HOME)/x17rerun/ntof/vt/vt_stage.sh
+arguments      = $(code) $(args)
+output         = $(logdir:log)/$(Cluster).$(ProcId).out
+error          = $(logdir:log)/$(Cluster).$(ProcId).err
+log            = $(logdir:log)/vt.log
+request_cpus   = 4
+request_memory = 6000
+request_disk   = 4 GB
+environment    = "NTOF_JOBS=4 PYTHONDONTWRITEBYTECODE=1"
++JobFlavour    = "$(flavour:workday)"
+max_retries    = 2
+should_transfer_files = NO
+requirements   = (Machine != "b9g42p2031.cern.ch")
+max_materialize = 600
+queue args from $(jobfile)
