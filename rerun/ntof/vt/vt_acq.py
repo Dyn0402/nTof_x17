@@ -10,7 +10,7 @@ convolved with the electronics template (the pass-1 X template of the arm's benc
 linear.  The sample is the pass's own: events of this acquisition whose pass row has exactly one track, x and y ok and
 quality_ok, one candidate per plane (`clean`), and one colsum cluster per plane.  Saved per event: event_id, DREAM
 timestamp, ftst, cluster summary, saturation flag, and per view the fitted t0, T, a, b, chi2/dof, plus the pass track's
-tan_theta (for the |tan| bins: T is a full-gap duration only on tracks that cross the gap).
+tan_theta, and the strip sum S itself (vt_table.py fits the box to the stacked median S per acquisition).
 
 The window is 20 x 60 ns = 1.2 us, so the box end can sit near the window end (C closest): absolute T is window-limited;
 T against time within one arm and run condition is the product, and the gap's error carries into v (plan §6 11-02).
@@ -105,6 +105,9 @@ def main():
                     res[ch] = r
         for j, name in enumerate(['t0', 'T', 'a', 'b', 'chi2dof']):
             rec[f'{p}_{name}'] = res[:, j].astype(np.float32)
+        # the strip sums themselves: the per-acquisition v is the box fit to their stacked median (vt_table.py, plan
+        # §6 11-02); the per-event fits above are too noisy to average (T spread ~150 ns rms)
+        rec[f'{p}_S'] = S
         print(f'[vt] {a.arm} {p}: {n} events fitted, median T {np.nanmedian(res[:, 1]) if n else np.nan:.0f} ns',
               flush=True)
     rec['meta'] = np.array([f'run={a.run} subrun={a.subrun} tag={a.tag} arm={a.arm} n_clean_pass={len(want)} '

@@ -17,7 +17,9 @@ a set of rows lands there too).  Per (row, arm), from the .meta.json:
   overrides  reco_config and selection equal the arm's reference (the most common value over the pass), ignoring
              the per-job counters (two_track.n_splits, dead_seed counts per era)
   yield      (unless --no-yield) the fraction of events with x and y ok and quality_ok; flagged when below a third of
-             the median of its (arm, run, trigger class) or 5 MADs off it.  A flag is a row to look at, not a failure.
+             the median of its (arm, run, trigger class) by more than x0.6 / x1.5, on acquisitions of >= 100 events (a
+             5-MAD rule flagged 71 rows on 11-16, mostly 1-10 % moves on stable runs).  A flag is a row to look at, not
+             a failure.
 
 Writes OUT/ntof_ledger.tsv.gz (one line per row x arm), OUT/NTOF_LEDGER.json (summary, every problem) and prints the
 summary.  Exit 1 when any row fails a check other than yield.
@@ -176,8 +178,8 @@ def main():
         df = pd.DataFrame([r for r in rows if r.get('yield') is not None])
         for (arm, run, rc), g in df.groupby(['arm', 'run', 'rclass']):
             med = g['yield'].median()
-            mad = (g['yield'] - med).abs().median() * 1.4826
-            flag = (g['yield'] < med / 3) | ((g['yield'] - med).abs() > 5 * max(mad, 1e-3))
+            rel = g['yield'] / med if med > 0 else g['yield'] * 0 + 1
+            flag = ((rel < 0.6) | (rel > 1.5)) & (g['n_events'].fillna(0) >= 100)
             for ix in g.index[flag]:
                 rr = df.loc[ix]
                 for row in rows:
