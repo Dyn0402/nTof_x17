@@ -1,0 +1,74 @@
+{
+ "pass": {
+  "A": {
+   "n": 13517,
+   "y_cross_mm": -31.56,
+   "err_mm": 0.36,
+   "verdict": "pass"
+  },
+  "C": {
+   "n": 11178,
+   "y_cross_mm": -33.22,
+   "err_mm": 0.44,
+   "verdict": "pass"
+  },
+  "verdict": "pass",
+  "rule": "late (>= 20 ms) A/C y band crossing must be < 0 (the capsule nose, bottom); > +3 sigma means stored y is mirrored (COORDINATES.md)"
+ },
+ "is2_v2": {
+  "A": {
+   "n": 9862,
+   "y_cross_mm": -32.02,
+   "err_mm": 0.42,
+   "verdict": "pass"
+  },
+  "C": {
+   "n": 7603,
+   "y_cross_mm": -35.81,
+   "err_mm": 0.55,
+   "verdict": "pass"
+  },
+  "verdict": "pass",
+  "rule": "late (>= 20 ms) A/C y band crossing must be < 0 (the capsule nose, bottom); > +3 sigma means stored y is mirrored (COORDINATES.md)"
+ },
+ "common": {
+  "pass": {
+   "A": {
+    "n": 9679,
+    "y_cross_mm": -31.22,
+    "err_mm": 0.41,
+    "verdict": "pass"
+   },
+   "C": {
+    "n": 7508,
+    "y_cross_mm": -32.89,
+    "err_mm": 0.53,
+    "verdict": "pass"
+   },
+   "verdict": "pass",
+   "rule": "late (>= 20 ms) A/C y band crossing must be < 0 (the capsule nose, bottom); > +3 sigma means stored y is mirrored (COORDINATES.md)"
+  },
+  "is2_v2": {
+   "A": {
+    "n": 9585,
+    "y_cross_mm": -32.02,
+    "err_mm": 0.42,
+    "verdict": "pass"
+   },
+   "C": {
+    "n": 7328,
+    "y_cross_mm": -35.87,
+    "err_mm": 0.56,
+    "verdict": "pass"
+   },
+   "verdict": "pass",
+   "rule": "late (>= 20 ms) A/C y band crossing must be < 0 (the capsule nose, bottom); > +3 sigma means stored y is mirrored (COORDINATES.md)"
+  }
+ },
+ "A_vs_ref_sigma": -1.555555555555552,
+ "A_pass_minus_is2": 0.4600000000000044,
+ "A_common_pass_minus_is2": 0.8000000000000043,
+ "C_vs_ref_sigma": 4.045454545454548,
+ "C_pass_minus_is2": 2.5900000000000034,
+ "C_common_pass_minus_is2": 2.979999999999997
+}
