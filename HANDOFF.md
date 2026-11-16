@@ -213,9 +213,18 @@ resim/depth/phase scripts pad by 4 strips, chambers_C.py does not. The det3 temp
 
 **Key files:** `hits_daq/coupling/` (`observables.py`, `fit_kernel.py`, `run_fits.sh`, `profile.py`, `boundary.py`, `extra.py`, `make_report.py`, `physics/`), `hits_daq/coupling_scan.py`, `hits_daq/condor/make_ana_dag.py` (stages `spsrow`, `estim`), `papers/paper2/HITS_DAQ_PLAN_2026-11-05.md`.
 
-## Paper I text from the feedback note — updated 2026-11-14 (dylan-MS-7C84)
+## Paper I text from the feedback note — updated 2026-11-16 (dylan-MS-7C84)
 
 **Resume:** Paper I v2 from the hub note "Paper I v2 Feedback"; no open `- [ ]` left on 11-14; next: Dylan's next items.
+
+**2026-11-16 (Fig. 1, asked in chat, pushed to origin + Overleaf v2, a204a3a0):**
+- **Fig. 1 (b) stays 2D** (Dylan: "go with your 2D diagram for now"). Now drawn in the v2 script
+  (`papers/paper1_v2/figs/make_experiment_layout.py`, `section()`): strip against arrival-time ladder under the strips,
+  gap labelled "~30 mm" (A is quoted at 28 mm later), `z` arrow from the mesh, resistive strips in the Fig. 3 (c) grey,
+  stage below the mesh marked "enlarged"; caption points to Fig. 3 (c). (a): ionisation dots on both leptons.
+- **Tried and dropped:** drift arrows in (a) (chamber 0.2 in deep there; on the near-normal e⁻ they lie on the track).
+  A 3D "glass box" alternative was mocked up and not taken: `papers/paper1_v2/figs/make_tpc_glassbox_mock.py` →
+  `figs/out/tpc_glassbox_mock.pdf` (not in figures.toml, not in the paper; delete if never wanted).
 
 **2026-11-14 (this session, all pushed to origin + Overleaf v2; note items checked with 💬):**
 - **Fig. 11 angle resolution** (`papers/paper1_v2/figs/make_angle_resolution_v2.py`, f7e9fca7): two rows, the 2D across
