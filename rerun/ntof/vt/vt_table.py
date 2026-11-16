@@ -62,7 +62,7 @@ def main():
     reg = {(int(r['run']), r['subrun'], r['tag']): r for r in csv.DictReader(open(os.path.join(HERE, '..', 'ntof_registry.csv')))}
     rng = np.random.default_rng(7)
     facts, fits = {}, {}
-    rows = []
+    rows, pool = [], {}
     files = sorted(glob.glob(f'{a.vt}/run_*/*/vt_*.npz'))
     for i, f in enumerate(files):
         stem = os.path.basename(f)[3:-4]                       # run_<r>_<sub>_<tag>_<arm>
@@ -87,6 +87,9 @@ def main():
             ok = ~z[f'{p}_sat'].astype(bool) & (z[f'{p}_nsig'] >= 5) & (z[f'{p}_ncl'] == 1) if len(z['eid']) else np.zeros(0, bool)
             S = z[f'{p}_S'][ok].astype(float) if len(z['eid']) else np.zeros((0, 20))
             row[f'n_{p}'] = int(len(S))
+            pk = (run, sub, arm)
+            pool.setdefault(pk, dict(S={'x': [], 'y': []}, t0=[], t1=[], trigger=row['trigger'], hv=row['hv']))
+            pool[pk]['S'][p].append(S.astype(np.float32))
             if len(S) >= MIN_N:
                 t0f, T, eT = stack_fit(fits[arm], S, rng, a.boot)
                 row.update({f't0_{p}': t0f, f'T_{p}': T, f'T_{p}_err': eT, f'v_{p}': gap * 1e3 / T,
@@ -102,14 +105,39 @@ def main():
         else:
             row['v'] = row['v_err'] = np.nan
         row['gap_err_rel'] = (GAP[arm][1] / gap) if GAP[arm][1] else np.nan
+        pool[(run, sub, arm)]['t0'].append(row['t_start']); pool[(run, sub, arm)]['t1'].append(row['t_end'])
         rows.append(row)
         if i % 500 == 0:
             print(f'{i:,}/{len(files):,}', flush=True)
+    # the same fit on each sub-run's pooled events: D's clean cosmic sample is 15-45 events per acquisition, too few
+    # per acquisition (MIN_N); A and C get a sub-run value as well, a check on the per-acquisition series
+    prow = []
+    for (run, sub, arm), P in pool.items():
+        r = dict(run=run, subrun=sub, arm=arm, trigger=P['trigger'], hv=P['hv'], v_bundle=facts[arm][0],
+                 t_start=min(P['t0']), t_end=max(P['t1']), n_acq=len(P['t0']))
+        gap = GAP[arm][0]
+        for p in 'xy':
+            S = np.concatenate(P['S'][p]) if P['S'][p] else np.zeros((0, 20))
+            r[f'n_{p}'] = int(len(S))
+            if len(S) >= MIN_N:
+                t0f, Tf, eT = stack_fit(fits[arm], S.astype(float), rng, a.boot)
+                r.update({f'T_{p}': Tf, f'T_{p}_err': eT, f'v_{p}': gap * 1e3 / Tf, f'v_{p}_err': gap * 1e3 / Tf ** 2 * eT})
+            else:
+                r.update({f'T_{p}': np.nan, f'T_{p}_err': np.nan, f'v_{p}': np.nan, f'v_{p}_err': np.nan})
+        vs = [(r[f'v_{p}'], r[f'v_{p}_err']) for p in 'xy' if np.isfinite(r[f'v_{p}']) and r[f'v_{p}_err'] > 0]
+        w = np.array([1 / e ** 2 for _, e in vs]) if vs else np.zeros(0)
+        r['v'] = float(np.sum(w * np.array([v for v, _ in vs])) / w.sum()) if vs else np.nan
+        r['v_err'] = float(1 / np.sqrt(w.sum())) if vs else np.nan
+        prow.append(r)
+    PS = pd.DataFrame(prow).sort_values(['arm', 't_start']).reset_index(drop=True)
+    PS['hv_change'] = PS.groupby('arm').hv.transform(lambda s: s.ne(s.shift()) & s.shift().notna())
     T = pd.DataFrame(rows).sort_values(['arm', 't_start']).reset_index(drop=True)
     T['hv_change'] = T.groupby('arm').hv.transform(lambda s: s.ne(s.shift()) & s.shift().notna())
     os.makedirs(a.out, exist_ok=True)
     for arm, g in T.groupby('arm'):
         g.to_parquet(f'{a.out}/vt_{arm}.parquet', index=False)
+    for arm, g in PS.groupby('arm'):
+        g.to_parquet(f'{a.out}/vt_{arm}_subrun.parquet', index=False)
     side = dict(made_by='rerun/ntof/vt/vt_table.py', plan='NTOF_PASS_PLAN P7a', n_files=len(files), min_n=MIN_N,
                 boot=a.boot, gap_mm={k: v[0] for k, v in GAP.items()}, gap_err_mm={k: v[1] for k, v in GAP.items()},
                 caveats=['T is gain-confounded (+18 % across a det3 mesh scan): quote v(t) at fixed HV; hv_change '
