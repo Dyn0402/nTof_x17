@@ -1,0 +1,8 @@
+{
+ "_doc": "Canonical output per (row, arm) for ntof_ledger.py. Default: Analysis_pass1/stage2 with the make_ntof_jobs.py --per-row bundle and code ed0b1162. Rules match on arm and optionally runs / lat_epoch / rclass; the last match wins.",
+ "code": ["ed0b1162"],
+ "rules": [
+  {"arm": "D", "lat_epoch": "unplaced", "dir": "side/run104_D_L1", "bundle": "D_E2_beam_L1",
+   "why": "run_104 D: L1 pin (rerun/ntof/run104/README.md, decided 2026-11-16; control 24/24 L1)"}
+ ]
+}

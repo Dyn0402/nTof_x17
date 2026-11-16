@@ -2,8 +2,7 @@
 
 **Answer: take L1 for all of run_104. Its timing on beam is the same as the runs on both sides, and the L1 pin fits
 D's beam data a little better everywhere, on L2-era runs as well. So the L1 edge on run_104 does not show which epoch
-it belongs to. It shows that the D beam pin is better at L1 than at L2.** Provisional on 23 of the 24 control jobs
-(the last was still running at 11-16 00:02).
+it belongs to. It shows that the D beam pin is better at L1 than at L2.** Control complete 11-16: 24 of 24 L1.
 
 ## What L1 and L2 are
 
@@ -34,11 +33,11 @@ pins (`Analysis_pass1/side/run104_D_{L1,L2}`). Plan §5–6, `tests/prefreeze/FI
    change either. Not followed further.
 3. **Control, condor 4673558** (`control_by_acq.csv`): 24 L2-era beam acquisitions (runs 106: 14, 108: 10)
    reconstructed under the L1 pin (EOS `Analysis_pass1/tests/d104_control_L1`), compared with the main pass's L2-pin
-   outputs of the same acquisitions. L1 wins on all 23 finished acquisitions, by the same margin as on run_104: 58–61 %
-   of x planes better, pointing 7,338 against 7,241 (+1.3 %). The pre-freeze check had the same result on L1-era runs
+   outputs of the same acquisitions. L1 wins on all 24 acquisitions (proc 8 landed 11-16 00:49), by the same margin as
+   on run_104: 58–61 % of x planes better, pointing 7,737 against 7,615 (+1.6 %). The pre-freeze check had the same result on L1-era runs
    79/81 (+1.5 / +2.5 %).
 
-## Implication for the main pass (not acted on: Dylan's call)
+## Implication for the main pass (Dylan 11-16: re-run D's beam on one scanned pin)
 
 D's beam data in the L2 era (runs 105–159, main pass on `D_E2_beam`) carry a pin that fits about 1 % worse in pointing
 than L1. The plan already noted that D's beam tracks pull the pinned t0 to −12 / −15 ns below its cosmic latency
@@ -52,3 +51,11 @@ L2-era beam acquisitions on one beam pin would remove the inconsistency.
   latency shift would not move them. Their stability across acquisitions (±4 ns) suggests they are correlated, but this
   was not shown directly.
 - The comparison is between two pins only, so it says which pin is better, not where the optimum lies.
+
+## Pin scan (condor 4674646, submitted 2026-11-16)
+
+Dylan asked for the re-run, so the D beam pin is first scanned along the L2 → L1 line, pin(f) = L2 + f (L1 − L2), on
+the 24 control acquisitions (runs 106/108, L2 era) and 12 L1-era ones (runs 100/102): f = 0.5, 1.5, 2.0, 3.0 new;
+f = 0 and 1 from the main pass and the control (and f = 0 on runs 100/102 as jobs). Bundles = the frozen D_E2_beam
+with only `t0_abs` and its provenance changed (`make_pin_scan.py`; EOS `Analysis_pass1/tests/d_pin_scan/`).
+Score with the same readings (prior-removed χ², pointing < 15 mm), then re-run every D beam row on the best pin.
