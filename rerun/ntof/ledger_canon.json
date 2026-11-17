@@ -3,6 +3,8 @@
  "code": ["ed0b1162"],
  "rules": [
   {"arm": "D", "lat_epoch": "unplaced", "dir": "side/run104_D_L1", "bundle": "D_E2_beam_L1",
-   "why": "run_104 D: L1 pin (rerun/ntof/run104/README.md, decided 2026-11-16; control 24/24 L1)"}
+   "why": "run_104 D: L1 pin (rerun/ntof/run104/README.md, decided 2026-11-16; control 24/24 L1)"},
+  {"arm": "D", "rclass": "production", "lat_epoch": "L2", "dir": "rerun_dbeam_L1", "bundle": "D_E2_beam_L1",
+   "why": "D L2-era beam re-run on the L1 pin so every D beam row shares one pin (Dylan 2026-11-17; pin scan 4674646: no optimum, the pin moves only the gate count; job list freeze/pass_dbeam_L1.txt)"}
  ]
 }

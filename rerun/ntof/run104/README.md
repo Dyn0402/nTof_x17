@@ -59,3 +59,19 @@ the 24 control acquisitions (runs 106/108, L2 era) and 12 L1-era ones (runs 100/
 f = 0 and 1 from the main pass and the control (and f = 0 on runs 100/102 as jobs). Bundles = the frozen D_E2_beam
 with only `t0_abs` and its provenance changed (`make_pin_scan.py`; EOS `Analysis_pass1/tests/d_pin_scan/`).
 Score with the same readings (prior-removed χ², pointing < 15 mm), then re-run every D beam row on the best pin.
+
+### Result (11-17, 143 of 156 jobs; 9 L1-era + 17 L2-era acquisitions with every pin): no optimum
+
+`pin_scan_summary.csv`. Pin, L2-era: tracks / pointing < 15 mm / fraction pointing —
+L2 (18/20 ns) 32,006 / 5,120 / 0.160; L1 (−18/−11) 32,317 / 5,228 / 0.162; −54/−42 32,651 / 5,284 / 0.162;
+−90/−74 32,953 / 5,356 / 0.163 (L1 era the same pattern, 0.144–0.149). The pointing fraction is flat across 110 ns of
+pin; an earlier pin only lets 1–3 % more tracks pass the reco gate, monotonically to the edge of the scan. The fitted t0
+follows the pin (pull ≈ 0 ns at every pin) and the prior-removed χ² differences are ~1e-4 per dof. So D's beam data do
+not locate t0, and the L1 "edge" on run_104 and the control is this gate-count effect, not better tracks.
+
+**Dylan 11-17: re-run D's L2-era beam on L1**, so every D beam row (L1 era, run_104, L2 era) carries one measured
+latency. 2,358 jobs, `freeze/pass_dbeam_L1.txt`, frozen bundle `D_E2_beam_L1`, code `ed0b1162`, out EOS
+`Analysis_pass1/rerun_dbeam_L1/`; canonical through `ledger_canon.json`.
+
+Does not rule out: a D beam latency different from both cosmic pins (the data cannot see it); the 1–3 % yield
+dependence on the pin is a reco-gate property and stays as a stated systematic on D's beam yield.

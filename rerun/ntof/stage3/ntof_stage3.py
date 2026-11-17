@@ -15,7 +15,7 @@ with the n_TOF pass's rules (NTOF_PASS_PLAN §3 G2):
     flash (trigger_time, t_pred_ns) where those products exist.  Beam-off cosmic sub-runs have neither (no flash): the
     columns stay null, and the sidecar says so.
 
-    ntof_stage3.py --stage2 $WORK_DATA/ntof_pass1/stage2 [--side $WORK_DATA/ntof_pass1/side] --out DIR [--jobs 8]
+    ntof_stage3.py --stage2 $WORK_DATA/ntof_pass1/stage2 [--side $WORK_DATA/ntof_pass1/run104] [--rerun-dbeam DIR] --out DIR
                    [--runs 145,149] [--force]
 
 `--stage2` / `--side` are local copies of EOS Analysis_pass1/stage2 and the canon's other directories (same layout).
@@ -42,7 +42,9 @@ OLD = Path('/media/dylan/data/x17/sept26_prelim')
 def canonical(r, arm, canon, roots):
     """(dir, file stem) of the canonical output of registry row r, arm."""
     u = L.rule_for(canon, r, arm)
-    base = roots.get(u['dir'].split('/')[0], roots['stage2']) if u else roots['stage2']
+    if u and u['dir'].split('/')[0] not in roots:
+        raise KeyError(f"canon dir {u['dir']!r} has no local root (add it to roots in main)")
+    base = roots[u['dir'].split('/')[0]] if u else roots['stage2']
     sub = '/'.join(u['dir'].split('/')[1:]) if u else ''
     d = Path(base) / sub / f"run_{r['run']}" / r['subrun'] / arm
     return d, f"run_{r['run']}_{r['subrun']}_{r['tag']}_{arm}"
@@ -104,6 +106,8 @@ def main():
     ap.add_argument('--stage2', default=f'{wd}/ntof_pass1/stage2')
     ap.add_argument('--side', default=f'{wd}/ntof_pass1/side', help='local copy of Analysis_pass1/side')
     ap.add_argument('--tests', default=f'{wd}/ntof_pass1/tests', help='local copy of Analysis_pass1/tests')
+    ap.add_argument('--rerun-dbeam', default=f'{wd}/ntof_pass1/rerun_dbeam_L1',
+                    help='local copy of Analysis_pass1/rerun_dbeam_L1 (D L2-era beam on L1, 11-17)')
     ap.add_argument('--out', default=f'{wd}/ntof_pass1/stage3')
     ap.add_argument('--canon', default=os.path.join(NT, 'ledger_canon.json'))
     ap.add_argument('--runs', default=None)
@@ -111,7 +115,7 @@ def main():
     ap.add_argument('--force', action='store_true')
     a = ap.parse_args()
     canon = L.load_canon(a.canon)
-    roots = {'stage2': a.stage2, 'side': a.side, 'tests': a.tests}
+    roots = {'stage2': a.stage2, 'side': a.side, 'tests': a.tests, 'rerun_dbeam_L1': a.rerun_dbeam}
     reg = [r for r in csv.DictReader(open(os.path.join(NT, 'ntof_registry.csv'))) if r['excluded'] != 'True']
     if a.runs:
         reg = [r for r in reg if r['run'] in a.runs.split(',')]
