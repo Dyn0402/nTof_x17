@@ -7,7 +7,10 @@ with the n_TOF pass's rules (NTOF_PASS_PLAN §3 G2):
 
   * angles are true tans from the bundle's v: k = 1 for A, C, D (the frozen bundles carry the in-situ v; k is no longer
     a correction, only a check).  B has no angle (no field-shaping ring): k unset, so its angle columns are null and
-    its positions are kept.  C's v(t) correction (P7a) goes in as `tan_vt` beside `tan`, not here.
+    its positions are kept.
+  * the drift-velocity correction v(t) (P7a, decided 11-17: no rerun) goes in BESIDE the frozen-v columns, never over
+    them: `v_t`, `tanx_vt`, `tany_vt`, every angle-derived column as `<col>_vt`, `in_acceptance_vt` (|tan_vt| < 0.5
+    true) and `gated_vt` (vt_join.py; vt_smooth.parquet from EOS Analysis_pass1/vt_table/, --vt).
   * acceptance |tan| < 0.6 true (decided 10-08; the reco cut is 0.6 raw = 0.6 true at k = 1).
   * the canonical output per (row, arm) is ntof_ledger.py's (ledger_canon.json: D run_104 from side/run104_D_L1, and
     any re-run set).  Stage 3 never picks a file the ledger would not.
@@ -16,12 +19,12 @@ with the n_TOF pass's rules (NTOF_PASS_PLAN §3 G2):
     columns stay null, and the sidecar says so.
 
     ntof_stage3.py --stage2 $WORK_DATA/ntof_pass1/stage2 [--side $WORK_DATA/ntof_pass1/run104] [--rerun-dbeam DIR] --out DIR
-                   [--runs 145,149] [--force]
+                   [--vt $WORK_DATA/ntof_pass1/vt/vt_smooth.parquet] [--runs 145,149] [--force]
 
 `--stage2` / `--side` are local copies of EOS Analysis_pass1/stage2 and the canon's other directories (same layout).
 A per-sub-run view directory of symlinks (mx17_<arm>/events_<tag>.*) feeds build_tracks unchanged.
 """
-import argparse, csv, json, os, sys, tempfile, traceback
+import argparse, csv, hashlib, json, os, sys, tempfile, traceback
 
 import pandas as pd
 from concurrent.futures import ProcessPoolExecutor, as_completed
@@ -30,9 +33,10 @@ from pathlib import Path
 HERE = os.path.dirname(os.path.abspath(__file__))
 NT = os.path.abspath(os.path.join(HERE, '..'))
 REPO = os.path.abspath(os.path.join(NT, '..', '..'))
-sys.path[:0] = [NT, REPO]
+sys.path[:0] = [HERE, NT, REPO]
 
 import ntof_ledger as L   # noqa: E402
+import vt_join as VT        # noqa: E402
 
 K_ARM = {'A': 1.0, 'C': 1.0, 'D': 1.0}
 TAN_MAX_TRUE = 0.6
@@ -50,7 +54,7 @@ def canonical(r, arm, canon, roots):
     return d, f"run_{r['run']}_{r['subrun']}_{r['tag']}_{arm}"
 
 
-def one(run, sub, rows, canon, roots, out, force):
+def one(run, sub, rows, canon, roots, out, force, vt_path, vt_md5):
     from sept26_prelim_analysis import build_tracks as BT
     dst = Path(out) / f'tracks_run_{run}_{sub}.parquet'
     if dst.exists() and not force:
@@ -84,6 +88,16 @@ def one(run, sub, rows, canon, roots, out, force):
         tracks.loc[b, 'gated'] = tracks.loc[b, 'gated_reco']
         tracks.loc[b, 'tan_source'] = 'none (B: positions only)'
         meta['n_gated'] = int(tracks['gated'].sum())
+        # v(t): beside the frozen-v columns (vt_join.py)
+        trig = {VT.TRIGGER_OF_RCLASS[r['rclass']] for r in rows}
+        if len(trig) != 1:
+            raise ValueError(f'sub-run rows disagree on trigger class {trig}')
+        from ntof_tracking.reco import geometry as G
+        from sept26_prelim_analysis import paths
+        cfg = json.loads((Path(str(paths.root('runs'))) / f'run_{run}' / 'run_config.json').read_text())
+        tracks, vinfo = VT.attach_vt(tracks, VT.load_vt(vt_path), trig.pop(), G.detector_transforms(cfg))
+        meta['vt'] = VT.meta_block(vinfo, vt_path, vt_md5)
+        meta['n_gated_vt'] = vinfo['n_gated_vt']
         if 'B' in meta.get('provenance', {}):
             meta['provenance']['B']['acceptance']['n_gated'] = int(tracks.loc[b, 'gated'].sum())
             meta['provenance']['B']['acceptance']['b_rule'] = 'gated = gated_reco (no angle, no acceptance cut)'
@@ -108,6 +122,8 @@ def main():
     ap.add_argument('--tests', default=f'{wd}/ntof_pass1/tests', help='local copy of Analysis_pass1/tests')
     ap.add_argument('--rerun-dbeam', default=f'{wd}/ntof_pass1/rerun_dbeam_L1',
                     help='local copy of Analysis_pass1/rerun_dbeam_L1 (D L2-era beam on L1, 11-17)')
+    ap.add_argument('--vt', default=f'{wd}/ntof_pass1/vt/vt_smooth.parquet',
+                    help='local copy of EOS Analysis_pass1/vt_table/vt_smooth.parquet (check its md5 against EOS)')
     ap.add_argument('--out', default=f'{wd}/ntof_pass1/stage3')
     ap.add_argument('--canon', default=os.path.join(NT, 'ledger_canon.json'))
     ap.add_argument('--runs', default=None)
@@ -123,9 +139,11 @@ def main():
     for r in reg:
         groups.setdefault((r['run'], r['subrun']), []).append(r)
     os.makedirs(a.out, exist_ok=True)
+    vt_md5 = hashlib.md5(open(a.vt, 'rb').read()).hexdigest()
+    print(f'v(t): {a.vt} md5 {vt_md5}', flush=True)
     bad = []
     with ProcessPoolExecutor(a.jobs) as ex:
-        fs = [ex.submit(one, run, sub, rows, canon, roots, a.out, a.force) for (run, sub), rows in sorted(groups.items())]
+        fs = [ex.submit(one, run, sub, rows, canon, roots, a.out, a.force, a.vt, vt_md5) for (run, sub), rows in sorted(groups.items())]
         for i, f in enumerate(as_completed(fs)):
             run, sub, msg, err = f.result()
             print(f'[{i + 1}/{len(fs)}] run_{run} {sub}: {msg}', flush=True)

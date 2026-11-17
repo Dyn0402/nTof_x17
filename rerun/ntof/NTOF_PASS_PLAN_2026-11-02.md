@@ -685,3 +685,15 @@ A failing arm is held, as on the bench.
   −1.9 %/hPa, −2.2 %/K on C, not a density effect. A/B (condor 4677861, 30/30 exit 0): v_drift = measured v changes no fit
   (w identical), tan scales as v ratio to 0.1–0.5 %, ~1 % of tracks reshuffled by candidate ranking (tan edge + column-end
   window), counts within 0.6 %. Recommendation: table correction + true |tan| < 0.5, no rerun (Dylan to decide).
+- **11-17 night (desktop): stage 3 with v(t)** (`rerun/ntof/stage3/vt_join.py`, `vt_score/report.html`). Dylan's decision (no
+  rerun, table correction, true |tan| < 0.5) built into `ntof_stage3.py` as `_vt` columns beside the frozen ones.
+  **The timing v is not the angle v.** `tan · v_bundle / v_t` over-corrects: run_149 A–C line ratio C 1.04 → 0.98, A 1.008 → 0.973.
+  On every beam-off sub-run (`vt_line_campaign.py`, ~240 per view) the line ratio follows v_t/v_bundle with slope 0.84 ± 0.08 (Ax),
+  0.97 ± 0.05 (Ay), 0.95 ± 0.03 (Cx), 0.94 ± 0.02 (Cy), χ²/dof ≈ 1, offset by a constant: κ = v_angle/v_t = A 0.968 / 0.973,
+  C 0.978 / 0.979 (x / y; early vs late half differ 0.3–0.4 %). So v(t)'s shape is right for the angles and its level is 2–3 % high,
+  the n_TOF counterpart of the bench's kw ≠ 1 on golden rows. Correction used: `tan_vt = tan · v_bundle / (κ · v_t)`, κ_D = 1.
+  With κ: run_149 line 1.000–1.004 on all four views (κ is partly fitted on run_149: not independent); run_145 source y
+  A −31.66 ± 0.37, C −33.26 ± 0.48 (frozen −31.56 / −33.22).
+  Built with an interim canon (`$WORK_DATA/ntof_pass1/ledger_canon_interim_noL1.json`: rerun_dbeam_L1 rule dropped) because
+  4677439 was ~11 % done; D L2-era beam rows (217 sub-runs) are on the L2 pin until it lands, then rebuild them with the real canon.
+

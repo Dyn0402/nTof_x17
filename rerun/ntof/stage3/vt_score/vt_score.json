@@ -1,0 +1,212 @@
+{
+ "line_run149": {
+  "frozen": {
+   "label": "frozen",
+   "n_tracks_A": 254706,
+   "n_tracks_C": 234102,
+   "n_events_A": 242605,
+   "n_events_C": 222826,
+   "n_ac_events": 14644,
+   "n_ac_line": 13550,
+   "Ax": {
+    "corr": 0.9265333392825479,
+    "n_kw": 7417,
+    "ratio": 1.0069405492724872,
+    "ratio_err": 0.0017296301507289222,
+    "res_tan_68": 0.03625179311277082
+   },
+   "Ay": {
+    "corr": 0.9474387671126617,
+    "n_kw": 9827,
+    "ratio": 1.0091878806643086,
+    "ratio_err": 0.0010711161688884271,
+    "res_tan_68": 0.0321644084692069
+   },
+   "Cx": {
+    "corr": 0.9164372176785794,
+    "n_kw": 7417,
+    "ratio": 1.038183972806808,
+    "ratio_err": 0.0021712882767192833,
+    "res_tan_68": 0.04644722945616658
+   },
+   "Cy": {
+    "corr": 0.9474068835869919,
+    "n_kw": 9827,
+    "ratio": 1.0408959353362979,
+    "ratio_err": 0.0016003181631093187,
+    "res_tan_68": 0.047348043421659665
+   }
+  },
+  "vt_nokappa": {
+   "label": "vt_nokappa",
+   "n_tracks_A": 254706,
+   "n_tracks_C": 234102,
+   "n_events_A": 242605,
+   "n_events_C": 222826,
+   "n_ac_events": 14644,
+   "n_ac_line": 13566,
+   "Ax": {
+    "corr": 0.9261957777342795,
+    "n_kw": 7423,
+    "ratio": 0.9716087765260938,
+    "ratio_err": 0.0016586031788063766,
+    "res_tan_68": 0.03725287290357617
+   },
+   "Ay": {
+    "corr": 0.9482622554489553,
+    "n_kw": 9833,
+    "ratio": 0.973837071867745,
+    "ratio_err": 0.0010136317398174324,
+    "res_tan_68": 0.032908124568849936
+   },
+   "Cx": {
+    "corr": 0.916375922447143,
+    "n_kw": 7423,
+    "ratio": 0.9796082062373006,
+    "ratio_err": 0.0020199686180588745,
+    "res_tan_68": 0.04180672433708687
+   },
+   "Cy": {
+    "corr": 0.9476455569449465,
+    "n_kw": 9833,
+    "ratio": 0.9813794321537509,
+    "ratio_err": 0.0014996871881188991,
+    "res_tan_68": 0.041893185539809384
+   }
+  },
+  "vt": {
+   "label": "vt",
+   "n_tracks_A": 254706,
+   "n_tracks_C": 234102,
+   "n_events_A": 242605,
+   "n_events_C": 222826,
+   "n_ac_events": 14644,
+   "n_ac_line": 13550,
+   "Ax": {
+    "corr": 0.9265762861595473,
+    "n_kw": 7418,
+    "ratio": 1.0036369651205508,
+    "ratio_err": 0.001712878780018927,
+    "res_tan_68": 0.035963164741378124
+   },
+   "Ay": {
+    "corr": 0.9488623586178764,
+    "n_kw": 9827,
+    "ratio": 1.001318294412694,
+    "ratio_err": 0.0010427677143280349,
+    "res_tan_68": 0.03174466728427179
+   },
+   "Cx": {
+    "corr": 0.9166190859814282,
+    "n_kw": 7418,
+    "ratio": 1.0014356898490973,
+    "ratio_err": 0.002065203515704662,
+    "res_tan_68": 0.04236688810322651
+   },
+   "Cy": {
+    "corr": 0.948795661867218,
+    "n_kw": 9827,
+    "ratio": 1.0029502499206877,
+    "ratio_err": 0.0015318374092517634,
+    "res_tan_68": 0.042119042060674794
+   }
+  },
+  "vt_acc05": {
+   "label": "vt_acc05",
+   "n_tracks_A": 254706,
+   "n_tracks_C": 234102,
+   "n_events_A": 242605,
+   "n_events_C": 222826,
+   "n_ac_events": 12748,
+   "n_ac_line": 11974,
+   "Ax": {
+    "corr": 0.9326192872569927,
+    "n_kw": 6747,
+    "ratio": 1.002730286804884,
+    "ratio_err": 0.0017102028980593952,
+    "res_tan_68": 0.03303059512391345
+   },
+   "Ay": {
+    "corr": 0.9589165050010935,
+    "n_kw": 9096,
+    "ratio": 0.9996541385617759,
+    "ratio_err": 0.0010477293027258035,
+    "res_tan_68": 0.029179464261155974
+   },
+   "Cx": {
+    "corr": 0.9200342614472938,
+    "n_kw": 6747,
+    "ratio": 0.9991136698044785,
+    "ratio_err": 0.0020831506688649766,
+    "res_tan_68": 0.03926466771780681
+   },
+   "Cy": {
+    "corr": 0.958415953828562,
+    "n_kw": 9096,
+    "ratio": 1.0014555656792492,
+    "ratio_err": 0.0015360273611389338,
+    "res_tan_68": 0.039186385002338446
+   }
+  },
+  "v_t_over_v_bundle_run149": {
+   "A": 1.0388114837751445,
+   "C": 1.0682104578314524,
+   "D": 1.1115400581745347
+  }
+ },
+ "srcy_run145": {
+  "frozen": {
+   "A": {
+    "n": 13517,
+    "y_cross_mm": -31.56,
+    "err_mm": 0.36,
+    "verdict": "pass"
+   },
+   "C": {
+    "n": 11178,
+    "y_cross_mm": -33.22,
+    "err_mm": 0.44,
+    "verdict": "pass"
+   },
+   "verdict": "pass",
+   "rule": "late (>= 20 ms) A/C y band crossing must be < 0 (the capsule nose, bottom); > +3 sigma means stored y is mirrored (COORDINATES.md)"
+  },
+  "frozen_acc05": {
+   "A": {
+    "n": 12765,
+    "y_cross_mm": -31.62,
+    "err_mm": 0.36,
+    "verdict": "pass"
+   },
+   "C": {
+    "n": 10191,
+    "y_cross_mm": -33.22,
+    "err_mm": 0.47,
+    "verdict": "pass"
+   },
+   "verdict": "pass",
+   "rule": "late (>= 20 ms) A/C y band crossing must be < 0 (the capsule nose, bottom); > +3 sigma means stored y is mirrored (COORDINATES.md)"
+  },
+  "vt": {
+   "A": {
+    "n": 12571,
+    "y_cross_mm": -31.66,
+    "err_mm": 0.37,
+    "verdict": "pass"
+   },
+   "C": {
+    "n": 9976,
+    "y_cross_mm": -33.26,
+    "err_mm": 0.48,
+    "verdict": "pass"
+   },
+   "verdict": "pass",
+   "rule": "late (>= 20 ms) A/C y band crossing must be < 0 (the capsule nose, bottom); > +3 sigma means stored y is mirrored (COORDINATES.md)"
+  },
+  "n_files": 3,
+  "v_t_over_v_used_run145": {
+   "A": 1.000342784359625,
+   "C": 0.9919836328894508
+  }
+ }
+}

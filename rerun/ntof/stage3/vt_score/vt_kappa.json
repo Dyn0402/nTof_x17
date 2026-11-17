@@ -1,0 +1,56 @@
+{
+ "doc": "kappa = v_angle / v_t: the A-C cosmic line (fitted/true tan) over v_t/v_bundle per cosmic sub-run, slope fixed at 1, weighted mean.  tan_vt = tan * v_bundle / (kappa * v_t).  D has no A-C line: kappa_D = 1 (timing ratio only, absolute scale unanchored).",
+ "source": "vt_line_campaign.py",
+ "window": [
+  0.15,
+  0.45
+ ],
+ "kappa": {
+  "Ax": {
+   "kappa": 0.967891232938346,
+   "err": 0.001005461658278091,
+   "chi2_dof": 0.9867251196993012,
+   "n_subruns": 236
+  },
+  "Ay": {
+   "kappa": 0.9725122383959357,
+   "err": 0.0006154624837179625,
+   "chi2_dof": 1.0441509004842704,
+   "n_subruns": 240
+  },
+  "Cx": {
+   "kappa": 0.9777838538279069,
+   "err": 0.0011916355064647375,
+   "chi2_dof": 1.026515489745432,
+   "n_subruns": 236
+  },
+  "Cy": {
+   "kappa": 0.9785079717851077,
+   "err": 0.0009007900742702898,
+   "chi2_dof": 1.245467784468587,
+   "n_subruns": 240
+  }
+ },
+ "syst_early_late": {
+  "Ax": {
+   "early": 0.9643985325921034,
+   "late": 0.9712461592336656,
+   "half_diff": 0.0034238133207811217
+  },
+  "Ay": {
+   "early": 0.9718972741631039,
+   "late": 0.9731044602908523,
+   "half_diff": 0.0006035930638741971
+  },
+  "Cx": {
+   "early": 0.9778414776610461,
+   "late": 0.9777295205615518,
+   "half_diff": 5.5978549747148776e-05
+  },
+  "Cy": {
+   "early": 0.9752596757964452,
+   "late": 0.9814468353351934,
+   "half_diff": 0.0030935797693740774
+  }
+ }
+}
