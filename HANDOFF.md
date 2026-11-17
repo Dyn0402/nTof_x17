@@ -463,7 +463,7 @@ redeployed (dylan-cern-site 91d4386). Inputs on the desktop: $WORK_DATA/claude-j
 **Resume (11-17 night, DESKTOP):** Dylan decided **no reconstruction rerun**. Tonight = the stage-3 v(t) build below
 ("Tonight on the desktop"). Note for Dylan: https://dylan-neff.web.cern.ch/notes/ntof-drift-velocity.html
 
-**Tonight on the desktop (planned 11-17 by dylan-Yoga): stage 3 with v(t).** Decided (Dylan 11-17): no rerun; tan corrected
+**Tonight on the desktop (planned 11-17 by dylan-Yoga): stage 3 with v(t).** (Sensor wish-list for future runs written from this study: x17_facility_search `slow_control/ENVIRONMENT_SENSORS.md`; board entry 11-17 posted.) Decided (Dylan 11-17): no rerun; tan corrected
 at table level, acceptance true |tan| < 0.5, ~1 % track reshuffle stated as a systematic (`rerun/ntof/vt/README.md`).
 1. `git pull` in nTof_x17. Fetch the v(t) products: EOS `Analysis_pass1/vt_table/` → `$WORK_DATA/ntof_pass1/vt/`
    (needs `vt_smooth.parquet`: per (run, subrun, tag, arm, trigger) `v_fit`, `v_fit_err`, `v_bundle`; D beam rows are
