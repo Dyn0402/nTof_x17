@@ -460,8 +460,25 @@ redeployed (dylan-cern-site 91d4386). Inputs on the desktop: $WORK_DATA/claude-j
 
 ## n_TOF pass 1: reprocess the n_TOF tracks on the final chain — updated 2026-11-17 (dylan-Yoga)
 
-**Resume (11-17 evening):** v(t) table + smooth model + A/B done (`rerun/ntof/vt/README.md`); D L1 re-run 4677439 still running;
-next: Dylan's call on "no rerun, |tan| < 0.5", then the stage-3 `tan_vt` join on the desktop; account 4677439 when it lands.
+**Resume (11-17 night, DESKTOP):** Dylan decided **no reconstruction rerun**. Tonight = the stage-3 v(t) build below
+("Tonight on the desktop"). Note for Dylan: https://dylan-neff.web.cern.ch/notes/ntof-drift-velocity.html
+
+**Tonight on the desktop (planned 11-17 by dylan-Yoga): stage 3 with v(t).** Decided (Dylan 11-17): no rerun; tan corrected
+at table level, acceptance true |tan| < 0.5, ~1 % track reshuffle stated as a systematic (`rerun/ntof/vt/README.md`).
+1. `git pull` in nTof_x17. Fetch the v(t) products: EOS `Analysis_pass1/vt_table/` → `$WORK_DATA/ntof_pass1/vt/`
+   (needs `vt_smooth.parquet`: per (run, subrun, tag, arm, trigger) `v_fit`, `v_fit_err`, `v_bundle`; D beam rows are
+   predicted only). Check md5 against EOS.
+2. `rerun/ntof/stage3/ntof_stage3.py`: join `vt_smooth.parquet` on (run, subrun, acq_tag, arm, trigger class of the
+   sub-run) and write beside the existing columns: `v_t`, `v_t_err`, `tanx_vt = tanx · v_bundle / v_t` (same for y),
+   the mid-gap positions and `d_z` recomputed from the vt tans, and `in_acceptance_vt` = |tanx_vt|, |tany_vt| < 0.5,
+   `gated_vt = gated_reco & in_acceptance_vt`. Keep `tan`, `in_acceptance` (0.6) as they are, so both stay usable.
+   B: unchanged (no angle). D: from the D curve; sidecar caveat "D absolute scale ~10 % off its bundle, needs an angle
+   anchor". Per acquisition is fine (one acquisition ~5 min, the curve varies over hours); no per-event time needed.
+3. Test on run_145 + run_149 first (`--runs 145,149 --force`): N-G1 numbers with tan_vt (`rerun/ntof/ng1/ng1_score.py`):
+   C's 4–5 % steep angle scale and the A–C line ratio should move toward 1; source y unchanged within syst.
+4. Full rebuild `--force` (543 sub-runs; built locally on 11-16, ~hours with --jobs 8), y guard pass, then stage 3 to EOS
+   (eosput/xrdcp with checksums). D L2-era sub-runs: rebuild again once 4677439 lands (`--rerun-dbeam`).
+5. Update `docs/PARAMETERS.md` (n_TOF v(t), the 0.5 acceptance) and plan §6 in the same commit.
 
 **11-17 evening (dylan-Yoga): smooth v(t), environment, A/B — `rerun/ntof/vt/README.md`.**
 - `vt_smooth.py` → `vt_smooth.parquet` (every acquisition, every arm incl. D on beam), `vt_smooth_grid.parquet` (10 min),
