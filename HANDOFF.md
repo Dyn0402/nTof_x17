@@ -1,5 +1,43 @@
 # Handoff
 
+## INFN-IN2P3 Frascati poster — updated 2026-11-17 (DESKTOP-BCED9EL)
+
+**Resume:** plan in `infn_in2p3_26/README.md`; next: write `make_poster.py` (A0 pptx + pdf) and the P0 compression plot.
+
+**Goal:** an A0 portrait poster for the INFN-IN2P3 detector R&D conference (LNF Frascati, 2–4 Dec 2026), aimed at
+the gas-detector community. Dylan wants low manual effort: Claude builds it, and Dylan doesn't need to approve each step.
+
+**Done:**
+- Conference read from Indico in Chrome (the WebFetch agent is blocked by Anubis). The facts are in the README: A0
+  portrait, poster sessions Wed 2 Dec 16:20 and Thu 3 Dec 18:10, a best-poster award, gas session Thu 14:40.
+- Email to A. Quaranta (CERN mail, thread "Late Abstract for INFN-IN2P3 Conference"), sent 17 Nov: Dylan has
+  registered and asks whether the poster is still possible. **No reply yet**, so the poster is not confirmed.
+- `infn_in2p3_26/README.md`: angle, six-panel layout with figure sources, build plan, numbers to reconcile, timeline.
+
+**Next steps:**
+1. Check whether Quaranta replied (CERN mail, `q=Quaranta`).
+2. Plot the P0 compression from `papers/paper2/hits_daq/results/p0_*.json`: data / full model / metallic / point,
+   for X and Y on det2/3/4/7.
+3. `infn_in2p3_26/make_poster.py` → `poster.pptx` + `poster.pdf`, placeholder figures first (draft by 21 Nov).
+4. Render the figures at print resolution (the `mpgd26` builders; many need the Ubuntu desktop). Fallback: crops
+   from `ntof_athens_26/slides/neff_x17_ntof_athens_26.pdf`.
+
+**Gotchas / decisions:**
+- Hook: "one time per strip compresses the µTPC ladder, even on a metallic readout" (P0, 2026-11-05). Dylan
+  found it "somewhat interesting", so it is not locked in. Revisit if a better discussion-starter turns up (the
+  capsule image, the γ-flash recovery: detector 2 µs, DREAM 5 ms).
+- Never use the retired "29 % delayed copies at 47 ns" explanation. The submitted abstract still uses the RC
+  wording, and the poster corrects it.
+- Numbers come from Paper I (176 µm SPS; 0.90–2.41° cosmics), not from the abstract (1.2° / 93 % / 180 µm).
+  Paper I is shared with Stephan on Overleaf: read it, don't edit it.
+- Affiliation: CEA Irfu is not IN2P3, so list an INFN/n_TOF co-author or LNL.
+- Dylan's INFN oral exam is Wed 2 Dec 15:30, which clashes with poster session I.
+
+**Key files:**
+- `infn_in2p3_26/README.md`: the plan
+- `papers/infn_in2p3_2026_abstract/`: the submitted abstract
+- `papers/paper2/hits_daq/P0_XBIAS_2026-11-05.md`: the compression mechanism and its table
+
 ## Readout stack from the gerbers: L7, vias, 3D figure draft — updated 2026-11-14 (dylan-MS-7C84)
 
 **Resume:** paper1 (old draft) fixes still open (step 2 below). paper1_v2 Fig. 3 is done (11-14, dylan-Yoga): (a) chamber | (b) board on top,
