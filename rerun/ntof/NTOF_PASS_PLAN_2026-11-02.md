@@ -663,3 +663,19 @@ A failing arm is held, as on the bench.
   `audit_eos.py outputs` must run at the end of the pass. Not yet changed: the bench/SPS job scripts with the same `cp` pattern
   (`rerun/rehit/job.sh`, `rerun/sps_decode/job.sh`, `rerun/decoder_audit/job.sh`, `rerun/sps_audit/condor/dec53_job.sh`); the bench
   and SPS decoded sets have not had this census.
+
+### 11-17: P7a v(t) table built (`rerun/ntof/vt/`)
+- Condor 4677358: 543/543 sub-runs exit 0, no restarts/holds; 8,578 per-(acquisition, arm) outputs on EOS `Analysis_pass1/vt/`.
+  `vt_table.py` (laptop, 144 min single core) → `vt_{A,C,D}.parquet` + `_subrun.parquet`; `make_vt_report.py` → `report.html`,
+  `vt_summary.csv`, `vt_common_mode.csv`. Copied md5-verified to EOS `Analysis_pass1/vt_table/`.
+- HV is the same for every acquisition of each chamber (registry: A/B 540/700, C 525/700, D 520/700), so no `hv_change` flags.
+- **Per sub-run medians:** A beam 39.78 (±0.53 at 68 %, stat 0.09), C beam 30.60 (±1.11), D cosmic 34.23 (±1.77, stat 0.88).
+  Frozen bundle v: A 38.6 (+3.1 %), C 28.1 (+8.9 %), D 31.0 (+10 %). So the pass's fixed v is low on all three; C's +9 % matches
+  N-G1's "C angles 4–5 % steep at frozen v" in direction (not checked in size: the angle–v relation is not 1:1).
+- **v(t) is a real common gas effect, not noise.** Beam sub-runs: corr(A, C) = 0.85, C moves 2.25× A (rms A 1.3 %, C 3.4 %);
+  cosmic sub-runs corr(A, C) 0.67, corr(C, D) 0.68. A multi-day trend (low ~4–6 Aug, C down to ~27.8) plus a daily cycle: after a 48 h
+  running median, A 2.0 % and C 2.8 % peak-to-peak, fast at ~07 h, slow at 15–19 h (temperature/pressure-like; not identified).
+  The scatter is far above the bootstrap error (C beam: ±1.11 vs 0.09).
+- **Beam/cosmic offset is small and of opposite sign** when compared within ±12 h: A cosmic/beam 1.013 ± 0.014, C 0.989 ± 0.018
+  (68 % spread over 248 cosmic sub-runs). The earlier "3–4 %" (run_145 vs run_149) was mostly v(t) between those runs.
+- Open for Dylan: `tan_vt` normalisation (see HANDOFF).
