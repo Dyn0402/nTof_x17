@@ -499,7 +499,21 @@ redeployed (dylan-cern-site 91d4386). Inputs on the desktop: $WORK_DATA/claude-j
 ## n_TOF pass 1: reprocess the n_TOF tracks on the final chain — updated 2026-11-17 (dylan-Yoga)
 
 **Resume (11-17 night, DESKTOP):** Dylan decided **no reconstruction rerun**. Tonight = the stage-3 v(t) build below
-("Tonight on the desktop"). Note for Dylan: https://dylan-neff.web.cern.ch/notes/ntof-drift-velocity.html
+("Tonight on the desktop"), with the updated v(t) (mixer-T model, 11-17 late). Note for Dylan: https://dylan-neff.web.cern.ch/notes/ntof-drift-velocity.html
+
+**11-17 late (dylan-Yoga): gas-mixer log + mixer temperature in the v(t) model — `rerun/ntof/vt/README.md` § Gas mixer.**
+- n_TOF HAS a gas log (the "no gas log" lines elsewhere are the bench): DAQ gas_watcher, EOS `july_beam/slow_control/gas_flow/`.
+  Mix constant over the v window (9.999 % iso, rms 0.002 %; flow rms 0.0002 ln/h) → not the driver.
+- `vt_smooth.py` now takes `--gas` (laptop copy `~/work_data/ntof_pass1/gas_flow/`) and validates on 6/12/24 h held-out
+  blocks; model used = spline + water + mixer T (MFC temperature, τ_T 2 h). Helps only across long gaps: 24 h A/C/D
+  1.38/2.40/3.53 → 1.20/1.83/3.08 %; the ³He capsule as control does as well on A, C; mixer wins on D. C's 24 h pulls 1.18.
+  My earlier in-sample "R² 0.68→0.86" claim did not survive validation (per-acquisition gain ~0.01).
+- **The production `vt_smooth.parquet` on EOS changed** (md5-verified upload; old in `vt_table/smooth_v1_2026-11-17/`):
+  0.05 % (A) / 0.16 % (C) rms per acquisition, D beam −0.18 %, errors ~20 % smaller. Tonight's stage-3 join uses the new one.
+- Published: page https://dylan-neff.web.cern.ch/notes/ntof-drift-velocity-report.html (`make_vt_page.py`), deck updated
+  (mixer slide). Site repo: the earlier deck had gone to `main` by mistake; merged into `master` (default) and pushed.
+- Laptop `~/PycharmProjects/dylan-cern-site` is 26+ behind with stale uncommitted 11-08 edits (left alone; check before pulling).
+- Not done: x17 board log entry for this (optional).
 
 **Tonight on the desktop (planned 11-17 by dylan-Yoga): stage 3 with v(t).** (Sensor wish-list for future runs written from this study: x17_facility_search `slow_control/ENVIRONMENT_SENSORS.md`; board entry 11-17 posted.) Decided (Dylan 11-17): no rerun; tan corrected
 at table level, acceptance true |tan| < 0.5, ~1 % track reshuffle stated as a systematic (`rerun/ntof/vt/README.md`).
