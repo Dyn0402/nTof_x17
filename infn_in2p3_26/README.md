@@ -4,7 +4,10 @@
 LNF Frascati (ed. 36, B. Touschek). <https://agenda.infn.it/event/52777/>
 Chair: Alberto Quaranta (CSN5 president). Dylan is registered; the poster
 contribution was requested on 30 Oct and followed up on 17 Nov (Quaranta thread,
-CERN mail). **Not yet confirmed as added to the programme.**
+CERN mail). **Not yet confirmed as added to the programme.** The submitted abstract
+is `papers/infn_in2p3_2026_abstract/` (session: gas detectors). That folder notes an
+eligibility point: CEA Irfu is not IN2P3, so list an INFN/IN2P3 co-author (n_TOF)
+or the INFN LNL affiliation.
 
 ## What the conference is (read from Indico, 2026-11-17)
 
@@ -27,17 +30,26 @@ the room runs resistive MPGDs (NSW Micromegas, µ-RWELL, ERAM). Many of them use
 µTPC mode. So the poster is **about the detector and the reconstruction**, with
 X17 as the reason and n_TOF as the proof.
 
-**The hook: a resistive layer bends time.** On a resistive-strip chamber each
-strip's waveform is its own charge plus ~29 % of each neighbour's, delayed by
-τ ≈ 47 ns. The per-strip time is therefore an aggregate: it compresses the
-drift-time ladder by 20–30 % and reads tracks ~4° too steep. This holds for every
-estimator tried (rising edge, CFD, matched filter), so no threshold tuning fixes it.
-Anyone doing µTPC on a resistive layer should wonder whether they have the same
-bias. That is the question meant to start conversations at the poster.
-Source: `RECONSTRUCTION_BASIS.md`, `mx_june_cosmic_qa/waveform_first_threading/WAVEFORM_FIRST_THREADING.md`.
+**The hook: "your µTPC hit times are lying, even on a metallic readout."** A single
+time per strip mixes charge from different drift depths. Drift diffusion, together
+with the prompt induction footprint, puts deep charge onto neighbours whose own
+charge arrived earlier, and a leading-edge or peak time is pulled toward the earliest
+charge. The cathode end is pulled in more than the mesh end, so the time ladder is
+compressed and tracks read ~2–4° too steep. On our chambers the X view, which has no
+resistive spreading, is compressed ×1.17–1.20. A **metallic readout in the same gas
+would show almost all of that** (model with the resistive term off: ×1.17–1.24). The
+resistive layer then roughly doubles the excess in the view across the strips (Y
+×1.27–1.53). Every estimator tried shows it (leading edge, CFD, peak, matched
+filter), so no threshold tuning fixes it. The room runs µTPC on NSW Micromegas and
+µ-RWELL, so the question to put to them is whether they have corrected for this.
+Sources: `papers/paper2/hits_daq/P0_XBIAS_2026-11-05.md` (the table to plot),
+`RECONSTRUCTION_BASIS.md`. **Do not use the retired "29 % delayed copies at 47 ns"
+explanation** (repo `CLAUDE.md`). The submitted abstract still says "charge spreads
+… with an RC delay … about 4° too steep"; the poster should state the corrected
+mechanism.
 
-The fix is a forward model of the whole strip × sample picture (`wft/`), which turns
-the neighbours' delayed copies into signal. The proof is the n_TOF beam, where the
+The fix is a forward model of the whole strip × sample picture (`wft/`): it fits the
+mixing instead of reading one time per strip. The proof is the n_TOF beam, where the
 reconstructed tracks image the ³He capsule.
 
 ## Poster layout (A0 portrait, 841 × 1189 mm)
@@ -47,8 +59,8 @@ reconstructed tracks image the ³He capsule.
 | 0 | Header | Title, authors (CEA Irfu / n_TOF; INFN LNL incoming), QR to the online version | — |
 | 1 | Why build it | X17 → ³He(n,e⁺e⁻), the opening angle, why low mass means a TPC. Kept small. | `mpgd26/make_x17.py --layout beats` |
 | 2 | The chamber | 40 × 40 cm², 30 mm drift, bulk resistive strips, 0.78 mm pads coupled to two strip views, DREAM readout | `mpgd26/make_chamber.py` (exploded view), `make_microtpc.py` |
-| 3 | **The resistive layer bends time** (the large centre panel) | Sharing cartoon + kernel; ladder compression; cluster vs. reference line against depth (hits walk away, waveforms do not); "every estimator fails" strip | `mpgd26/make_share.py`, table in `RECONSTRUCTION_BASIS.md` |
-| 4 | Fit the waveforms, not the hits | Model diagram; angle σ raw ladder ≈ 5° → hybrid 1.6° → waveform fit ≈ 1.1°; efficiency, spatial resolution | `make_share.py` (model diagram), `make_resolution.py`, `make_efficiency_breakdown.py` |
+| 3 | **One time per strip compresses the track** (the large centre panel) | Cartoon of the mechanism (diffusion pulls deep charge early); the P0 bar chart, data / full model / metallic / point for X and Y on four chambers; cluster vs. reference line against depth (hits walk away, waveforms do not) | new plot from `papers/paper2/hits_daq/results/p0_*.json`; `RECONSTRUCTION_BASIS.md` depth table |
+| 4 | Fit the waveforms, not the hits | Model diagram; angle resolution and efficiency from Paper I | `make_share.py` (model diagram); numbers and figures from `papers/paper1` (`figures.toml`) |
 | 5 | In the n_TOF beam | EAR2 setup; capsule image from track pointing; the γ-flash: chamber back in 2 µs, DREAM in 5 ms | `make_ntof.py`, `make_run145_pointing.py`, `make_flash_slides.py` |
 | 6 | Questions for you | Short list aimed at the room: does your µTPC see the same compression? c2 < c1 kernel trap; who has a flash-tolerant readout? | text |
 
@@ -69,9 +81,11 @@ interactive "slide τ and watch the ladder compress" toy on the site.
 
 ## Numbers to reconcile before printing
 
-- The abstract says angular resolution 1.2°, efficiency 93 %, spatial resolution
-  180 µm. `RECONSTRUCTION_BASIS.md` gives a per-event σ of 1.0–1.1° and a mesh σ of
-  0.58 mm. Pick one source per number and state its conditions (cosmics, which
+- **Paper I (`papers/paper1/main.tex`) is the source of truth for the numbers.** It gives
+  intrinsic resolution 176 µm (0.30 × pitch, SPS beam) and cosmic angular resolution
+  0.90–2.41° (chamber A 0.99/0.90° in X/Y). The abstract (`papers/infn_in2p3_2026_abstract/`)
+  says 1.2°, 93 % and 180 µm. Paper I is shared with Stephan on Overleaf: read it, don't
+  edit it. State the conditions for each number on the poster (cosmics or beam, which
   detector, which bundle).
 - Use the `calib_bundle_r06` (c2 < c1) numbers only. Anything older is retired.
 - Credit prior art (Dixit 2004, Galan 2012, the T2K ERAM fit by Attié 2023;
