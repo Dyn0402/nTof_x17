@@ -458,9 +458,41 @@ redeployed (dylan-cern-site 91d4386). Inputs on the desktop: $WORK_DATA/claude-j
 - Deck: `WORK_DATA=~/work_data .venv/bin/python papers/paper1/make_figures_deck.py --out <html>` then
   `dylan-cern-site/scripts/add-note.py <html> --slug mx17-paper1-figures --force --deploy`.
 
-## n_TOF pass 1: reprocess the n_TOF tracks on the final chain — updated 2026-11-16 (dylan-MS-7C84)
+## n_TOF pass 1: reprocess the n_TOF tracks on the final chain — updated 2026-11-17 (dylan-MS-7C84)
 
-**Resume (11-16):** pass done + audited; D run_104 → L1. Next: fold in control proc 8, Dylan's call on D L2-era re-run, N-G1.
+**Resume (11-17):** D L2-era beam re-run on L1 (condor 4677439) + P7a v(t) (4677358) running; next: account both, build v(t), ledger + stage 3 rebuild.
+
+**11-16/17 (dylan-MS-7C84): steps 1–4 of 11-16 done or running.**
+- **D run_104 control complete: 24/24 L1** (pointing 7,737 vs 7,615). `rerun/ntof/run104/README.md`.
+- **D beam pin scan** (condor 4674646, `run104/make_pin_scan.py`, `pin_scan_score.py`, `pin_scan_summary.csv`): pin(f) = L2 + f(L1−L2),
+  f 0–3 (to −90/−74 ns) on 24 L2-era + 12 L1-era acquisitions. **No optimum**: pointing fraction flat 0.160–0.163; an earlier
+  pin only passes 1–3 % more tracks through the reco gate, monotonically; fitted t0 follows the pin. Scored at 143/156 jobs
+  (12 still running at wrap-up, all done exit 0 so far): finish = `pull f??? from EOS tests/d_pin_scan` + rerun the scorer.
+- **Dylan 11-17: re-run D's L2-era beam on L1** so every D beam row has one measured pin. **Condor 4677439**, 2,358 jobs
+  (`freeze/pass_dbeam_L1.txt`, bundle `D_E2_beam_L1`, code `ed0b1162`, log `~/x17rerun/ntof/pass1/log_s13_dbeamL1/`), out EOS
+  `Analysis_pass1/rerun_dbeam_L1/`; made canonical in `rerun/ntof/ledger_canon.json`. All idle at wrap-up; ~8–10 h/job.
+- **N-G1 done, no arm held** (`rerun/ntof/ng1/README.md`, `report.html`; forked session): A passes all (source y −31.6, G5 +8.1 %);
+  C passes with conditions (angles 4–5 % steep at frozen v → P7a; source y −33.2 vs −35, inside ±3 mm syst.; G5 +4.5 %);
+  B, D no is2_v2 reference.
+- **Ledger** `rerun/ntof/ntof_ledger.py` (run on lxplus: `~/x17rerun/ntof/ledger/`, `~/bin/lockpy ntof_ledger.py --out out_full`):
+  15,748/15,748 canonical outputs clean (code, pin, mask era, v, tan_max, no overrides). Yield outliers (x0.6/x1.5, ≥100 events):
+  13 B cosmic rows + run_162 stat090_0009 `_011` A (0.22 vs 0.49), not looked at. Rerun after 4677439 lands.
+- **Stage 3** `rerun/ntof/stage3/ntof_stage3.py` (build_tracks.build on a symlink view of the canonical files; k = 1 for A/C/D,
+  B positions with gated = gated_reco; |tan| < 0.6 true; old stage1 + trigtime context): **543/543 sub-runs built**, y guard pass,
+  in `$WORK_DATA/ntof_pass1/stage3/` (from the local stage2 copy `$WORK_DATA/ntof_pass1/stage2/`, 46 GB). Cosmic sub-runs and
+  run_104 stat090_0016 have no trigger-time product (null columns). D's L2-era tables must be rebuilt after 4677439.
+- **P7a v(t)** `rerun/ntof/vt/` (vt_acq.py colsum T on the pass's clean tracks, vt_stage.sh xrootd, vt_table.py stacked-median box
+  fit + bootstrap, sub-run pooled table for D): smoke 4674654 2/2 exit 0, identical to local. **Condor 4677358** (543 sub-runs,
+  code `code_2f151065`, log `~/x17rerun/ntof/vt/log_vt1/`, out EOS `Analysis_pass1/vt/`): 377 done exit 0 at last count.
+  First numbers: run_145 beam A 38.1–39.2, C 27.4–28.1; run_149 cosmic A 39.5–40.0, C 28.6–28.9 (cosmic +3–4 %: selection);
+  D ~15–45 clean events/acq → pool per sub-run/run.
+- **Open for Dylan:** tan_vt normalisation (absolute colsum v per trigger class, or v(t)/v_ref × bundle v), given the 3–4 %
+  beam/cosmic selection offset.
+- **Next:** (1) account 4677358 (`001`/`005` in log_vt1), pull `Analysis_pass1/vt` → `$WORK_DATA/ntof_pass1/vt_npz/`,
+  `.venv/bin/python rerun/ntof/vt/vt_table.py --vt $WORK_DATA/ntof_pass1/vt_npz`, campaign figure + report; (2) account 4677439,
+  pull it to `$WORK_DATA/ntof_pass1/rerun_dbeam_L1/`, rerun the ledger, rebuild stage 3 for D L2-era sub-runs (`--force --runs ...`);
+  (3) tan_vt join in stage 3 after Dylan's normalisation call; (4) stage 3 to EOS, then P7 downstream migration.
+- AFS 82 % (code_2f151065 is 697 MB): `lxstore status` after the clusters. Desktop work dirs: `$WORK_DATA/ntof_pass1/{stage2,stage3,pinscan,vt_npz}`.
 
 **11-15/16 (dylan-MS-7C84): pass finished, audited, D run_104 decided.**
 - Finished 11-15 12:37: main 15,344 exit 0 + 205 removed-as-done + proc 1727 (→ 4638252 ok); 4636419/20 198/198 each.
