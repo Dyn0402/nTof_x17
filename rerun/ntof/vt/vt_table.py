@@ -10,7 +10,7 @@ resamples of the events); v = gap / T with the bundle's timing-free gap (A 28.08
 29.44 ± 1.12 mm).  The two views are combined inverse-variance.  This is the recipe of the 11-02 in-situ v (plan §6)
 and of rerun/ntof/tests/d_b/bd_cosmic.py, applied per acquisition.
 
-Columns: run, subrun, tag, arm, trigger (beam / cosmic), t_start, t_end (UTC from the registry's acquisition start plus
+Columns: run, subrun, tag, arm, trigger (beam / cosmic), t_start, t_end (LOCAL time, CEST: the registry's acquisition start from the DAQ file tag, plus
 the DREAM timestamps, 10 ns ticks), n_x, n_y, T_x, T_y (+ _err), v_x, v_y (+ _err), v, v_err (statistical; the gap
 error is a common scale, `gap_err_rel`), v_bundle, hv (resist/drift of that arm), hv_change (the HV differs from the
 arm's previous acquisition), and t0 of the stack.
