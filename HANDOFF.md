@@ -460,8 +460,17 @@ redeployed (dylan-cern-site 91d4386). Inputs on the desktop: $WORK_DATA/claude-j
 
 ## n_TOF pass 1: reprocess the n_TOF tracks on the final chain — updated 2026-11-17 (dylan-Yoga)
 
-**Resume (11-17 midday):** P7a v(t) table DONE (report below); D L2-era beam re-run on L1 (4677439) still running (115/2,358 at 09:08,
-48 running); next: Dylan's `tan_vt` call, then the stage-3 join; account 4677439 when it lands.
+**Resume (11-17 evening):** v(t) table + smooth model + A/B done (`rerun/ntof/vt/README.md`); D L1 re-run 4677439 still running;
+next: Dylan's call on "no rerun, |tan| < 0.5", then the stage-3 `tan_vt` join on the desktop; account 4677439 when it lands.
+
+**11-17 evening (dylan-Yoga): smooth v(t), environment, A/B — `rerun/ntof/vt/README.md`.**
+- `vt_smooth.py` → `vt_smooth.parquet` (every acquisition, every arm incl. D on beam), `vt_smooth_grid.parquet` (10 min),
+  `smooth.html` + figures; on EOS `Analysis_pass1/vt_table/`. Environment: MeteoSwiss Cointrin 10-min (`env_gve_t_recent.csv`)
+  + ³He capsule; water vapour is the driver (C r −0.84), capsule hall-T the daily part.
+- A/B condor 4677861 (30/30 exit 0): no fit changes, ~1 % track reshuffle at the fastest times. **Open for Dylan:** accept
+  "table correction + true |tan| < 0.5, no rerun"; then the stage-3 join of `v_fit` (desktop) as `tan_vt`
+  (tan × v_bundle / v_fit; D absolute scale still needs an angle anchor).
+- 4677439 (D L1 re-run) still running; the A/B jobs had `condor_prio 10` within our queue.
 
 **11-17 midday (dylan-Yoga): P7a v(t) built.**
 - 4677358 accounted: 543 `001` / 543 `005`, all exit 0, no `004`/`009`/`012`. Pulled to laptop `~/work_data/ntof_pass1/vt_npz/` (884 MB,

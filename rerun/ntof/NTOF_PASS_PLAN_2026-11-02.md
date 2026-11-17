@@ -679,3 +679,9 @@ A failing arm is held, as on the bench.
 - **Beam/cosmic offset is small and of opposite sign** when compared within ±12 h: A cosmic/beam 1.013 ± 0.014, C 0.989 ± 0.018
   (68 % spread over 248 cosmic sub-runs). The earlier "3–4 %" (run_145 vs run_149) was mostly v(t) between those runs.
 - Open for Dylan: `tan_vt` normalisation (see HANDOFF).
+- **11-17 evening: smooth v(t), environment, A/B** (`rerun/ntof/vt/README.md`). `vt_smooth.py`: one shared P-spline curve,
+  C 3.0× / D 2.9× A; holdout ±1.1 % (A), ±1.4 % (C), 6 h-block holdout ±1.2 / ±1.5 %, pulls ~1. Outdoor water vapour
+  (MeteoSwiss Cointrin, 24 h smoothing) r = −0.84 with C; + ³He-capsule daily swing (hall T) R² 0.78 C / 0.48 A / 0.56 D;
+  −1.9 %/hPa, −2.2 %/K on C, not a density effect. A/B (condor 4677861, 30/30 exit 0): v_drift = measured v changes no fit
+  (w identical), tan scales as v ratio to 0.1–0.5 %, ~1 % of tracks reshuffled by candidate ranking (tan edge + column-end
+  window), counts within 0.6 %. Recommendation: table correction + true |tan| < 0.5, no rerun (Dylan to decide).
