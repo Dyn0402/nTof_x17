@@ -458,9 +458,26 @@ redeployed (dylan-cern-site 91d4386). Inputs on the desktop: $WORK_DATA/claude-j
 - Deck: `WORK_DATA=~/work_data .venv/bin/python papers/paper1/make_figures_deck.py --out <html>` then
   `dylan-cern-site/scripts/add-note.py <html> --slug mx17-paper1-figures --force --deploy`.
 
-## n_TOF pass 1: reprocess the n_TOF tracks on the final chain — updated 2026-11-17 (dylan-MS-7C84)
+## n_TOF pass 1: reprocess the n_TOF tracks on the final chain — updated 2026-11-17 (dylan-Yoga)
 
-**Resume (11-17):** D L2-era beam re-run on L1 (condor 4677439) + P7a v(t) (4677358) running; next: account both, build v(t), ledger + stage 3 rebuild.
+**Resume (11-17 midday):** P7a v(t) table DONE (report below); D L2-era beam re-run on L1 (4677439) still running (115/2,358 at 09:08,
+48 running); next: Dylan's `tan_vt` call, then the stage-3 join; account 4677439 when it lands.
+
+**11-17 midday (dylan-Yoga): P7a v(t) built.**
+- 4677358 accounted: 543 `001` / 543 `005`, all exit 0, no `004`/`009`/`012`. Pulled to laptop `~/work_data/ntof_pass1/vt_npz/` (884 MB,
+  8,578 npz); frozen bundles to `~/work_data/ntof_pass1/bundles/pf/` (md5 vs `bundles.md5` OK).
+- `vt_table.py` + new `rerun/ntof/vt/make_vt_report.py` → `~/work_data/ntof_pass1/vt/` (laptop) and EOS `Analysis_pass1/vt_table/`
+  (md5-verified): `report.html`, `vt_{A,C,D}[_subrun].parquet`, `vt_summary.csv`, `vt_common_mode.csv`. Findings in plan §6 "11-17".
+- Headline: v per sub-run A 39.8 / C 30.6 (beam) / D 34.2 (cosmic) vs frozen 38.6 / 28.1 / 31.0 (+3 / +9 / +10 %). A, C, D move together
+  (corr A–C 0.85, C 2.25× A), multi-day trend plus a daily cycle (fast ~07 h). HV constant all campaign. Beam/cosmic offset within ±12 h
+  is only A +1.3 %, C −1.1 % — the "3–4 %" quoted before was v(t) between run_145 and run_149.
+- **Open for Dylan (`tan_vt`):** given the ~1 % opposite-sign class offset, recommended: use each sub-run's own measured v for its own
+  trigger class (beam rows from beam v, cosmic from cosmic; D beam from the nearest D cosmic sub-run, D has no beam v); the
+  ratio-to-bundle form would carry the bundles' 3–10 % offset into every tan.
+- 4677439 at 09:08: 115 done exit 0, 48 running, 2,195 idle with good Requirements (no cycle). At this share it is days, not hours
+  (~2,200 × 8–10 h / ~50 slots, estimate). Log `~/x17rerun/ntof/pass1/log_s13_dbeamL1/`.
+- This session ran on the laptop: stage-2 (46 GB) and stage-3 work dirs are on the desktop's ucla; the stage-3 rebuild and the
+  `tan_vt` join belong on the desktop. Laptop `~/work_data/ntof_pass1/vt_npz/` (884 MB) can go once the table is final.
 
 **11-16/17 (dylan-MS-7C84): steps 1–4 of 11-16 done or running.**
 - **D run_104 control complete: 24/24 L1** (pointing 7,737 vs 7,615). `rerun/ntof/run104/README.md`.
