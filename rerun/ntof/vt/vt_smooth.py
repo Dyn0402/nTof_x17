@@ -8,9 +8,12 @@ Model, on ln v of every acquisition with a v (A and C beam + cosmic, D cosmic):
     ln v_i = c[arm, trigger] + s[arm] * g(t_i)              s_A = 1
 
 g(t) is ONE curve shared by the chambers (they share the gas line A -> B -> C -> D; corr(A, C) = 0.85 per sub-run),
-a cubic P-spline (knots every KNOT_H hours, 2nd-difference penalty lambda), optionally plus beta * x(t) with x the
-outdoor water-vapour pressure (MeteoSwiss Geneve-Cointrin `pva200s0`) smoothed by a causal exponential of time
-constant tau -- the model of water permeating into the gas lines.  c and s are per arm; the beam / cosmic offset is a
+a cubic P-spline (knots every KNOT_H hours, 2nd-difference penalty lambda), optionally plus beta . x(t) with x
+  * the outdoor water-vapour pressure (MeteoSwiss Geneve-Cointrin `pva200s0`) smoothed by a causal exponential of time
+    constant tau -- the model of water permeating into the gas lines;
+  * the gas mixer's temperature (the argon Bronkhorst MFC's own sensor, i.e. the gas rack; DAQ gas_watcher log, EOS
+    july_beam/slow_control/gas_flow/, --gas), causal exponential tau_T.  The same log shows the mix and flow constant
+    over the whole v window (vt_smooth.json "mixer"), so the mixer itself is not a regressor.  c and s are per arm; the beam / cosmic offset is a
 separate c (the two trigger classes select different tracks).  Fitted by alternating weighted least squares; each arm
 gets a jitter term added in quadrature to the bootstrap error so that chi2/dof = 1 (the acquisition scatter exceeds
 the bootstrap error: within a sub-run rms 0.41 vs 0.29 um/ns).  The P-spline's Bayesian covariance gives the
@@ -18,12 +21,19 @@ interpolation error, which grows across gaps.
 
 Validation (the numbers go to vt_smooth.json and the report):
   * random holdout: 20 % of acquisitions left out, 5 folds; pulls of the held-out points;
-  * block holdout: every 4th BLOCK_H-hour block left out, as an interpolation-across-a-gap test;
-for three models: spline only, water-vapour only (+ constant), spline + water vapour.  lambda (and tau) by the CV.
+  * block holdout: every 4th 6 h ('block'), 12 h ('block12') or 24 h ('block24') block left out, as an
+    interpolation-across-a-gap test;
+for six models: spline only, water vapour only, water vapour + mixer T, spline + water, spline + water + mixer T, and
+the control spline + water + hall (the ³He capsule's daily swing in the mixer T's slot).
+tau and tau_T by the random CV of the environment-only models; lambda per model by the mean over the three gap
+lengths; the model used = the spline model with the smallest residual averaged over chambers and gap lengths.
+(2026-11-17: a hall-temperature term changes nothing across 6 h gaps -- the spline already follows it -- but across
+24 h it takes C from 2.4 to 1.8 %.  The capsule does as well as the mixer T on A and C; the mixer T is better on D.)
 
 Outputs (DIR = --out): vt_smooth.parquet (per acquisition: v_obs, v_fit, v_fit_err for every arm incl. D on beam
 acquisitions, which has no measurement), vt_smooth_grid.parquet (10-minute grid, per arm and trigger class),
-vt_smooth.json (parameters + validation), figures/smooth_*.png, smooth.html.
+vt_smooth.json (parameters + validation), vt_smooth_holdout.parquet (every held-out pull, per model and mode),
+figures/smooth_*.png, smooth.html.
 """
 import argparse, json, os
 
@@ -64,6 +74,41 @@ def load_env(env):
     return g.join(c.rename('P_caps'), how='outer').sort_index()
 
 
+def load_gas(gas):
+    """The DAQ's gas-mixer log (gas_watcher.py, two Bronkhorst MFCs, one row per 2 s, per-day CSVs; EOS
+    july_beam/slow_control/gas_flow/) as 10-minute medians, cached as gas_10min.parquet beside the CSVs.
+    argon_temp_c is the argon MFC's own temperature sensor: the gas rack's temperature (iso_temp_c reads
+    0.3-1.5 and is not a temperature)."""
+    import glob
+    cache = f'{gas}/gas_10min.parquet'
+    files = sorted(glob.glob(f'{gas}/gas_flow_*.csv'))
+    if os.path.exists(cache) and (not files or os.path.getmtime(cache) >= max(os.path.getmtime(f) for f in files)):
+        return pd.read_parquet(cache)
+    if not files:
+        raise FileNotFoundError(f'no gas_flow_*.csv in {gas}: scp lxplus:/eos/experiment/ntof/data/x17/july_beam/'
+                                f'slow_control/gas_flow/*.csv {gas}/')
+    g = pd.concat([pd.read_csv(f, parse_dates=['timestamp']) for f in files]).set_index('timestamp').sort_index()
+    g = g.apply(pd.to_numeric, errors='coerce').resample('10min').median()
+    g.to_parquet(cache)
+    return g
+
+
+def mixer_summary(gm, t0, t1):
+    """How constant the mixer was between t0 and t1 (10-minute medians)."""
+    w = gm.loc[t0:t1]
+    bad = w[((w.iso_pct_meas - 10).abs() > 0.5) | (w.total_flow_lnh < 7.5)]
+    return dict(t0=str(t0), t1=str(t1), n_10min=int(w.iso_pct_meas.notna().sum()),
+                coverage=float(w.iso_pct_meas.notna().mean()),
+                iso_pct=dict(median=float(w.iso_pct_meas.median()), p01=float(w.iso_pct_meas.quantile(0.01)),
+                             p99=float(w.iso_pct_meas.quantile(0.99)), rms=float(w.iso_pct_meas.std())),
+                iso_set_pct=float(w.iso_pct_set.median()),
+                flow_lnh=dict(median=float(w.total_flow_lnh.median()), p01=float(w.total_flow_lnh.quantile(0.01)),
+                              p99=float(w.total_flow_lnh.quantile(0.99)), rms=float(w.total_flow_lnh.std())),
+                T_mfc=dict(median=float(w.argon_temp_c.median()), p01=float(w.argon_temp_c.quantile(0.01)),
+                           p99=float(w.argon_temp_c.quantile(0.99))),
+                n_excursion_10min=int(len(bad)))
+
+
 def ewm_causal(s, tau_h):
     """Causal exponential smoothing of a 10-min series with time constant tau [h]."""
     s = s.interpolate(limit=36)
@@ -83,7 +128,8 @@ class Smooth:
         self.k = k
         self.lam = lam
         self.use_spline = use_spline
-        self.x_env = x_env               # callable t -> standardized env value, or None
+        self.x_env = x_env               # callable t -> (n, k) standardized env regressors, or None
+        self.nx = 0 if x_env is None else np.atleast_2d(np.asarray(x_env(pd.DatetimeIndex([t0])))).shape[-1]
 
     def hours(self, t):
         return ((pd.to_datetime(t) - self.t0) / pd.Timedelta(hours=1)).to_numpy(float)
@@ -94,11 +140,12 @@ class Smooth:
             h = np.clip(self.hours(t), self.knots[self.k], self.knots[-self.k - 1] - 1e-9)
             cols.append(BSpline.design_matrix(h, self.knots, self.k).toarray())
         if self.x_env is not None:
-            cols.append(self.x_env(t)[:, None])
+            x = np.asarray(self.x_env(t), float)
+            cols.append(x[:, None] if x.ndim == 1 else x)
         return np.hstack(cols)
 
     def penalty(self):
-        n = (self.nb if self.use_spline else 0) + (1 if self.x_env is not None else 0)
+        n = (self.nb if self.use_spline else 0) + self.nx
         P = np.zeros((n, n))
         if self.use_spline:
             D = np.diff(np.eye(self.nb), 2, axis=0)
@@ -187,8 +234,9 @@ def cv(d, make, mode, seed=1):
     if mode == 'random':
         fold = rng.integers(0, 5, len(d))
         folds = range(5)
-    else:
-        blk = ((d.tm - d.tm.min()) / pd.Timedelta(hours=BLOCK_H)).astype(int)
+    else:                                   # 'block' = BLOCK_H; 'block12' / 'block24' = 12 / 24 h blocks
+        bh = float(mode[5:]) if len(mode) > 5 else BLOCK_H
+        blk = ((d.tm - d.tm.min()) / pd.Timedelta(hours=bh)).astype(int)
         fold = (blk % 4).to_numpy()
         folds = range(4)
     P = []
@@ -212,10 +260,16 @@ def summary(P):
 # ---------------------------------------------------------------------------------------------------------- report
 def write_html(out, J, best, tau, sens, val, pairs, envc):
     P = J['params'][best]
+    MODES = ('random', 'block', 'block12', 'block24')
+    MLAB = {'random': 'random 20 % holdout', 'block': '6 h blocks held out', 'block12': '12 h blocks', 'block24': '24 h blocks'}
+    sw, swt = val['spline+water'], val['spline+water+mixerT']
+
+    def gaps(v):
+        return ' / '.join(f"±{v[m][a]['res68_pct']:.2f}" for a in 'ACD' for m in ('block24',))
 
     def vrow(name):
         cells = ''.join(f"<td>{val[name][m][a]['res68_pct']:.2f} % / {val[name][m][a]['pull_rms']:.2f}</td>"
-                        for m in ('random', 'block') for a in ('A', 'C', 'D'))
+                        for m in MODES for a in ('A', 'C', 'D'))
         return f'<tr><td>{name}</td>{cells}</tr>'
     prs = ''.join(f"<tr><td>{k.replace('_', ' ')}</td><td>{v['n']}</td><td>{v['corr']:.2f}</td><td>{v['slope']:.2f}</td></tr>"
                   for k, v in pairs.items())
@@ -234,6 +288,16 @@ img{{max-width:100%}}.cap{{font-size:13px;color:#444}}</style></head><body>
 {P['s']['C']:.2f}× and D {P['s']['D']:.2f}× as much as A. It predicts a held-out acquisition to ±{val[best]['random']['A']['res68_pct']:.2f} % (A) and
 ±{val[best]['random']['C']['res68_pct']:.2f} % (C) (68 %), about one acquisition's own scatter, and to ±{val[best]['block']['A']['res68_pct']:.2f} / ±{val[best]['block']['C']['res68_pct']:.2f} %
 when whole {BLOCK_H:.0f} h blocks are removed. Pulls have rms ≈ 1, so the error band is honest.</li>
+<li><b>The gas mixer was constant.</b> Its log (two Bronkhorst MFCs, 2 s) gives {J['mixer']['iso_pct']['median']:.3f} %
+isobutane (1–99 %: {J['mixer']['iso_pct']['p01']:.3f}–{J['mixer']['iso_pct']['p99']:.3f}) and {J['mixer']['flow_lnh']['median']:.3f} ln/h
+(1–99 %: {J['mixer']['flow_lnh']['p01']:.3f}–{J['mixer']['flow_lnh']['p99']:.3f}) over the whole v window, so the mix does not drive v.
+Its <b>temperature sensor</b> (the gas rack, {J['mixer']['T_mfc']['p01']:.1f}–{J['mixer']['T_mfc']['p99']:.1f} °C) does:
+as a second regressor (causal τ = {J['tau_T_h']:g} h) it changes nothing across 6 h gaps (A / C / D
+±{sw['block']['A']['res68_pct']:.2f} / ±{sw['block']['C']['res68_pct']:.2f} / ±{sw['block']['D']['res68_pct']:.2f} % without,
+±{swt['block']['A']['res68_pct']:.2f} / ±{swt['block']['C']['res68_pct']:.2f} / ±{swt['block']['D']['res68_pct']:.2f} % with), because the spline already
+follows it there, but across 24 h gaps it takes {gaps(sw)} % to {gaps(swt)} % and the pull rms from
+{' / '.join(f"{sw['block24'][a]['pull_rms']:.2f}" for a in 'ACD')} to {' / '.join(f"{swt['block24'][a]['pull_rms']:.2f}" for a in 'ACD')}.
+Slope {', '.join(f"{k} {v['mixerT_pct_per_K']:+.1f} %/K" for k, v in J['sensitivity']['spline+water+mixerT'].items())}.</li>
 <li><b>The driver looks like water.</b> The outdoor water-vapour pressure (Genève-Cointrin), smoothed with a
 {tau} h time constant, alone explains most of it (r = {envc['pva200s0'][8]:+.2f} with the curve at an 8 h lag):
 {', '.join(f'{k} {v:+.1f} %/hPa' for k, v in sens.items())}. Air temperature, station pressure and the ³He capsule
@@ -242,16 +306,21 @@ Reading: water permeating into the gas lines, more of it downstream (C, D) than 
 <li>Model used: <b>{best}</b> (penalised cubic spline, knots every {KNOT_H:.0f} h, λ = {J['lam_with_water'] if 'water' in best else J['lam']:.3g}
 by block cross-validation; the water term only matters across gaps).</li></ul>
 <h2>The environment alone</h2>
-<p>ln v = a + b·(water vapour, τ = {tau} h) + c·(³He capsule pressure minus its 48 h mean, i.e. the hall's daily
-temperature swing; 1 bar ≈ 0.6 K). No spline.</p>
-<table><tr><th>arm</th><th>n</th><th>lag (h)</th><th>R²</th><th>68 % residual</th><th>water (%/hPa)</th><th>hall (%/K)</th></tr>
-{''.join(f"<tr><td>{k}</td><td>{v['n']}</td><td>{v['lag_h']}</td><td>{v['r2']:.2f}</td><td>{v['res68_pct']:.2f} %</td><td>{v['water_pct_per_hPa']:+.2f}</td><td>{v['hall_pct_per_K']:+.2f}</td></tr>" for k, v in J['env_regression'].items())}</table>
-<p class="cap">A gas-density (E/N) effect would make v rise with temperature at our field; v falls with both water and hall
-temperature, and by ~2 %/K on C, far beyond density. Temperature-driven water (permeation, wall outgassing) fits the
-signs; not shown.</p>
+<p>ln v = a + b·(water vapour, τ = {tau} h) + further terms, no spline: <i>hall</i> = ³He capsule pressure minus its 48 h mean
+(the hall's daily temperature swing; 1 bar ≈ 0.6 K), <i>mixer T</i> = the gas mixer's temperature sensor (τ = {J['tau_T_h']:g} h).
+A and C on beam acquisitions, D on cosmic sub-runs.</p>
+<table><tr><th>arm</th><th>regressors</th><th>n</th><th>R²</th><th>68 % residual</th><th>water (%/hPa)</th><th>hall (%/K)</th><th>mixer T (%/K)</th></tr>
+{''.join(f"<tr><td>{arm}</td><td>{rn}</td><td>{v['n']}</td><td>{v['r2']:.2f}</td><td>{v['res68_pct']:.2f} %</td><td>{v['water_pct_per_hPa']:+.2f}</td><td>{v.get('hall_pct_per_K', float('nan')):+.2f}</td><td>{v.get('mixerT_pct_per_K', float('nan')):+.2f}</td></tr>" for arm, R in J['env_regression'].items() for rn, v in R.items())}</table>
+<p class="cap">A gas-density (E/N) effect would make v rise with temperature at our field; v falls with both water and
+temperature, by several %/K on C, far beyond density. Temperature-driven water (permeation, wall outgassing) fits the
+signs; not shown. The mixer sensor sits in the gas rack, so it reads the air the gas lines see; it is not a gas temperature.</p>
+<h2>The gas mixer</h2>
+<p><img src="figures/smooth_mixer.png"><br><span class="cap">From the DAQ's gas_watcher log (EOS
+<code>july_beam/slow_control/gas_flow/</code>), 10-minute medians over the v window. Set: {J['mixer']['iso_set_pct']:.2f} % isobutane,
+argon 7.0 ln/h.</span></p>
 <h2>Validation (68 % residual / pull rms)</h2>
-<table><tr><th rowspan=2>model</th><th colspan=3>random 20 % holdout</th><th colspan=3>every 4th {BLOCK_H:.0f} h block held out</th></tr>
-<tr><th>A</th><th>C</th><th>D</th><th>A</th><th>C</th><th>D</th></tr>{''.join(vrow(n) for n in val)}</table>
+<table><tr><th rowspan=2>model</th>{''.join(f'<th colspan=3>{MLAB[m]}</th>' for m in MODES)}</tr>
+<tr>{'<th>A</th><th>C</th><th>D</th>' * len(MODES)}</tr>{''.join(vrow(n) for n in val)}</table>
 <p class="cap">D is fitted on its sub-run pooled v (15–45 clean cosmic tracks per acquisition), the others per acquisition.</p>
 <h2>Chamber-to-chamber correlation (same sub-run)</h2>
 <table><tr><th>pair, trigger</th><th>n</th><th>r</th><th>d ln v₂ / d ln v₁</th></tr>{prs}</table>
@@ -282,12 +351,16 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('--vt', default=f'{WD}/ntof_pass1/vt')
     ap.add_argument('--env', default=f'{WD}/ntof_pass1/env')
+    ap.add_argument('--gas', default=f'{WD}/ntof_pass1/gas_flow',
+                    help='gas-mixer per-day CSVs (EOS july_beam/slow_control/gas_flow/)')
     ap.add_argument('--out', default=f'{WD}/ntof_pass1/vt')
     a = ap.parse_args()
     FIG = f'{a.out}/figures'
     os.makedirs(FIG, exist_ok=True)
     T = load_v(a.vt)
     E = load_env(a.env)
+    GM = load_gas(a.gas)
+    E = E.join(GM.argon_temp_c.rename('T_mfc'), how='outer').sort_index()
     # D: its clean cosmic sample is 15-45 events per acquisition, so only 103 acquisitions reach MIN_N; use its
     # sub-run pooled v (238 sub-runs) instead
     SD = pd.read_parquet(f'{a.vt}/vt_D_subrun.parquet').assign(arm='D', tag=None)
@@ -296,39 +369,75 @@ def main():
                        ignore_index=True))
     t0, t1 = d.tm.min() - pd.Timedelta(hours=3), d.tm.max() + pd.Timedelta(hours=3)
 
-    # --- water-vapour regressor: choose tau by the fit of the env-only model on all data
-    res = {}
+    # --- regressors.  water: outdoor water vapour, causal exponential tau (permeation model).  mixer T: the gas
+    # rack's temperature from the argon MFC's sensor, causal exponential tau_T (0 = raw).  Both standardized on t0..t1.
+    def std_series(x):
+        return (x - x.loc[t0:t1].mean()) / x.loc[t0:t1].std()
 
-    def xfun_for(tau):
-        x = ewm_causal(E.pva200s0, tau)
-        x = (x - x.loc[t0:t1].mean()) / x.loc[t0:t1].std()
-        return lambda t: x.reindex(pd.to_datetime(t), method='nearest', tolerance=pd.Timedelta('20min')).to_numpy(float)
+    def at(x, t):
+        return x.reindex(pd.to_datetime(t), method='nearest', tolerance=pd.Timedelta('20min')).to_numpy(float)
 
-    tau_scan = {}
-    for tau in (8, 12, 18, 24, 30, 36, 48):
-        P = cv(d, lambda: Smooth(t0, t1, use_spline=False, x_env=xfun_for(tau)), 'random')
-        tau_scan[tau] = float(np.mean([v['res68_pct'] for v in summary(P).values()]))
+    def water_x(tau):
+        return std_series(ewm_causal(E.pva200s0, tau))
+
+    def mfc_x(tau_T):
+        x = E.T_mfc.interpolate(limit=36)
+        return std_series(x if tau_T == 0 else ewm_causal(E.T_mfc, tau_T))
+
+    def xfun(*series):
+        return lambda t: np.column_stack([at(x, t) for x in series])
+
+    def mean_res(P):
+        return float(np.mean([v['res68_pct'] for v in summary(P).values()]))
+
+    tau_scan = {tau: mean_res(cv(d, lambda: Smooth(t0, t1, use_spline=False, x_env=xfun(water_x(tau))), 'random'))
+                for tau in (8, 12, 18, 24, 30, 36, 48)}
     tau = min(tau_scan, key=tau_scan.get)
-    xf = xfun_for(tau)
-    lam_scan = {}
-    for lam in (1000, 3000, 10000, 30000, 1e5, 3e5, 1e6, 3e6):
-        P = cv(d, lambda: Smooth(t0, t1, lam=lam), 'block')
-        lam_scan[lam] = float(np.mean([v['res68_pct'] for v in summary(P).values()]))
+    xw = water_x(tau)
+    # tau_T with the water term in place (env-only model), same criterion
+    tauT_scan = {tT: mean_res(cv(d, lambda: Smooth(t0, t1, use_spline=False, x_env=xfun(xw, mfc_x(tT))), 'random'))
+                 for tT in (0, 0.5, 1, 2, 4, 8)}
+    tau_T = min(tauT_scan, key=tauT_scan.get)
+    xT = mfc_x(tau_T)
+    caps_s = E.P_caps.interpolate(limit=36)
+    xH = std_series(caps_s - caps_s.rolling('48h', center=True).mean()).fillna(0.0)   # capsule daily swing (hall T)
+    LAMS = (1000, 3000, 10000, 30000, 1e5, 3e5, 1e6, 3e6)
+
+    GAPS = ('block', 'block12', 'block24')     # 6, 12, 24 h held-out blocks: lambda and the model are chosen on all three
+
+    def lam_scan_for(xf):
+        return {lamx: float(np.mean([mean_res(cv(d, lambda: Smooth(t0, t1, lam=lamx, x_env=xf), m)) for m in GAPS]))
+                for lamx in LAMS}
+    lam_scan = lam_scan_for(None)
     lam = min(lam_scan, key=lam_scan.get)
-    lam_scan_env = {}
-    for lamx in (1000, 3000, 10000, 30000, 1e5, 3e5, 1e6, 3e6):
-        P = cv(d, lambda: Smooth(t0, t1, lam=lamx, x_env=xf), 'block')
-        lam_scan_env[lamx] = float(np.mean([v['res68_pct'] for v in summary(P).values()]))
+    lam_scan_env = lam_scan_for(xfun(xw))
     lam_e = min(lam_scan_env, key=lam_scan_env.get)
+    lam_scan_mfc = lam_scan_for(xfun(xw, xT))
+    lam_m = min(lam_scan_mfc, key=lam_scan_mfc.get)
+    lam_scan_hall = lam_scan_for(xfun(xw, xH))
+    lam_h = min(lam_scan_hall, key=lam_scan_hall.get)
+    REG = {'water': ['water'], 'water+mixerT': ['water', 'mixer T'], 'spline+water': ['water'],
+           'spline+water+mixerT': ['water', 'mixer T'], 'spline+water+hall': ['water', 'hall'], 'spline': []}
     makers = {'spline': lambda: Smooth(t0, t1, lam=lam),
-              'water': lambda: Smooth(t0, t1, use_spline=False, x_env=xf),
-              'spline+water': lambda: Smooth(t0, t1, lam=lam_e, x_env=xf)}
-    val = {}
+              'water': lambda: Smooth(t0, t1, use_spline=False, x_env=xfun(xw)),
+              'water+mixerT': lambda: Smooth(t0, t1, use_spline=False, x_env=xfun(xw, xT)),
+              'spline+water': lambda: Smooth(t0, t1, lam=lam_e, x_env=xfun(xw)),
+              'spline+water+mixerT': lambda: Smooth(t0, t1, lam=lam_m, x_env=xfun(xw, xT)),
+              # control: the same slot filled by the other hall thermometer (the 3He capsule's daily swing)
+              'spline+water+hall': lambda: Smooth(t0, t1, lam=lam_h, x_env=xfun(xw, xH))}
+    val, holdout = {}, []
     for name, mk in makers.items():
-        val[name] = {mode: summary(cv(d, mk, mode)) for mode in ('random', 'block')}
+        val[name] = {}
+        for mode in ('random',) + GAPS:
+            Pm = cv(d, mk, mode)
+            val[name][mode] = summary(Pm)
+            holdout.append(Pm.assign(model=name, mode=mode))
+    pd.concat(holdout, ignore_index=True).to_parquet(f'{a.out}/vt_smooth_holdout.parquet', index=False)
     fits = {name: mk().fit(d) for name, mk in makers.items()}
-    best = 'spline+water' if np.mean([v['res68_pct'] for v in val['spline+water']['block'].values()]) <= \
-        np.mean([v['res68_pct'] for v in val['spline']['block'].values()]) else 'spline'
+    # the model used: the spline model with the smallest held-out residual, mean over A, C, D and the 6 / 12 / 24 h gaps
+    gap_score = {n: float(np.mean([v['res68_pct'] for m in GAPS for v in val[n][m].values()]))
+                 for n in ('spline', 'spline+water', 'spline+water+mixerT', 'spline+water+hall')}
+    best = min(gap_score, key=gap_score.get)
     M = fits[best]
 
     # --- per-acquisition table, every arm on every acquisition time (D beam = predicted only)
@@ -367,7 +476,7 @@ def main():
     # --- env correlation of the shared curve
     gm = pd.Series(M.predict(grid, 'A', 'beam')[0], index=grid)
     envc = {}
-    for var in ('tre200s0', 'prestas0', 'pva200s0', 'P_caps'):
+    for var in ('tre200s0', 'prestas0', 'pva200s0', 'P_caps', 'T_mfc'):
         envc[var] = {}
         for lag in (0, 2, 4, 6, 8, 12):       # env leads v by `lag` hours
             x = E[var].reindex(grid - pd.Timedelta(hours=lag), method='nearest',
@@ -376,10 +485,12 @@ def main():
             envc[var][lag] = float(np.corrcoef(np.log(gm.values[ok]), x[ok])[0, 1])
 
     J = dict(made_by='rerun/ntof/vt/vt_smooth.py', model=best, knot_h=KNOT_H, block_h=BLOCK_H, lam=lam,
-             lam_with_water=lam_e, tau_h=tau, tau_scan=tau_scan, lam_scan=lam_scan, lam_scan_water=lam_scan_env,
+             lam_with_water=lam_e, lam_with_mixerT=lam_m, lam_with_hall=lam_h, tau_h=tau, tau_T_h=tau_T, tau_scan=tau_scan,
+             tau_T_scan=tauT_scan, lam_scan=lam_scan, lam_scan_water=lam_scan_env, lam_scan_mixerT=lam_scan_mfc, lam_scan_hall=lam_scan_hall,
+             regressors=REG, gap_score=gap_score, gap_modes=GAPS, mixer=mixer_summary(GM, d.tm.min(), d.tm.max()),
              validation=val, chamber_pairs=pairs, env_corr_shared_curve=envc,
              params={name: dict(s=f.s, c={f'{k[0]}_{k[1]}': v for k, v in f.c.items()}, jitter=f.jit,
-                                beta=(float(f.coef[-1]) if f.x_env is not None else None))
+                                beta=dict(zip(REG[name], map(float, f.coef[len(f.coef) - f.nx:]))))
                      for name, f in fits.items()})
     json.dump(J, open(f'{a.out}/vt_smooth.json', 'w'), indent=1, default=float)
 
@@ -464,9 +575,10 @@ def main():
 
     # environment
     gm_b = G[(G.arm == 'C') & (G.trigger == 'beam')].set_index('t').v
-    fig, axs = plt.subplots(1, 4, figsize=(15, 3.6))
+    fig, axs = plt.subplots(1, 5, figsize=(18, 3.6))
     for ax, (var, lab) in zip(axs, (('pva200s0', 'water vapour p (hPa)'), ('tre200s0', 'air T (°C)'),
-                                    ('prestas0', 'station p (hPa)'), ('P_caps', '³He capsule p (bar)'))):
+                                    ('prestas0', 'station p (hPa)'), ('P_caps', '³He capsule p (bar)'),
+                                    ('T_mfc', 'mixer (MFC) T (°C)'))):
         xs = (ewm_causal(E[var], tau) if var == 'pva200s0' else E[var]).reindex(gm_b.index, method='nearest',
                                                                                  tolerance=pd.Timedelta('20min'))
         dc = d[(d.arm == 'C') & (d.trigger == 'beam')]
@@ -497,7 +609,7 @@ def main():
     fig.tight_layout(); fig.savefig(f'{FIG}/smooth_holdout.png', dpi=120); plt.close(fig)
 
     # environment time series: C beam v, water vapour (raw + smoothed), outdoor T, station p, capsule p
-    fig, axs = plt.subplots(5, 1, figsize=(12, 10), sharex=True)
+    fig, axs = plt.subplots(6, 1, figsize=(12, 12), sharex=True)
     gc_ = G[(G.arm == 'C') & (G.trigger == 'beam')]
     axs[0].plot(gc_.t, gc_.v, color=COL['C']); axs[0].set_ylabel('C v (µm/ns)')
     xw = E.loc[t0:t1]
@@ -507,44 +619,78 @@ def main():
     axs[2].plot(xw.index, xw.tre200s0, color='#c0392b', lw=0.8); axs[2].set_ylabel('air T (°C)')
     axs[3].plot(xw.index, xw.prestas0, color='#555', lw=0.8); axs[3].set_ylabel('station p (hPa)')
     axs[4].plot(xw.index, xw.P_caps, color='#3d6b8c', lw=0.8); axs[4].set_ylabel('³He capsule\np (bar)')
+    axs[5].plot(xw.index, xw.T_mfc, color='#8e44ad', lw=0.8); axs[5].set_ylabel('mixer (MFC)\nT (°C)')
     for ax in axs:
         ax.grid(alpha=0.3)
     axs[-1].xaxis.set_major_formatter(mdates.DateFormatter('%d %b'))
     fig.suptitle('Chamber C drift velocity (smooth model) and the environment: MeteoSwiss Genève-Cointrin (10 min, '
-                 'shifted to CEST) and the ³He capsule gauge')
+                 'shifted to CEST), the ³He capsule gauge and the gas mixer\'s temperature')
     fig.tight_layout(); fig.savefig(f'{FIG}/smooth_envtime.png', dpi=120); plt.close(fig)
+
+    # the gas mixer over the v window: iso fraction, total flow, rack temperature
+    gw = GM.loc[t0:t1]
+    fig, axs = plt.subplots(3, 1, figsize=(12, 7), sharex=True)
+    axs[0].plot(gw.index, gw.iso_pct_meas, color='#444', lw=0.8); axs[0].axhline(float(gw.iso_pct_set.median()),
+                                                                               color='purple', ls=':', lw=1)
+    axs[0].set_ylim(9.9, 10.1); axs[0].set_ylabel('isobutane (%)\nmeasured')
+    axs[1].plot(gw.index, gw.total_flow_lnh, color='#444', lw=0.8); axs[1].set_ylabel('total flow\n(ln/h)')
+    axs[1].set_ylim(7.70, 7.86)
+    axs[2].plot(gw.index, gw.argon_temp_c, color='#8e44ad', lw=0.8); axs[2].set_ylabel('MFC T (°C)')
+    for ax in axs:
+        ax.grid(alpha=0.3)
+    axs[-1].xaxis.set_major_formatter(mdates.DateFormatter('%d %b'))
+    fig.suptitle('Gas mixer (Bronkhorst MFCs, 10-min medians): mix and flow constant; its temperature sensor follows the hall')
+    fig.tight_layout(); fig.savefig(f'{FIG}/smooth_mixer.png', dpi=120); plt.close(fig)
 
     # water-vapour sensitivity in physical units, from the water-only model: d ln v / d pva_smoothed
     sd_x = float(ewm_causal(E.pva200s0, tau).loc[t0:t1].std())
+    xTraw = E.T_mfc.interpolate(limit=36) if tau_T == 0 else ewm_causal(E.T_mfc, tau_T)
+    sd_T = float(xTraw.loc[t0:t1].std())
     wf = fits['water']
     sens = {arm: 100 * wf.coef[-1] * wf.s[arm] / sd_x for arm in wf.s}
     J['water_sensitivity_pct_per_hPa'] = sens
+    # with the mixer temperature: both slopes, from the env-only model and from the spline model
+    J['sensitivity'] = {}
+    for name in ('water+mixerT', 'spline+water+mixerT'):
+        f = fits[name]
+        bw, bT = f.coef[-2], f.coef[-1]
+        J['sensitivity'][name] = {arm: dict(water_pct_per_hPa=float(100 * bw * f.s[arm] / sd_x),
+                                            mixerT_pct_per_K=float(100 * bT * f.s[arm] / sd_T)) for arm in f.s}
+    J['mixerT_sd_K'] = sd_T
     json.dump(J, open(f'{a.out}/vt_smooth.json', 'w'), indent=1, default=float)
     # physics reading: the environment alone (no spline), per arm on beam (D: cosmic sub-runs) acquisitions:
     # ln v = a + b * water_vapour(tau) + c * capsule_daily(lag)   (capsule p minus its 48 h running mean = hall T)
     caps = E.P_caps.interpolate(limit=36)
     caps_d = caps - caps.rolling('48h', center=True).mean()
     pva_s = ewm_causal(E.pva200s0, tau)
+    REGS = {'water+hall': ('pva', 'caps'), 'water+mixerT': ('pva', 'T'), 'water+hall+mixerT': ('pva', 'caps', 'T')}
     envfit = {}
     for arm in ARMS:
         dd = d[(d.arm == arm) & (d.trigger == ('beam' if arm != 'D' else 'cosmic'))]
         y = np.log(dd.v.to_numpy(float))
-        best_l = None
-        for lag in (0, 1, 2, 3):
-            X = np.column_stack([np.ones(len(y)),
-                                 pva_s.reindex(dd.tm, method='nearest', tolerance=pd.Timedelta('20min')).to_numpy(float),
-                                 caps_d.reindex(dd.tm - pd.Timedelta(hours=lag), method='nearest',
-                                                tolerance=pd.Timedelta('20min')).to_numpy(float)])
-            ok = np.isfinite(X).all(1)
-            b = np.linalg.lstsq(X[ok], y[ok], rcond=None)[0]
-            r = y[ok] - X[ok] @ b
-            rec = dict(lag_h=lag, n=int(ok.sum()), r2=float(1 - r.var() / y[ok].var()),
-                       res68_pct=float(100 * np.subtract(*np.percentile(r, [84, 16])) / 2),
-                       water_pct_per_hPa=float(100 * b[1]), hall_pct_per_bar=float(100 * b[2]),
-                       hall_pct_per_K=float(100 * b[2] * float(caps.mean()) / 300.0))
-            if best_l is None or rec['r2'] > best_l['r2']:
-                best_l = rec
-        envfit[arm] = best_l
+        envfit[arm] = {}
+        for rname, regs in REGS.items():
+            best_l = None
+            for lag in (0, 1, 2, 3):          # the capsule's lag (hall air -> sealed volume)
+                cols = dict(pva=at(pva_s, dd.tm), caps=at(caps_d, dd.tm - pd.Timedelta(hours=lag)), T=at(xTraw, dd.tm))
+                X = np.column_stack([np.ones(len(y))] + [cols[k] for k in regs])
+                ok = np.isfinite(X).all(1)
+                b = np.linalg.lstsq(X[ok], y[ok], rcond=None)[0]
+                r = y[ok] - X[ok] @ b
+                bb = dict(zip(regs, b[1:]))
+                rec = dict(lag_h=lag, n=int(ok.sum()), r2=float(1 - r.var() / y[ok].var()),
+                           res68_pct=float(100 * np.subtract(*np.percentile(r, [84, 16])) / 2),
+                           water_pct_per_hPa=float(100 * bb['pva']))
+                if 'caps' in bb:
+                    rec.update(hall_pct_per_bar=float(100 * bb['caps']),
+                               hall_pct_per_K=float(100 * bb['caps'] * float(caps.mean()) / 300.0))
+                if 'T' in bb:
+                    rec['mixerT_pct_per_K'] = float(100 * bb['T'])
+                if best_l is None or rec['r2'] > best_l['r2']:
+                    best_l = rec
+                if 'caps' not in regs:
+                    break
+            envfit[arm][rname] = best_l
     J['env_regression'] = envfit
     json.dump(J, open(f'{a.out}/vt_smooth.json', 'w'), indent=1, default=float)
     write_html(a.out, J, best, tau, sens, val, pairs, envc)

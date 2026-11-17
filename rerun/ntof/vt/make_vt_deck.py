@@ -47,6 +47,7 @@ def main():
     ap.add_argument('--vt', default=f'{WD}/ntof_pass1/vt')
     ap.add_argument('--ab', default=f'{WD}/ntof_pass1/vt_ab')
     ap.add_argument('--env', default=f'{WD}/ntof_pass1/env')
+    ap.add_argument('--gas', default=f'{WD}/ntof_pass1/gas_flow')
     ap.add_argument('--out', default=f'{WD}/ntof_pass1/vt/deck/ntof-drift-velocity.html')
     a = ap.parse_args()
 
@@ -58,6 +59,11 @@ def main():
         S[arm]['tm'] = S[arm].t_start + (S[arm].t_end - S[arm].t_start) / 2
     G = pd.read_parquet(f'{a.vt}/vt_smooth_grid.parquet')
     E = vs.load_env(a.env)
+    GM = vs.load_gas(a.gas).loc[:pd.Timestamp(J['mixer']['t1']) + pd.Timedelta('10min')]   # not the 10 Aug shutdown
+    E = E.join(GM.argon_temp_c.rename('T_mfc'), how='outer').sort_index()
+    MX = J['mixer']
+    tau_T = J['tau_T_h']
+    sensT = J['sensitivity']['spline+water+mixerT']
     best = J['model']
     P = J['params'][best]
     val = J['validation'][best]
@@ -68,10 +74,16 @@ def main():
     n_files = len(T)
     n_sub = int(sum(S[arm].v.notna().sum() for arm in S))
     envr = J['env_regression']
+    envh = {arm: v['water+hall'] for arm, v in envr.items()}          # the water + hall fit (slide 9 panels)
+    envm = {arm: v['water+hall+mixerT'] for arm, v in envr.items()}
     pairs = J['chamber_pairs']
 
     D = sd.Deck('n_TOF drift velocity', 'The drift velocity of chambers A, C and D through the n_TOF campaign: '
-                'measured per acquisition, a smooth shared model, what drives it, and whether the pass needs a rerun.')
+                'measured per acquisition, a smooth shared model, what drives it (not the gas mixer), and whether the '
+                'pass needs a rerun.')
+    MODEL_TXT = {'spline': 'spline only', 'spline+water': 'spline + water vapour',
+                 'spline+water+mixerT': 'spline + water vapour + mixer temperature',
+                 'spline+water+hall': 'spline + water vapour + capsule (hall)'}[best]
 
     # ------------------------------------------------------------------ 1. cover
     swing_c = 100 * (G[(G.arm == 'C') & (G.trigger == 'beam')].v.max() / G[(G.arm == 'C') & (G.trigger == 'beam')].v.min() - 1)
@@ -167,12 +179,13 @@ def main():
                                  'Per sub-run v relative to each chamber\'s campaign level (A, C beam triggers; D cosmic); lines = the shared smooth model')
             + p3.svg('all chambers') + leg,
             notes=(f'<p>Model: ln v = c[arm, trigger] + s[arm]·g(t), with g one cubic P-spline (knots every '
-                   f'{J["knot_h"]:.0f} h, λ by block cross-validation) plus a water-vapour term; s_A = 1, fitted '
+                   f'{J["knot_h"]:.0f} h, λ by block cross-validation) plus {", ".join(J["regressors"][best]) or "no"} '
+                   f'term(s); s_A = 1, fitted '
                    f's_C = {P["s"]["C"]:.2f}, s_D = {P["s"]["D"]:.2f}. Levels (beam): A {lev["A"]:.2f}, C {lev["C"]:.2f}, '
                    f'D (cosmic) {lev["D"]:.2f} µm/ns.</p><p>The chambers are in one gas line, A → B → C → D. Per sub-run '
                    f'correlations: A–C {pairs["AC_beam"]["corr"]:.2f} (beam), C–D {pairs["CD_cosmic"]["corr"]:.2f}, '
                    f'A–D {pairs["AD_cosmic"]["corr"]:.2f} (cosmic).</p>'),
-            foot='Sub-run pooled v from vt_table.py; smooth model vt_smooth.py (spline + water vapour).')
+            foot=f'Sub-run pooled v from vt_table.py; smooth model vt_smooth.py ({MODEL_TXT}).')
 
     # ------------------------------------------------------------------ 4/5. timelines per chamber
     def timeline(arm, h, ylo, yhi, step, show_x=True, ttl=None):
@@ -302,11 +315,14 @@ def main():
               f'MeteoSwiss Genève-Cointrin pva200s0, 10 min; thick = causal exponential smoothing τ = {tau} h'),
              ('³He capsule (bar)', xe, Ee.P_caps.to_numpy(), None, '#3d6b8c', (493.5, 499.2), 1,
               'sealed ~500 bar volume on the beam axis: p ∝ T, so a thermometer for the hall (1 bar ≈ 0.6 K)'),
+             ('mixer T (°C)', xe, Ee.T_mfc.to_numpy(), None, sd.PURPLE,
+              (np.floor(4 * Ee.T_mfc.quantile(0.002)) / 4 - 0.25, np.ceil(4 * Ee.T_mfc.quantile(0.998)) / 4 + 0.25), 0.5,
+              'the argon mass-flow controller\'s own temperature sensor (gas rack), 10-min medians of the 2 s log'),
              ('air T (°C)', xe, Ee.tre200s0.to_numpy(), None, sd.RED, (14, 37), 5, 'MeteoSwiss Cointrin tre200s0, 2 m'),
              ('station p (hPa)', xe, Ee.prestas0.to_numpy(), None, sd.GREY, (962, 974.5), 4, 'MeteoSwiss Cointrin prestas0 (QFE)')]
     for i, (lab, xx, yy, extra, c, yr, st, tp) in enumerate(specs):
         last = i == len(specs) - 1
-        pl = sd.Plot(1664, 112 if not last else 168, XR, yr, xlabel='date (2026, local time)' if last else '',
+        pl = sd.Plot(1664, 100 if not last else 156, XR, yr, xlabel='date (2026, local time)' if last else '',
                      ylabel='', margin=(10, 30, 62 if last else 12, 104))
         pl.xticks(date_ticks() if last else [(t, '') for t, _ in date_ticks()])
         pl.yticks([(v, f'{v:g}') for v in np.arange(np.ceil(yr[0] / st) * st, yr[1], st)][::2])
@@ -318,14 +334,16 @@ def main():
         pl.text(XR[0] + 4, yr[1] - 0.2 * (yr[1] - yr[0]), lab, 22, sd.INK, weight=600)
         rows_.append(pl.svg(lab))
     D.slide('envtime', sd.title('Water vapour sets the trend, the hall temperature the daily wiggle',
-                                'C\'s smooth v against MeteoSwiss Genève-Cointrin (UTC shifted to local time) and the ³He capsule gauge')
+                                'C\'s smooth v against MeteoSwiss Genève-Cointrin (UTC shifted to local time), the ³He capsule gauge and the gas mixer\'s thermometer')
             + sd.col(*rows_, gap=0),
             notes=('<p>The 4–6 August dip in v sits on the campaign\'s most humid days (water vapour 20+ hPa). The daily cycle in '
                    'v (fast around 06–07 h, slow 15–19 h) runs opposite to the capsule pressure, i.e. to the hall temperature. '
                    'Outdoor air temperature and pressure track neither strongly.</p><p>Sources: MeteoSwiss open data '
                    '<code>ogd-smn_gve_t_recent.csv</code> (station GVE, 10-min, UTC); the capsule log is the DAQ\'s '
                    'he3_pressure watcher (Keithley 2000, P = (V − 1) × 400 bar), 5-min medians in '
-                   '<code>ntof_run_report/data/he3_pressure_5min.csv</code>. Cointrin is ~5 km from n_TOF.</p>'), short='Environment')
+                   '<code>ntof_run_report/data/he3_pressure_5min.csv</code>. Cointrin is ~5 km from n_TOF. The mixer '
+                   'temperature is the argon Bronkhorst MFC\'s sensor, from the DAQ\'s gas_watcher log (EOS '
+                   '<code>july_beam/slow_control/gas_flow/</code>, one row per 2 s).</p>'), short='Environment')
 
     # ------------------------------------------------------------------ 9. environment regression
     dC = T[(T.arm == 'C') & (T.trigger == 'beam')].dropna(subset=['v'])
@@ -337,7 +355,7 @@ def main():
     X = np.column_stack([np.ones(ok.sum()), xw[ok], capd[ok]])
     b = np.linalg.lstsq(X, y, rcond=None)[0]
     r_w = float(np.corrcoef(xw[ok], y)[0, 1])
-    p1 = sd.Plot(620, 540, (13.8, 20.8), (27, 33.5), xlabel=f'water vapour, smoothed τ = {tau} h (hPa)',
+    p1 = sd.Plot(590, 540, (13.8, 20.8), (27, 33.5), xlabel=f'water vapour, smoothed τ = {tau} h (hPa)',
                  ylabel='C beam v (µm/ns)', title='C against water vapour')
     p1.xticks([(v, f'{v}') for v in range(14, 21)]).yticks([(v, f'{v}') for v in range(27, 34)])
     p1.scatter(xw[ok], dC.v.to_numpy()[ok], sd.ORANGE, r=3, opacity=0.3, tip=f'{ok.sum():,} C beam acquisitions')
@@ -346,21 +364,25 @@ def main():
             tip=f'fit ln v = a + b·water + c·hall: b = {100 * b[1]:+.2f} %/hPa')
     p1.text(14.1, 27.6, f'r = {r_w:+.2f}', 28, sd.INK, weight=600)
     resid = y - (b[0] + b[1] * xw[ok])
-    p2 = sd.Plot(620, 540, (-2.6, 2.6), (-6, 6), xlabel='capsule p − 48 h mean (bar)',
+    p2 = sd.Plot(590, 540, (-2.6, 2.6), (-6, 6), xlabel='capsule p − 48 h mean (bar)',
                  ylabel='C v after the water term (%)', title='… the rest, against the hall temperature')
     p2.xticks([(v, f'{v:+g}' if v else '0') for v in (-2, -1, 0, 1, 2)]).yticks([(v, f'{v:+d}' if v else '0') for v in range(-6, 7, 2)])
     p2.scatter(capd[ok], 100 * resid, sd.ORANGE, r=3, opacity=0.3, tip='C beam acquisitions, residual after the water-vapour term')
     xs = np.linspace(-2.4, 2.4, 10)
     p2.line(xs, 100 * (b[2] * xs + (resid.mean())), sd.INK, w=3, markers=False,
-            tip=f'{100 * b[2]:+.2f} %/bar ≈ {envr["C"]["hall_pct_per_K"]:+.1f} %/K')
-    p2.text(-2.5, 5.2, f'{envr["C"]["hall_pct_per_K"]:+.1f} %/K', 28, sd.INK, weight=600)
-    tbl = sd.table(['', 'R²', 'water %/hPa', 'hall %/K'],
-                   [[k, f'{v["r2"]:.2f}', f'{v["water_pct_per_hPa"]:+.2f}', f'{v["hall_pct_per_K"]:+.1f}'] for k, v in envr.items()],
-                   size=22, tips=[f'{k}: n = {v["n"]}, lag {v["lag_h"]} h, 68 % residual {v["res68_pct"]:.2f} %' for k, v in envr.items()])
-    D.slide('envfit', sd.title(f'Water vapour and hall temperature explain {100 * envr["C"]["r2"]:.0f} % of C\'s variation',
-                               'ln v = a + b·(outdoor water vapour, smoothed) + c·(capsule daily swing); C beam acquisitions')
+            tip=f'{100 * b[2]:+.2f} %/bar ≈ {envh["C"]["hall_pct_per_K"]:+.1f} %/K')
+    p2.text(-2.5, 5.2, f'{envh["C"]["hall_pct_per_K"]:+.1f} %/K', 28, sd.INK, weight=600)
+    tbl = sd.table(['', 'R² water + hall', '+ mixer T', 'mixer %/K'],
+                   [[k, f'{envh[k]["r2"]:.2f}', f'{envm[k]["r2"]:.2f}', f'{envm[k]["mixerT_pct_per_K"]:+.1f}'] for k in envh],
+                   size=22, tips=[f'{k}: n = {envh[k]["n"]}; water + hall: lag {envh[k]["lag_h"]} h, water {envh[k]["water_pct_per_hPa"]:+.2f} %/hPa, '
+                                  f'hall {envh[k]["hall_pct_per_K"]:+.1f} %/K, 68 % residual {envh[k]["res68_pct"]:.2f} %; with the mixer T: '
+                                  f'68 % residual {envm[k]["res68_pct"]:.2f} %' for k in envh])
+    D.slide('envfit', sd.title(f'Water vapour and the hall temperature explain {100 * envh["C"]["r2"]:.0f} % of C\'s variation, '
+                               f'{100 * envm["C"]["r2"]:.0f} % with the mixer\'s thermometer',
+                               'ln v = a + b·(outdoor water vapour, smoothed) + c·(capsule daily swing) [+ d·(mixer T)]; C beam acquisitions')
             + sd.row(p1.svg('water'), p2.svg('hall'),
-                     sd.col(tbl, sd.p('1 bar of capsule pressure ≈ 0.6 K of hall temperature (sealed volume, p ∝ T).', 22, sd.MUT), w=360),
+                     sd.col(tbl, sd.p('1 bar of capsule pressure ≈ 0.6 K of hall temperature (sealed volume, p ∝ T). '
+                                      'D on cosmic sub-runs.', 22, sd.MUT), w=420),
                      gap=32),
             notes=('<p>Both signs are the wrong way for a gas-density (E/N) effect: at our field v would rise with temperature '
                    'and fall with pressure. Instead v falls with both water and temperature, and by ~2 %/K on C, far more than '
@@ -370,16 +392,69 @@ def main():
                    f'<p>τ = {tau} h chosen by cross-validation of the water-only model (scan 8–48 h). Station pressure '
                    'correlates +0.2–0.3 and outdoor temperature −0.3: both weaker.</p>'), short='Environment fit')
 
+    # ------------------------------------------------------------------ 9b. the gas mixer
+    wv = GM.loc[T0 + pd.Timedelta(hours=XR[0]):T0 + pd.Timedelta(hours=XR[1])]
+    strips = []
+    for lab, col, yr, st, tp in (('isobutane (%)', 'iso_pct_meas', (9.9, 10.1), 0.1, 'measured isobutane fraction, iso / (Ar + iso) flow'),
+                                 ('total flow (ln/h)', 'total_flow_lnh', (7.70, 7.86), 0.05, 'argon + isobutane measured flow')):
+        pl = sd.Plot(1000, 170, XR, yr, xlabel='', ylabel='', margin=(10, 30, 46, 104))
+        pl.xticks(date_ticks(3)).yticks([(v, f'{v:.2f}') for v in np.arange(yr[0], yr[1] + 1e-9, st)])
+        q = wv[col].dropna()
+        pl.line(hrs(q.index)[::3], q.to_numpy()[::3], sd.INK, w=2, markers=False, tip=tp)
+        pl.text(XR[0] + 4, yr[1] - 0.15 * (yr[1] - yr[0]), lab, 22, sd.INK, weight=600)
+        strips.append(pl.svg(lab))
+    # C beam: residual after water + hall, against the mixer temperature
+    xTm = (E.T_mfc.interpolate(limit=36) if tau_T == 0 else vs.ewm_causal(E.T_mfc, tau_T))
+    tT = xTm.reindex(dC.tm, method='nearest', tolerance=pd.Timedelta('20min')).to_numpy(float)
+    okT = ok & np.isfinite(tT)
+    yT = np.log(dC.v.to_numpy(float))[okT]
+    XT = np.column_stack([np.ones(okT.sum()), xw[okT], capd[okT]])
+    bT = np.linalg.lstsq(XT, yT, rcond=None)[0]
+    rT = 100 * (yT - XT @ bT)
+    dT = tT[okT] - np.nanmean(tT[okT])
+    kT = np.polyfit(dT, rT, 1)
+    pm = sd.Plot(620, 560, (-1.4, 1.4), (-6, 6), xlabel='mixer T − campaign mean (K)', ylabel='C v after water + hall (%)',
+                 title='… what is left, against the mixer\'s thermometer')
+    pm.xticks([(v, f'{v:+g}' if v else '0') for v in (-1, -0.5, 0, 0.5, 1)]).yticks([(v, f'{v:+d}' if v else '0') for v in range(-6, 7, 2)])
+    pm.scatter(dT, rT, sd.PURPLE, r=3, opacity=0.3, tip=f'{okT.sum():,} C beam acquisitions')
+    xs = np.linspace(-1.3, 1.3, 10)
+    pm.line(xs, np.polyval(kT, xs), sd.INK, w=3, markers=False, tip=f'slope {kT[0]:+.2f} %/K on the residual')
+    pm.text(-1.35, 5.2, f'r = {np.corrcoef(dT, rT)[0, 1]:+.2f}', 28, sd.INK, weight=600)
+    VV = J['validation']
+    grow, gtip = [], []
+    for m, lab in (('spline+water', 'spline + water'), ('spline+water+hall', '+ capsule'), ('spline+water+mixerT', '+ mixer T')):
+        grow.append([lab] + [' / '.join(f'{VV[m][g][k]["res68_pct"]:.2f}' for k in 'ACD') for g in ('block', 'block24')])
+        gtip.append('68 % residual (%) of held-out acquisitions, A / C / D; pull rms 24 h: '
+                    + ' / '.join(f'{VV[m]["block24"][k]["pull_rms"]:.2f}' for k in 'ACD'))
+    gain = sd.table(['held-out error, A / C / D (%)', '6 h gaps', '24 h gaps'], grow, size=21, tips=gtip,
+                    widths=[380, 310, 310])
+    D.slide('mixer', sd.title('The gas mixer held the mix constant; a hall thermometer carries v across long gaps',
+                              f'Bronkhorst MFC log over the v window: {MX["iso_pct"]["median"]:.2f} % isobutane, '
+                              f'{MX["flow_lnh"]["median"]:.2f} ln/h; C beam acquisitions on the right')
+            + sd.row(sd.col(*strips,
+                            sd.callout(f'Isobutane {MX["iso_pct"]["p01"]:.3f}–{MX["iso_pct"]["p99"]:.3f} %, flow '
+                                       f'{MX["flow_lnh"]["p01"]:.4f}–{MX["flow_lnh"]["p99"]:.4f} ln/h (1–99 %): the mix cannot '
+                                       f'move v by percent. Across 24 h gaps a hall-temperature term (capsule or mixer) '
+                                       f'cuts the error; the mixer\'s sensor is best on D.', sd.GREEN, 22),
+                            gain, gap=14, w=1000),
+                     pm.svg('mixer T'), gap=44),
+            notes=(f'<p>Source: the DAQ\'s <code>gas_watcher.py</code> (sole owner of the FLOW-BUS) logged both mass-flow '
+                   f'controllers every 2 s from 7 July to 10 August; EOS <code>july_beam/slow_control/gas_flow/</code>. '
+                   f'Setpoint {MX["iso_set_pct"]:.2f} % isobutane, argon 7.0 ln/h, unchanged through the v window; '
+                   f'{MX["n_excursion_10min"]} ten-minute bins outside ±0.5 % iso or below 7.5 ln/h.</p>'
+                   f'<p>The argon MFC\'s temperature sensor reads {MX["T_mfc"]["p01"]:.1f}–{MX["T_mfc"]["p99"]:.1f} °C: the gas '
+                   f'rack\'s temperature, so another hall thermometer, closer to the gas lines than the capsule '
+                   f'(correlation with the capsule\'s daily swing ≈ 0.5). As a second regressor (causal τ = {tau_T:g} h, chosen by '
+                   f'cross-validation) in the smooth model it changes nothing across 6 h gaps (the spline has data on both '
+                   f'sides) and across 24 h gaps cuts the error and brings the pulls back to ~1 (table). Slopes: '
+                   f'{", ".join(f"{k} {v["mixerT_pct_per_K"]:+.1f} %/K" for k, v in sensT.items())}. The sign is again the '
+                   f'opposite of a density effect.</p>'
+                   '<p>The isobutane MFC\'s temperature field reads 0.3–1.5 and is not a temperature; it is not used.</p>'),
+            short='Gas mixer')
+
     # ------------------------------------------------------------------ 10. validation
-    t0m, t1m = T.tm.min() - pd.Timedelta(hours=3), T.tm.max() + pd.Timedelta(hours=3)
-    x = vs.ewm_causal(E.pva200s0, tau)
-    x = (x - x.loc[t0m:t1m].mean()) / x.loc[t0m:t1m].std()
-    xf = lambda t: x.reindex(pd.to_datetime(t), method='nearest', tolerance=pd.Timedelta('20min')).to_numpy(float)  # noqa: E731
-    SD = S['D'].assign(arm='D', tag=None)
-    d = vs.prep(pd.concat([T[T.arm != 'D'], SD[['run', 'subrun', 'tag', 'arm', 'trigger', 'tm', 'v', 'v_err', 'v_bundle']]],
-                          ignore_index=True))
-    lam = J['lam_with_water'] if 'water' in best else J['lam']
-    Pb = vs.cv(d, lambda: vs.Smooth(t0m, t1m, lam=lam, x_env=xf if 'water' in best else None), 'block')
+    HO = pd.read_parquet(f'{a.vt}/vt_smooth_holdout.parquet')
+    Pb = HO[(HO.model == best) & (HO['mode'] == 'block')]
     edges = np.linspace(-5, 5, 41)
     ph = sd.Plot(810, 520, (-5, 5), (0, 0.45), xlabel='pull of a held-out acquisition', ylabel='density',
                  title='pulls (block holdout)')
@@ -403,15 +478,19 @@ def main():
     D.slide('valid', sd.title('Remove six hours of data and the model still predicts it',
                               f'Every 4th {J["block_h"]:.0f} h block held out and predicted from the rest (D: sub-runs)')
             + sd.row(ph.svg('pulls'), pr.svg('res'), gap=44)
-            + sd.legend([('A', sd.BLUE), ('C', sd.ORANGE), ('D', sd.GREEN), ('N(0, 1)', sd.INK, 'dash')]),
+            + sd.legend([('A', sd.BLUE), ('C', sd.ORANGE), ('D', sd.GREEN), ('N(0, 1)', sd.INK, 'dash')])
+            + sd.p(f'Model: {MODEL_TXT}.', 22, sd.MUT),
             notes=('<table><tr><th>model</th><th>random A</th><th>random C</th><th>random D</th><th>block A</th><th>block C</th>'
                    '<th>block D</th></tr>' + ''.join(
                        '<tr><td>' + n + '</td>' + ''.join(f'<td>±{J["validation"][n][m][arm]["res68_pct"]:.2f} %</td>'
                                                           for m in ('random', 'block') for arm in 'ACD') + '</tr>'
                        for n in J['validation']) + '</table>'
                    '<p>68 % half-width of measured/model − 1. "water" = the water-vapour term alone, no spline: it gets most '
-                   'of the way, and the spline adds the rest. The random holdout (20 % of acquisitions) tests '
-                   'interpolation between neighbours; the block holdout tests a gap of 6 h.</p>'), short='Validation')
+                   'of the way, and the spline adds the rest; "mixerT" adds the gas mixer\'s temperature sensor as a second '
+                   'regressor. The random holdout (20 % of acquisitions) tests '
+                   'interpolation between neighbours; the block holdout tests a gap of 6 h; 12 h and 24 h blocks are in '
+                   'vt_smooth.json (block12, block24) and on the mixer slide. λ and the model are chosen on the mean over the '
+                   'three gap lengths.</p>'), short='Validation')
 
     # ------------------------------------------------------------------ 11. A/B
     rows = []
@@ -447,7 +526,8 @@ def main():
     # ------------------------------------------------------------------ 12. close
     body = (sd.kicker('What this does not rule out, and what is next')
             + sd.row(sd.col(sd.p('Not ruled out', 30, sd.DINK, 600),
-                            sd.p('• The water reading is a correlation with outdoor air; the gas was never measured.', 26, sd.DMUT),
+                            sd.p('• The water reading is a correlation with outdoor air and two hall thermometers; the gas '
+                                 'composition was never measured (the mixer log shows only what went in).', 26, sd.DMUT),
                             sd.p('• D\'s absolute v reads ~10 % off its bundle even on its own run: its scale needs an angle anchor.', 26, sd.DMUT),
                             sd.p('• A\'s shape is tied to C\'s (one curve): its own small departures (~0.9 %) are in its scatter.', 26, sd.DMUT),
                             sd.p('• The A/B covers beam triggers of A and C; two-track splits were not separated.', 26, sd.DMUT)),
@@ -463,7 +543,8 @@ def main():
         title='n_TOF drift velocity: a smooth v(t), what drives it, and why no rerun',
         summary=(f'Column-duration v per acquisition for chambers A, C, D over the n_TOF campaign; one shared smooth model '
                  f'(holdout ±{val["random"]["A"]["res68_pct"]:.1f} % A, ±{val["random"]["C"]["res68_pct"]:.1f} % C); outdoor water '
-                 f'vapour + hall temperature explain {100 * envr["C"]["r2"]:.0f} % of C; an A/B re-reconstruction shows the frozen v '
+                 f'vapour + hall temperature explain {100 * envh["C"]["r2"]:.0f} % of C ({100 * envm["C"]["r2"]:.0f} % with the gas '
+                 f'mixer\'s thermometer; the mix itself was constant); an A/B re-reconstruction shows the frozen v '
                  f'changes no fit, so tan is corrected in the tables.'),
         tags='x17, n_TOF, drift velocity, reconstruction', date='2026-11-17'))
     print(out)
