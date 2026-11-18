@@ -1,0 +1,61 @@
+{
+ "rule": "(no picking by eye): among events of Runs 1 and 2 with both views in the tiers tables, 0.14 <= |tan_ref| < 0.28\nin both views, >= 5 hit strips and no censored (saturated) strip in both, take the event that minimises\n  sum over views of |r - med(r)| / MAD(r) + |d - med(d)| / MAD(d),\nr = hit-ladder slope / reference slope, d = tan_W - tan_ref, medians and MADs per view over that same set: the most\ntypical event in both the hit bias and the waveform-fit residual.",
+ "run": "Run 1",
+ "event_id": 6693,
+ "score": 0.3793222567526676,
+ "n_candidates": 2082,
+ "selection_stats": {
+  "x": {
+   "med_r": 1.1586882636440428,
+   "mad_r": 0.11670991750885693,
+   "med_d": -0.00026966146338029684,
+   "mad_d": 0.017740496670196587,
+   "n": 2082
+  },
+  "y": {
+   "med_r": 1.2713735554979722,
+   "mad_r": 0.1599217477856022,
+   "med_d": -0.0028553666687965024,
+   "mad_d": 0.018972261615643873,
+   "n": 2082
+  }
+ },
+ "views": {
+  "x": {
+   "tan_ref": 0.1582895498243385,
+   "angle_ref_deg": 8.994696145658295,
+   "angle_fit_deg": 8.732963921983691,
+   "angle_hits_deg": 10.359940138123703,
+   "u_hits": 0.006783238422554022,
+   "u_table": 0.006783238422554022,
+   "w_fit": 0.005699321800246242,
+   "w_ref": 0.005873007464427028,
+   "ratio_hits_ref": 1.1549854931464483,
+   "ratio_fit_ref": 0.9704264526764516,
+   "n_hits": 9,
+   "n_strips": 13,
+   "t_rise_ns": -38.04661730825588,
+   "t0": 268.5714485474985,
+   "chi2": 12406.266085399935,
+   "dof": 416
+  },
+  "y": {
+   "tan_ref": 0.14633067098438315,
+   "angle_ref_deg": 8.325044933833478,
+   "angle_fit_deg": 8.086563556477298,
+   "angle_hits_deg": 10.438404604554194,
+   "u_hits": 0.006528510396092612,
+   "u_table": 0.006528510396092612,
+   "w_fit": 0.004997212024854536,
+   "w_ref": 0.00515158811923288,
+   "ratio_hits_ref": 1.2672811267110324,
+   "ratio_fit_ref": 0.9700333002551198,
+   "n_hits": 10,
+   "n_strips": 14,
+   "t_rise_ns": -38.04661730825588,
+   "t0": 286.6114182838336,
+   "chi2": 28032.156862133063,
+   "dof": 448
+  }
+ }
+}

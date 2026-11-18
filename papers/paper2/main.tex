@@ -1,4 +1,4 @@
-% MX17 Paper IIa -- reconstruction. Outline stage. (Paper II split 2026-11-13: the bias law and survey are IIb,
+% MX17 Paper IIa -- reconstruction. First prose draft 2026-11-18 (was outline stage). (Paper II split 2026-11-13: the bias law and survey are IIb,
 % papers/tpc_mixing_review/; papers/paper_split_decision/DECISIONS_2026-11-13.md.)
 % Journal: NIM A (decided 2026-11-01, papers/JOURNAL_STRATEGY.md); switch to elsarticle.
 % Author list undecided (PAPER_PLAN C4): plain article for now.
@@ -13,6 +13,7 @@
 \usepackage{authblk}
 \usepackage[hidelinks]{hyperref}
 \usepackage{cleveref}
+\usepackage[section]{placeins} % figures stay in their own section
 \usepackage{drafting}
 % \draftnotesfalse   % uncomment for a clean read without notes
 
@@ -20,17 +21,24 @@
 
 \title{Reconstructing micro-TPC tracks on resistive strips with a waveform forward model}
 \author{\tbw{author list -- undecided (C4)}}
-\date{Outline draft, \today}
+\date{First draft, \today}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
-\tbw{Abstract written last. Key points: a forward model of the strip signals (physical RC spreading of the resistive
-layer, prompt footprint, diffusion), calibrated per chamber and run condition from the data alone, fitted to the
-sampled waveforms; track angle and drift depth to $\sim$1\textdegree{} on five chambers in two setups (cosmic bench,
-SPS beam at a known angle), against 2--2.6\textdegree{} for the production hit times and 1.2--2.0\textdegree{} for the
-same model fitted to the hit lists alone. Why single hit times fail is the companion paper (IIb).}
+In the micro-TPC mode of a Micromegas the angle of a track segment is usually taken from a line through per-strip hit
+times, which is biased because every strip collects charge from several drift depths. We describe a reconstruction
+that fits a forward model of the sampled strip waveforms instead: a straight track, a free charge profile along the
+drift, and three lateral terms (transverse diffusion, the prompt footprint, and the spreading of the charge along the
+resistive strips), with no fitted coupling between strips. Every constant is measured on the chamber's own data, per
+chamber and per run condition. On five resistive-strip chambers with a 30\,mm drift gap, tested with cosmic muons against
+an external tracker, the angle resolution is 0.9 to 1.1\textdegree{} on the two uniform chambers, where the hit line
+gives 2.0 to 2.6\textdegree{} with its scale calibrated on the reference; at a known angle of 25.4\textdegree{} in the
+SPS H4 beam the fit reads $0.98\pm0.03$ of the stage tangent. The same model fitted to hit lists (one time and one
+amplitude per strip) reaches 1.2 to 1.3\textdegree{} on the bench and 1.5 to 2.0\textdegree{} in the beam. The
+resolution is three times the limit set by diffusion; the difference is characterised but not explained. Why single
+hit times fail, and what a hit-based readout must record, are the subject of a companion paper.
 \end{abstract}
 
 \ifdraftnotes

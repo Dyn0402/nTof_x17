@@ -1,29 +1,45 @@
 \section{How far from the physics floor}\label{sec:floor}
-\sectionstate{partial}{\texttt{rerun/model\_audit/ws\_floor} (F3, 2026-10-27); pass-1 resolutions (\texttt{rerun/paper1\_res}); bootstrap (\texttt{rerun/paper1\_floor})}
-\intent{What limits the angle once the bias is gone, and how far the measurement is from it. Replaces the withdrawn
-``$\sim$1\textdegree{} physics floor''.}
-An electron-by-electron toy (cluster sizes and $\delta$-ray ranges, Magboltz diffusion, Polya gain, the measured footprint,
-template, sampling, noise and ADC ceiling), fitted by the production estimator with the toy's exact mean model, gives a floor
-of 0.30--0.35\textdegree{} (s68) at every angle up to 45\textdegree, on all five bench chambers. Transverse diffusion sets it:
-without diffusion the floor falls to 0.02--0.09\textdegree, while electronics noise alone contributes at most
-0.015\textdegree. The closed form $\sigma_\theta\approx D_T\sqrt{6(1+f)/(NG)}$, with $N$ drift electrons, gap $G$ and
-$f=1/(1+\theta_\mathrm{Polya})$, gives 0.29\textdegree{} for chamber A. \tbw{Define the chamber naming once with Paper I.}
+\sectionstate{partial}{\texttt{rerun/model\_audit/ws\_floor} (F3, 2026-10-27); figure \texttt{figs/make\_toy\_floor.py} (numbers re-read from the result files 2026-11-18); budget and bootstrap \texttt{rerun/paper1\_floor/README.md}. Replaces the withdrawn ``$\sim$1\textdegree{} physics floor''.}
+What limits the angle once the bias is gone? An electron-by-electron simulation (cluster sizes and
+$\delta$-ray ranges, Magboltz diffusion, Polya gain, the measured footprint, pulse response, sampling, noise and ADC
+ceiling), fitted by the production estimator with the simulation's own mean model, gives the resolution a perfect
+model would reach (\cref{fig:toy_floor}). For chamber~A it is 0.34 to 0.36\textdegree{} ($s_{68}$) up to 20\textdegree, and 0.30 to
+0.35\textdegree{} over the five chambers. Transverse diffusion sets it: without diffusion the simulated resolution is below
+0.1\textdegree{} up to 35\textdegree, and the electronics noise alone gives at most 0.03\textdegree. The closed form
+$\sigma_\theta\approx D_T\sqrt{6(1+f)/(NG)}$, with $N$ drift electrons, gap $G$ and $f=1/(1+\theta_\mathrm{Polya})$,
+gives 0.29\textdegree{} for chamber~A.
 
-The measured resolution of chamber A, 0.99\textdegree{} (X) and 0.90\textdegree{} (Y) on pass 1, is about three times this
-floor. Most of the difference is not understood: \tbw{bring in the remainder from the residual bootstrap, $0.59\pm0.10$\textdegree{} on chamber A X,
-which no reference, X-copy or position structure explains.}
+The measured resolution of chamber~A, 0.99\textdegree{} (X) and 0.90\textdegree{} (Y), is about three times this
+floor and flat in angle up to the 20\textdegree{} the reference tracker reaches. The difference was taken apart on
+the calibration runs, with the mean dependence of the residual on angle and position removed. In that convention
+chamber~A measures 0.81\textdegree{} (X) and 0.73\textdegree{} (Y), the simulation with every known effect 0.42 and
+0.48\textdegree, and the difference in quadrature is 0.69 and 0.54\textdegree. It is not the reference (no dependence
+on the reference's $\chi^2$), not a cause common to the two views (their residuals correlate by less than 0.09), not
+position structure finer than the map (at most 3\,\% of its variance) and not a non-linearity in angle (at most
+2\,\%). Saturated planes, the brightest events and events with a second particle account for 12 to 37\,\% of it on
+chambers A, B, C and E, and for most of it on chamber~D. What remains on clean events is 0.56 to 0.65\textdegree{} in the X view of chambers A, B and D. It is
+present at normal incidence, the fit partly sees it (keeping the best quarter in $\chi^2$ removes more of the variance
+in the data than in the simulation), and the $\chi^2$ per degree of freedom of the data is 4 to 15 times the
+simulation's and grows with the charge. When the data's own fit residuals are added to simulated tracks they move
+the angle 1.5 to 2 times as much as the simulation's residuals do, and account for $59\pm10$\,\% of the remaining
+variance on chamber~A. The remainder therefore behaves as an event-to-event fluctuation of the charge pattern that
+is larger in the data than in the simulation. Which part of the signal carries it is not identified; it is bounded
+and characterised, not explained.
 
 \paragraph{The depth-bin bias.} The waveform fit describes the charge column in bins of one sample, 60\,ns. Even with a
-perfect model this degrades steep tracks and reads them shallow: in the toy the bias is $-0.08$, $-0.23$ and $-0.51$\textdegree{} at
-25, 30 and 40\textdegree, and the resolution grows from 0.34\textdegree{} at 20\textdegree{} to 1.35\textdegree{} at 40\textdegree. With 20\,ns
-bins the bias stays within 0.05\textdegree{} up to 45\textdegree{} and the resolution within 0.27--0.41\textdegree. The cause is that
-when $v\,\Delta t\tan\theta$ approaches the strip pitch, a charge uniform within a bin cannot represent clustered ionisation; the
-effect vanishes in the toy without clustering. On the bench it is small ($\sim-0.05$\textdegree{} at 20\textdegree), but it is the main term for
-pairs at 30--45\textdegree, as at n\_TOF. A finer or interpolated charge grid costs about three times more columns and has not been
-tested on data.
-\begin{figure}[t]
+perfect model this degrades steep tracks and reads them shallow: in the simulation the bias is $-0.08$, $-0.23$ and
+$-0.51$\textdegree{} at 25, 30 and 40\textdegree, and the resolution grows from 0.34\textdegree{} at 20\textdegree{} to
+1.35\textdegree{} at 40\textdegree. With 20\,ns bins the bias stays within 0.1\textdegree{} up to 45\textdegree{} and
+the resolution within 0.27 to 0.41\textdegree. The cause is that when $v\,\Delta t\tan\theta$ approaches the strip pitch,
+a charge uniform within a bin cannot represent clustered ionisation; the effect vanishes in the simulation without
+clustering. On the bench it is small ($\sim-0.05$\textdegree{} at 20\textdegree), but it is the main term for tracks
+at 30 to 45\textdegree. A finer charge grid costs about three times more columns and has not been tested on data.
+\begin{figure}[tbp]
   \centering
-  \includegraphics[width=0.7\linewidth]{toy_floor}
-  \caption{\tbw{Toy floor against angle and its breakdown, with the measured chamber A resolution.}}
+  \includegraphics[width=\linewidth]{toy_floor}
+  \caption{(a) Angle resolution of chamber~A against track angle: the electron-by-electron simulation fitted with its
+  exact mean model, with 60\,ns (production) and 20\,ns depth bins, the same without diffusion, and electronics noise
+  alone; markers are the measured resolution against the reference (X filled, Y open; the widths include the
+  reference's error). (b) Bias of the simulated fit. The simulation is of the X view.}
   \label{fig:toy_floor}
 \end{figure}

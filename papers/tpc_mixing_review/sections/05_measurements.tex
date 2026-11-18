@@ -184,11 +184,39 @@ velocity is not available on these rows (the column outlasts the 64-sample windo
 ladder and the waveform fit on the same planes, the waveform fit being itself checked against the stage angle
 on the CF$_4$ rows that do have a column velocity ($0.98 \pm 0.03$ of $\tan\ang{25.4}$~\cite{paperI}). The median ratio of the leading-edge slope to the waveform-fit slope is
 1.13, 1.10, 1.09 and 1.08 at drift fields from the lowest to the highest, and 1.07 on a fifth row; the robust line reads 1.03 to
-1.05. At this $N$ the bench law, $1 + C/N^2$ with chamber E's or chamber A's $C_Y$, gives 1.03 to 1.05: the beam rows read steeper
-than the bench law predicts, in a different gas, and the compression falls with drift field; we have not modelled these rows. The forward model fitted to the hit lists of these planes reads a ratio of 0.98 with the row's own drift velocity,
+1.05. At this $N$ the bench law, $1 + C/N^2$ with chamber E's or chamber A's $C_Y$, gives 1.03 to 1.05, the value of the robust
+line. The excess of the plain line is not a second mechanism of the ladder; it comes from hits that do not belong to it. In 60
+to 65\,\% of these planes there are leading-edge hits more than four pitches away from the fitted track in the plane of strip
+and time (\cref{fig:knownangle}), 1.6 to 2.2 per plane and of small amplitude; the one-track forward model with noise makes 0.2
+to 0.3. A hit uncorrelated with the ladder lowers the regression slope of time on position, so it reads steeper whichever side
+it falls on. Without these hits the amplitude-weighted line reads 1.050, 1.042, 1.038, 1.035 and 1.031 on the five rows, the
+robust line's values. What the far hits are (second beam particles within the \SI{3.8}{\micro\second} window, $\delta$ electrons)
+is not established here.
+
+The same planes regenerated through the forward model alone (each plane's fitted track and depth profile, white noise, the
+resistive spreading measured in this beam, and the transverse diffusion of this slow, wet gas from Magboltz,
+$D_T = 180$ to \SI{190}{\micro\metre\per\sqrt{cm}} at these fields) read 1.040, 1.032, 1.027, 1.024 and
+1.023, falling with the drift field as the data do, as the faster column puts more strips inside the readout window (13 to 16
+hits). The data without the far hits are 0.008 to 0.011 above the model on every row, the sign of the offset between
+the data and the clean toy on the bench (\cref{app:toy}; one unit of $C$ is 0.005 at this $N$). With the resistive spreading switched off the
+model reads 1.026 to 1.015, and with no lateral spread beyond a \SI{0.07}{mm} footprint 1.009 to 1.004. The known-angle rows
+therefore follow the bench law, in a gas three to four times slower than the bench's and with a tenth of its diffusion
+variance per unit drift time; what they add is that a least-squares line through all hits is fragile in a beam. The forward model fitted to the hit lists of these planes reads a ratio of 0.98 with the row's own drift velocity,
 but an angle resolution of \ang{1.5} to \ang{2.0} against \ang{1.0} to \ang{1.1} for the waveform fit, a third of the planes falling
 more than \ang{5} away.
-\tbw{decide whether the beam excess over the bench law (gas, field, $N$ from the stage) needs its own arm, or stays a stated observation}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{known_angle}
+  \caption{Chamber E at a known angle (\ang{25.4}, inclined view, 3\,000 planes per drift field). (a) Median ratio of the
+  leading-edge hit-ladder slope to the waveform-fit slope: the amplitude-weighted line through all hits, the same line
+  through the hits within four pitches of the fitted track, and the robust line, with the bench law for $N = 16$ to 17 (band);
+  and the forward model regenerated on the same tracks with white noise and the Magboltz diffusion of the beam gas, with its
+  resistive spreading off, and with a point-like footprint and no diffusion. (b) Hits more than \SI{180}{ns} off the plane's
+  robust ladder line, per plane, against their distance from the fitted track at the hit's time, in the data and in the
+  model with noise and the data's zero suppression, at the lowest and highest field.}
+  \label{fig:knownangle}
+\end{figure}
 
 \subsection{Lateral sharing against drift depth}\label{sec:depth}
 

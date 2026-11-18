@@ -1,28 +1,51 @@
-\section{Signal formation on resistive strips: the sharing kernel}\label{sec:kernel}
-\sectionstate{ready}{\texttt{sps\_beam\_test\_26/analysis/sharing\_kernel}, \texttt{angled\_kernel}, \texttt{plane\_ratio/FINDINGS.md}; \texttt{cloud\_basics} \S27--34}
-\intent{Measure, model-free and head-on in the beam, how a strip's charge reaches its neighbours: amplitude and delay
-to $\pm1$ and $\pm2$, gain-invariant, rotation-invariant, attachment-proof. The physical requirement $c_2<c_1$.}
+\section{Signal formation on resistive strips}\label{sec:kernel}
+\sectionstate{partial}{first prose draft 2026-11-18. Numbers: \texttt{rerun/paper1\_spsfigs/README.md} (kernel\_forms, angled\_kernel; condor 4605384), \texttt{docs/PARAMETERS.md} \S2. The copy-kernel numbers of the old outline ($c_2/c_1$ 0.42--0.47, 49\,ns) are superseded and not used.}
+An electron cloud that has drifted for a time $u$ arrives at the mesh with a lateral width set by transverse
+diffusion, is multiplied, and induces its signal through the resistive layer onto the two layers of readout strips
+below (\cref{fig:sharing_cartoon}). Three things put the charge of one depth on more than one strip. The diffusion
+during the drift grows as $\sqrt{u}$. The avalanche and the induction through the resistive layer give a prompt
+footprint that is the same for every depth. And the charge deposited on a resistive strip does not stay where it
+landed: it spreads along the strip as on an RC line, with a variance that grows linearly with the time since it
+landed. The resistive strips run along one direction, so this last term acts in one view only: the Y strips, which
+measure the coordinate along the resistive strips, see the charge spread onto their neighbours over the following
+samples, while the X strips, which measure the coordinate across them, do not.
 
-\tbw{Y: $c_2/c_1$ = 0.42--0.47 at three fields; $\pm1$ delay $\sim$49\,ns; gain-invariant to 1--3\,\% (run\_66);
-survives a 25.4\textdegree{} rotation. X: $\pm2/\pm1\approx$ 0.15--0.20 on all five chambers, against 0.36--0.54 in Y.
-det4 $D_{RC}$ = $2.2\times10^{-4}$ ($\pm$10\,\%) in the beam. $\tau$ and $c_2$ are bounds: the tail outlasts the 3.84\,\textmu s window.}
-\analysis{X-width}{the X-width excess (cloud\_basics \S28--34) is unsolved: state it as a limitation or explain it}
-\askStephan{Expected RC constant of the resistive strips through the insulator (sheet resistance, kapton thickness): does $D_{RC}$ match the design?}
-\begin{figure}[t]
+The size of these terms is measured without a model in the beam, on tracks at normal incidence recorded without zero
+suppression. For such a track all depths land on the same strip, so the signals of the neighbours of the leading
+strip, relative to it, are the response of the readout to charge on one strip (\cref{fig:kernel_forms}). At
+243\,V/cm a first neighbour carries on average 0.377 (X) and 0.390 (Y) of the leading strip's amplitude, and
+a second neighbour 0.19 (X) and 0.26 (Y) of the first; the values at 156 and 96\,V/cm agree within 0.01, on about
+2\,100 tracks per view. The second neighbour is below the first in both views, as it must be if charge reaches it
+only through the first. The X view is not symmetric: the first neighbour on the low side is larger by 0.07 to
+0.085 of the leading strip, where the Y view is symmetric within 0.01~\cite{paperI}. The neighbour signals of the Y
+view outlast the 3.84\,\textmu s readout window, so the long-time part of the spreading is bounded, not measured.
+
+The same quantities do not depend on the track angle in the view that stays at normal incidence. With chamber E
+turned by 25.4\textdegree{}, so that the Y view is inclined and the X view is not, the X view reads first-neighbour fractions of 0.43 and
+0.35 on its two sides, against 0.43 and 0.36 with the chamber flat in the same run (\cref{fig:angled_kernel}).
+\askDylan{The old outline also quoted gain invariance to 1--3\,\% (run\_66). I have not found it re-derived on the
+final cache builder; keep it out, or point me to the current number.}
+\askStephan{Expected RC constant of the resistive strips through the insulator (sheet resistance, kapton thickness): does $D_{RC}$ = 2.2--6.8$\times10^{-4}$\,mm$^2$/ns match the design?}
+\begin{figure}[tbp]
   \centering
   \includegraphics[width=0.7\linewidth]{sharing_cartoon}
-  \caption{\tbw{How charge reaches the neighbouring strips.}}
+  \caption{\tbw{How charge reaches the neighbouring strips: diffusion in the drift, the prompt footprint, and the
+  spreading along the resistive strips, which the Y view sees.} \askDylan{This is the engineer-package schematic; it
+  predates the physical RC picture. Redraw, or drop in favour of panel (b) of \cref{fig:forward_model}?}}
   \label{fig:sharing_cartoon}
 \end{figure}
-\begin{figure}[t]
+\begin{figure}[tbp]
   \centering
-  \includegraphics[width=0.9\linewidth]{kernel_forms}
-  \caption{\tbw{Kernel forms measured head-on, X and Y.}}
+  \includegraphics[width=\linewidth]{kernel_forms}
+  \caption{The response of the neighbouring strips to charge on one strip, from tracks at normal incidence in the SPS
+  beam recorded without zero suppression (chamber E): amplitudes of the first to third neighbours relative to the
+  leading strip and their time forms, X and Y view, at three drift fields.}
   \label{fig:kernel_forms}
 \end{figure}
-\begin{figure}[t]
+\begin{figure}[tbp]
   \centering
   \includegraphics[width=0.7\linewidth]{angled_kernel}
-  \caption{\tbw{The kernel at a 25.4 degree rotation.}}
+  \caption{The neighbour response of the X view with the chamber flat and turned by 25.4\textdegree{} (the X view
+  stays at normal incidence), same run.}
   \label{fig:angled_kernel}
 \end{figure}

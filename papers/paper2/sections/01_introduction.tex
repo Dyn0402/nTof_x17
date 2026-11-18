@@ -1,9 +1,28 @@
 \section{Introduction}\label{sec:intro}
-\sectionstate{open}{\texttt{RECONSTRUCTION\_BASIS.md}; \texttt{WAVEFORM\_FIRST\_THREADING.md}}
-\intent{Micro-TPC angles from per-strip hit times are standard, and biased in a way no threshold or estimator fixes;
-the measurement of that bias and its law are the companion paper IIb. This paper gives the reconstruction that avoids
-it: a waveform forward model, its calibration from the data alone, and its performance on the fleet, with the same
-model fitted to the hit lists as the hit-only comparison. Short detector summary; the rest is in~\cite{paperI}.}
+\sectionstate{partial}{first prose draft 2026-11-18; \texttt{RECONSTRUCTION\_BASIS.md}; \texttt{WAVEFORM\_FIRST\_THREADING.md}}
+A Micromegas with a drift gap of a few centimetres can be read as a small time projection chamber: the electrons
+of an inclined track reach the mesh one after the other, the strip they land on gives one coordinate and their
+arrival time the depth, and a single plane measures a track segment with its angle (the micro-TPC
+mode~\cite{paperI}). The usual reconstruction reduces each strip to one hit, a time and an amplitude, and fits a
+line through the hit times. That line is biased. A strip collects charge from several drift depths, because the
+charge spreads laterally on its way to the readout, and the one time it reports is an aggregate of them; the
+resulting ladder of hit times is compressed and the track reads too steep, by an amount that depends on the angle and
+that no choice of threshold or time estimator removes. The measurement of that bias, its scaling law and what a
+hit-based readout would have to record to avoid it are the subject of a companion paper~\cite{paperIIb}.
 
-\tbw{Short chamber summary: 30\,mm drift, 0.78\,mm pitch, resistive strips, DREAM sampling. Data: June cosmic bench
-(five chambers, M3 reference) and det4 in the SPS H4 beam.}
+This paper gives the reconstruction that avoids the bias when the waveforms are available. The lateral spreads that
+mix the depths are few and physical: drift diffusion, the prompt footprint of the avalanche and its induction, and,
+on a resistive anode, the spreading of the charge along the resistive strips. We put them in a forward model of the
+sampled strip signals of a straight track and fit that model to the whole picture of amplitude against strip and
+time, instead of fitting a line to times extracted strip by strip. What is given up is generality: the model
+describes one straight track per fit, not the curved or scattered trajectories a true TPC can follow.
+
+The detector is the MX17 chamber of~\cite{paperI}: a resistive-strip bulk Micromegas with a 30\,mm drift gap, two
+strip views at 0.78\,mm pitch, read by the DREAM front end, which samples every strip every 60\,ns. Five chambers
+(A to E) were measured with cosmic muons on a test bench against an external tracker (M3), and chamber E in the SPS H4
+beam, where it was also rotated to a known angle. Section~\ref{sec:kernel} measures how charge reaches the
+neighbouring strips; \cref{sec:hitsfail} shows what this does to hit times; \cref{sec:model} defines the model, the fit
+and the calibration, which uses the chamber's own data only; \cref{sec:floor} compares the resolution with what the
+ionisation and diffusion allow; \cref{sec:tiers} compares, on the same events, the hit line, the same model fitted
+to hit lists, and the waveform fit; \cref{sec:fleet} gives the performance of the five chambers and the test at a
+known angle.

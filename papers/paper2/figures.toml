@@ -34,28 +34,32 @@ producer = "cd mx_june_cosmic_qa/waveform_first_threading && ../../.venv/bin/pyt
 note = "WAVEFORM_FIRST_THREADING section 3; fleet extension is R1."
 
 [fig.event_waveforms]
-title = "One cosmic track: the strip waveforms"
+title = "One cosmic track on chamber A, X and Y: strip x time map with the leading-edge hits and their line, the waveform fit and the reference"
 state = "current"
-source = "mx_june_cosmic_qa/stephan_cosmics/event_displays/event_display_waveforms.pdf"
-note = "Candidate opener for section 3. Check it carries no hits-derived track overlay."
+section_state = "partial"
+source = "papers/paper2/figs/out/event_waveforms.pdf"
+producer = ".venv/bin/python papers/paper2/figs/make_event_waveforms.py  (inputs on $WORK_DATA/paper2_hits: windows, eos_tables, bundles/det3)"
+note = "Shows the hit ladder ON PURPOSE: the figure's point is that it reads steeper than the track (reconstruction-basis rule). Event chosen by a stated rule (most typical in hit bias and in the fit residual, both views, 0.14 <= |tan_ref| < 0.28; 2082 candidates): Run 1 event 6693. Reference 9.0/8.3 deg, fit 8.7/8.1, hits 10.4/10.4 (X/Y). Numbers and the rule in figs/out/event_waveforms.json. Replaces Stephan's display (2026-11-18)."
 
 # --- 4 Forward model ----------------------------------------------------------
 
 [fig.forward_model]
-title = "The forward model: template x kernel x drift, fitted to every strip's waveform"
-state = "placeholder"
+title = "The forward model on one plane: charge column, landing footprint and RC spreading, pulse response, seven strips with the model and its mesh-end / cathode-end contributions"
+state = "current"
 section_state = "ready"
-producer = "cd mpgd26 && ../.venv/bin/python make_share.py"
-note = "mpgd26 make_share.py draws a model diagram; WAVEFORM_FIRST_THREADING sections 4, 9, 15."
+source = "papers/paper2/figs/out/forward_model.pdf"
+producer = ".venv/bin/python papers/paper2/figs/make_forward_model.py  (after make_event_waveforms.py: same event, Y view)"
+note = "Production physical-RC model (wft.model.build_matrix_rc with the pass-1 chamber A bundle: sigma0 0.30 mm, Dp 0.023 mm/sqrt(ns), D_RC 3.8e-4 mm^2/ns, 60 ns bins); the model is rebuilt from the stored fit and matches the stored one to 5e-8. Numbers in figs/out/forward_model.json. 2026-11-18."
 
 # --- 5 Physics floor ----------------------------------------------------------
 
 [fig.toy_floor]
-title = "Toy closure: electronics 0.02 deg, centroid jitter ~1 deg"
-state = "placeholder"
+title = "Angle-resolution floor against angle: toy with a perfect model (60 ns and 20 ns depth bins), no diffusion, noise alone, and chamber A measured; the toy bias"
+state = "current"
 section_state = "partial"
-producer = "cd mx_june_cosmic_qa/waveform_first_threading && ../../.venv/bin/python 18_toy_closure.py"
-note = "Script 18 used the R&D model (c2/c1 0.17); re-run on the production model and r06 kernel (R6)."
+source = "papers/paper2/figs/out/toy_floor.pdf"
+producer = ".venv/bin/python papers/paper2/figs/make_toy_floor.py"
+note = "From the existing results of rerun/model_audit/ws_floor (F3, 2026-10-27; nothing re-run) and the Paper I per-angle resolution of chamber A (paper1_v2/figs/out/angle_resolution_v2.json, folded in |angle|, bins with >= 200 tracks). Toy is the X view only. The noise-only curve in det3_crb.json reaches 0.029 deg at 30 deg; the section text says 0.015 (REPORT.md): one of the two is stale. 2026-11-18."
 
 # --- 6 Hits vs waveforms ------------------------------------------------------
 
