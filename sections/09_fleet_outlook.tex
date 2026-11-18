@@ -1,30 +1,80 @@
-\section{Fleet performance, cost and outlook}\label{sec:fleet}
-\sectionstate{partial}{\texttt{mx\_june\_wft/FLEET\_DIGEST.md}; R10 (cost table)}
-\intent{All five chambers: $\sigma_\theta$ = \requote{1.15--2.51\textdegree} with waveforms, better than hits on every plane
-(\requote{$\times$1.03--2.2}, halved on det3). CPU cost per plane and tier. Outlook: VMM emulation, in-situ calibration at n\_TOF, two-track fits.}
-\analysis{R10}{cost table}
-\analysis{C3}{n\_TOF tripwires: chamber C non-linearity on its own bundle}
-\begin{figure}[t]
+\section{Performance on five chambers}\label{sec:fleet}
+\sectionstate{partial}{first prose draft 2026-11-18. Pass 1: \texttt{rerun/paper1\_res/PASS1\_RESOLUTION\_2026-10-31.md} (headline rows), \texttt{rerun/paper1\_floor/README.md} (\texttt{hits\_arm.py}, the fleet figure). Open: R10 (cost table).}
+The five chambers were calibrated independently by the chain of \cref{sec:calibration} and reconstructed with the same
+code. \Cref{tab:fleet} gives the angle resolution of each on its long run, for tracks in the interior of the active
+area. Chambers A and B, which are uniform, reach 0.9 to 1.1\textdegree{} in both views; chambers C and D, which
+discharge, 1.2 to 1.5\textdegree; chamber~E, whose amplification is not uniform, 2.1 to 2.4\textdegree{}~\cite{paperI}.
+These widths include the error of the reference angle. Up to the 20\textdegree{} the reference reaches, the
+resolution is flat in angle within 0.15\textdegree{} on chambers A, B and D. It is best at the low end of each
+chamber's gain scan and degrades by 30 to 50\,\% towards the top, as more of the charge saturates, and it is constant
+within 0.87 to 1.00\textdegree{} on chamber~A for drift fields from 166 to 366\,V/cm.
+
+\begin{table}[tbp]
   \centering
-  \includegraphics[width=0.9\linewidth]{fleet}
-  \caption{\tbw{Fleet performance, hits against waveforms.}}
+  \small
+  \caption{Angle resolution $s_{68}$ of the waveform fit against the reference, per view, on each chamber's long run
+  (interior of the active area; the widths include the reference's error). Chamber~D: half of the X view.}
+  \label{tab:fleet}
+  \begin{tabular}{@{}lcc@{}}
+    \toprule
+    chamber & X [\textdegree] & Y [\textdegree] \\
+    \midrule
+    A & 0.99 & 0.90 \\
+    B & 1.05 & 1.13 \\
+    C & 1.26 & 1.51 \\
+    D & 1.23 & 1.46 \\
+    E & 2.41 & 2.08 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\Cref{fig:fleet} compares the waveform fit with the hit chain that was in production before it, on the same events
+of the five chambers. With its angle scale calibrated on the reference per run, the hit line has a resolution of 2.0
+to 2.6\textdegree, the waveform fit 0.73 to 1.56\textdegree{} (in this comparison the mean dependence of the residual
+on angle and position is removed for both, which is why these values are below those of \cref{tab:fleet}). The
+position at the mesh has a core width of 550 to 805\,\textmu m from the hits and 430 to 620\,\textmu m from the
+waveforms, both dominated by the scattering of the muon in the reference tracker~\cite{paperI}, and the efficiency
+within 5\,mm of the reference is the same within 1 to 5 points.
+\analysis{R10}{cost table: CPU per plane for the hit line, H2c and the waveform fit, bench and SPS window lengths}
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=\linewidth]{fleet}
+  \caption{Five chambers, the same events: angle resolution, position resolution and efficiency of the hit chain
+  (angle scale calibrated on the reference per run) and of the waveform fit.}
   \label{fig:fleet}
 \end{figure}
 
 \subsection{A known angle in the beam}\label{sec:knownangle}
-\sectionstate{open}{R7; \texttt{sps\_beam\_test\_26/analysis/angled\_kernel} (geometry)}
-\intent{A reference-free test: det4 rotated by 25.4\textdegree{} (yaw measured from the run-57 alignment; the configuration value was 25.64\textdegree) in the SPS beam. Hits and waveforms against the stage angle,
-independent of the M3 telescope.}
-\analysis{R7}{known-angle reconstruction, hits vs waveforms}
-\begin{figure}[t]
+\sectionstate{partial}{R7 done: \texttt{rerun/paper1\_spsfigs/README.md} (\texttt{tan\_known.py}); hit-arm point in \cref{tab:tiers}.}
+On the bench the angle scale is measured against the reference tracker. The beam gives a test without one: chamber~E
+was mounted on a stage turned by 25.4\textdegree{} (the yaw measured from the alignment of the run; the stage was set
+to 25.64\textdegree), so that every beam track crosses the inclined view at $\tan\theta = 0.475$
+(\cref{fig:known_angle_geometry}). The fit gives $w$, and the angle needs the drift velocity; it is taken from the
+duration of the charge column, which is inside the 64-sample window for drift fields of about 180\,V/cm and above in
+Ar/CF$_4$/iC$_4$H$_{10}$. On the 13 settings that satisfy this, the reconstructed $\tan\theta$ is 0.467 to 0.496,
+that is $0.98\pm0.03$ of the stage value (\cref{fig:known_angle}). The settings at a second stage angle,
+15.5\textdegree, were recorded with 32 samples; the column does not fit, there is no velocity, and the angle is not
+measured there. Only the magnitude of the angle is tested: no existing measurement fixes the sign of a tangent in the
+beam setup.
+\begin{figure}[tbp]
   \centering
   \includegraphics[width=0.6\linewidth]{known_angle_geometry}
-  \caption{\tbw{det4 rotated in the beam.}}
+  \caption{Chamber E turned by 25.4\textdegree{} in the SPS H4 beam.}
   \label{fig:known_angle_geometry}
 \end{figure}
-\begin{figure}[t]
+\begin{figure}[tbp]
   \centering
-  \includegraphics[width=0.7\linewidth]{known_angle}
-  \caption{\tbw{Reconstructed angle against the stage angle.}}
+  \includegraphics[width=0.8\linewidth]{known_angle}
+  \caption{Reconstructed $|\tan\theta|$ of the inclined view against the stage angle, with the drift velocity of each
+  setting from the duration of its charge column.}
   \label{fig:known_angle}
 \end{figure}
+
+\subsection{Limits and outlook}\label{sec:outlook}
+The model fits one straight track per window. Two tracks in the same chamber are reconstructed when their windows separate~\cite{paperI}; a joint fit of two tracks to one window exists and is not in production.
+The depth bins of one sample bias tracks steeper than 25\textdegree{} (\cref{sec:floor}). The X view's asymmetry is not
+modelled (\cref{sec:traps}). The slow part of the resistive spreading outlasts the readout window, so its constants
+are bounds. And the comparison with a hit-based front end in \cref{sec:tiers} is an emulation on the sampled
+waveforms, not a measurement with such a front end.
+\tbw{Outlook, two or three sentences: calibration in situ at n\_TOF (no reference tracker: what replaces $k_w$),
+chamber~C on its own bundle (C3).}

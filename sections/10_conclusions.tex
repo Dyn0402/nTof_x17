@@ -1,3 +1,17 @@
 \section{Conclusions}\label{sec:conclusions}
-\sectionstate{open}{all of the above}
-\tbw{The forward model, its calibration, the fleet performance, what it costs, and how far the hit lists get with the same model (the bias law and the readout requirements: IIb).}
+\sectionstate{partial}{first prose draft 2026-11-18}
+A forward model of the sampled strip signals, with the drift diffusion, the prompt footprint and the spreading along
+the resistive strips as its only lateral terms and no fitted coupling between strips, reconstructs micro-TPC track
+segments on a resistive-strip Micromegas without the bias of hit times. All of its constants are measured on the
+chamber's own data, per chamber and per run condition. On five chambers on a cosmic bench it gives an angle
+resolution of 0.9 to 1.1\textdegree{} on the two uniform chambers and 1.2 to 2.4\textdegree{} on the three with known
+defects, where the hit line gives 2.0 to 2.6\textdegree{} even with its angle scale calibrated on the reference; at
+a known angle of 25.4\textdegree{} in the SPS beam it reads $0.98\pm0.03$ of the stage tangent.
+
+Fitting the same model to hit lists, one time and one amplitude per strip, removes the bias of the hit line and
+halves its spread on the bench (1.2 to 1.3\textdegree{} against 1.0\textdegree{} for the waveforms), but leaves a
+third of the beam planes more than 5\textdegree{} off: the model helps the hits and does not replace the samples.
+
+The resolution is three times the limit set by transverse diffusion, 0.34\textdegree. The reference, the alignment
+and the known event conditions do not account for the difference; it behaves as a fluctuation of the charge pattern
+from event to event that is larger in the data than in our simulation, and is the main open point of the method.

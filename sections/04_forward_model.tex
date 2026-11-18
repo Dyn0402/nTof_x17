@@ -1,21 +1,117 @@
 \section{The waveform forward model and its calibration}\label{sec:model}
-\sectionstate{ready}{\texttt{WAVEFORM\_FIRST\_THREADING.md} \S4, \S9, \S15; \texttt{wft/}; R9 (calibration protocol)}
-\intent{The model (per-plane pulse template, sharing kernel, drift and diffusion), the fit, and the calibration
-protocol with its traps: per detector and per run condition; kernel ordering enforced
-(\texttt{check\_kernel\_ordering}); $v$ from the kernel hyperfit, never from a Magboltz prior; cut units that move with $v$.}
-\analysis{R9}{collect the protocol and the traps from WFT \S15, RETIRE\_C2GTC1, the in-situ findings}
-\tbw{Frozen calibration (C2, 2026-10-23): the physical RC kernel --- prompt footprint $\sigma_0$ per view
-($\sigma_{0,x}\approx0.25$\,mm, the physical value: strip integration 0.225\,mm alone; the head-on stacks' 0.35--0.43
-also carry the asymmetric neighbour copy), RC spread $D_\mathrm{rc}$ along the resistive strips, drift diffusion; no
-fitted copy amplitudes. $v$ fitted with the reference position profiled (a reference taken from a hit-time alignment
-biases $v$ by 3--15\,\%). The delay kernel (r06) is the comparison.}
-\tbw{Main known mismatch: the model is symmetric in X, the June boards are not~\cite{paperI}. It shows as the X
-$\chi^2$ structure and the $\sigma_{0,x}$ tension between per-event fits and stacks. Cost (toy, \S\ref{sec:floor}):
-$-0.05$\textdegree{} overall, $\mp0.19$\textdegree{} head-on, $+0.007$\textdegree{} on the resolution. Not modelled: no
-mechanism makes its size, so a term would be a free parameter per board and per run condition.}
-\begin{figure}[t]
+\sectionstate{partial}{first prose draft 2026-11-18. Model: \texttt{wft/model.py:build\_matrix\_rc}, \texttt{docs/PARAMETERS.md} \S2--3. Calibration chain: \texttt{rerun/PASS\_PLAN\_2026-10-28.md} (CAL0--CAL4), \texttt{rerun/PASS1\_STATUS\_2026-10-30.md}. Figure: \texttt{figs/make\_forward\_model.py}.}
+
+\subsection{The model}
+One view of one track is described by three geometric parameters and a charge profile (\cref{fig:forward_model}).
+The track crosses the mesh plane at position $p_0$ at time $t_0$; charge from deeper in the gap arrives later and,
+for an inclined track, further along the strips, at $p_0 + w\,u$ after a drift time $u$. The transverse rate $w$ is
+what the fit measures; the angle follows from it and the drift velocity. The drift time is divided into $K$ bins of
+one sample, $\Delta t = 60$\,ns, and the charge $q_k$ arriving in each bin is free: the fit assumes nothing about the
+ionisation along the track, its fluctuations or its loss to attachment.
+
+The charge of bin $k$ lands as a Gaussian of variance
+\begin{equation}
+  \sigma_k^2 = \sigma_0^2 + D_p^2\,u_k + \frac{(w\,\Delta t)^2}{12},
+  \label{eq:sigma}
+\end{equation}
+the prompt footprint, the transverse diffusion over the drift time $u_k$ ($D_p^2 = D_T^2\,v$), and the extent of the
+track within the bin. In the Y view it then spreads along the resistive strips, its variance growing by
+$2\,D_{RC}\,s$ at a time $s$ after landing; in the X view it does not. A strip sees every increment of the charge
+above it through the pulse response of the electronics, measured per chamber, and the result is sampled every
+60\,ns. There are no fitted couplings between strips: the fractions of \cref{sec:kernel} are what
+\cref{eq:sigma} and the RC term produce, not parameters.
+
+The model is linear in the $q_k$. For given $(p_0, w, t_0)$ they are solved by non-negative least squares, and
+the three geometric parameters are found by minimising the $\chi^2$ over every sample of every strip in a window
+around the candidate, with the noise of each strip measured from the data. Samples at the ADC ceiling and channels
+known to be dead are censored: they are treated as unknown, not as zero charge. The two views are fitted
+separately. The angle is
+\begin{equation}
+  \tan\theta = \frac{w - w_0}{k_w\,v},
+  \label{eq:tan}
+\end{equation}
+where $v$ is the drift velocity, $w_0$ the transverse rate of a track along the chamber normal (the drift field
+is not exactly along it) and $k_w$ a scale factor of order one, both measured per view (\cref{sec:calibration}).
+
+\begin{figure}[tbp]
   \centering
-  \includegraphics[width=0.9\linewidth]{forward_model}
-  \caption{\tbw{The forward model.}}
+  \includegraphics[width=\linewidth]{forward_model}
+  \caption{The forward model on one plane (Y view of the track of \cref{fig:event_waveforms}). (a) The fitted track and
+  its charge in 60\,ns depth bins (marker area). (b) Lateral profile of the charge of one bin when it lands, for the
+  mesh end and the cathode end of the column (drift diffusion added to the prompt footprint), and 300\,ns later after
+  spreading along the resistive strips. (c) The pulse response, with the 60\,ns samples. (d) Seven neighbouring strips:
+  samples, the fitted model, and the model's contributions from the mesh-end and cathode-end thirds of the column; a
+  strip receives charge from several depths, and the charge leaving a strip gives the undershoot.}
   \label{fig:forward_model}
 \end{figure}
+
+\subsection{Calibration from the chamber's own data}\label{sec:calibration}
+Every constant of the model is measured per chamber and per run condition, in a fixed order, starting from nothing
+(\cref{tab:calib}). Hit times enter once, to find the candidate tracks and a first alignment with the reference
+tracker; no constant is taken from them.
+\begin{enumerate}
+  \item \emph{Pulse response and trigger latency.} The response is measured from the chamber's own pulses in the X
+  view \tbw{one sentence on how (\texttt{wft.calibrate.measure\_templates})}; it is used for both views, because the Y
+  view's own average shape already contains the resistive spreading. The time $t_0$ is fixed by the trigger up to the phase of a 10\,ns clock, so the
+  latency is one number per view.
+  \item \emph{Resistive spreading.} $D_{RC}$ is fitted on unsaturated planes with $t_0$ pinned and the track position
+  profiled, the other constants fixed. Chamber~E's value is the one measured in the beam.
+  \item \emph{Footprint and diffusion.} $\sigma_0 = 0.30$\,mm for all chambers and both views, from the beam
+  measurement at normal incidence; left free on the bench it trades against the other constants and is not a
+  measurement. $D_p$ comes from the growth of the width with drift time on unsaturated tracks at normal
+  incidence and agrees with Magboltz for chambers A and E.
+  \item \emph{Drift velocity.} $v$ is the gap divided by the duration of the charge column of the fitted tracks, with
+  no gas simulation as a prior.
+  \item \emph{Angle mapping and bow.} $w_0$ and $k_w$ are measured against the reference angles, the alignment is
+  redone with waveform positions, and the map of the mesh height over the board (its bow~\cite{paperI}) is measured
+  and applied. The chain is iterated once more and checked for convergence.
+\end{enumerate}
+Templates, latency, $D_{RC}$, $w_0$, $k_w$ and the bow converge at the first check on every chamber; the alignment along the
+drift direction needed one more iteration on three. After the last step $k_w$ is 1.00 to 1.08: the velocity from
+the column duration and the velocity that makes the angles agree with the reference differ by a few per cent, in one
+direction, and $k_w$ carries the difference. \askDylan{This few-per-cent scale is the one place the reference angles
+enter the angle. On the SPS rows with a column velocity the known angle reads $0.98\pm0.03$ with $k_w$ from the bench
+(\cref{sec:knownangle}). Is that the statement you want here, i.e. $k_w$ transfers, or should the text say the
+angle scale is tied to the reference?}
+
+\begin{table}[tbp]
+  \centering
+  \small
+  \caption{Constants of the forward model for the five chambers on the bench (their long runs). $D_{RC}$ of chamber~E
+  is the beam value.}
+  \label{tab:calib}
+  \begin{tabular}{@{}lccccc@{}}
+    \toprule
+    chamber & $\sigma_0$ [mm] & $D_p$ [mm/$\sqrt{\mathrm{ns}}$] & $D_{RC}$ [$10^{-4}$\,mm$^2$/ns] & $v$ [\textmu m/ns] & depth bins $K$ \\
+    \midrule
+    A & 0.30 & 0.023  & 3.8 & 35.8 & 24 \\
+    B & 0.30 & 0.025  & 5.1 & 39.3 & 24 \\
+    C & 0.30 & 0.018  & 4.6 & 24.2 & 24 \\
+    D & 0.30 & 0.0225 & 6.8 & 36.8 & 24 \\
+    E & 0.30 & 0.020  & 2.2 & 33.0 & 24 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{What goes wrong, and what does not transfer}\label{sec:traps}
+Three things were got wrong before the chain above was fixed, and each is silent. A reference position taken from
+an alignment made with hit times biases the fitted $v$ by 3 to 15\,\%, which is why the positions are profiled and the
+velocity is taken from the column duration, never from a gas simulation. A set of
+free coupling amplitudes between strips, which we used before the RC term, has a direction the cosmic data do not
+constrain; fitted freely it returned a second neighbour larger than the first on every chamber, which is not
+physical. And a calibration is a property of a chamber \emph{and} of its conditions: the readout constants
+($\sigma_0$, the pulse response, $D_{RC}$) carry from the beam to the bench, the gas constants ($v$, $D_p$, the gain)
+do not.
+
+The last point can be quantified on the beam data themselves. The rows of chamber~E at the known angle in
+Ar/CO$_2$/iC$_4$H$_{10}$ were fitted with the bench diffusion constant, $D_p = 0.020$, in a gas that was three to four
+times slower than the bench gas; Magboltz gives $D_p = 0.006$ for it. \tbw{Refit at $D_p$ = 0.003--0.020 on 200
+planes per view of two rows (\texttt{hits\_daq/sps\_dp\_scan.py}): which value the planes prefer and how far the fitted
+slope moves. Running 2026-11-18.}
+
+The main known mismatch of the model is that it is symmetric in the X view and the boards are
+not (\cref{sec:kernel}). It shows as structure in the X $\chi^2$ and as a tension between the footprint preferred by
+single fits and by averaged profiles. In a simulation with the asymmetry put in, its cost is $-0.05$\textdegree{}
+on the mean angle, $\mp0.19$\textdegree{} for tracks at normal incidence depending on the side, and
+$+0.007$\textdegree{} on the resolution. It is not modelled: no mechanism predicts its size, so a term for it would be
+a free parameter per board and per run condition.

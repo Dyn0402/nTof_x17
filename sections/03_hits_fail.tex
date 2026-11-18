@@ -1,17 +1,30 @@
 \section{Why hit times fail}\label{sec:hitsfail}
-\sectionstate{partial}{\texttt{WAVEFORM\_FIRST\_THREADING.md} \S3 (det3); \texttt{THREADING\_DISPLAYS\_2026-07-28.md}; fleet extension R1}
-\intent{Motivation only, one figure. A per-strip hit time aggregates charge from several drift depths (diffusion,
-the prompt footprint, and on the Y view the RC spreading along the resistive strip), so the drift-time ladder built
-from hit times is compressed and the reconstructed angle reads too steep, for rising-edge, CFD and matched-filter
-times alike. One event display shows it; the measurement, the end-term law and its decomposition are the companion
-paper IIb, cited here (decision D04, 2026-11-13). Do not quote the old ``delayed copies, 29\,\% at 47\,ns'': that was
-the retired copy kernel's effective fit.}
-\analysis{R1}{moved to IIb; here only the display}
-\begin{figure}[t]
+\sectionstate{partial}{first prose draft 2026-11-18; figure \texttt{figs/make\_event\_waveforms.py} (event chosen by rule, json next to it). Motivation only (D04): the numbers and the law are IIb.}
+\Cref{fig:event_waveforms} shows one cosmic muon in chamber~A at about 9\textdegree{} from the drift direction. The
+charge of the track appears in each view as a slanted band in the plane of strip and time. Each strip's pulse is
+several samples long and, more important, several strips carry charge at any one time: the charge of one depth is
+shared among neighbouring strips by the spreads of \cref{sec:kernel}, so one strip receives charge from a range of
+depths. Its leading-edge time is set by the earliest charge that reaches it in sufficient amount. At the two ends
+of the band the strips receive only charge that has spread from depths inside the band, and their times are pulled
+towards those of their inner neighbours. The ladder of hit times is therefore shorter in time than the drift across
+the column, and a line through it gives a steeper track: here 10.4\textdegree{} in both views, where the reference
+track is at 9.0\textdegree{} (X) and 8.3\textdegree{} (Y) and the waveform fit of \cref{sec:model} gives
+8.7\textdegree{} and 8.1\textdegree. The event was not chosen for effect: of the 2\,082 tracks of the two runs
+between 8\textdegree{} and 16\textdegree{} it is the one closest to the median in both the hit-line bias (ratio of
+the slopes 1.16 in X and 1.27 in Y) and the residual of the waveform fit.
+
+The effect grows as the track approaches the drift direction, because the column then covers fewer strips and its
+ends weigh more, and it is the same for a rising-edge, constant-fraction, peak or matched-filter time, because it is
+in the charge that reaches the strip and not in how the time is read off. Its measurement on four chambers and at a known angle in the beam, the law
+it follows and its decomposition into the spreads are in the companion paper~\cite{paperIIb}.
+\begin{figure}[tbp]
   \centering
-  \includegraphics[width=0.85\linewidth]{event_waveforms}
-  \caption{\tbw{The strip waveforms of one cosmic track, with the hit-time ladder against the forward-model fit (motivating figure; numbers in IIb).}}
+  \includegraphics[width=\linewidth]{event_waveforms}
+  \caption{One cosmic track in chamber~A, (a) X and (b) Y view: the strip signals against time, with the leading-edge
+  hit time of each strip (circles), the amplitude-weighted line through the hits, the track of the waveform fit and the
+  reference track. The fit and reference lines are drawn at the time the charge crosses the 30\,\% leading edge of the
+  pulse response. The reference angle is 9.0\textdegree{} (X) and 8.3\textdegree{} (Y), the waveform fit gives
+  8.7\textdegree{} and 8.1\textdegree, and the hit line 10.4\textdegree{} in both views. The event is the most typical of
+  2\,082 in both the hit bias and the fit residual; the measurement of the bias is in~\cite{paperIIb}.}
   \label{fig:event_waveforms}
 \end{figure}
-% ladder_compression (five chambers x four estimators) moved to IIb (D04).
-
