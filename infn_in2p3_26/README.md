@@ -31,6 +31,12 @@ n_TOF as the first use. Top left is a 3D version of Paper I Fig. 1(a).
   `assets/ntof_station.png`) beside the full capsule-pointing figure. Panel 7 is text plus an acceptance bar. Panel 1's
   labels and leader lines are drawn by `make_hero.py`. Panel 4 is `make_waterfall.py`: event 7884 as per-strip
   waveforms in 3D with the model at the fit (method only, no hits comparison).
+- v3 (11-18, after Dylan: "the format is not ideal"): redesigned from a study of 25 flash-talk posters (SQM26, QM25,
+  QM23), written up in `POSTER_LESSONS.md`. Full-width hero band (box render + take-home sentence), two columns read
+  top to bottom (why / chamber / waveform fit | performance / n_TOF / summary), assertion headings, a Summary and
+  next-step box. `make_poster_figs.py` redraws the air-scattering and angle-resolution plots at print size (SVG,
+  21-28 pt) from the paper's json/csv; the exploded chamber is cropped (`chamber_bare.png`) and its layer labels are
+  HTML. The readout-board render and the two-track figure are out (two-track survives as a tile).
 - Numbers on it are from the `paper1_v2` draft abstract and are not reconciled. Authors, logos, QR codes and panel 7
   (LNL / upgrades) are placeholders. The submitted abstract promises the "4 deg too steep" result, which the poster now
   leaves out.
