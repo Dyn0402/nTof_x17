@@ -25,6 +25,12 @@ n_TOF as the first use. Top left is a 3D version of Paper I Fig. 1(a).
   Its claims come from `~/PycharmProjects/x17_facility_search/lnl/README.md` and `ntof_italy_26/figures/lnl_numbers.json`:
   ~40 % against ~2.5 % geometric acceptance, 17 d (as built) and 1 d (big plastics) to 3 sigma at 1 uA. Check the
   wording with Dylan before printing, in particular the cosmic-bump remark and the comparison with ATOMKI.
+- v2 (11-18, Dylan's second round): the proton render (redundant with panel 1) and the 3D pair event display (not
+  revealing, and the cherry-picked pair does not come from the capsule) are **out**. Panel 6 is the rendered n_TOF station
+  (`mpgd26/make_ntof.py --only full --view hero --no-labels --size 2400 2040`, output gitignored there, copied to
+  `assets/ntof_station.png`) beside the full capsule-pointing figure. Panel 7 is text plus an acceptance bar. Panel 1's
+  labels and leader lines are drawn by `make_hero.py`. Panel 4 is `make_waterfall.py`: event 7884 as per-strip
+  waveforms in 3D with the model at the fit (method only, no hits comparison).
 - Numbers on it are from the `paper1_v2` draft abstract and are not reconciled. Authors, logos, QR codes and panel 7
   (LNL / upgrades) are placeholders. The submitted abstract promises the "4 deg too steep" result, which the poster now
   leaves out.

@@ -19,7 +19,10 @@ h1 { font-size:21.5mm; line-height:1.06; margin:0 0 5mm; letter-spacing:-0.3mm; 
 .ph { border:0.6mm dashed #9aa6b5; color:#7b8797; font-size:5.4mm; display:flex; align-items:center;
       justify-content:center; text-align:center; border-radius:2mm; background:#fafbfc; padding:2mm; }
 .logos .ph { height:42mm; }
-.evt img { border-radius:3mm; }
+.bars { margin:1mm 0 5mm; } .bl { font-size:6.4mm; color:var(--mute); margin-bottom:1.5mm; }
+.bar { position:relative; height:13mm; margin-bottom:2mm; display:flex; align-items:center; }
+.bar span { display:block; height:100%; border-radius:1.5mm; flex:none; max-width:46%; }
+.bar b { font-size:9mm; margin:0 3mm; color:var(--navy); } .bar i { font-size:6.4mm; color:var(--mute); font-style:normal; }
 .small li { font-size:7.5mm; margin-bottom:1.5mm; }
 .prelim { position:absolute; right:3mm; bottom:3mm; font-size:5mm; font-weight:700; color:#5b6675; background:rgba(255,255,255,.8); padding:.5mm 2mm; border-radius:1mm; }
 .row { display:grid; column-gap:11mm; min-height:0; }
@@ -45,7 +48,7 @@ b.k { color:var(--accent); }
 .hero { position:relative; flex:1; min-height:0; display:flex; align-items:center; justify-content:center; }
 .heroimg { position:relative; height:100%; aspect-ratio:1759/1678; max-width:100%; }
 .heroimg img { width:100%; height:100%; display:block; }
-.tiles.t3 .tile .v { font-size:11.5mm; }
+.tiles.t3 .tile .v { font-size:9.6mm; white-space:nowrap; }
 .photo img { object-fit:cover; width:100%; height:100%; border-radius:3mm; }
 .mock { position:absolute; right:22mm; bottom:3.5mm; font-size:5mm; color:#8a94a3; }
 .foot { font-size:5.6mm; color:var(--mute); }
@@ -66,19 +69,9 @@ b.k { color:var(--accent); }
 <div class="row" style="grid-template-columns: 1.52fr 1fr;">
   <div class="panel">
     <h2><span class="n">1</span>An X17 search is an opening-angle measurement</h2>
-    <div class="hero"><div class="heroimg">
-      <img src="assets/hero_x17_box.png" alt="Four TPCs boxed around a target, one e+e- pair">
-      <span class="lab" style="left:0%; top:4%; color:#c9772a;">scintillators (trigger, energy)</span>
-      <span class="lab" style="left:20%; top:24%; color:#2c7a67;">TPC readout plane</span>
-      <span class="lab" style="left:71%; top:50%; color:#3d86a1;">30&nbsp;mm drift gap</span>
-      <span class="lab" style="left:52%; top:11%; color:#4b5563;">beam</span>
-      <span class="lab" style="left:52%; top:47%; color:#1a1f2b;">target</span>
-      <span class="lab" style="left:24%; top:33%; color:#7a3fb0;">e<sup>+</sup></span>
-      <span class="lab" style="left:65%; top:23%; color:#d94f1e;">e<sup>&minus;</sup></span>
-      <span class="lab" style="left:56%; top:90%; color:#6b7280; font-weight:500;">near arms drawn as outlines</span>
-    </div></div>
+    <div class="fig"><img src="assets/hero_x17_box.png" alt="Four TPCs boxed around a target, one e+e- pair"></div>
     <div class="cap">A generalised search: a target in a beam, four TPCs 20&nbsp;cm away closing a box around it, scintillators
-    behind. Each lepton leaves a short 3D track segment in the gas of one chamber. Idealised layout, drawn to scale.</div>
+    behind. Each lepton leaves a short 3D track segment in the gas of one chamber. Idealised layout, drawn to scale; the two arms nearest the viewer are outlines.</div>
   </div>
   <div class="panel">
     <h2><span class="n">2</span>What the tracker must do</h2>
@@ -131,14 +124,16 @@ b.k { color:var(--accent); }
 </div>
 
 <!-- ROW 3: reconstruction + performance -->
-<div class="row" style="grid-template-columns: 1fr 1.45fr;">
+<div class="row" style="grid-template-columns: 1.12fr 1.3fr;">
   <div class="panel">
     <h2><span class="n">4</span>Fit the picture, not the hits</h2>
     <p>Each view is a strip&nbsp;&times;&nbsp;time image. The reconstruction fits a <b class="k">forward model</b> of that
     whole image: a straight track, drift and diffusion, charge sharing on the resistive layer, the electronics
     response.</p>
-    <div class="fig"><img src="assets/muon_data_model.png" alt="One muon: data and model at the fit"></div>
-    <div class="cap">One cosmic muon, both views: the recorded waveforms (left) and the model at the fitted track (right).</div>
+    <div class="fig"><img src="assets/waterfall_7884.png" alt="One muon as waveforms, with the model at the fit"></div>
+    <div class="cap"><span style="color:#1d5fa8;font-weight:700;">Filled:</span> the recorded waveform of each strip, one cosmic
+    muon, both views. <b style="color:#111827;">Black:</b> the model at the fit.
+    <b style="color:#d9631e;">Orange:</b> the fitted track, strip position against arrival time.</div>
   </div>
   <div class="panel">
     <h2><span class="n">5</span>Performance on cosmic muons and in the SPS beam</h2>
@@ -164,57 +159,47 @@ b.k { color:var(--accent); }
 </div>
 
 <!-- ROW 4: n_TOF + proton beams -->
-<div class="row" style="grid-template-columns: 1.22fr 1fr;">
+<div class="row" style="grid-template-columns: 1.55fr 1fr;">
   <div class="panel">
     <h2><span class="n">6</span>First use: n_TOF EAR2, summer 2026</h2>
-    <div class="cols" style="grid-template-columns: 0.46fr 1fr 1fr;">
-      <div class="col photo"><div class="fig"><img src="assets/ntof_photo.jpg" alt="The four-arm station at n_TOF"></div></div>
-      <div class="col evt">
-        <div class="fig" style="position:relative;"><img src="assets/pair_event_3d.png" alt="3D display of a pair candidate">
-          <span class="prelim">PRELIMINARY</span></div>
-        <div class="cap">One event in 3D: two track segments in one chamber, 42&deg; apart, meeting within 2&nbsp;mm,
-        each pointing on to a fired scintillator.</div>
+    <div class="cols" style="grid-template-columns: 0.9fr 1.5fr;">
+      <div class="col">
+        <div class="fig"><img src="assets/ntof_station.png" alt="The n_TOF station, rendered"></div>
+        <div class="cap">The station as built (two arms shown solid): TPC, trigger wall, plastic and liquid
+        scintillators around a <sup>3</sup>He capsule; one simulated pair.</div>
       </div>
       <div class="col">
         <div class="fig"><img src="assets/ntof_pointing.png" alt="Tracks pointing back at the 3He capsule"></div>
-        <div class="cap">Four chambers around a <sup>3</sup>He capsule in the neutron beam (photo: seen along the beam).
-        6207 segments extrapolated to the beam axis image the capsule, to scale.</div>
+        <div class="cap">Track segments extrapolated back to the beam axis image the capsule: three chambers agree
+        on its height to a few mm.</div>
       </div>
     </div>
   </div>
   <div class="panel">
-    <h2><span class="n">7</span>Next: the ATOMKI measurement, on a proton beam</h2>
-    <div class="cols" style="grid-template-columns: 0.82fr 1fr;">
-      <div class="col">
-        <div class="hero"><div class="heroimg" style="aspect-ratio:2400/2000;">
-          <img src="assets/hero_proton_box.png" alt="The same box around a thin target on a proton beam">
-          <span class="lab" style="left:50%; top:80%; color:#e0457b; font-size:5.6mm;">p, ~1 MeV</span>
-          <span class="lab" style="left:36%; top:33%; color:#1a1f2b; font-size:5.6mm;">140&deg;</span>
-          <span class="lab" style="left:58%; top:2%; color:#6b7280; font-size:5.6mm;">cosmic &mu;</span>
-        </div></div>
-        <div class="cap">The same box around a thin Li target at the end of a beam pipe.</div>
+    <h2><span class="n">7</span>Next: repeat ATOMKI on a proton beam</h2>
+    <div class="small" style="display:flex; flex-direction:column; flex:1; min-height:0;">
+      <p style="font-size:7.5mm;">The anomaly was seen with protons: <sup>7</sup>Li(p,e<sup>+</sup>e<sup>&minus;</sup>)<sup>8</sup>Be,
+      then <sup>3</sup>H and <sup>11</sup>B. The same box needs only a thin target and a ~1&nbsp;MeV beam.</p>
+      <div class="bars">
+        <div class="bl">Pairs near 140&deg; inside the acceptance</div>
+        <div class="bar"><span style="width:100%; background:var(--navy);"></span><b>~40 %</b><i>four-TPC box</i></div>
+        <div class="bar"><span style="width:6.25%; background:#9aa6b5;"></span><b>~2.5 %</b><i>multi-telescope spectrometer</i></div>
       </div>
-      <div class="col small">
-        <ul>
-          <li>The anomaly was seen with protons: <sup>7</sup>Li(p,e<sup>+</sup>e<sup>&minus;</sup>)<sup>8</sup>Be, then
-              <sup>3</sup>H and <sup>11</sup>B targets. The chambers need only a target and a ~1&nbsp;MeV beam.</li>
-          <li><b class="k">~40 % of pairs near 140&deg;</b> fall in the box, against ~2.5 % for a multi-telescope
-              spectrometer.</li>
-          <li><b class="k">Every lepton is a 3D segment that points at the target</b>: a vertex, and cosmic muons,
-              which can fake a bump near 140&deg;, are rejected.</li>
-          <li><b class="k">Thin</b>: the angle is measured in gas, before any scintillator.</li>
-          <li>Geant4 estimate, 1&nbsp;&micro;A on Li<sub>2</sub>O: the ATOMKI signal at 3&sigma; in about two weeks as
-              built, about a day with larger scintillators.</li>
-        </ul>
-        <div style="display:flex; gap:5mm; margin-top:auto; align-items:center;">
-          <div class="ph qr" style="width:34mm;height:34mm;">QR<br>3D event display</div>
-          <div class="ph qr" style="width:34mm;height:34mm;">QR<br>3D readout board</div>
-          <div class="foot">Two papers in preparation:<br>the detector; the reconstruction.<br>Contact: <i>e-mail</i></div>
-        </div>
+      <ul>
+        <li><b class="k">Every lepton points at the target</b>: a vertex for each pair, and cosmic muons, which can
+            fake a bump near 140&deg;, are rejected.</li>
+        <li><b class="k">Thin</b>: the angle is measured in gas, before any scintillator.</li>
+        <li>Geant4 estimate, 1&nbsp;&micro;A on Li<sub>2</sub>O: the ATOMKI signal at 3&sigma; in about two weeks as built,
+            about a day with larger scintillators.</li>
+      </ul>
+      <div style="display:flex; gap:5mm; margin-top:auto; align-items:center;">
+        <div class="ph qr" style="width:32mm;height:32mm;">QR<br>3D event display</div>
+        <div class="ph qr" style="width:32mm;height:32mm;">QR<br>3D readout board</div>
+        <div class="foot">Two papers in preparation: the detector; the reconstruction.<br>Contact: <i>e-mail</i></div>
       </div>
     </div>
   </div>
 </div>
 
-<div class="mock">MOCK-UP v1 &middot; 2026-11-18 &middot; numbers from the Paper I draft, to be reconciled before printing</div>
+<div class="mock">MOCK-UP v2 &middot; 2026-11-18 &middot; numbers from the Paper I draft, to be reconciled before printing</div>
 </div></body></html>

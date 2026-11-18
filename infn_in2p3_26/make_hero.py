@@ -79,9 +79,9 @@ def add_track(p, d, phi, color):
     end = d * s_of(292.0)
     p.add_mesh(pv.Tube(pointa=(0, 0, 0), pointb=end, radius=4.0), color=color, smooth_shading=True, ambient=0.5)
     p.add_mesh(pv.Cone(center=end + d * 9, direction=d, height=36, radius=12, resolution=40), color=color, ambient=0.5)
-    for r in np.linspace(R_WIN + 3, R_WIN + GAP - 3, 6):
+    for r in np.linspace(R_WIN + 2, R_WIN + GAP - 2, 8):
         q = d * s_of(r)
-        p.add_mesh(pv.Sphere(radius=6.5, center=q), color=C_ION, smooth_shading=True, ambient=0.4)
+        p.add_mesh(pv.Sphere(radius=4.2, center=q), color=C_ION, smooth_shading=True, ambient=0.4)
         foot = q + n * (R_WIN + GAP - r)
         p.add_mesh(pv.Line(q, foot), color=C_ION, line_width=2.5, opacity=0.8)
 
@@ -102,8 +102,8 @@ def build(size, scene='neutron'):
         p.add_mesh(pv.Tube(pointa=(0, 0, -330), pointb=(0, 0, 250), radius=3.0), color='#6b7280', opacity=0.55)
         p.add_mesh(pv.Cone(center=(0, 0, 265), direction=(0, 0, 1), height=40, radius=11, resolution=40),
                    color='#6b7280')
-        add_track(p, (1.0, 0.33, 0.20), 0, C_EM)
-        add_track(p, (-0.28, 1.0, -0.14), 90, C_EP)
+        add_track(p, (1.0, 0.42, 0.30), 0, C_EM)
+        add_track(p, (-0.36, 1.0, -0.22), 90, C_EP)
     else:
         # thin-walled beam pipe from below, ending in a cap that carries the target film
         pipe = pv.Cylinder(center=(0, 0, -190), direction=(0, 0, 1), radius=20, height=380, resolution=60,
@@ -123,23 +123,76 @@ def build(size, scene='neutron'):
         p.add_mesh(pv.Tube(pointa=a_, pointb=b_, radius=2.6), color='#6b7280', ambient=0.5)
     p.set_background('white')
     p.camera.position = (-1150, -1420, 1050)
-    p.camera.focal_point = (30, 30, -20)
+    p.camera.focal_point = (30, 30, 45)
     p.camera.up = (0, 0, 1)
-    p.camera.view_angle = 28
+    p.camera.view_angle = 19.5
     p.renderer.reset_camera_clipping_range()
     return p
 
 
+# label text, world anchor, label position in image fractions (x from the left, y from the top), colour
+LABELS = [
+    ('thick scintillator\n(energy)', (120, 322, 250), (0.33, 0.07), '#b5651d'),
+    ('thin scintillator\n(trigger)', (-60, 264, 235), (0.17, 0.20), '#2f77b3'),
+    ('TPC readout plane', (-120, 232, -120), (0.19, 0.72), '#2c7a67'),
+    ('30 mm drift gap', (215, -190, 200), (0.84, 0.16), '#3d86a1'),
+    ('beam', (0, 0, 250), (0.60, 0.07), '#4b5563'),
+    ('target', (0, 0, -20), (0.62, 0.80), '#1a1f2b'),
+    ('e$^+$', (-45, 125, -27), (0.29, 0.42), C_EP),
+    ('e$^-$', (125, 52, 37), (0.67, 0.50), C_EM),
+]
+
+
+def project(p, pts):
+    """World points -> pixel (x from the left, y from the top) of the rendered image."""
+    import vtk
+    c = vtk.vtkCoordinate()
+    c.SetCoordinateSystemToWorld()
+    h = p.window_size[1]
+    out = []
+    for q in pts:
+        c.SetValue(*map(float, q))
+        x, y = c.GetComputedDoubleDisplayValue(p.renderer)
+        out.append((x, h - y))
+    return out
+
+
+def overlay(png, px, labels, fontsize):
+    """Labels with leader lines, drawn over the render in matplotlib."""
+    import matplotlib
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+    from PIL import Image
+    im = Image.open(png)
+    w, h = im.size
+    fig = plt.figure(figsize=(w / 200, h / 200), dpi=200)
+    ax = fig.add_axes([0, 0, 1, 1])
+    ax.imshow(im)
+    ax.set_xlim(0, w), ax.set_ylim(h, 0), ax.axis('off')
+    for (text, _, frac, col), (x, y) in zip(labels, px):
+        ax.annotate(text, xy=(x, y), xytext=(frac[0] * w, frac[1] * h), color=col, fontsize=fontsize,
+                    fontweight='bold', ha='center', va='center', linespacing=1.05,
+                    arrowprops=dict(arrowstyle='-', color=col, lw=1.6, shrinkA=4, shrinkB=0),
+                    bbox=dict(boxstyle='round,pad=0.25', fc='white', ec='none', alpha=0.85))
+        ax.plot([x], [y], 'o', ms=5, color=col, mec='white', mew=1.0)
+    fig.savefig(png, dpi=200, transparent=True)
+    plt.close(fig)
+
+
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('--size', nargs=2, type=int, default=[2400, 2000])
+    ap.add_argument('--size', nargs=2, type=int, default=[2800, 1700])
     ap.add_argument('--scene', default='neutron', choices=['neutron', 'proton'])
     ap.add_argument('--out', default=None)
     a = ap.parse_args()
     a.out = a.out or os.path.join(HERE, 'assets', 'hero_x17_box.png' if a.scene == 'neutron' else 'hero_proton_box.png')
     p = build(a.size, a.scene)
+    px = project(p, [l[1] for l in LABELS]) if a.scene == 'neutron' else None
     p.screenshot(a.out, transparent_background=True)
+    if px:
+        overlay(a.out, px, LABELS, fontsize=a.size[0] / 105)
     print('wrote', a.out)
+
 
 
 if __name__ == '__main__':
