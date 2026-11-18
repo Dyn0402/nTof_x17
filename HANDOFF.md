@@ -1,51 +1,59 @@
 # Handoff
 
-## INFN-IN2P3 Frascati poster — updated 2026-11-18 (dylan-MS-7C84)
+## INFN-IN2P3 Frascati poster — updated 2026-11-19 (dylan-MS-7C84)
 
-**Resume:** mock-up v2 is in `infn_in2p3_26/` (`poster_preview.png`, `poster.pdf`); next: Dylan's comments on v2, then placeholders and numbers.
+**Resume:** mock-up v3 (redesigned from 25 flash-talk posters) is in `infn_in2p3_26/poster.pdf`; next: Dylan's reaction to v3.
 
 **Goal:** an A0 portrait poster for the INFN-IN2P3 detector R&D conference (LNF Frascati, 2–4 Dec 2026), aimed at
 the gas-detector community. Dylan wants low manual effort: Claude builds it and he reacts to mock-ups.
 
 **Done:**
-- Direction changed 11-18 (Dylan): **no Paper II/III findings before they are published**, so the "hit times compress
-  the ladder" hook is dropped. The poster is the detector for a general X17 search (Paper I material), the forward fit
-  as a method only, n_TOF as first use, and "repeat ATOMKI on a proton beam" as the outlook.
-- Mock-up v2, seven panels: (1) labelled 3D render of four TPCs boxed around a target, (2) what the tracker must do +
-  Paper I pointing figure, (3) exploded chamber + readout-stack render + spec tiles, (4) 3D per-strip waveforms of muon
-  7884 with the model at the fit, (5) performance figures and tiles, (6) rendered n_TOF station + capsule pointing figure,
-  (7) ATOMKI on a proton beam: text and an acceptance bar (~40 % against ~2.5 %).
-- Conference facts and the Quaranta email (sent 17 Nov, asking whether the poster is still possible) are in
-  `infn_in2p3_26/README.md`. **No reply seen yet; not re-checked on 11-18.**
+- 11-18: direction set (Dylan): **no Paper II/III findings before they are published**. The poster is the detector
+  for a general X17 search (Paper I material), the forward fit as a method only, n_TOF as first use, and ATOMKI on a
+  proton beam as the outlook. v0–v2 notes in `infn_in2p3_26/README.md`.
+- 11-18 evening: Dylan said v2's format is "not ideal" and asked to learn from the flash-talk posters of SQM26, QM25
+  and QM23. 25 of them were studied; the findings are in `infn_in2p3_26/POSTER_LESSONS.md`.
+- **Mock-up v3** follows those lessons: a full-width hero band (box render + take-home sentence), two columns read
+  top to bottom (1 why 1° / 2 chamber / 3 waveform fit | 4 performance / 5 n_TOF / 6 summary + ATOMKI outlook),
+  headings that state the point, and boxed results. The two key plots are redrawn at print size
+  (`make_poster_figs.py`, SVG, 21–28 pt). The exploded chamber's labels are now HTML type.
 
 **In progress / where it stopped:**
-- Dylan saw v2 and wrapped up without detailed comments ("Hmm ok"). Treat v2 as a draft he has not approved.
+- Dylan saw the v3 report and said "Hmm ok" before wrapping up, with no detailed comments. v3 is a draft he has not
+  approved.
 
 **Next steps:**
-1. Get Dylan's reaction to v2. Known weak spots: panel 4's Y view (muon near normal incidence, ridges overlap; a more
-   inclined event from `papers/paper1_v2/display_lab/events.json` may look better), the station render in panel 6 is
-   small, ionisation dots in panel 1 are tiny.
-2. Panel 7 wording is Claude's phrasing of the LNL study: check the cosmic-bump sentence and the ATOMKI comparison with Dylan.
-3. Fill the placeholders: authors and affiliations (CEA Irfu is not IN2P3: needs an INFN/n_TOF co-author or LNL), logos,
-   two QR codes, contact.
-4. Reconcile the numbers with Paper I (`papers/paper1_v2`): they are from its draft abstract.
-5. Check for Quaranta's reply (CERN mail, `q=Quaranta`). Final PDF by ~27 Nov, then printing.
+1. Get Dylan's reaction to v3. Known weak spots: there is vertical slack in panels 2 and 5; panel 5's fan figure
+   has small internal text (`ntof_fan.png` is a crop of the athens figure; redraw it at poster size if it stays);
+   the hero band's right half is sparse.
+2. Fill the placeholders: authors and affiliations (CEA Irfu is not IN2P3, so an INFN/n_TOF co-author or LNL is
+   needed), logos, QR codes, contact.
+3. Reconcile the numbers with Paper I (`papers/paper1_v2`). The tiles are still the draft values (94.8 %, ~120 µm,
+   95.6 %). "≈14 MeV" comes from `pointing.json` (13.9 MeV); v2's caption said ~12 MeV. Check it.
+4. Check for Quaranta's reply (CERN mail, `q=Quaranta`): it is still unconfirmed that the poster is on the programme.
+   Final PDF by ~27 Nov, then print.
 
 **Gotchas / decisions:**
-- Dylan rejected: a second box render in panel 7 (redundant with panel 1); the cherry-picked 3D pair event display in
-  panel 6 (not revealing, and the pair does not come from the capsule); the cluttered station photo. He prefers renders.
-- He approved showing the capsule-pointing figure.
-- The submitted abstract promises the "about 4° too steep" result, which the poster now leaves out.
-- It is HTML printed to PDF by headless Chrome (true A0, sizes in mm), not the pptx of the first plan.
-- `assets/ntof_station.png` is a copy of a gitignored mpgd26 render; `make_poster.py` recopies it only if that render exists.
+- The flash-talk posters are conventional (picked for the physics, not the design). What they share: a clear
+  reading order, results at 40–60 % of the area, few large figures, a stated conclusion per section, and a summary
+  box. The ones that stand out are Avramescu QM25 (hero band) and Riedel QM23 (big plots + boxed sentences).
+- indico.cern.ch blocks scripts (an Anubis bot check). Relaying the PDFs from the browser by JavaScript was denied
+  by the permission classifier, so the QM posters were only viewed in Chrome. The SQM ones (indico.global) are in
+  `$WORK_DATA/claude-jobs/078243ef/posters/` (scratch, deletable).
+- Dylan rejected earlier: a second box render, the cherry-picked 3D pair display, the cluttered station photo. He
+  approved the capsule-pointing figure.
+- In v3 the readout-board render and the two-track figure are out; two-track is now a tile.
+- Colours: the chamber colours in panel 5 follow the athens figure (A blue, C green, D pink), not
+  `papers/paper_style.DET_COLOR`.
+- `infn_in2p3_26/assets/` (~12 MB of PNGs) was committed in b6d7f2e9. It was untracked before; drop it if Dylan
+  prefers.
 - Paper I is shared with Stephan on Overleaf: read it, don't edit it for the poster.
 
 **Key files & commands** (run in `infn_in2p3_26/`):
-- `README.md`: conference facts, the direction change, v0–v2 notes, where each claim comes from
+- `POSTER_LESSONS.md`: the poster study and what v3 changes
 - `../.venv/bin/python make_poster.py --pdf` → `poster.html`, `poster.pdf`, `poster_preview.png` (`--no-assets` keeps `assets/`)
-- `../.venv/bin/python make_hero.py` → `assets/hero_x17_box.png` (panel 1); `make_waterfall.py` → panel 4
-- `cd ../mpgd26 && ../.venv/bin/python make_ntof.py --only full --view hero --no-labels --size 2400 2040` → the station render
-- `~/PycharmProjects/x17_facility_search/lnl/README.md`, `ntof_italy_26/figures/lnl_numbers.json`: panel 7 numbers
+- `../.venv/bin/python make_poster_figs.py` → `assets/fig_air.svg`, `assets/fig_angres.svg`
+- `make_hero.py` (hero render), `make_waterfall.py` (panel 3)
 
 ## Readout stack from the gerbers: L7, vias, 3D figure draft — updated 2026-11-14 (dylan-MS-7C84)
 
