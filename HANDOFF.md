@@ -1,42 +1,51 @@
 # Handoff
 
-## INFN-IN2P3 Frascati poster — updated 2026-11-17 (DESKTOP-BCED9EL)
+## INFN-IN2P3 Frascati poster — updated 2026-11-18 (dylan-MS-7C84)
 
-**Resume:** plan in `infn_in2p3_26/README.md`; next: write `make_poster.py` (A0 pptx + pdf) and the P0 compression plot.
+**Resume:** mock-up v2 is in `infn_in2p3_26/` (`poster_preview.png`, `poster.pdf`); next: Dylan's comments on v2, then placeholders and numbers.
 
 **Goal:** an A0 portrait poster for the INFN-IN2P3 detector R&D conference (LNF Frascati, 2–4 Dec 2026), aimed at
-the gas-detector community. Dylan wants low manual effort: Claude builds it, and Dylan doesn't need to approve each step.
+the gas-detector community. Dylan wants low manual effort: Claude builds it and he reacts to mock-ups.
 
 **Done:**
-- Conference read from Indico in Chrome (the WebFetch agent is blocked by Anubis). The facts are in the README: A0
-  portrait, poster sessions Wed 2 Dec 16:20 and Thu 3 Dec 18:10, a best-poster award, gas session Thu 14:40.
-- Email to A. Quaranta (CERN mail, thread "Late Abstract for INFN-IN2P3 Conference"), sent 17 Nov: Dylan has
-  registered and asks whether the poster is still possible. **No reply yet**, so the poster is not confirmed.
-- `infn_in2p3_26/README.md`: angle, six-panel layout with figure sources, build plan, numbers to reconcile, timeline.
+- Direction changed 11-18 (Dylan): **no Paper II/III findings before they are published**, so the "hit times compress
+  the ladder" hook is dropped. The poster is the detector for a general X17 search (Paper I material), the forward fit
+  as a method only, n_TOF as first use, and "repeat ATOMKI on a proton beam" as the outlook.
+- Mock-up v2, seven panels: (1) labelled 3D render of four TPCs boxed around a target, (2) what the tracker must do +
+  Paper I pointing figure, (3) exploded chamber + readout-stack render + spec tiles, (4) 3D per-strip waveforms of muon
+  7884 with the model at the fit, (5) performance figures and tiles, (6) rendered n_TOF station + capsule pointing figure,
+  (7) ATOMKI on a proton beam: text and an acceptance bar (~40 % against ~2.5 %).
+- Conference facts and the Quaranta email (sent 17 Nov, asking whether the poster is still possible) are in
+  `infn_in2p3_26/README.md`. **No reply seen yet; not re-checked on 11-18.**
+
+**In progress / where it stopped:**
+- Dylan saw v2 and wrapped up without detailed comments ("Hmm ok"). Treat v2 as a draft he has not approved.
 
 **Next steps:**
-1. Check whether Quaranta replied (CERN mail, `q=Quaranta`).
-2. Plot the P0 compression from `papers/paper2/hits_daq/results/p0_*.json`: data / full model / metallic / point,
-   for X and Y on det2/3/4/7.
-3. `infn_in2p3_26/make_poster.py` → `poster.pptx` + `poster.pdf`, placeholder figures first (draft by 21 Nov).
-4. Render the figures at print resolution (the `mpgd26` builders; many need the Ubuntu desktop). Fallback: crops
-   from `ntof_athens_26/slides/neff_x17_ntof_athens_26.pdf`.
+1. Get Dylan's reaction to v2. Known weak spots: panel 4's Y view (muon near normal incidence, ridges overlap; a more
+   inclined event from `papers/paper1_v2/display_lab/events.json` may look better), the station render in panel 6 is
+   small, ionisation dots in panel 1 are tiny.
+2. Panel 7 wording is Claude's phrasing of the LNL study: check the cosmic-bump sentence and the ATOMKI comparison with Dylan.
+3. Fill the placeholders: authors and affiliations (CEA Irfu is not IN2P3: needs an INFN/n_TOF co-author or LNL), logos,
+   two QR codes, contact.
+4. Reconcile the numbers with Paper I (`papers/paper1_v2`): they are from its draft abstract.
+5. Check for Quaranta's reply (CERN mail, `q=Quaranta`). Final PDF by ~27 Nov, then printing.
 
 **Gotchas / decisions:**
-- Hook: "one time per strip compresses the µTPC ladder, even on a metallic readout" (P0, 2026-11-05). Dylan
-  found it "somewhat interesting", so it is not locked in. Revisit if a better discussion-starter turns up (the
-  capsule image, the γ-flash recovery: detector 2 µs, DREAM 5 ms).
-- Never use the retired "29 % delayed copies at 47 ns" explanation. The submitted abstract still uses the RC
-  wording, and the poster corrects it.
-- Numbers come from Paper I (176 µm SPS; 0.90–2.41° cosmics), not from the abstract (1.2° / 93 % / 180 µm).
-  Paper I is shared with Stephan on Overleaf: read it, don't edit it.
-- Affiliation: CEA Irfu is not IN2P3, so list an INFN/n_TOF co-author or LNL.
-- Dylan's INFN oral exam is Wed 2 Dec 15:30, which clashes with poster session I.
+- Dylan rejected: a second box render in panel 7 (redundant with panel 1); the cherry-picked 3D pair event display in
+  panel 6 (not revealing, and the pair does not come from the capsule); the cluttered station photo. He prefers renders.
+- He approved showing the capsule-pointing figure.
+- The submitted abstract promises the "about 4° too steep" result, which the poster now leaves out.
+- It is HTML printed to PDF by headless Chrome (true A0, sizes in mm), not the pptx of the first plan.
+- `assets/ntof_station.png` is a copy of a gitignored mpgd26 render; `make_poster.py` recopies it only if that render exists.
+- Paper I is shared with Stephan on Overleaf: read it, don't edit it for the poster.
 
-**Key files:**
-- `infn_in2p3_26/README.md`: the plan
-- `papers/infn_in2p3_2026_abstract/`: the submitted abstract
-- `papers/paper2/hits_daq/P0_XBIAS_2026-11-05.md`: the compression mechanism and its table
+**Key files & commands** (run in `infn_in2p3_26/`):
+- `README.md`: conference facts, the direction change, v0–v2 notes, where each claim comes from
+- `../.venv/bin/python make_poster.py --pdf` → `poster.html`, `poster.pdf`, `poster_preview.png` (`--no-assets` keeps `assets/`)
+- `../.venv/bin/python make_hero.py` → `assets/hero_x17_box.png` (panel 1); `make_waterfall.py` → panel 4
+- `cd ../mpgd26 && ../.venv/bin/python make_ntof.py --only full --view hero --no-labels --size 2400 2040` → the station render
+- `~/PycharmProjects/x17_facility_search/lnl/README.md`, `ntof_italy_26/figures/lnl_numbers.json`: panel 7 numbers
 
 ## Readout stack from the gerbers: L7, vias, 3D figure draft — updated 2026-11-14 (dylan-MS-7C84)
 
