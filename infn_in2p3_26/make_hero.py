@@ -86,22 +86,41 @@ def add_track(p, d, phi, color):
         p.add_mesh(pv.Line(q, foot), color=C_ION, line_width=2.5, opacity=0.8)
 
 
-def build(size):
+def build(size, scene='neutron'):
+    """scene 'neutron': a gas cell in a beam, one wide pair (the poster's top-left figure).
+    scene 'proton': a beam pipe ending on a thin foil target, one pair at 140 deg, and a cosmic muon that
+    crosses two chambers without pointing at the target (the ATOMKI-repeat panel)."""
     p = pv.Plotter(off_screen=True, window_size=list(size))
     p.enable_depth_peeling(number_of_peels=16, occlusion_ratio=0.0)
     p.enable_anti_aliasing('ssaa')
     for phi in (0, 90, 180, 270):
         add_arm(p, phi, near=phi in (180, 270))
-    # target: a gas cell on the beam axis, and the beam
-    p.add_mesh(pv.Cylinder(center=(0, 0, 0), direction=(0, 0, 1), radius=16, height=90, resolution=60),
-               color='#c9ced6', opacity=0.55, smooth_shading=True)
-    p.add_mesh(pv.Sphere(radius=7, center=(0, 0, 0)), color='#1a1f2b')
-    p.add_mesh(pv.Tube(pointa=(0, 0, -330), pointb=(0, 0, 250), radius=3.0), color='#6b7280', opacity=0.55)
-    p.add_mesh(pv.Cone(center=(0, 0, 265), direction=(0, 0, 1), height=40, radius=11, resolution=40),
-               color='#6b7280')
-    # one pair at a wide opening angle (~125 deg), into the two far chambers
-    add_track(p, (1.0, 0.33, 0.20), 0, C_EM)
-    add_track(p, (-0.28, 1.0, -0.14), 90, C_EP)
+    if scene == 'neutron':
+        p.add_mesh(pv.Cylinder(center=(0, 0, 0), direction=(0, 0, 1), radius=16, height=90, resolution=60),
+                   color='#c9ced6', opacity=0.55, smooth_shading=True)
+        p.add_mesh(pv.Sphere(radius=7, center=(0, 0, 0)), color='#1a1f2b')
+        p.add_mesh(pv.Tube(pointa=(0, 0, -330), pointb=(0, 0, 250), radius=3.0), color='#6b7280', opacity=0.55)
+        p.add_mesh(pv.Cone(center=(0, 0, 265), direction=(0, 0, 1), height=40, radius=11, resolution=40),
+                   color='#6b7280')
+        add_track(p, (1.0, 0.33, 0.20), 0, C_EM)
+        add_track(p, (-0.28, 1.0, -0.14), 90, C_EP)
+    else:
+        # thin-walled beam pipe from below, ending in a cap that carries the target film
+        pipe = pv.Cylinder(center=(0, 0, -190), direction=(0, 0, 1), radius=20, height=380, resolution=60,
+                           capping=False)
+        p.add_mesh(pipe, color='#aab2bd', opacity=0.45, smooth_shading=True)
+        p.add_mesh(pv.Tube(pointa=(0, 0, -380), pointb=(0, 0, -6), radius=4.0), color='#e0457b', opacity=0.9,
+                   ambient=0.5)
+        p.add_mesh(pv.Cone(center=(0, 0, -18), direction=(0, 0, 1), height=30, radius=10, resolution=40),
+                   color='#e0457b', ambient=0.5)
+        p.add_mesh(pv.Cylinder(center=(0, 0, 0), direction=(0, 0, 1), radius=20, height=3, resolution=60),
+                   color='#1a1f2b')
+        c, s_ = np.cos(np.radians(25)), np.sin(np.radians(25))
+        add_track(p, (c, -s_, 0.10), 0, C_EM)            # 140 deg apart, into two neighbouring arms
+        add_track(p, (-s_, c, -0.06), 90, C_EP)
+        # a cosmic muon: straight through two arms, missing the target by ~9 cm
+        a_, b_ = np.array([330.0, 60.0, 330.0]), np.array([-40.0, 330.0, -300.0])
+        p.add_mesh(pv.Tube(pointa=a_, pointb=b_, radius=2.6), color='#6b7280', ambient=0.5)
     p.set_background('white')
     p.camera.position = (-1150, -1420, 1050)
     p.camera.focal_point = (30, 30, -20)
@@ -114,9 +133,11 @@ def build(size):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--size', nargs=2, type=int, default=[2400, 2000])
-    ap.add_argument('--out', default=os.path.join(HERE, 'assets', 'hero_x17_box.png'))
+    ap.add_argument('--scene', default='neutron', choices=['neutron', 'proton'])
+    ap.add_argument('--out', default=None)
     a = ap.parse_args()
-    p = build(a.size)
+    a.out = a.out or os.path.join(HERE, 'assets', 'hero_x17_box.png' if a.scene == 'neutron' else 'hero_proton_box.png')
+    p = build(a.size, a.scene)
     p.screenshot(a.out, transparent_background=True)
     print('wrote', a.out)
 

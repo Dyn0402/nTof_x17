@@ -19,6 +19,12 @@ n_TOF as the first use. Top left is a 3D version of Paper I Fig. 1(a).
 - `make_hero.py` -> `assets/hero_x17_box.png`: pyvista render, four TPCs boxed around a target, one pair.
 - `make_poster.py --pdf` -> `poster.html` (true A0, sizes in mm), `poster.pdf`, `poster_preview.png`. HTML rather than
   pptx for the mock-up; the `ASSETS` dict in the script says where each figure comes from.
+- v1 (11-18, after Dylan's reply): navy header; panel 6 gains the 3D pair event display (run_145 trigger 24576, marked
+  PRELIMINARY) beside the capsule track fan; panel 7 is now "the ATOMKI measurement on a proton beam" with a second
+  render (`make_hero.py --scene proton`: beam pipe, foil target, pair at 140 deg, a cosmic that misses the target).
+  Its claims come from `~/PycharmProjects/x17_facility_search/lnl/README.md` and `ntof_italy_26/figures/lnl_numbers.json`:
+  ~40 % against ~2.5 % geometric acceptance, 17 d (as built) and 1 d (big plastics) to 3 sigma at 1 uA. Check the
+  wording with Dylan before printing, in particular the cosmic-bump remark and the comparison with ATOMKI.
 - Numbers on it are from the `paper1_v2` draft abstract and are not reconciled. Authors, logos, QR codes and panel 7
   (LNL / upgrades) are placeholders. The submitted abstract promises the "4 deg too steep" result, which the poster now
   leaves out.

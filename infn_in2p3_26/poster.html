@@ -8,16 +8,20 @@
 * { box-sizing: border-box; }
 html, body { margin:0; padding:0; background:#888; }
 body { font-family: "Inter","Helvetica Neue",Helvetica,Arial,sans-serif; color:var(--ink); }
-.poster { width:841mm; height:1189mm; background:var(--bg); margin:0 auto; padding:18mm 22mm 13mm; display:grid;
-          grid-template-rows: 90mm 318mm 276mm 236mm 1fr; row-gap:10mm; overflow:hidden; position:relative; }
+.poster { width:841mm; height:1189mm; background:var(--bg); margin:0 auto; padding:0 22mm 13mm; display:grid;
+          grid-template-rows: 96mm 300mm 258mm 226mm 1fr; row-gap:10mm; overflow:hidden; position:relative; }
 header { display:grid; grid-template-columns: 1fr 150mm; column-gap:14mm; align-items:center;
-         border-bottom:1.6mm solid var(--navy); padding-bottom:6mm; }
-h1 { font-size:21.5mm; line-height:1.06; margin:0 0 5mm; letter-spacing:-0.3mm; font-weight:800; color:var(--navy); }
-.authors { font-size:8.6mm; color:var(--ink); } .affil { font-size:6.4mm; color:var(--mute); margin-top:1.5mm; }
+         background:linear-gradient(100deg,#0a2a66 0%,#0b3d91 55%,#1565c0 100%); margin:0 -22mm; padding:0 22mm;
+         border-bottom:2.4mm solid var(--accent); }
+h1 { font-size:21.5mm; line-height:1.06; margin:0 0 5mm; letter-spacing:-0.3mm; font-weight:800; color:#fff; }
+.authors { font-size:8.6mm; color:#fff; } .affil { font-size:6.4mm; color:#c9d6ee; margin-top:1.5mm; }
 .logos { display:grid; grid-template-columns:1fr 1fr 1fr; gap:4mm; }
 .ph { border:0.6mm dashed #9aa6b5; color:#7b8797; font-size:5.4mm; display:flex; align-items:center;
       justify-content:center; text-align:center; border-radius:2mm; background:#fafbfc; padding:2mm; }
 .logos .ph { height:42mm; }
+.evt img { border-radius:3mm; }
+.small li { font-size:7.5mm; margin-bottom:1.5mm; }
+.prelim { position:absolute; right:3mm; bottom:3mm; font-size:5mm; font-weight:700; color:#5b6675; background:rgba(255,255,255,.8); padding:.5mm 2mm; border-radius:1mm; }
 .row { display:grid; column-gap:11mm; min-height:0; }
 .panel { background:var(--panel); border-radius:5mm; padding:9mm 10mm 8mm; display:flex; flex-direction:column;
          min-height:0; min-width:0; box-shadow:0 0.6mm 2mm rgba(20,30,50,.10); position:relative; }
@@ -159,34 +163,58 @@ b.k { color:var(--accent); }
   </div>
 </div>
 
-<!-- ROW 4: n_TOF + outlook -->
-<div class="row" style="grid-template-columns: 1.6fr 1fr;">
+<!-- ROW 4: n_TOF + proton beams -->
+<div class="row" style="grid-template-columns: 1.22fr 1fr;">
   <div class="panel">
     <h2><span class="n">6</span>First use: n_TOF EAR2, summer 2026</h2>
-    <div class="cols" style="grid-template-columns: 0.36fr 1.5fr;">
+    <div class="cols" style="grid-template-columns: 0.46fr 1fr 1fr;">
       <div class="col photo"><div class="fig"><img src="assets/ntof_photo.jpg" alt="The four-arm station at n_TOF"></div></div>
+      <div class="col evt">
+        <div class="fig" style="position:relative;"><img src="assets/pair_event_3d.png" alt="3D display of a pair candidate">
+          <span class="prelim">PRELIMINARY</span></div>
+        <div class="cap">One event in 3D: two track segments in one chamber, 42&deg; apart, meeting within 2&nbsp;mm,
+        each pointing on to a fired scintillator.</div>
+      </div>
       <div class="col">
         <div class="fig"><img src="assets/ntof_pointing.png" alt="Tracks pointing back at the 3He capsule"></div>
-        <div class="cap">Four chambers around a <sup>3</sup>He capsule in the EAR2 neutron beam (left, seen along the beam).
-        Track segments extrapolated back to the beam axis image the capsule: three chambers agree on its height
-        to a few mm.</div>
+        <div class="cap">Four chambers around a <sup>3</sup>He capsule in the neutron beam (photo: seen along the beam).
+        6207 segments extrapolated to the beam axis image the capsule, to scale.</div>
       </div>
     </div>
   </div>
   <div class="panel">
-    <h2><span class="n">7</span>Beyond n_TOF</h2>
-    <ul>
-      <li>The chamber is a <b class="k">module</b>: any target, any beam, any number of arms.</li>
-      <li>Next: <i>(INFN LNL / upgrade plans, to be written with Dylan)</i>.</li>
-      <li>Open to ideas: lighter windows, a low-pressure or He-based gas, a faster front end.</li>
-    </ul>
-    <div style="display:flex; gap:6mm; margin-top:auto; align-items:center;">
-      <div class="ph qr">QR<br>3D event display</div>
-      <div class="ph qr">QR<br>3D readout board</div>
-      <div class="foot">Details: two papers in preparation (the detector; the reconstruction).<br>Contact: <i>e-mail</i></div>
+    <h2><span class="n">7</span>Next: the ATOMKI measurement, on a proton beam</h2>
+    <div class="cols" style="grid-template-columns: 0.82fr 1fr;">
+      <div class="col">
+        <div class="hero"><div class="heroimg" style="aspect-ratio:2400/2000;">
+          <img src="assets/hero_proton_box.png" alt="The same box around a thin target on a proton beam">
+          <span class="lab" style="left:50%; top:80%; color:#e0457b; font-size:5.6mm;">p, ~1 MeV</span>
+          <span class="lab" style="left:36%; top:33%; color:#1a1f2b; font-size:5.6mm;">140&deg;</span>
+          <span class="lab" style="left:58%; top:2%; color:#6b7280; font-size:5.6mm;">cosmic &mu;</span>
+        </div></div>
+        <div class="cap">The same box around a thin Li target at the end of a beam pipe.</div>
+      </div>
+      <div class="col small">
+        <ul>
+          <li>The anomaly was seen with protons: <sup>7</sup>Li(p,e<sup>+</sup>e<sup>&minus;</sup>)<sup>8</sup>Be, then
+              <sup>3</sup>H and <sup>11</sup>B targets. The chambers need only a target and a ~1&nbsp;MeV beam.</li>
+          <li><b class="k">~40 % of pairs near 140&deg;</b> fall in the box, against ~2.5 % for a multi-telescope
+              spectrometer.</li>
+          <li><b class="k">Every lepton is a 3D segment that points at the target</b>: a vertex, and cosmic muons,
+              which can fake a bump near 140&deg;, are rejected.</li>
+          <li><b class="k">Thin</b>: the angle is measured in gas, before any scintillator.</li>
+          <li>Geant4 estimate, 1&nbsp;&micro;A on Li<sub>2</sub>O: the ATOMKI signal at 3&sigma; in about two weeks as
+              built, about a day with larger scintillators.</li>
+        </ul>
+        <div style="display:flex; gap:5mm; margin-top:auto; align-items:center;">
+          <div class="ph qr" style="width:34mm;height:34mm;">QR<br>3D event display</div>
+          <div class="ph qr" style="width:34mm;height:34mm;">QR<br>3D readout board</div>
+          <div class="foot">Two papers in preparation:<br>the detector; the reconstruction.<br>Contact: <i>e-mail</i></div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
 
-<div class="mock">MOCK-UP v0 &middot; 2026-11-18 &middot; numbers from the Paper I draft, to be reconciled before printing</div>
+<div class="mock">MOCK-UP v1 &middot; 2026-11-18 &middot; numbers from the Paper I draft, to be reconciled before printing</div>
 </div></body></html>
