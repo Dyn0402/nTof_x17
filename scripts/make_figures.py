@@ -405,9 +405,48 @@ def chambers():
     save(fig, 'chambers')
 
 
+def known_angle():
+    """the SPS known-angle rows: hits-ladder / waveform-fit slope ratio against the drift field (sps_resim.py, sps_outliers.py)"""
+    R = load(os.path.join(HD, 'results', 'sps_resim.json'))
+    O = load(os.path.join(HD, 'results', 'sps_outliers.json'))
+    if not R or not O:
+        return print('  known_angle: missing')
+    rows = [k for k in R['rows'] if 'run57' in k]                       # the four-field ladder; run59 is its own point
+    E = dict(d550=191.0, d600=208.4, d650=225.8, d700=243.2)
+    x = np.array([E[k.split('__')[1]] for k in rows])
+    P = O['plain_line_without_far_hits']
+    fig, ax = plt.subplots(1, 2, figsize=(6.1, 2.75), gridspec_kw=dict(width_ratios=(1.45, 1)))
+    a = ax[0]
+    a.axhspan(1.03, 1.05, color='0.88', lw=0, label='bench law, $1 + C_Y/N^2$')
+
+    def col(arm, mode, key='ratio'):
+        return np.array([R['rows'][k]['arms'][arm][mode][key] for k in rows])
+    a.errorbar(x, col('base', 'res'), col('base', 'res', 'ratio_err'), color='k', marker='o', ms=4.5, ls='-', lw=0.8, label='data, line through all hits')
+    a.plot(x, [P[k]['dx4'] for k in rows], color='k', marker='o', mfc='w', ms=4.5, ls='-', lw=0.8, label='data, hits within 4 pitches of the track')
+    a.plot(x, [P[k]['robust'] for k in rows], color='0.45', marker='x', ms=4.5, ls='none', label='data, robust line')
+    a.plot(x, col('gas', 'noise'), color='#0b3d91', marker='s', ms=3.8, ls='-', lw=0.8, label='model, Magboltz diffusion')
+    a.plot(x, col('gasrc0', 'noise'), color='#CC79A7', marker='^', ms=3.8, ls='-', lw=0.8, label='model, RC off')
+    a.plot(x, col('point', 'noise'), color='#3c8d5a', marker='v', ms=3.8, ls='-', lw=0.8, label='model, geometry only')
+    a.set(xlabel='drift field [V/cm]', ylabel='hit-ladder slope / waveform-fit slope', ylim=(0.995, 1.235), title='(a) known angle, 25.4$^\\circ$')
+    a.legend(fontsize=5.6, loc='upper right', ncol=2, columnspacing=1.0)
+    b = ax[1]
+    w, xs = 0.36, np.arange(3)
+    for i, (src, lab, c) in enumerate((('data', 'data', 'k'), ('gas', 'model + noise', '#0b3d91'))):
+        for j, k in enumerate(('run57_rot25_co2__d550', 'run57_rot25_co2__d700')):
+            o = O[k][src]
+            y = [o['out_near_per_plane'], o['out_mid_per_plane'], o['out_far_per_plane']]
+            b.bar(xs + (i - 0.5) * w + (j - 0.5) * w / 2, y, w / 2, color=c, alpha=1.0 if j == 0 else 0.45,
+                  label=f'{lab}, {("191", "243")[j]} V/cm')
+    b.set(xticks=xs, xticklabels=['$\\leq$ 1.5', '1.5 to 4', '> 4'], xlabel='distance from the track [pitches]',
+          ylabel='rejected hits per plane', title='(b) hits off the ladder', ylim=(0, 3.1))
+    b.legend(fontsize=5.6)
+    fig.tight_layout()
+    save(fig, 'known_angle')
+
+
 if __name__ == '__main__':
     ps.use()
-    for f in (schematic, universal, depth, phase, remedies, pitch, toy, ghosts, chambers):
+    for f in (schematic, universal, depth, phase, remedies, pitch, toy, ghosts, chambers, known_angle):
         try:
             f()
         except Exception as e:  # keep going; report
