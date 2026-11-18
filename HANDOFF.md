@@ -77,6 +77,27 @@ the gas-detector community. Dylan wants low manual effort: Claude builds it, and
 `google-chrome --headless=new --use-gl=angle --use-angle=swiftshader --enable-unsafe-swiftshader --virtual-time-budget=5000 --screenshot=…`
 on a copy with a script that clicks the preset button (`v-pap`, `v-fig`, …). After editing the note: `python3 scripts/build.py && ./scripts/deploy-eos.sh` in the site repo.
 
+## Papers IIa and IIb: first IIa draft, beam rows explained, both on Overleaf — updated 2026-11-18 (dylan-MS-7C84)
+
+**Resume:** Dylan reads the IIa draft (`papers/paper2/main.pdf`, 14 pages) and answers its five `\askDylan` boxes; IIb needs only authors.
+
+**Done 11-18:**
+- IIa `papers/paper2/`: every section in prose from the pass-1 result files, abstract, three new figures
+  (`figs/make_{event_waveforms,forward_model,toy_floor}.py`). Still `\tbw`: authors, the sharing cartoon, one sentence on the
+  template measurement, the outlook, the cost table (R10).
+- IIb `papers/tpc_mixing_review/`: the SPS known-angle excess is closed (`papers/paper2/hits_daq/SPS_EXCESS_2026-11-18.md`):
+  the ladder follows the bench law (1.03–1.05); far hits in 60–65 % of planes make the plain line read 1.07–1.13. New fig.
+  `known_angle`. NUMBERS.md and figures regenerate unchanged on the desktop.
+- Found: SPS pass rows carry the bench Dp 0.020 (Magboltz 0.006 for the CO2 gas); slope effect 1.4 % (`docs/PARAMETERS.md` §2).
+- Overleaf: "MX17 Paper IIa (reconstruction)" and "MX17 Paper IIb (single-time bias)", linked (`papers/overleaf_remotes.txt`), not shared.
+
+**Next steps:** the `\askDylan` answers (k_w and the reference; CF4 rows with a Magboltz Dp; gain invariance number; the
+cartoon); R10 cost table; what the far hits are (the X view of the same events); elsarticle class for IIa at submission.
+
+**Gotchas:** lxplus shared connection was down; EOS was read with `~/.venvs/xrd` (XRootD python, Kerberos). SPS windows are in
+`$WORK_DATA/paper2_hits/sps/` (regenerable from EOS `hits_daq/windows/`). The first Overleaf project title lost its "MX"
+on creation and must read "MX17 Paper IIa (reconstruction)" (check it was renamed).
+
 ## Paper split I / IIa / IIb: work list done — updated 2026-11-13 pm (dylan-Yoga)
 
 **Resume:** the D01–D11 work list is done. Next: Dylan reads IIb's corrected draft and the IIa skeleton; IIa needs its §6 table built.

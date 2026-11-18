@@ -105,9 +105,15 @@ do not.
 
 The last point can be quantified on the beam data themselves. The rows of chamber~E at the known angle in
 Ar/CO$_2$/iC$_4$H$_{10}$ were fitted with the bench diffusion constant, $D_p = 0.020$, in a gas that was three to four
-times slower than the bench gas; Magboltz gives $D_p = 0.006$ for it. \tbw{Refit at $D_p$ = 0.003--0.020 on 200
-planes per view of two rows (\texttt{hits\_daq/sps\_dp\_scan.py}): which value the planes prefer and how far the fitted
-slope moves. Running 2026-11-18.}
+times slower than the bench gas; Magboltz gives $D_p = 0.006$ for it. Refitting 200 planes per view of the lowest-field row with $D_p$ between 0.003 and 0.020 and everything else unchanged,
+75\,\% (X) and 81\,\% (Y) of the planes fit better at the gas value than at the bench value, by a median of 13 and
+18\,\% of their $\chi^2$, and the fitted slope of the inclined view moves by 1.4\,\%. The summed $\chi^2$ nevertheless
+favours the bench value: it is carried by the minority of planes with charge off the track (\cref{sec:tiers}), which a
+wide diffusion partly absorbs. A constant fitted on a summed $\chi^2$ in a beam would therefore come out too large,
+and the slope is robust to the error at the per-cent level.
+\askDylan{The SPS rows of the pass (CF$_4$ and CO$_2$) all carry chamber E's bench $D_p$. For the CO$_2$ rows the effect
+on $w$ is 1.4\,\%; I have not run the CF$_4$ known-angle rows. Re-reconstruct them with a Magboltz $D_p$ before the
+$0.98\pm0.03$ is quoted, or state the bench value as used?}
 
 The main known mismatch of the model is that it is symmetric in the X view and the boards are
 not (\cref{sec:kernel}). It shows as structure in the X $\chi^2$ and as a tension between the footprint preferred by

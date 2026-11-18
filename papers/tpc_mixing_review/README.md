@@ -73,3 +73,13 @@ to Fig. universal and discussed with Klitzner (`Klitzner2016` title checked 11-1
 the beam" (SPS chamber E, DAG 4646000) and the V7/V8 full-sample numbers in §6 (DAG 4647206).
 `NUMBERS.md` was not regenerated (its inputs are on the desktop's `$WORK_DATA`); the new numbers come from
 `../paper2/hits_daq/DAG_SCORES_2026-11-13.md` and `results/universal.json`, `results/toy_detectors.json`.
+
+## 2026-11-18: the known-angle rows, Overleaf
+
+- **The beam `\tbw` is closed.** The SPS rows follow the bench law; the plain line's 1.07–1.13 comes from hits more than
+  four pitches off the track (60–65 % of planes), absent from the one-track model. §5 "A known angle in the beam" rewritten,
+  new `fig:knownangle` (`scripts/make_figures.py:known_angle`), one sentence in the conclusions. Study and numbers:
+  `../paper2/hits_daq/SPS_EXCESS_2026-11-18.md`.
+- `NUMBERS.md` and the nine older figures were regenerated on the desktop from `$WORK_DATA/paper2_hits`: unchanged.
+- Overleaf project "MX17 Paper IIb (single-time bias)", `papers/overleaf.sh status|pull|push tpc_mixing_review`. Not shared.
+- Left open: the author list / acknowledgements `\tbw`; chamber C; what the far hits are.

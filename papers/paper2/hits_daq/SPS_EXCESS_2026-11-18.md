@@ -50,7 +50,21 @@ explanation of the plain line's 1.07–1.13; that agreement is accidental.
 
 Refit at fixed Dp (`sps_dp_scan.py`, pass fitter, everything else as the pass): see the section below.
 
-DP_SCAN_PLACEHOLDER
+Result on run57 d550 (191 V/cm), 200 planes per view, Dp = 0.003 / 0.006 / 0.009 / 0.014 / 0.020:
+
+| view | planes with χ²(0.006) < χ²(0.020) | median Δχ²/χ² at 0.006 | planes with their best χ² at ≤ 0.009 | median \|w\| at 0.006 / 0.020 [µm/ns] |
+|---|---|---|---|---|
+| X (normal incidence, no RC) | 75 % | −13 % | 69 % | 0.20 / 0.23 |
+| Y (inclined) | 81 % | −18 % | 80 % | 3.593 / 3.543 |
+
+- **The typical plane prefers the gas value** over the bench value, in both views.
+- **The summed χ² goes the other way** (lowest at 0.020): it is carried by a minority of planes with large χ². On Y the
+  planes that prefer 0.020 have a median χ² of 21 000 against 8 500 for the others; a wide diffusion absorbs charge that
+  is not on the track (the far-hit planes above). A summed-χ² hyperfit on beam rows would therefore pick too large a Dp.
+- **The fitted slope moves by 1.4 %** (Y) between 0.020 and 0.006. On these rows v is set from W at the stage angle, so
+  the angle is unaffected by construction; where v is independent (the CF4 known-angle rows) a 1–2 % scale shift is
+  inside the quoted 0.98 ± 0.03, but it has not been measured there.
+- The d700 scan (`dpscan_d700.parquet`) was still running when this was written.
 
 ## Files
 
