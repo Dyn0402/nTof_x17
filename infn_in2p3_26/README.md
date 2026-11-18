@@ -9,6 +9,20 @@ is `papers/infn_in2p3_2026_abstract/` (session: gas detectors). That folder note
 eligibility point: CEA Irfu is not IN2P3, so list an INFN/IN2P3 co-author (n_TOF)
 or the INFN LNL affiliation.
 
+## Mock-up v0 (2026-11-18): detector-first, no Paper II/III findings
+
+Dylan, 11-18: too early to show the Paper II/III findings (the hit-time compression) before they are published. So the
+"your hit times are lying" hook and panel 3 of the layout below are **dropped**. The poster is now the detector for a
+general X17 search (Paper I material), with the forward fit shown as a method (data against model, no bias numbers) and
+n_TOF as the first use. Top left is a 3D version of Paper I Fig. 1(a).
+
+- `make_hero.py` -> `assets/hero_x17_box.png`: pyvista render, four TPCs boxed around a target, one pair.
+- `make_poster.py --pdf` -> `poster.html` (true A0, sizes in mm), `poster.pdf`, `poster_preview.png`. HTML rather than
+  pptx for the mock-up; the `ASSETS` dict in the script says where each figure comes from.
+- Numbers on it are from the `paper1_v2` draft abstract and are not reconciled. Authors, logos, QR codes and panel 7
+  (LNL / upgrades) are placeholders. The submitted abstract promises the "4 deg too steep" result, which the poster now
+  leaves out.
+
 ## What the conference is (read from Indico, 2026-11-17)
 
 - Aim: bring the INFN and IN2P3 detector R&D communities together, "identify
