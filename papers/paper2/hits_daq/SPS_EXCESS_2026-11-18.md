@@ -64,7 +64,8 @@ Result on run57 d550 (191 V/cm), 200 planes per view, Dp = 0.003 / 0.006 / 0.009
 - **The fitted slope moves by 1.4 %** (Y) between 0.020 and 0.006. On these rows v is set from W at the stage angle, so
   the angle is unaffected by construction; where v is independent (the CF4 known-angle rows) a 1–2 % scale shift is
   inside the quoted 0.98 ± 0.03, but it has not been measured there.
-- The d700 scan (`dpscan_d700.parquet`) was still running when this was written.
+- **run57 d700 (243 V/cm) agrees:** the median plane's χ² is lower at every Dp below 0.020 in both views, 91–93 % of planes
+  have their best χ² below 0.020, and the Y slope moves by 0.6 % (4.855 against 4.828 µm/ns).
 
 ## Files
 
