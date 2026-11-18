@@ -517,10 +517,34 @@ redeployed (dylan-cern-site 91d4386). Inputs on the desktop: $WORK_DATA/claude-j
 - Deck: `WORK_DATA=~/work_data .venv/bin/python papers/paper1/make_figures_deck.py --out <html>` then
   `dylan-cern-site/scripts/add-note.py <html> --slug mx17-paper1-figures --force --deploy`.
 
-## n_TOF pass 1: reprocess the n_TOF tracks on the final chain — updated 2026-11-17 (dylan-Yoga)
+## n_TOF pass 1: reprocess the n_TOF tracks on the final chain — updated 2026-11-18 (dylan-MS-7C84)
 
-**Resume (11-17 night, DESKTOP):** Dylan decided **no reconstruction rerun**. Tonight = the stage-3 v(t) build below
-("Tonight on the desktop"), with the updated v(t) (mixer-T model, 11-17 late). Note for Dylan: https://dylan-neff.web.cern.ch/notes/ntof-drift-velocity.html
+**Resume (11-18 morning):** stage 3 with v(t) is **built (543/543) and on EOS** `Analysis_pass1/stage3/` (MD5SUMS verified
+on lxplus). Remaining: the D L2-era rebuild once condor 4677439 lands (step 4 below), then N-G1/ledger rerun on it.
+
+**11-17/18 night (desktop): stage 3 with v(t) — done.** Code `99df18fb`; report `rerun/ntof/stage3/vt_score/report.html`.
+- `rerun/ntof/stage3/vt_join.py` (called by `ntof_stage3.py --vt`): `v_t`, `v_t_err`, `tanx_vt`, `tany_vt`, every
+  ANGLE_DERIVED column as `<col>_vt` (build_tracks' own geometry), `in_acceptance_vt` (true |tan_vt| < 0.5), `gated_vt`.
+  Frozen columns unchanged (verified identical to the 11-16 build). B: no `_vt` angles, `gated_vt = gated`.
+- **Changed from the plan (Dylan accepted 11-18 ~00:30): κ.** `tan · v_bundle / v_t` over-corrects (run_149 A–C line C
+  1.04 → 0.98, A 1.008 → 0.973). On ~240 beam-off sub-runs (`vt_line_campaign.py`) the line ratio follows v_t/v_bundle
+  with slope 0.84–0.97, χ²/dof ≈ 1, but at a constant 2–3 % offset: **κ = v_angle/v_t = A 0.968 x / 0.973 y,
+  C 0.978 / 0.979, D 1** (`vt_score/vt_kappa.json`). Used: `tan_vt = tan · v_bundle / (κ · v_t)`. run_149 line then
+  1.000–1.004 (not independent: κ is partly fitted there); run_145 source y A −31.66, C −33.26 (frozen −31.56 / −33.22).
+  Systematic: κ early vs late half 0.3–0.4 %; κ is cosmic-measured and applied to beam rows.
+- Full set: 49.6 M rows, 17.47 M `gated` (0.6) → 16.01 M `gated_vt` (0.5); y guard 291 pass, 251 not_checked (cosmic),
+  1 insufficient (run_110 stat090_0003, 1,037 tracks, same as 11-16). Local `$WORK_DATA/ntof_pass1/stage3/` (27 GB).
+- **Built on an interim canon** (`ledger_canon_interim_noL1.json`, copied beside the tables): the rerun_dbeam_L1 rule is
+  dropped, so **D L2-era beam rows (217 sub-runs) are on the L2 pin**. 4677439 at 11-18 ~01:00: 411/2,358 done, 461 running.
+- run_104 needs `--side $WORK_DATA/ntof_pass1/run104` (the default `side/` path does not exist locally).
+
+**Next:**
+1. When 4677439 lands (check `001`/`005` counts and errors, per CLAUDE.md): pull `Analysis_pass1/rerun_dbeam_L1/` to
+   `$WORK_DATA/ntof_pass1/rerun_dbeam_L1/`, rebuild the L2-era production sub-runs with the real canon
+   (`ntof_stage3.py --side $WORK_DATA/ntof_pass1/run104 --runs <L2 production runs> --force`, no `--canon` override),
+   re-upload those tables + MD5SUMS, delete the interim canon from EOS.
+2. Rerun the ledger and N-G1 after that (D numbers move).
+3. Optional: x17 board log entry for the κ finding.
 
 **11-17 late (dylan-Yoga): gas-mixer log + mixer temperature in the v(t) model — `rerun/ntof/vt/README.md` § Gas mixer.**
 - n_TOF HAS a gas log (the "no gas log" lines elsewhere are the bench): DAQ gas_watcher, EOS `july_beam/slow_control/gas_flow/`.
