@@ -35,7 +35,10 @@ sys.path[:0] = [HERE, os.path.join(HERE, '..', '..')]
 import paper_style as ps  # noqa: E402
 import mcs_common as mc  # noqa: E402
 
-D = mc.Z_READOUT                       # 233.3 mm
+D = 230.0                              # target to the plane where the position is measured [mm]. Idealized
+#                                        (Dylan 2026-11-19): 200 mm of air and a 30 mm gap, not the 233.3 mm
+#                                        (mc.Z_READOUT) surveyed for chamber A. Used for every number here.
+SIG_HIT = 1.0                          # position error of the single hit of the one-hit estimate in (b) [mm]
 SEG = mc.G_DRIFT                       # 28.2 mm measured segment (normal incidence)
 SIG_X = (0.1, 0.5, 1.0, 2.0)
 SIG_TH = np.arange(0.0, 3.01, 0.25)    # deg
@@ -279,12 +282,12 @@ def main():
     scat = {T: scatter_pointing(T) for T in (4, 8, 16)}            # all layers, for the json (section 3.3 / 6.2)
     Tf = np.linspace(3.0, 16.5, 120)
     th0 = np.array([scatter_pointing(T, AIR)[1] for T in Tf])
-    pos_deg = float(np.degrees(MEAS['x_intr'] / D))
+    pos_deg = float(np.degrees(SIG_HIT / D))
     axb.axhline(TH_REQ, color=cL, lw=0.9, ls=(0, (4, 2)), zorder=3)
     axb.plot(Tf, th0, color=ps.MUTED, lw=1.2, zorder=3)
     axb.plot(Tf, np.hypot(th0, TH_REQ), color=cL, lw=1.5, zorder=5)
     T_TOY = (4, 6, 8, 10, 12, 14, 16)
-    toy2 = {T: scatter_toy(T, a.n, rng, th_ch_deg=TH_REQ, layers=AIR) for T in T_TOY}
+    toy2 = {T: scatter_toy(T, a.n, rng, th_ch_deg=TH_REQ, sx=SIG_HIT, layers=AIR) for T in T_TOY}
     axb.plot(T_TOY, [toy2[T][0] for T in T_TOY], ls='none', marker='o', ms=3.4, color=cL, zorder=6)
     # Dylan 2026-11-19: the argument now starts from a point source, where one hit per lepton and the known origin
     # give the direction, so that estimate is drawn again (it was left out on 11-12): a point and a 10 mm rms source.
@@ -310,9 +313,11 @@ def main():
     air = {f'{T}MeV': dict(theta_air_deg=round(scatter_pointing(T, AIR)[1], 2),
                            local_deg=round(float(np.hypot(scatter_pointing(T, AIR)[1], TH_REQ)), 2),
                            origin_scatter_deg=round(float(np.degrees(scatter_chord(T, layers=AIR))), 2),
+                           one_hit_point_source_deg=round(float(np.hypot(
+                               np.degrees(scatter_chord(T, layers=AIR)), pos_deg)), 2),
                            source_breakeven_mm=round(float(D * np.radians(np.sqrt(
                                scatter_pointing(T, AIR)[1] ** 2 + TH_REQ ** 2
-                               - np.degrees(scatter_chord(T, layers=AIR)) ** 2))), 1))
+                               - np.degrees(scatter_chord(T, layers=AIR)) ** 2 - pos_deg ** 2))), 1))
            for T in (4, 8, 12, 16)}
     from scipy.optimize import brentq
     air['T_where_air_equals_requirement_MeV'] = round(float(brentq(
@@ -332,12 +337,12 @@ def main():
                         for c in (0.0, 0.5, 1.0, 2.0, 3.0)},
         one_hit_by_source_mm={f'{o:g}': dict(
             opening_deg=round(float(np.sqrt(2) * np.sqrt(np.degrees(scatter_chord(T_sym, layers=AIR)) ** 2
-                                                         + np.degrees(o / D) ** 2)), 2),
+                                                         + pos_deg ** 2 + np.degrees(o / D) ** 2)), 2),
             dm_MeV=round(float(k_m * np.sqrt(2) * np.sqrt(np.degrees(scatter_chord(T_sym, layers=AIR)) ** 2
-                                                          + np.degrees(o / D) ** 2)), 3))
+                                                          + pos_deg ** 2 + np.degrees(o / D) ** 2)), 3))
             for o in (0.0, 5.0, 10.0)},
         note='opening = sqrt(2) x one direction (in-plane component); air only. one_hit = direction from the '
-             'assumed origin to one measured point, source of the given rms size')
+             'assumed origin to one measured point (SIG_HIT = 1 mm), source of the given rms size')
     # what one degree of slope is inside the segment: tan(theta) = dx / (v dt). Idealized 30 mm gap, v = 36 um/ns.
     G_ID, V_D = 30.0, 0.036
     slope = dict(gap_mm=G_ID, v_mm_per_ns=V_D,
@@ -358,8 +363,8 @@ def main():
     # numbers
     num = dict(
         d_mm=round(D, 2),
-        d_definition='target to the readout (mesh) plane, along the chamber normal: 200 window + 0.060 Mylar + '
-                     '5.0 gas + 0.059 cathode + 28.2 drift',
+        d_definition='idealized: 200 mm of air to the window + a 30 mm gap (the surveyed chamber A value is 233.3)',
+        sigma_hit_mm=SIG_HIT,
         segment_mm=SEG,
         lever_over_segment=round(D / SEG, 2),
         lever_mid_over_segment=round((mc.Z_DRIFT0 + SEG / 2) / SEG, 2),

@@ -1,79 +1,80 @@
 {
- "d_mm": 233.32,
- "d_definition": "target to the readout (mesh) plane, along the chamber normal: 200 window + 0.060 Mylar + 5.0 gas + 0.059 cathode + 28.2 drift",
+ "d_mm": 230.0,
+ "d_definition": "idealized: 200 mm of air to the window + a 30 mm gap (the surveyed chamber A value is 233.3)",
+ "sigma_hit_mm": 1.0,
  "segment_mm": 28.2,
- "lever_over_segment": 8.27,
+ "lever_over_segment": 8.16,
  "lever_mid_over_segment": 7.77,
  "pointing_mm": {
-  "theta0.99_x0.12": 4.03,
-  "theta0.99_x0.5": 4.06,
-  "theta0.90_x0.12": 3.67,
-  "theta0.90_x0.5": 3.7
+  "theta0.99_x0.12": 3.98,
+  "theta0.99_x0.5": 4.01,
+  "theta0.90_x0.12": 3.61,
+  "theta0.90_x0.5": 3.65
  },
  "pointing_toy_acceptance_mm": {
-  "theta0.99_x0.12": 4.48,
-  "theta0.99_x0.5": 4.49,
-  "theta0.90_x0.12": 4.08,
-  "theta0.90_x0.5": 4.08
+  "theta0.99_x0.12": 4.41,
+  "theta0.99_x0.5": 4.43,
+  "theta0.90_x0.12": 4.02,
+  "theta0.90_x0.5": 4.02
  },
- "sigma_x_equiv_to_1deg_mm": 4.07,
- "theta_equiv_to_0p5mm_deg": 0.123,
- "theta_equiv_to_0p12mm_deg": 0.029,
+ "sigma_x_equiv_to_1deg_mm": 4.01,
+ "theta_equiv_to_0p5mm_deg": 0.125,
+ "theta_equiv_to_0p12mm_deg": 0.03,
  "position_share_of_pointing_variance": {
   "theta0.99_x0.12": 0.0009,
-  "theta0.99_x0.5": 0.0151,
+  "theta0.99_x0.5": 0.0156,
   "theta0.90_x0.12": 0.0011,
-  "theta0.90_x0.5": 0.0183
+  "theta0.90_x0.5": 0.0188
  },
  "scattering_in_front_of_gas": {
   "4MeV": {
    "theta0_deg": 5.49,
    "pointing_rms_mm": 16.8,
-   "equiv_sigma_theta_deg": 4.13
+   "equiv_sigma_theta_deg": 4.19
   },
   "8MeV": {
    "theta0_deg": 2.88,
    "pointing_rms_mm": 8.8,
-   "equiv_sigma_theta_deg": 2.17
+   "equiv_sigma_theta_deg": 2.2
   },
   "16MeV": {
    "theta0_deg": 1.48,
    "pointing_rms_mm": 4.5,
-   "equiv_sigma_theta_deg": 1.11
+   "equiv_sigma_theta_deg": 1.13
   }
  },
  "two_estimators": {
   "4MeV": {
    "local_deg": 5.57,
-   "chord_scatter_deg": 2.19,
-   "origin_breakeven_mm": 20.9,
+   "chord_scatter_deg": 2.16,
+   "origin_breakeven_mm": 20.6,
    "opening_local_deg": 7.88,
    "dm_local_MeV": 0.82
   },
   "8MeV": {
    "local_deg": 3.03,
-   "chord_scatter_deg": 1.15,
-   "origin_breakeven_mm": 11.4,
+   "chord_scatter_deg": 1.13,
+   "origin_breakeven_mm": 11.3,
    "opening_local_deg": 4.29,
    "dm_local_MeV": 0.45
   },
   "16MeV": {
    "local_deg": 1.76,
-   "chord_scatter_deg": 0.59,
-   "origin_breakeven_mm": 6.8,
+   "chord_scatter_deg": 0.58,
+   "origin_breakeven_mm": 6.7,
    "opening_local_deg": 2.49,
    "dm_local_MeV": 0.26
   },
   "9.78MeV": {
    "local_deg": 2.56,
-   "chord_scatter_deg": 0.95,
-   "origin_breakeven_mm": 9.7,
+   "chord_scatter_deg": 0.94,
+   "origin_breakeven_mm": 9.6,
    "opening_local_deg": 3.63,
    "dm_local_MeV": 0.38
   },
   "chamber_only": {
    "local_deg": 0.95,
-   "origin_breakeven_mm": 3.9,
+   "origin_breakeven_mm": 3.8,
    "opening_deg": 1.34,
    "dm_MeV": 0.139
   },
@@ -89,26 +90,30 @@
   "4MeV": {
    "theta_air_deg": 3.24,
    "local_deg": 3.39,
-   "origin_scatter_deg": 2.02,
-   "source_breakeven_mm": 11.1
+   "origin_scatter_deg": 2.0,
+   "one_hit_point_source_deg": 2.02,
+   "source_breakeven_mm": 10.9
   },
   "8MeV": {
    "theta_air_deg": 1.7,
    "local_deg": 1.97,
-   "origin_scatter_deg": 1.06,
-   "source_breakeven_mm": 6.8
+   "origin_scatter_deg": 1.05,
+   "one_hit_point_source_deg": 1.08,
+   "source_breakeven_mm": 6.6
   },
   "12MeV": {
    "theta_air_deg": 1.16,
    "local_deg": 1.53,
-   "origin_scatter_deg": 0.72,
-   "source_breakeven_mm": 5.5
+   "origin_scatter_deg": 0.71,
+   "one_hit_point_source_deg": 0.76,
+   "source_breakeven_mm": 5.3
   },
   "16MeV": {
    "theta_air_deg": 0.87,
    "local_deg": 1.33,
    "origin_scatter_deg": 0.54,
-   "source_breakeven_mm": 4.9
+   "one_hit_point_source_deg": 0.6,
+   "source_breakeven_mm": 4.8
   },
   "T_where_air_equals_requirement_MeV": 13.9,
   "kinematics": {
@@ -148,19 +153,19 @@
    },
    "one_hit_by_source_mm": {
     "0": {
-     "opening_deg": 1.24,
-     "dm_MeV": 0.129
+     "opening_deg": 1.28,
+     "dm_MeV": 0.133
     },
     "5": {
-     "opening_deg": 2.13,
-     "dm_MeV": 0.222
+     "opening_deg": 2.18,
+     "dm_MeV": 0.226
     },
     "10": {
-     "opening_deg": 3.69,
-     "dm_MeV": 0.383
+     "opening_deg": 3.75,
+     "dm_MeV": 0.39
     }
    },
-   "note": "opening = sqrt(2) x one direction (in-plane component); air only. one_hit = direction from the assumed origin to one measured point, source of the given rms size"
+   "note": "opening = sqrt(2) x one direction (in-plane component); air only. one_hit = direction from the assumed origin to one measured point (SIG_HIT = 1 mm), source of the given rms size"
   }
  },
  "slope_sensitivity": {
@@ -184,7 +189,7 @@
     "deg_per_2pct_velocity": 0.57
    }
   },
-  "chord_deg_per_mm_position": 0.246,
+  "chord_deg_per_mm_position": 0.249,
   "note": "d(theta) = dx/g near the normal; = sin cos x (dz/g) for a depth error at inclination theta"
  },
  "panel_a": {
@@ -202,75 +207,75 @@
   "s68_deg": {
    "4MeV": {
     "local": 3.38,
-    "origin0mm": 2.008,
-    "origin10mm": 3.16
+    "origin0mm": 2.014,
+    "origin10mm": 3.193
    },
    "6MeV": {
     "local": 2.44,
-    "origin0mm": 1.388,
-    "origin10mm": 2.82
+    "origin0mm": 1.399,
+    "origin10mm": 2.853
    },
    "8MeV": {
     "local": 1.968,
-    "origin0mm": 1.057,
-    "origin10mm": 2.663
+    "origin0mm": 1.079,
+    "origin10mm": 2.707
    },
    "10MeV": {
     "local": 1.696,
-    "origin0mm": 0.86,
-    "origin10mm": 2.602
+    "origin0mm": 0.886,
+    "origin10mm": 2.64
    },
    "12MeV": {
     "local": 1.53,
-    "origin0mm": 0.717,
-    "origin10mm": 2.557
+    "origin0mm": 0.753,
+    "origin10mm": 2.601
    },
    "14MeV": {
     "local": 1.413,
-    "origin0mm": 0.622,
-    "origin10mm": 2.537
+    "origin0mm": 0.666,
+    "origin10mm": 2.585
    },
    "16MeV": {
     "local": 1.327,
-    "origin0mm": 0.546,
-    "origin10mm": 2.517
+    "origin0mm": 0.595,
+    "origin10mm": 2.561
    }
   },
   "analytic_deg": {
    "4MeV": {
     "local": 3.392,
-    "origin0mm": 2.019,
-    "origin10mm": 3.179
+    "origin0mm": 2.02,
+    "origin10mm": 3.207
    },
    "6MeV": {
     "local": 2.444,
-    "origin0mm": 1.389,
-    "origin10mm": 2.821
+    "origin0mm": 1.401,
+    "origin10mm": 2.858
    },
    "8MeV": {
     "local": 1.973,
-    "origin0mm": 1.06,
-    "origin10mm": 2.675
+    "origin0mm": 1.081,
+    "origin10mm": 2.716
    },
    "10MeV": {
     "local": 1.701,
-    "origin0mm": 0.857,
-    "origin10mm": 2.601
+    "origin0mm": 0.887,
+    "origin10mm": 2.644
    },
    "12MeV": {
     "local": 1.528,
-    "origin0mm": 0.72,
-    "origin10mm": 2.559
+    "origin0mm": 0.757,
+    "origin10mm": 2.603
    },
    "14MeV": {
     "local": 1.411,
-    "origin0mm": 0.62,
-    "origin10mm": 2.533
+    "origin0mm": 0.664,
+    "origin10mm": 2.578
    },
    "16MeV": {
     "local": 1.328,
-    "origin0mm": 0.545,
-    "origin10mm": 2.516
+    "origin0mm": 0.595,
+    "origin10mm": 2.561
    }
   }
  },
@@ -294,63 +299,63 @@
   "s68_mm": {
    "0.1": [
     0.09,
-    1.137,
-    2.267,
-    3.393,
-    4.517,
-    5.624,
-    6.761,
-    7.926,
-    9.055,
-    10.153,
-    11.286,
-    12.465,
-    13.553
+    1.121,
+    2.235,
+    3.345,
+    4.453,
+    5.544,
+    6.665,
+    7.813,
+    8.927,
+    10.01,
+    11.126,
+    12.288,
+    13.36
    ],
    "0.5": [
     0.452,
-    1.219,
-    2.308,
-    3.422,
-    4.531,
-    5.64,
-    6.796,
-    7.919,
-    9.038,
-    10.181,
-    11.308,
-    12.407,
-    13.537
+    1.204,
+    2.276,
+    3.375,
+    4.468,
+    5.561,
+    6.699,
+    7.806,
+    8.91,
+    10.037,
+    11.146,
+    12.231,
+    13.345
    ],
    "1": [
     0.904,
-    1.458,
-    2.446,
-    3.516,
-    4.601,
-    5.718,
-    6.869,
-    7.969,
-    9.048,
-    10.163,
-    11.343,
-    12.449,
-    13.565
+    1.446,
+    2.416,
+    3.47,
+    4.539,
+    5.64,
+    6.772,
+    7.857,
+    8.92,
+    10.02,
+    11.182,
+    12.273,
+    13.373
    ],
    "2": [
     1.806,
-    2.143,
-    2.914,
-    3.873,
-    4.902,
-    5.927,
-    7.021,
-    8.1,
-    9.196,
-    10.305,
-    11.474,
-    12.565,
-    13.66
+    2.135,
+    2.889,
+    3.829,
+    4.843,
+    5.85,
+    6.928,
+    7.992,
+    9.071,
+    10.162,
+    11.316,
+    12.391,
+    13.471
    ]
   }
  },
