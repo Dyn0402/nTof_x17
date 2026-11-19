@@ -205,12 +205,14 @@ def side_view(ax):
     zt = 118
     ax.text(zt, org[1] + t0 * zt + 19, 'path, and its initial direction', rotation=rot(t0), va='bottom',
             color=ink, **kw)
-    zt = 100
+    zt = 76
     ax.text(zt, yb + np.tan(a_gas) * zt - 7, 'measured angle, extrapolated', rotation=rot(np.tan(a_gas)), va='top',
             color=cL, **kw)
     # what one degree is, at the two places it matters (Dylan 2026-11-19: the angle is the figure of merit; the
     # position and time measurements matter inside the segment, where they make the slope)
-    kinematics(ax)
+    kinematics(ax, rot=float(np.degrees(np.arctan(t0))))
+    ax.text(zs[0] - 5, ys[1] + 6, 'measured\nsegment', ha='right', va='bottom', fontsize=7, color=cL,
+            linespacing=0.95)
     yd = yb - 12
     ax.annotate('', xy=(D, yd), xytext=(0, yd), arrowprops=dict(arrowstyle='<->', color=mut, lw=0.7, shrinkA=0,
                                                                 shrinkB=0))
@@ -223,16 +225,15 @@ def side_view(ax):
     return dict(drawn_deflection_deg=round(float(np.degrees(bend_air + kink)), 1), origin_offset_mm=float(org[1]))
 
 
-def kinematics(ax, x0=12.0, y0=102.0, L=60.0, rot=20.0, box=(-30.0, 84.0, 136.0, 76.0)):
+def kinematics(ax, x0=20.0, y0=98.0, L=78.0, rot=19.8, box=(-30.0, 84.0, 160.0, 90.0)):
     """Inset in the free top-left corner of the side view (Dylan 2026-11-19): the pair at its origin, opening angle
     theta and the two energies. Drawn at the X17 edge of the 20.58 MeV transition, 109 deg, with unequal energies so
-    that y is not zero, rotated so that one lepton runs along the path drawn below. A rule under it sets it off: it
-    is not to scale and not part of the geometry."""
+    that y is not zero, rotated so that the e- is parallel to the path drawn below. Not to scale."""
     import matplotlib.patches as mp
     ink, mut = ps.INK, ps.MUTED
     cL = ps.DET_COLOR['det3']
-    # set off from the geometry by one horizontal rule under it (Dylan 2026-11-19: a line, not a box)
-    ax.plot([box[0], box[0] + box[2]], [box[1]] * 2, color='#aab2bd', lw=0.8, solid_capstyle='butt', zorder=9)
+    # no box and no rule (Dylan 2026-11-19): the e- arrow is parallel to the initial direction of the path drawn
+    # below (rot = atan(t0) of side_view), which is enough to tie the two together. `box` only places the text.
     o = np.array([x0, y0])
     op = 109.4
     for ang, ln, lab, en, side in ((rot, 1.0, '$e^-$', '$E_-$', -1), (rot + op, 0.78, '$e^+$', '$E_+$', +1)):
