@@ -223,15 +223,16 @@ def side_view(ax):
     return dict(drawn_deflection_deg=round(float(np.degrees(bend_air + kink)), 1), origin_offset_mm=float(org[1]))
 
 
-def kinematics(ax, x0=14.0, y0=92.0, L=62.0, rot=20.0, box=(-26.0, 78.0, 116.0, 82.0)):
+def kinematics(ax, x0=12.0, y0=102.0, L=60.0, rot=20.0, box=(-30.0, 84.0, 136.0, 76.0)):
     """Inset in the free top-left corner of the side view (Dylan 2026-11-19): the pair at its origin, opening angle
     theta and the two energies. Drawn at the X17 edge of the 20.58 MeV transition, 109 deg, with unequal energies so
-    that y is not zero, rotated so that one lepton runs along the path drawn below. Boxed off: it is not to scale and
-    not part of the geometry."""
+    that y is not zero, rotated so that one lepton runs along the path drawn below. A rule under it sets it off: it
+    is not to scale and not part of the geometry."""
     import matplotlib.patches as mp
     ink, mut = ps.INK, ps.MUTED
     cL = ps.DET_COLOR['det3']
-    ax.add_patch(mp.Rectangle(box[:2], box[2], box[3], fc='white', ec=mut, lw=0.6, zorder=9))
+    # set off from the geometry by one horizontal rule under it (Dylan 2026-11-19: a line, not a box)
+    ax.plot([box[0], box[0] + box[2]], [box[1]] * 2, color='#aab2bd', lw=0.8, solid_capstyle='butt', zorder=9)
     o = np.array([x0, y0])
     op = 109.4
     for ang, ln, lab, en, side in ((rot, 1.0, '$e^-$', '$E_-$', -1), (rot + op, 0.78, '$e^+$', '$E_+$', +1)):
@@ -248,7 +249,7 @@ def kinematics(ax, x0=14.0, y0=92.0, L=62.0, rot=20.0, box=(-26.0, 78.0, 116.0, 
     ax.text(*(o + 0.36 * L * np.array([np.cos(b), np.sin(b)])), r'$\theta$', ha='center', va='center', fontsize=9,
             color=cL, zorder=11)
     ax.plot(*o, 'o', ms=3.2, color=ink, zorder=12)
-    ax.text(box[0] + box[2] - 3, box[1] + box[3] - 3, '$E=E_++E_-$\n$y=(E_+-E_-)/E$', ha='right', va='top',
+    ax.text(box[0] + box[2], box[1] + box[3], '$E=E_++E_-$\n$y=(E_+-E_-)/E$', ha='right', va='top',
             fontsize=7, color=mut, linespacing=1.3, zorder=11)
 
 
