@@ -1,0 +1,17 @@
+{
+ "quantity": "arm-to-arm time resolution sigma_t PER ARM (sigma(t_A - t_C) / sqrt 2, arms assumed equal), ns",
+ "wall_sipm": {
+  "reference": 0.6,
+  "low": 0.519,
+  "high": 0.638
+ },
+ "plastic": {
+  "reference": 0.95,
+  "err": 0.04,
+  "n": 477
+ },
+ "conditions": "as built at n_TOF: SiPM walls (4 bars ganged per channel, both ends), n_TOF digitiser 1 GS/s and official pulse fit, NO beam (run_149, n_TOF 224678-224687). Under beam the pulse fit floors at ~4 ns per arm. Not a prediction for another readout.",
+ "method": "ntof_cosmics/ac_tof_beamoff.py: A-C cosmic muons, two-peak fit (muon TOF +-T) and direction-tagged peak cores; report results/ac_tof/report.html",
+ "n_wall": 2579,
+ "date": "2026-11-19"
+}

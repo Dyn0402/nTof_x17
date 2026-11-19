@@ -1,5 +1,18 @@
 # Handoff
 
+## Arm-to-arm scintillator timing from cosmics (σ_t) — updated 2026-11-19 (dylan-MS-7C84)
+
+**Resume:** finished; for the n_TOF paper, cite `ntof_cosmics/results/ac_tof/report.html` (numbers in `timing.json`).
+
+**Done:** `ntof_cosmics/ac_tof_beamoff.py` measures the A–C SiPM-wall time resolution on the beam-off n_TOF runs
+224678–687 (run_149): the muon's own TOF (±2.5 ns) is resolved as two peaks; **σ_t 0.52–0.64 ns per arm (walls),
+0.95 (plastics)**. `ac_tof.py` shows beam-run muons can't measure it (~6 ns, the pulse fit under beam).
+`results/ac_tof/timing.json` is what x17_facility_search reads (LNL `TOF_SIGMA_NS`). The first look (scintillator-only,
+upper bound 1.9 ns) is kept in `results/ac_tof/firstlook/`. Method and parameters: `docs/PARAMETERS.md` §8.
+
+**Open for the paper:** only A and C (arms assumed equal); 17 muons have an MM line too (could check the direction
+tag event by event); plastics' position correction is crude. A paper figure would be `figures/beamoff_walls.png`.
+
 ## INFN-IN2P3 Frascati poster — updated 2026-11-19 (dylan-MS-7C84)
 
 **Resume:** mock-up v3 (redesigned from 25 flash-talk posters) is in `infn_in2p3_26/poster.pdf`; next: Dylan's reaction to v3.

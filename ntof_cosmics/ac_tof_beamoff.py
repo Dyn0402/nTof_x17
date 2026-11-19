@@ -204,6 +204,34 @@ def toy(r, X, dd, T, rng):
     return x
 
 
+#: the machine-readable result other repos read (x17_facility_search lnl/sim/lnl_geant.py TOF_SIGMA_NS, ...)
+TIMING_JSON = Path(__file__).resolve().parent / 'results' / 'ac_tof' / 'timing.json'
+
+
+def write_timing(S: pd.DataFrame | None = None) -> dict:
+    """results/ac_tof/timing.json from beamoff_summary.csv: per-arm sigma_t of the walls (range = direction-tagged
+    peak cores .. two-peak fit), the reference value (their mean, rounded to 0.05 ns), and the plastics."""
+    if S is None:
+        S = pd.read_csv(OUT / 'beamoff_summary.csv')
+    fitv = float(S.loc[S['sample'] == 'walls, all', 'per_arm_ns'].iloc[0])
+    tag = S[S['sample'].str.startswith('direction-tagged')].per_arm_ns.astype(float)
+    lo, hi = float(tag.mean()), fitv
+    pl = S[S['sample'].str.startswith('plastics')].iloc[0]
+    d = dict(
+        quantity='arm-to-arm time resolution sigma_t PER ARM (sigma(t_A - t_C) / sqrt 2, arms assumed equal), ns',
+        wall_sipm=dict(reference=round(round(0.5 * (lo + hi) / 0.05) * 0.05, 2), low=round(lo, 3), high=round(hi, 3)),
+        plastic=dict(reference=round(float(pl.per_arm_ns), 2), err=round(float(pl.per_arm_err_ns), 2), n=int(pl.n)),
+        conditions='as built at n_TOF: SiPM walls (4 bars ganged per channel, both ends), n_TOF digitiser 1 GS/s and '
+                   'official pulse fit, NO beam (run_149, n_TOF 224678-224687). Under beam the pulse fit floors at '
+                   '~4 ns per arm. Not a prediction for another readout.',
+        method='ntof_cosmics/ac_tof_beamoff.py: A-C cosmic muons, two-peak fit (muon TOF +-T) and direction-tagged peak '
+               'cores; report results/ac_tof/report.html',
+        n_wall=int(S.loc[S['sample'] == 'walls, all', 'n'].iloc[0]), date='2026-11-19')
+    TIMING_JSON.parent.mkdir(parents=True, exist_ok=True)
+    TIMING_JSON.write_text(json.dumps(d, indent=1) + '\n')
+    return d
+
+
 def main() -> int:
     import matplotlib
     matplotlib.use('Agg')
@@ -294,6 +322,7 @@ def main() -> int:
     print(f'plastics: n {keep.sum()}  sigma(A-C) {sp:.3f} ± {sp * ep[1]:.3f} ns  per arm {sp / np.sqrt(2):.3f}  f_bg {expit(rp.x[2]):.3f}')
     S = pd.DataFrame(rows)
     S.to_csv(OUT / 'beamoff_summary.csv', index=False)
+    write_timing(S)
     (OUT / 'beamoff_meta.json').write_text(json.dumps(dict(runs=RUNS, tof_min_ns=TOF_MIN, win_ns=WIN, n=len(D),
                                                            T_median=float(np.median(T)), fit_walls_all=list(map(float, r0.x))), indent=1))
     # figure: residual with offsets + walk removed, split by the direction estimate, model overlaid
@@ -325,4 +354,7 @@ def main() -> int:
 
 
 if __name__ == '__main__':
+    if sys.argv[1:2] == ['timing']:          # rewrite timing.json from the existing summary
+        print(json.dumps(write_timing(), indent=1))
+        raise SystemExit(0)
     raise SystemExit(main())
