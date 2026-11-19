@@ -19,16 +19,32 @@ $y=(E_+-E_-)/E$ and, neglecting the electron mass for simplicity, the invariant 
 \begin{equation}
   m^2=E^2\,(1-y^2)\,\sin^2(\theta/2)\,,\label{eq:mass}
 \end{equation}
-with $\theta$ the opening angle. The transition under study fixes $E$ and the calorimetry behind the trackers measures $y$. The
+with $\theta$ the opening angle (\crefp{fig:pointing}{a}). The transition under study fixes $E$ and the calorimetry behind the trackers measures $y$. The
 tracker, then, contributes $\theta$. An X17 of 16.8\,MeV appears as an edge in $\theta$, at 109\textdegree{} for the
 20.6\,MeV transition of $^4$He and at 136\textdegree{} for the 18.15\,MeV transition of $^8$Be, on an IPC background
 that falls smoothly with $\theta$. There, one degree of opening angle is 0.10 and 0.06\,MeV of mass. The angular
 resolution therefore sets how sharp the edge stays and how much of the background lies under it.
 
+\begin{figure}[tbp]
+  \centering
+  \figorbox{pointing}{pair kinematics, to-scale side view and direction error against lepton energy}
+  \caption{What the angle is worth. (a) The pair where it is made: the opening angle $\theta$ and the energies
+  $E_+$ and $E_-$ of the two leptons, drawn at the 109\textdegree{} of the X17 edge in $^4$He. (b) One chamber and an extended target to scale, with one lepton (black; its
+  deflection in the air is drawn about five times too large for an 8\,MeV electron). The chamber measures a segment
+  about 30\,mm long, about 230\,mm from the target (an idealized geometry). One degree on its direction is 0.5\,mm
+  across the drift gap and 4\,mm at the target: the measured angle, extrapolated back (blue, dashed), misses the
+  origin by $b$; the dotted line continues the initial direction. (c) Error of the measured angle on the initial
+  direction of one lepton, in one projection, against its kinetic energy, with 20\,cm of air as the only material.
+  Gray: the scattering in the air, which is what a perfect chamber would give. Blue: a chamber of 1\textdegree{}
+  (dashed line) added to it; the line is analytic and the points a toy simulation that scatters the leptons through
+  the air.}
+  \label{fig:pointing}
+\end{figure}
+
 Each direction is measured inside one chamber. With an extended source, such as a gas target in a neutron beam, the
 point where a pair was made is not known beforehand, so the direction of a lepton cannot be taken from a line drawn
 between the target and the chamber. It has to come from what the chamber sees: a straight segment about 30\,mm long,
-about 20\,cm from the target (\crefp{fig:pointing}{a}). The opening angle is the angle between two such segments.
+about 20\,cm from the target (\crefp{fig:pointing}{b}). The opening angle is the angle between two such segments.
 Neither the position of a segment nor the time of the event enters it: a segment moved sideways, or an event moved in
 time, gives the same $\theta$. Its error is that of the two slopes, $\sqrt2\,\sigma_\theta$ for the component in
 the plane of the pair, with $\sigma_\theta$ the angular resolution of a chamber.
@@ -65,7 +81,7 @@ the position is used is limited by the angle as well.
 What sets the useful scale for $\sigma_\theta$ is scattering before the measurement, and the air between the target
 and the chamber is enough to set it. Over 20\,cm of air an electron is deflected by 3.2\textdegree{} rms in each
 projection at 4\,MeV, by 1.7\textdegree{} at 8\,MeV and by 0.9\textdegree{} at 16\,MeV
-(\crefp{fig:pointing}{b}). That is more than 1\textdegree{} below 14\,MeV, before any target wall, window or foil is
+(\crefp{fig:pointing}{c}). That is more than 1\textdegree{} below 14\,MeV, before any target wall, window or foil is
 counted (those of the present chambers are in \cref{sec:material}). A chamber much better than 1\textdegree{} would
 therefore gain little, and a worse one would cost: for a symmetric pair at the $^4$He edge, two leptons of 9.8\,MeV,
 the opening angle is known to 2.0\textdegree{} with perfect chambers, to 2.4\textdegree{} with chambers of
@@ -81,18 +97,3 @@ ionization of a track to a fraction of a millimeter across its drift gap, in the
 position of the track as a whole is needed only to a few millimeters and the time of the event only for the
 coincidence, and there should be as little material as possible in front of the drift volume. \Cref{sec:tracking}
 gives what the chambers deliver against this.
-
-\begin{figure}[tbp]
-  \centering
-  \figorbox{pointing}{to-scale side view and direction error against lepton energy}
-  \caption{What the angle is worth. (a) One chamber and an extended target to scale, with one lepton (black; its
-  deflection in the air is drawn about five times too large for an 8\,MeV electron). The chamber measures a segment
-  about 30\,mm long, about 230\,mm from the target (an idealized geometry). One degree on its direction is 0.5\,mm
-  across the drift gap and 4\,mm at the target: the measured angle, extrapolated back (blue, dashed), misses the
-  origin by $b$; the dotted line continues the initial direction. (b) Error of the measured angle on the initial
-  direction of one lepton, in one projection, against its kinetic energy, with 20\,cm of air as the only material.
-  Gray: the scattering in the air, which is what a perfect chamber would give. Blue: a chamber of 1\textdegree{}
-  (dashed line) added to it; the line is analytic and the points a toy simulation that scatters the leptons through
-  the air.}
-  \label{fig:pointing}
-\end{figure}
