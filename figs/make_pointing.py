@@ -208,12 +208,15 @@ def side_view(ax):
     zt = 100
     ax.text(zt, yb + np.tan(a_gas) * zt - 7, 'measured angle, extrapolated', rotation=rot(np.tan(a_gas)), va='top',
             color=cL, **kw)
-    ax.text(zs[0] - 5, ys[1] + 8, 'measured\nsegment', ha='right', va='bottom', fontsize=7, color=cL,
-            linespacing=0.95)
+    # what one degree is, at the two places it matters (Dylan 2026-11-19: the angle is the figure of merit; the
+    # position and time measurements matter inside the segment, where they make the slope)
+    ax.text(zs[0] - 5, ys[1] + 8, 'measured segment:\n1° is 0.5 mm across the gap', ha='right', va='bottom',
+            fontsize=7, color=cL, linespacing=0.95)
     yd = yb - 12
     ax.annotate('', xy=(D, yd), xytext=(0, yd), arrowprops=dict(arrowstyle='<->', color=mut, lw=0.7, shrinkA=0,
                                                                 shrinkB=0))
-    ax.text(D / 2, yd - 3, f'air, d ≈ {D:.0f} mm to the readout', ha='center', va='top', fontsize=7, color=mut)
+    ax.text(D / 2 - 16, yd - 3, f'air, d ≈ {D:.0f} mm: 1° is 4 mm at the target', ha='center', va='top',
+            fontsize=7, color=mut)
     ax.set_xlim(-30, D + 6)
     ax.set_ylim(yd - 16, y1 + 26)
     ax.set_aspect('equal')
@@ -278,6 +281,27 @@ def main():
                                          dm_per_deg_MeV=round(float(16.8 / (2 * np.tan(np.arcsin(16.8 / E)))
                                                                     * np.radians(1.0)), 3))
                          for E in (20.58, 18.15)}
+    # a symmetric pair at the X17 edge of the 20.58 MeV transition: opening angle and mass error against the chamber
+    T_sym = (20.58 - 2 * 0.511) / 2
+    a_sym = scatter_pointing(T_sym, AIR)[1]
+    k_m = air['kinematics']['E20.58']['dm_per_deg_MeV']
+    air['pair_symmetric'] = dict(
+        T_each_MeV=round(T_sym, 2), theta_air_deg=round(a_sym, 2),
+        by_chamber_deg={f'{c:g}': dict(opening_deg=round(float(np.sqrt(2) * np.hypot(a_sym, c)), 2),
+                                       dm_MeV=round(float(k_m * np.sqrt(2) * np.hypot(a_sym, c)), 3))
+                        for c in (0.0, 0.5, 1.0, 2.0, 3.0)},
+        note='opening = sqrt(2) x one direction (in-plane component); air only')
+    # what one degree of slope is inside the segment: tan(theta) = dx / (v dt). Idealized 30 mm gap, v = 36 um/ns.
+    G_ID, V_D = 30.0, 0.036
+    slope = dict(gap_mm=G_ID, v_mm_per_ns=V_D,
+                 transverse_mm_per_deg_normal=round(float(G_ID * np.tan(np.radians(1.0))), 2),
+                 by_inclination_deg={f'{t:g}': dict(
+                     depth_mm_per_deg=round(float(np.radians(1.0) * G_ID / (np.sin(np.radians(t)) * np.cos(np.radians(t)))), 2),
+                     drift_ns_per_deg=round(float(np.radians(1.0) * G_ID / (np.sin(np.radians(t)) * np.cos(np.radians(t))) / V_D), 1),
+                     deg_per_2pct_velocity=round(float(np.degrees(0.02 * np.sin(np.radians(t)) * np.cos(np.radians(t)))), 2))
+                     for t in (20, 30, 45)},
+                 chord_deg_per_mm_position=round(float(np.degrees(1.0 / D)), 3),
+                 note='d(theta) = dx/g near the normal; = sin cos x (dz/g) for a depth error at inclination theta')
     axa.text(0.0, 1.0, '(a)', transform=axa.transAxes, fontsize=ps.BASE_PT, fontweight='bold', va='top', ha='left')
     axb.text(-0.28, 1.04, '(b)', transform=axb.transAxes, fontsize=ps.BASE_PT, fontweight='bold', va='top',
              ha='left')
@@ -302,6 +326,7 @@ def main():
                                     for T, (s, th) in scat.items()},
         two_estimators=te,
         air_only=air,
+        slope_sensitivity=slope,
         panel_a=drawn,
         toy_directions=dict(n=a.n, origins_mm=list(ORIGINS), layers='air only', chamber_deg=TH_REQ,
                             s68_deg={f'{T}MeV': dict(local=round(v[0], 3), **{f'origin{o:g}mm': round(w, 3) for o, w in v[1].items()}) for T, v in toy2.items()},

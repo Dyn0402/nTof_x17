@@ -120,7 +120,58 @@
     "min_opening_deg": 135.5,
     "dm_per_deg_MeV": 0.06
    }
+  },
+  "pair_symmetric": {
+   "T_each_MeV": 9.78,
+   "theta_air_deg": 1.41,
+   "by_chamber_deg": {
+    "0": {
+     "opening_deg": 1.99,
+     "dm_MeV": 0.207
+    },
+    "0.5": {
+     "opening_deg": 2.11,
+     "dm_MeV": 0.219
+    },
+    "1": {
+     "opening_deg": 2.44,
+     "dm_MeV": 0.254
+    },
+    "2": {
+     "opening_deg": 3.46,
+     "dm_MeV": 0.36
+    },
+    "3": {
+     "opening_deg": 4.69,
+     "dm_MeV": 0.487
+    }
+   },
+   "note": "opening = sqrt(2) x one direction (in-plane component); air only"
   }
+ },
+ "slope_sensitivity": {
+  "gap_mm": 30.0,
+  "v_mm_per_ns": 0.036,
+  "transverse_mm_per_deg_normal": 0.52,
+  "by_inclination_deg": {
+   "20": {
+    "depth_mm_per_deg": 1.63,
+    "drift_ns_per_deg": 45.3,
+    "deg_per_2pct_velocity": 0.37
+   },
+   "30": {
+    "depth_mm_per_deg": 1.21,
+    "drift_ns_per_deg": 33.6,
+    "deg_per_2pct_velocity": 0.5
+   },
+   "45": {
+    "depth_mm_per_deg": 1.05,
+    "drift_ns_per_deg": 29.1,
+    "deg_per_2pct_velocity": 0.57
+   }
+  },
+  "chord_deg_per_mm_position": 0.246,
+  "note": "d(theta) = dx/g near the normal; = sin cos x (dz/g) for a depth error at inclination theta"
  },
  "panel_a": {
   "drawn_deflection_deg": 8.0,
