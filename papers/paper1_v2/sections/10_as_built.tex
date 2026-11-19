@@ -3,21 +3,21 @@
 \texttt{papers/paper1\_v2/figs/make\_bow.py} (reproduces \texttt{summary\_paper.json}); edge: \texttt{rerun/paper1\_figs/README.md}
 (\texttt{edge\_study.py}, \texttt{edge\_angles.py}). v2 2026-11-10: the old sections 7.5 and 7.6. The bow is one page here, with a
 figure drawn from data; the alternatives, the stability and the transfer to the beam are \cref{app:bow}.}
-\intent{A TPC assumes a flat readout plane and a drift field normal to it. Neither holds to a millimetre, in two
+\intent{A TPC assumes a flat readout plane and a drift field normal to it. Neither holds to a millimeter, in two
 measured ways: every readout board is bowed, and the field fringes at the two sides without passivation. Both set how
 the tracking numbers are obtained: the first through a correction, the second through the fiducial.}
 
 \subsection{The readout boards are bowed}\label{sec:bow}
 A TPC converts the time structure of its signals into a track angle under two assumptions: that the readout plane is
-flat, and that the drift field is perpendicular to it. On all five chambers both fail at the millimetre level, in the
+flat, and that the drift field is perpendicular to it. On all five chambers both fail at the millimeter level, in the
 way a bowed readout board predicts. Three observables show it.
 
 \emph{Positions.} A track of slope $\tan\theta$ crosses a mesh displaced by $h$ along the drift direction at a point
 shifted by $h\tan\theta$. The slope of the position residual against the slope of the reference track is therefore the
 local height of the mesh, $h(x,y)$, measured independently by the X and the Y strips. \Crefp{fig:bow}{a, b} shows it
-for chamber~A: a dish, lower at the centre than at the rim, in both directions and in both views. A quadratic surface
-fitted to all tracks puts the centre $1.31\pm0.22$\,mm below a point 150\,mm out for chamber~A, and between 1.7 and
-1.9\,mm for the other four (\crefp{fig:bow}{c}). The centre is the part further from the cathode, the direction in which
+for chamber~A: a dish, lower at the center than at the rim, in both directions and in both views. A quadratic surface
+fitted to all tracks puts the center $1.31\pm0.22$\,mm below a point 150\,mm out for chamber~A, and between 1.7 and
+1.9\,mm for the other four (\crefp{fig:bow}{c}). The center is the part further from the cathode, the direction in which
 the weight of the board, the overpressure of the gas and the tension of the mesh all push.
 
 \emph{Drift direction.} If the drift lines leave the mesh normal to its surface, charge made at a height $d$ above it
@@ -52,9 +52,9 @@ gain in resolution do not depend on it.}
   \figorbox{bow}{mesh height map and profiles of chamber A, dish depth of five chambers, closure}
   \caption{The bow of the readout plane, from the slope of the position residual against the slope of the reference
   track. (a) Chamber~A: height of the mesh in 70\,mm cells, X and Y strips combined, with the rigid tilt removed. (b)
-  Chamber~A: the same quantity in bins along $x$ and along $y$ for tracks within 50\,mm of the centre line; filled, X
+  Chamber~A: the same quantity in bins along $x$ and along $y$ for tracks within 50\,mm of the center line; filled, X
   strips; open, Y strips; lines, the quadratic surface fitted to all tracks (solid X, dashed Y). (c) Depth of the dish
-  150\,mm from the centre for the five chambers: large markers, the combined value with its error; small markers, its
+  150\,mm from the center for the five chambers: large markers, the combined value with its error; small markers, its
   four terms (X strips filled, Y strips open; along $x$, then along $y$). (d) Measured gradient of the drift-direction
   offset $w_0$ against the gradient predicted from the curvature of the mesh, for the ten chamber views; dashed,
   $r_f=1$; dotted, $r_f=1/2$; filled X, open Y.}

@@ -242,7 +242,7 @@ def plot(res):
         ax.set_xlabel('position along the axis [mm]')
     axs[0, 2].tick_params(labelbottom=True)
     for ax in axs[:, 0]:
-        ax.set_ylabel(r'mesh height $h - h_{\rm centre}$ [mm]')
+        ax.set_ylabel(r'mesh height $h - h_{\rm center}$ [mm]')
     axs[0, 0].set_ylim(-0.2, 3.8)
     ps.save(f1, os.path.join(FIGD, 'bow_profiles_2d'), data=pd.DataFrame(rows))
 

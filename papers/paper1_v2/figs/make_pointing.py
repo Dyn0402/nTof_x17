@@ -8,7 +8,8 @@ chamber of this kind, so the figure uses only the air between target and chamber
 foils of this chamber or the n_TOF 3He capsule. Geometry (mcs_common): target at 0, window at 200 mm, readout plane
 at d = 233.3 mm, the plane where the position is measured.
 
-(a) One chamber and an extended target to scale, with one lepton whose deflection in the air is exaggerated (8 deg
+(a) One chamber and an extended target to scale (idealized: a 30 mm gap ending 230 mm from the target, not the
+    measured 28.2 / 233.3 mm of chamber A; Dylan 2026-11-19), with one lepton whose deflection in the air is exaggerated (8 deg
     drawn). Its measured local angle, extrapolated back, misses the origin by b.
 (b) Error of the measured angle as an estimate of the initial direction, one projection, against the kinetic energy of
     the lepton, for a chamber of TH_REQ = 1 deg and 200 mm of air. Line analytic (scatter_pointing on AIR), points
@@ -157,13 +158,16 @@ def side_view(ax):
     import matplotlib.patches as mp
     ink, mut = ps.INK, ps.MUTED
     cL = ps.DET_COLOR['det3']
+    # idealized geometry for the sketch only (Dylan 2026-11-19): a ~30 mm gap behind the window, readout at 230 mm.
+    # (b) and the json keep the measured D and SEG.
+    G, D, Z0 = 30.0, 230.0, mc.D_WIN
     y0, y1 = -28.0, 150.0
-    ax.add_patch(mp.Rectangle((mc.Z_DRIFT0, y0), mc.G_DRIFT, y1 - y0, fc='#e8eef8', ec='none', zorder=1))
+    ax.add_patch(mp.Rectangle((Z0, y0), G, y1 - y0, fc='#e8eef8', ec='none', zorder=1))
     ax.plot([mc.D_WIN] * 2, [y0, y1], color=ink, lw=0.9, zorder=3)                 # window
     ax.add_patch(mp.Rectangle((D, y0), 1.7, y1 - y0, fc='#7f8a99', ec='none', zorder=2))   # readout board
     ax.text(mc.D_WIN + 2, y1 + 3, 'window', ha='right', va='bottom', fontsize=7, color=ink,
             linespacing=0.95)
-    ax.text(mc.Z_DRIFT0 + mc.G_DRIFT / 2 + 2, y1 + 3, 'drift\n28 mm', ha='left', va='bottom', fontsize=7, color=ink,
+    ax.text(Z0 + G / 2 + 2, y1 + 3, 'drift\n~30 mm', ha='left', va='bottom', fontsize=7, color=ink,
             linespacing=0.95)
     # the 3He volume across the beam, to scale; the lepton starts off its centre
     ax.add_patch(mp.Circle((0, 0), R_BORE, fc='#f1f3f6', ec=ink, lw=0.8, zorder=2))
@@ -181,7 +185,7 @@ def side_view(ax):
     yg = ya[-1] + np.tan(a_gas) * (zg - mc.D_WIN)
     ax.plot(za, ya, color=ink, lw=0.9, zorder=5)
     ax.plot(zg, yg, color=ink, lw=0.9, zorder=5)
-    zs = np.array([mc.Z_DRIFT0, D])
+    zs = np.array([Z0, D])
     ys = ya[-1] + np.tan(a_gas) * (zs - mc.D_WIN)
     ax.plot(zs, ys, color=cL, lw=3.4, solid_capstyle='butt', zorder=6)
     # initial direction, continued
@@ -209,7 +213,7 @@ def side_view(ax):
     yd = yb - 12
     ax.annotate('', xy=(D, yd), xytext=(0, yd), arrowprops=dict(arrowstyle='<->', color=mut, lw=0.7, shrinkA=0,
                                                                 shrinkB=0))
-    ax.text(D / 2, yd - 3, f'air, d = {D:.0f} mm to the readout', ha='center', va='top', fontsize=7, color=mut)
+    ax.text(D / 2, yd - 3, f'air, d ≈ {D:.0f} mm to the readout', ha='center', va='top', fontsize=7, color=mut)
     ax.set_xlim(-30, D + 6)
     ax.set_ylim(yd - 16, y1 + 26)
     ax.set_aspect('equal')

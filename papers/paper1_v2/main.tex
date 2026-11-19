@@ -1,4 +1,4 @@
-% Paper I, reorganised (v2, 2026-11-10): same content as papers/paper1, ordered along the measurement
+% Paper I, reorganized (v2, 2026-11-10): same content as papers/paper1, ordered along the measurement
 % (calibration from the gas -> angle -> efficiency -> two particles -> the chamber as built), per the audit in
 % papers/paper1_audit/report.html. papers/paper1 is the version shared with Stephan and is NOT changed by this one.
 % Journal: JINST (decided 2026-11-01, papers/JOURNAL_STRATEGY.md); switch to the jinst class.
@@ -30,7 +30,7 @@
 \usepackage{drafting}
 % Drift velocity: v_d everywhere (Dylan, feedback note 2026-11-06)
 \newcommand{\vd}{v_\mathrm{d}}
-% A figure that may not exist yet: includes figures/<name>.pdf when it is there, else draws a labelled box, so the
+% A figure that may not exist yet: includes figures/<name>.pdf when it is there, else draws a labeled box, so the
 % paper builds while a figure is still being made. #1 = options of \includegraphics, #2 = name, #3 = what it will show.
 \newcommand{\figorbox}[3][width=\linewidth]{\IfFileExists{figures/#2.pdf}{\includegraphics[#1]{#2}}{%
   \fbox{\parbox[c][0.33\linewidth][c]{0.92\linewidth}{\centering\small\textbf{Figure in preparation: \texttt{\detokenize{#2}}}\\[4pt]#3}}}}
@@ -66,7 +66,7 @@ the other, independent of the track angle within $\pm20$\textdegree, of the gain
 drift field; the reference telescope contributes at most 0.14\textdegree. The drift velocity and the drift gap are
 calibrated from the data themselves, in two independent ways that agree to 2\,\%, which makes each chamber a monitor
 of the water and oxygen in its gas. The best chamber detects 94.8\,\% of single tracks over its full active area, of
-which 0.6 percentage points are lost to the chamber hardware and the rest to the reconstruction of real ionisation,
+which 0.6 percentage points are lost to the chamber hardware and the rest to the reconstruction of real ionization,
 mostly $\delta$-rays. The two views carry equal charge, which pairs the segments of two particles in one chamber
 correctly in 97.7\,\% of events. We also report an intrinsic position resolution of about 120\,\textmu m, an event
 time resolution of 40\,ns, a bow of 1.3--1.9\,mm of every readout board and its correction, the field fringe at the

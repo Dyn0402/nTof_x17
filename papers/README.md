@@ -142,6 +142,10 @@ A reorganised copy of Paper I, made after the audit in `paper1_audit/`. `paper1/
   type size. A figure that has too little to fill the width gets another layout (panels side by side), not a smaller
   include; a tall one gets a shorter height. Only images that share a row (`\hfill`) are exempt. `make_figures.py
   paper1_v2` ends with a width check that lists every exception (include width, and PDFs under 6.0 in wide).
+- **Spelling and references (2026-11-19, Dylan):** US spelling everywhere, text and figure labels (ionization,
+  center, color, gray, neighbor, normalized, modeled, aluminum, toward). "figure 3", "section 5" are lower case in
+  running text and capitalized only at the start of a sentence (`\cref` / `\Cref`), as JINST prints them; the
+  `\crefname` lines in `main.tex` set this. Check rendered figure text with `pdftotext figures/*.pdf`.
 - **Numbers:** disagreements between places were run down in `paper1_v2/NUMBERS_RUNDOWN.md`,
   `paper1_v2/figs/out/two_particle_numbers.md` and `paper1_v2/figs/out/gain_scan.json`. Decisions left for Dylan are
   `\askDylan` boxes in the text.

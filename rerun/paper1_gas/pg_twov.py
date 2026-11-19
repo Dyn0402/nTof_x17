@@ -183,7 +183,7 @@ def fig():
             rows.append(dict(panel='a', drift_V=int(Vd), E=F['E'], t_ns=t[i], stack=y[i], err=e[i], model=m[i],
                              col_start_ns=t0, col_end_ns=t1))
     ax.set_xlim(-250, 2000); ax.set_ylim(-0.1, 1.12)   # 2026-11-03: data end at 1590 ns (the window), the 500 V model tail reaches 0 at ~2000 ns
-    ax.set_xlabel(r'time after leading edge $t$ (ns)'); ax.set_ylabel('strip-sum signal (normalised)')
+    ax.set_xlabel(r'time after leading edge $t$ (ns)'); ax.set_ylabel('strip-sum signal (normalized)')
 
     ax = axs[1]
     for Vd in map(str, STACK_V):

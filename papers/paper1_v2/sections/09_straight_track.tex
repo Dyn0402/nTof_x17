@@ -17,7 +17,7 @@ A GeV muon is straight over 30\,mm of gas to a few thousandths of a degree. What
 (\cref{fig:notstraight}). The largest loss of single tracks, 2.4\,\% (\cref{sec:single}), is a muon with a knock-on
 electron, a $\delta$-ray, and it takes three forms with the size of the deposit. A $\delta$-ray that leaves along the
 track adds charge on one side of it and pulls the fitted line by more than 5\,mm (0.81\,\%; a clean muon covers a
-median of 12 strips, these 34). A compact $\delta$-ray saturates a few strips and tilts the line towards itself
+median of 12 strips, these 34). A compact $\delta$-ray saturates a few strips and tilts the line toward itself
 (0.87\,\%; 19 strips). A large branching one exceeds the 50 strips at which the reconstruction takes the event for a
 discharge, and nothing is fitted (0.76\,\%; 67 strips). None of the three comes with extra activity in the reference
 planes above or below the chamber, so the deposit is made by the muon in the chamber's own gas, cathode or window; the
@@ -30,14 +30,14 @@ from the reference (\cref{sec:angle}) are fits pulled far steeper than the muon,
 The model cannot be patched cheaply. Adding a compact deposit to the forward model, and excluding the saturated
 samples from the fit, raises the agreement with the reference on 350 views with a saturated blob from 71.4 to at
 most 72.9\,\%: the deposit is itself a short, curling track over 5 to 10 strips, and not a point. Recovering
-these events needs a reconstruction that first recognises the topology, and then fits the muon on the charge that
+these events needs a reconstruction that first recognizes the topology, and then fits the muon on the charge that
 belongs to it. That could return up to the 2.4 points lost here; how much of it is reachable has not been measured.
 
 \begin{figure}[tbp]
   \centering
   \figorbox{not_straight}{four chamber A events that are not one straight track}
   \caption{Four events of chamber~A (Run~1) that are not a single straight track, both views each (strip position
-  against drift time; amplitude normalised to the full scale of the ADC; reference track solid black, fit dashed).
+  against drift time; amplitude normalized to the full scale of the ADC; reference track solid black, fit dashed).
   (a) A $\delta$-ray leaving along the track pulls the straight-line fit. (b) A saturated $\delta$-ray tilts it. (c) A
   shower at the crossing: more than 50 strips, taken for a discharge, nothing fitted. (d) A second deposit that is
   not particle-like. The same events appear with the other loss classes in \cref{app:effdef}.}
@@ -63,7 +63,7 @@ differs from the direction with which the particle entered by more than the 1\te
 (\crefp{fig:gasscatter}{b}). The resolution of \cref{sec:angle} is thus the detector's term; for the leptons of
 interest the gas adds its own, and the foils and the air in front add more (\cref{tab:material}).
 \askDylan{Caveats to keep or state: the Highland formula is used below its stated range ($10^{-3}X_0$; a Lynch--Dahl estimate
-is 5\,\% lower), single-scatter tails are not modelled, normal incidence only, and the two terms (chamber on muons, scattering
+is 5\,\% lower), single-scatter tails are not modeled, normal incidence only, and the two terms (chamber on muons, scattering
 in the gas) are not combined in one curve. A Geant4 check of this exists in principle in the full simulation; it was not run here.}
 
 \begin{figure}[tbp]
