@@ -580,10 +580,43 @@ redeployed (dylan-cern-site 91d4386). Inputs on the desktop: $WORK_DATA/claude-j
 - Deck: `WORK_DATA=~/work_data .venv/bin/python papers/paper1/make_figures_deck.py --out <html>` then
   `dylan-cern-site/scripts/add-note.py <html> --slug mx17-paper1-figures --force --deploy`.
 
-## n_TOF pass 1: reprocess the n_TOF tracks on the final chain — updated 2026-11-19 (dylan-MS-7C84)
+## n_TOF pass 1: reprocess the n_TOF tracks on the final chain — updated 2026-11-20 (dylan-MS-7C84)
 
-**Resume (11-19):** stage 3 with v(t) is **built (543/543) and on EOS** `Analysis_pass1/stage3/` (MD5SUMS verified
-on lxplus). Remaining: the D L2-era rebuild once condor 4677439 lands (step 4 below), then N-G1/ledger rerun on it.
+**Resume (11-20):** stage 3 is FINAL on EOS (543/543, D L2-era on L1); ledger clean. N-G1 rescored. Next: delete the backups, then analysis.
+
+**11-19/20 (desktop): D L2-era rebuild on L1 — done.**
+- **Condor 4677439 accounted:** 2,358 `001` / 2,358 `005`, all return value 0; no `009`/`012`; one `004` (proc 2308,
+  code 1008, 11-18 21:04) came *before* its only start, so no work lost; all `.err` empty. EOS
+  `july_beam/Analysis_pass1/rerun_dbeam_L1/`: 2,358 × {parquet, candidates, splits, meta}, no zero-size files, 13 GB.
+- Pulled (xrootd, adler32) to `$WORK_DATA/ntof_pass1/rerun_dbeam_L1/` (9,432 files, 0 bad). Rebuilt the 217 L2-era
+  sub-runs (runs 106,108,110,112,114,116,118,122,124,126,128,130,132,135,139,141,143,145,147,150,152,154,156,158,160,162) with the real `ledger_canon.json`: 217/217, y guard 216 pass + run_110
+  stat090_0003 insufficient (as before). Log `$WORK_DATA/ntof_pass1/stage3_dbeamL1_rebuild.log`. The `All-NaN slice`
+  RuntimeWarning (build_tracks.py:312) is benign: rows with no q_uend in either view; it was in the 11-16 log too.
+- **Old vs new on the 217 sub-runs:** A, B, C identical (rows, gated, gated_vt). D rows 13.963 → 13.968 M,
+  gated 4.838 → 4.896 M (+1.2 %), gated_vt 4.563 → 4.617 M (+1.2 %): the pin-scan expectation (earlier pin, 1–3 % more
+  through the gate).
+- Uploaded 434 tables + new MD5SUMS to EOS `Analysis_pass1/stage3/` (adler32 end-to-end; `md5sum -c` of the 434 on
+  lxplus OK; EOS MD5SUMS identical to local). **Interim canon deleted** from EOS and local stage3 (copy in
+  `$WORK_DATA/claude-jobs/fe02fe1d/`). EOS stage3 = 1,086 files + MD5SUMS.
+- **Ledger rerun** on lxplus (`~/x17rerun/ntof/ledger/out_2026-11-19/`; repo `ntof_ledger.py` + `ledger_canon.json`
+  deployed there first: the lxplus copy was the pre-11-17 one, without the L1 rule and with the old 5-MAD yield rule):
+  15,748/15,748 clean, per dir stage2 D 1,381 + side/run104_D_L1 198 + rerun_dbeam_L1 2,358. 14 yield flags, the same
+  set as 11-16 (13 B cosmic + run_162 stat090_0009 `_011` A); none on D.
+- **N-G1 rescore** (work dir `$WORK_DATA/ntof_pass1/ng1_pass`): run_145 D stage-2 files swapped for the L1 ones, run_145
+  scoring tables rebuilt, `ng1_score.py all` run (log `rescore_dbeamL1.log`). A/C numbers unchanged (eff +5.57/+5.67 pt,
+  srcy, line, focus as before). D eff: 28.8 → **29.0 % gated/trigger** (51,874 → 52,350). **`wall` caches
+  `results/wall_<chain>_<arm>.parquet`**: the first rescore reused D's L2 file, so `wall_pass_D.parquet` was moved away and
+  `ng1_score.py wall` rerun: D gated 52,350, confirmed/trigger 5.61 → 5.63 %, purity 0.195 → 0.194. Report regenerated
+  and copied into `rerun/ntof/ng1/` (README D row and the L1-pin notes updated). The other results files differ only in
+  bootstrap errors (the step order changes the rng draws); central values identical.
+- Old (L2-pin) N-G1 results, s3 tables and D stage-2 files kept in `$WORK_DATA/claude-jobs/fe02fe1d/ng1_L2pin/`;
+  old interim stage-3 tables of the 217 sub-runs (19 GB) in `$WORK_DATA/claude-jobs/fe02fe1d/stage3_interim_L2pin/`.
+
+**Next:**
+1. Nothing open on the pass itself: analysis reads `Analysis_pass1/stage3/` (final) and the ledger is clean.
+2. Delete `$WORK_DATA/claude-jobs/fe02fe1d/` once N-G1 is written up (38 GB backups, all superseded).
+3. Optional: x17 board log entry (κ finding; stage 3 final).
+4. AFS quota is 82 % (was 75 % on 11-15): `lxstore offload` the biggest dirs in `~` before the next big submission.
 
 **11-17/18 night (desktop): stage 3 with v(t) — done.** Code `99df18fb`; report `rerun/ntof/stage3/vt_score/report.html`.
 - `rerun/ntof/stage3/vt_join.py` (called by `ntof_stage3.py --vt`): `v_t`, `v_t_err`, `tanx_vt`, `tany_vt`, every
@@ -598,16 +631,9 @@ on lxplus). Remaining: the D L2-era rebuild once condor 4677439 lands (step 4 be
 - Full set: 49.6 M rows, 17.47 M `gated` (0.6) → 16.01 M `gated_vt` (0.5); y guard 291 pass, 251 not_checked (cosmic),
   1 insufficient (run_110 stat090_0003, 1,037 tracks, same as 11-16). Local `$WORK_DATA/ntof_pass1/stage3/` (27 GB).
 - **Built on an interim canon** (`ledger_canon_interim_noL1.json`, copied beside the tables): the rerun_dbeam_L1 rule is
-  dropped, so **D L2-era beam rows (217 sub-runs) are on the L2 pin**. 4677439 at 11-18 ~01:00: 411/2,358 done, 461 running. **At 11-19: 2,209 `005` events in the log, 149 running, 0 idle: nearly done.**
+  dropped, so **D L2-era beam rows (217 sub-runs) are on the L2 pin**. Superseded 11-19/20: those 217 rebuilt on L1 (above).
 - run_104 needs `--side $WORK_DATA/ntof_pass1/run104` (the default `side/` path does not exist locally).
 
-**Next:**
-1. When 4677439 lands (check `001`/`005` counts and errors, per CLAUDE.md): pull `Analysis_pass1/rerun_dbeam_L1/` to
-   `$WORK_DATA/ntof_pass1/rerun_dbeam_L1/`, rebuild the L2-era production sub-runs with the real canon
-   (`ntof_stage3.py --side $WORK_DATA/ntof_pass1/run104 --runs <L2 production runs> --force`, no `--canon` override),
-   re-upload those tables + MD5SUMS, delete the interim canon from EOS.
-2. Rerun the ledger and N-G1 after that (D numbers move).
-3. Optional: x17 board log entry for the κ finding.
 
 **11-17 late (dylan-Yoga): gas-mixer log + mixer temperature in the v(t) model — `rerun/ntof/vt/README.md` § Gas mixer.**
 - n_TOF HAS a gas log (the "no gas log" lines elsewhere are the bench): DAQ gas_watcher, EOS `july_beam/slow_control/gas_flow/`.

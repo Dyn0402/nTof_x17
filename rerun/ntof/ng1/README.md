@@ -7,14 +7,16 @@ C only), so N-G1 cannot pass or fail them. G5 is quantified, not closed: A +8.1 
 
 Criteria: `../NTOF_PASS_PLAN_2026-11-02.md` §3 "N-G1 gate". Pass 1 = EOS `Analysis_pass1/stage2/` (code ed0b1162,
 bundles frozen 11-07), run_145 beam (24 acquisitions, A B C D) and run_149 cosmic (87 sub-runs). |tan| < 0.6 on both
-chains throughout. **D's beam numbers use the L2 pin, which is being rescanned (condor 4674646). They may change.**
+chains throughout. **D's beam rows are on the L1 pin** (rerun_dbeam_L1, condor 4677439; rescored 2026-11-19: 28.8 → 29.0 % gated/trigger,
+5.61 → 5.63 % confirmed/trigger on the L2 → L1 pin). `wall` caches `results/wall_<chain>_<arm>.parquet`: delete an arm's
+file when its inputs change.
 
 | arm | C1 efficiency + wall | C2 A–C line s68 | C3 source y | G5 focus vs muons |
 |---|---|---|---|---|
 | A | **PASS**: gated/trigger +5.6 pt, wall-confirmed/trigger +2.8 pt; same tracks −0.05 ± 0.11 pt | **PASS**: rescaled Δs68 x −0.17 ± 0.08°, y −0.05 ± 0.07°; raw −0.07 / +0.02° | **PASS**: −31.6 ± 0.4 mm (−1.6σ) | 1.073 ± 0.011 × 1.007 → **+8.1 ± 1.1 %** |
 | C | **PASS**, same-track purity at the tolerance: +5.7 pt, +2.6 pt; same tracks −0.58 ± 0.17 pt | **PASS on resolution**: rescaled x −0.14 ± 0.13°, y −0.23 ± 0.13°; raw +0.23 / +0.10° (C reads 4–5 % steep: P7a) | **PASS within the ±3 mm estimator systematic**: −33.2 ± 0.4 (+4.0σ stat vs −35); +3.0 mm vs is2_v2 on the same events | 1.006 ± 0.012 × 1.038 → **+4.5 ± 1.2 %** |
 | B | n/a: 8.4 % gated/trigger, 2.2 % confirmed/trigger, purity 0.26 | n/a (positions only) | n/a | n/a |
-| D | n/a: 28.8 % gated/trigger, 5.6 % confirmed/trigger, purity 0.19 (L2 pin) | n/a | n/a | n/a |
+| D | n/a: 29.0 % gated/trigger, 5.6 % confirmed/trigger, purity 0.19 (L1 pin) | n/a | n/a | n/a |
 
 Notes on the numbers:
 - **C1.** One common trigger set per sub-run. The pass confirms less often per gated track (A 0.544 vs 0.563, C 0.570

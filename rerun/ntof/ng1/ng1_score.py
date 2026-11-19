@@ -28,7 +28,8 @@ Work dir $WORK_DATA/ntof_pass1/ng1_pass (pass/ = the EOS stage-2 copy, s3/ = the
 results/ = every number).  The s3/ tables are a SCORING product (build_tracks.pair_rows + local_and_global, k = 1:
 the bundle's v is the working v, y up), not stage 3.
 
-D's beam pin is being rescanned (condor 4674646, 11-16): D's run_145 numbers are on the L2 pin and may change.
+D's run_145 beam rows are on the L1 pin (rerun_dbeam_L1, condor 4677439; rescored 2026-11-19).  wall() caches
+results/wall_<chain>_<arm>.parquet: delete the file of any arm whose inputs changed before re-scoring.
 """
 import glob
 import json

@@ -168,8 +168,7 @@ acquisitions, A B C D; run_149 cosmic, all 87 sub-runs (A–C line) and the 14 s
 is2_v2's cosmic recipe <code>is2ts_s3</code>). Criteria from <code>NTOF_PASS_PLAN_2026-11-02.md</code> §3 (N-G1):
 C1 efficiency and wall-confirmed fraction ≥ is2_v2 − {TOL_PT} pt; C2 A–C line s68 ≤ is2_v2; C3 source y within its
 error of −31 (A) / −35 (C) mm; G5 the capsule-focus vs muon scale tension closed or quantified. |tan| &lt; {TAN_MAX}
-on both chains everywhere. <b>D's beam numbers use the L2 pin, which is being rescanned (condor 4674646): they may
-change.</b></p>
+on both chains everywhere. D's beam rows are on the L1 pin (rerun_dbeam_L1, condor 4677439; rescored 2026-11-19).</p>
 <h2>Verdict per arm and criterion</h2>{table(vt)}
 <h2>C1 — efficiency and wall confirmation (run_145 beam)</h2>
 <p>One trigger set per sub-run for both chains (the union of the pass's four arm tables and is2_v2's stage-3 events).
@@ -216,7 +215,7 @@ s × (fit/true): 1 means the capsule and the muons agree.</p>
 <li>One beam run (run_145) and one cosmic run (run_149). Other periods are not scored here; the pre-freeze checks
 (plan §6 11-06) covered efficiency and pointing on runs 79, 81, 116, 162.</li>
 <li>B and D have no is2_v2 reference (is2_v2 reconstructed A and C only), so N-G1 cannot pass or fail them; their
-absolute numbers are given. D's beam numbers are on the L2 pin under rescan.</li>
+absolute numbers are given. D's beam rows are on the L1 pin.</li>
 <li>Wall confirmation says a track is a real particle that reached the wall, not that its angle is right (G6: electrons
 scatter). The extra pass tracks are ~half confirmed: some of the rest may be real particles that miss the wall
 acceptance, some not.</li>
