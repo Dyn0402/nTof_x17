@@ -43,7 +43,7 @@ MEAS = dict(theta_x=0.99, theta_y=0.90, x_intr=0.12, x_core=0.5)
 Q68 = 0.6826894921
 TH_CH = 0.95                           # chamber angle resolution used for the pair numbers (mean of X and Y)
 TH_REQ = 1.0                           # the requirement drawn in (b) [deg]
-ORIGINS = (2.0, 10.0)                  # rms size of the source [mm] drawn in (b): a beam spot, an extended target
+ORIGINS = (0.0, 10.0)                  # rms size of the source [mm] drawn in (b): a point, an extended target
 R_BORE = 10.0                          # radius of the target drawn in (a) [mm] (generic extended source)
 
 
@@ -270,7 +270,7 @@ def main():
 
     fig = plt.figure(figsize=(ps.FULL[0], 3.0))
     axa = fig.add_axes([0.0, 0.02, 0.48, 0.96])
-    axb = fig.add_axes([0.595, 0.15, 0.275, 0.80])
+    axb = fig.add_axes([0.585, 0.15, 0.255, 0.80])
     drawn = side_view(axa)
 
     # (b) error on the initial direction of one lepton, one projection, against its kinetic energy.
@@ -286,11 +286,21 @@ def main():
     T_TOY = (4, 6, 8, 10, 12, 14, 16)
     toy2 = {T: scatter_toy(T, a.n, rng, th_ch_deg=TH_REQ, layers=AIR) for T in T_TOY}
     axb.plot(T_TOY, [toy2[T][0] for T in T_TOY], ls='none', marker='o', ms=3.4, color=cL, zorder=6)
+    # Dylan 2026-11-19: the argument now starts from a point source, where one hit per lepton and the known origin
+    # give the direction, so that estimate is drawn again (it was left out on 11-12): a point and a 10 mm rms source.
+    cH = ps.DET_COLOR['det6']
+    chord = np.array([np.degrees(scatter_chord(T, layers=AIR)) for T in Tf])
+    for o, ls in zip(ORIGINS, ('-', (0, (4, 2)))):
+        axb.plot(Tf, np.sqrt(chord ** 2 + pos_deg ** 2 + np.degrees(o / D) ** 2), color=cH, lw=1.3, ls=ls, zorder=4)
+        axb.plot(T_TOY, [toy2[T][1][o] for T in T_TOY], ls='none', marker='o', ms=3.0, mfc='white', mec=cH,
+                 mew=0.9, zorder=5)
     lab = dict(fontsize=7, linespacing=0.95, ha='left', va='center', clip_on=False)
     xe = 16.75                                                     # curve labels, outside the right edge
-    axb.text(xe, 1.42, 'measured\nangle', color=cL, **lab)
-    axb.text(xe, 0.95, 'air alone', color=ps.MUTED, **lab)
-    axb.text(3.25, 1.04, '1° chamber', color=cL, fontsize=7, ha='left', va='bottom')
+    axb.text(xe, 2.58, 'one hit,\n10 mm source', color=cH, **lab)
+    axb.text(xe, 1.50, 'measured\nangle', color=cL, **lab)
+    axb.text(xe, 0.98, 'air alone', color=ps.MUTED, **lab)
+    axb.text(xe, 0.42, 'one hit,\npoint source', color=cH, **lab)
+    axb.text(3.25, 0.95, '1° chamber', color=cL, fontsize=7, ha='left', va='top')
     axb.set_xlim(3.0, 16.5)
     axb.set_ylim(0, 4.6)
     axb.set_xticks([4, 8, 12, 16])
@@ -320,7 +330,14 @@ def main():
         by_chamber_deg={f'{c:g}': dict(opening_deg=round(float(np.sqrt(2) * np.hypot(a_sym, c)), 2),
                                        dm_MeV=round(float(k_m * np.sqrt(2) * np.hypot(a_sym, c)), 3))
                         for c in (0.0, 0.5, 1.0, 2.0, 3.0)},
-        note='opening = sqrt(2) x one direction (in-plane component); air only')
+        one_hit_by_source_mm={f'{o:g}': dict(
+            opening_deg=round(float(np.sqrt(2) * np.sqrt(np.degrees(scatter_chord(T_sym, layers=AIR)) ** 2
+                                                         + np.degrees(o / D) ** 2)), 2),
+            dm_MeV=round(float(k_m * np.sqrt(2) * np.sqrt(np.degrees(scatter_chord(T_sym, layers=AIR)) ** 2
+                                                          + np.degrees(o / D) ** 2)), 3))
+            for o in (0.0, 5.0, 10.0)},
+        note='opening = sqrt(2) x one direction (in-plane component); air only. one_hit = direction from the '
+             'assumed origin to one measured point, source of the given rms size')
     # what one degree of slope is inside the segment: tan(theta) = dx / (v dt). Idealized 30 mm gap, v = 36 um/ns.
     G_ID, V_D = 30.0, 0.036
     slope = dict(gap_mm=G_ID, v_mm_per_ns=V_D,
