@@ -302,9 +302,18 @@ resim/depth/phase scripts pad by 4 strips, chambers_C.py does not. The det3 temp
 
 **Key files:** `hits_daq/coupling/` (`observables.py`, `fit_kernel.py`, `run_fits.sh`, `profile.py`, `boundary.py`, `extra.py`, `make_report.py`, `physics/`), `hits_daq/coupling_scan.py`, `hits_daq/condor/make_ana_dag.py` (stages `spsrow`, `estim`), `papers/paper2/HITS_DAQ_PLAN_2026-11-05.md`.
 
-## Paper I text from the feedback note — updated 2026-11-16 (dylan-MS-7C84)
+## Paper I text from the feedback note — updated 2026-11-19 (dylan-MS-7C84)
 
-**Resume:** Paper I v2 from the hub note "Paper I v2 Feedback"; no open `- [ ]` left on 11-14; next: Dylan's next items.
+**Resume:** Paper I v2 from the hub note "Paper I v2 Feedback"; open: Fig. 8 spacing, Fig. 11 (3 items); then Dylan's next.
+
+**2026-11-19 (pushed to origin + Overleaf v2, 672929e1; note items answered with 💬):**
+- **Sec. 1** proofread after Dylan's Overleaf edit; askDylan (two tracks) removed; `\sectionstate{ready}`. Note item kept
+  open on purpose: update Sec. 1 only if later sections change. Unapplied suggestions are in the note's 💬.
+- **US spelling** in all text + 3 figure labels (two_velocities, bow_profiles, readout_stack_3d); rule, and JINST
+  lower-case "figure/section" refs (already set by `\crefname` in main.tex), in `papers/README.md` › Paper I v2.
+  Check figures with `pdftotext figures/*.pdf | grep -iE 'ise|our|centre|grey'`.
+- **Fig. 2 (a)** idealized: 30 mm gap, readout at 230 mm (`make_pointing.py` `side_view`); (b) and Sec. 2 numbers keep 233.
+- Still open in the note (not touched): Fig. 8 gap between (a)/(b); Fig. 11 annotation/σ lines, layout, (a) X/Y/total.
 
 **2026-11-16 (Fig. 1, asked in chat, pushed to origin + Overleaf v2, a204a3a0):**
 - **Fig. 1 (b) stays 2D** (Dylan: "go with your 2D diagram for now"). Now drawn in the v2 script
