@@ -302,9 +302,33 @@ resim/depth/phase scripts pad by 4 strips, chambers_C.py does not. The det3 temp
 
 **Key files:** `hits_daq/coupling/` (`observables.py`, `fit_kernel.py`, `run_fits.sh`, `profile.py`, `boundary.py`, `extra.py`, `make_report.py`, `physics/`), `hits_daq/coupling_scan.py`, `hits_daq/condor/make_ana_dag.py` (stages `spsrow`, `estim`), `papers/paper2/HITS_DAQ_PLAN_2026-11-05.md`.
 
-## Paper I text from the feedback note — updated 2026-11-19 (dylan-MS-7C84)
+## Paper I text from the feedback note — updated 2026-11-20 (dylan-MS-7C84)
 
-**Resume:** Paper I v2 from the hub note "Paper I v2 Feedback"; open: Fig. 8 spacing, Fig. 11 (3 items); then Dylan's next.
+**Resume:** Paper I v2: Sec. 2 rewritten ("a track", not "the angle"); apply Dylan's pick of 5 open suggestions, then Fig. 8/11.
+
+**2026-11-19/20 (Sec. 2 + Fig. 2, asked in chat, pushed to origin + Overleaf v2):**
+- **Sec. 2 rebuilt twice.** Final argument (Dylan's): (1) a point source needs only one hit per lepton, (2) sources are
+  extended, so the measured angle helps, (3) what makes a tracker indispensable is telling a track from a hit, or every
+  coincidence of two hits is a pair. Two requirements: angle to ~1 deg, high and even efficiency. Title "What the tracker
+  must deliver: a track". Dylan edited it in Overleaf after; I did a typo pass on his text (last commit).
+  The first rebuild ("the angle is the figure of merit; position and time enter through the slope") was dropped: do not
+  go back to it. The slope equation is gone on purpose.
+- **Fig. 2** (`figs/make_pointing.py`): (a) side view with the pair kinematics as an unboxed inset top left (e- parallel
+  to the drawn path; a 3-panel version, a box and a rule were tried and rejected); (b) error on the initial direction:
+  one hit + assumed origin (orange: point source, 10 mm rms source), segment angle with a 1 deg chamber (blue), air
+  alone (gray). All four curves are the same quantity, per lepton, one projection (checked).
+- **d = 230 mm everywhere** (idealized; chamber A surveyed 233.3), hit error 1 mm (`D`, `SIG_HIT` in the script).
+  Sec. 6.2 follows: "230 mm away, 4.0 (3.6) mm". Numbers: `figs/out/pointing.json` (`air_only`, `pair_symmetric`).
+- **Physics to keep straight:** the source-to-hit line is less sensitive to scattering than a local angle (1.1 vs 1.7 deg
+  at 8 MeV) because deflections LATE in the path barely move the hit. An earlier draft had this backwards.
+- **Open suggestions, not applied (Dylan to pick):** (1) Fig. 2 caption title "Why a TPC is needed" does not match what
+  the figure shows; (2) intro "What the measurement needs" still calls the track angle "the figure of merit"; (3) Sec. 2
+  last sentence still points to Secs. 8, 9 with no reason given; (4) Sec. 6.2 still leads with pointing; (5) end of
+  Sec. 2 first paragraph says "angular resolution" before the text says one hit would do.
+- JINST and wrapped figures: no explicit rule found; a sister SISSA journal forbids wrapfig. Not used.
+- Build here: `~/bin/latexmk` is missing on the desktop; `pdflatex -output-directory=<scratch> main.tex` twice works.
+  Draft notes off: `pdflatex '\AddToHook{package/drafting/after}{\draftnotesfalse}\input{main}'`.
+- Still open in the hub note (not touched): Fig. 8 gap between (a)/(b); Fig. 11 annotation/sigma lines, layout, (a) X/Y/total.
 
 **2026-11-19 (pushed to origin + Overleaf v2, 672929e1; note items answered with 💬):**
 - **Sec. 1** proofread after Dylan's Overleaf edit; askDylan (two tracks) removed; `\sectionstate{ready}`. Note item kept
@@ -312,7 +336,7 @@ resim/depth/phase scripts pad by 4 strips, chambers_C.py does not. The det3 temp
 - **US spelling** in all text + 3 figure labels (two_velocities, bow_profiles, readout_stack_3d); rule, and JINST
   lower-case "figure/section" refs (already set by `\crefname` in main.tex), in `papers/README.md` › Paper I v2.
   Check figures with `pdftotext figures/*.pdf | grep -iE 'ise|our|centre|grey'`.
-- **Fig. 2 (a)** idealized: 30 mm gap, readout at 230 mm (`make_pointing.py` `side_view`); (b) and Sec. 2 numbers keep 233.
+- **Fig. 2 (a)** idealized: 30 mm gap, readout at 230 mm (`make_pointing.py` `side_view`). (Superseded 11-19 evening: 230 everywhere.)
 - Still open in the note (not touched): Fig. 8 gap between (a)/(b); Fig. 11 annotation/σ lines, layout, (a) X/Y/total.
 
 **2026-11-16 (Fig. 1, asked in chat, pushed to origin + Overleaf v2, a204a3a0):**
