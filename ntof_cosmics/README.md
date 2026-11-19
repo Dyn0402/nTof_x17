@@ -24,6 +24,9 @@ the timing direction, and the beam-off runs have never been read.
 | `seed_beam_test.py` | the same seeder change on a **beam** sub-run (run_145): reproduces the full pass, then lost / gained / junk / near-normal yield (§10) |
 | `cosmic_wall_scale.py` | the SiPM-wall angle scale on run_149 cosmics (clock-matched to n_TOF 224678–687) against the beam's: build / ana / report → `/media/dylan/data/x17/ntof_cosmics/cosmic_wall_scale/report.html`; cosmics 1.15, beam 0.89–0.92, gap real (`HANDOFF_TRACKING_2026-10-06.md` §10d) |
 | `inbeam_through_goers.py` | cosmic muons crossing A–C during beam runs vs run_149: same truth, same estimator — gain −34 % under beam but angle scale within 2–5 %, so the beam gap is the particles, not the environment (§10e) |
+| `ac_tof_beamoff.py` | **arm-to-arm time resolution σ_t** of the SiPM walls (and plastics) from A–C cosmic muons on the beam-off n_TOF runs 224678–687: two-peak fit (muon TOF ±T, direction from the bars' top−bottom), toy closure → `$WORK_DATA/nTof_x17/ac_tof/`, copy in `results/ac_tof/`. **σ_t 0.52–0.64 ns per arm (walls), 0.95 (plastics)** (2026-11-19) |
+| `ac_tof.py` | the same on beam-run A–C muons with the MM line (TOF subtracted per muon): ~6 ns, the pulse fit's floor under beam; kept as the negative result |
+| `make_ac_tof_report.py` | `results/ac_tof/report.html` from both |
 
 **Same-chamber pairs:** this package's tracking work (single-track angle truth, head-on) is one of
 two threads toward reconstructing two tracks in one chamber; the other is the two-track separation work

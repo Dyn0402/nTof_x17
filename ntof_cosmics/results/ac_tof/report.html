@@ -1,0 +1,43 @@
+<!doctype html><html><head><meta charset="utf-8"><title>A–C time resolution</title>
+<style>body{font-family:system-ui,sans-serif;max-width:960px;margin:2em auto;padding:0 16px;line-height:1.45}
+table{border-collapse:collapse;margin:1em 0;font-size:0.9em}td,th{border:1px solid #ccc;padding:3px 8px;text-align:left}
+.v{background:#eef6ee;padding:0.8em 1em;border-left:4px solid #393}img{max-width:100%}</style></head><body>
+<h1>Arm-to-arm time resolution of the SiPM walls, from cosmic muons (A–C)</h1>
+<p class="v"><b>Verdict.</b> With no beam, the SiPM walls of arms A and C give <b>σ_t ≈ 0.52–0.64 ns per arm</b>
+(σ(t_A − t_C) = 0.90 ± 0.01 ns from the two-peak fit of 2579 muons; direction-tagged
+peak cores 0.52, 0.52 ns per arm), as read out at n_TOF (official pulse fit, 1 GS/s). The plastics give
+0.95 ns per arm (one PMT per bar, 477 muons). The muon's own time of flight
+between the walls (±2.3–2.5 ns) is resolved: the distribution has two clean peaks. During beam the same muons give
+~6 ns (the pulse fit's floor under beam), so only the beam-off data measure the detector.</p>
+<h2>1. What was measured</h2>
+<p>Muons crossing the SiPM walls of A and C, with both ends of a wall group firing in each arm, unsaturated, within
+±25 ns of each other, while n_TOF recorded with no protons (run_149, n_TOF 224678–224687).
+Wall time = mean of the two ends (cancels the light path along the vertical bars).</p>
+<p>Only 17 of these muons also have an A–C Micromegas line, so each muon's own TOF cannot be subtracted. Instead
+t_A − t_C is fitted as a mixture of ±T (T = L/c from the geometry of the beam-run A–C muons that do have a line:
+median 2.32 ns), a Gaussian of width σ, per-group offsets, a time walk in log(amplitude) per arm,
+the direction probability from the bars' top−bottom differences, and a flat accidental fraction.</p>
+<h2>2. Results</h2><table><tr><th>sample</th><th>n</th><th>sigma_AC_ns</th><th>err_ns</th><th>per_arm_ns</th><th>note</th></tr><tr><td>walls, all</td><td>2579</td><td>0.902</td><td>0.014</td><td>0.638</td><td></td></tr><tr><td>walls, both amplitudes above median</td><td>722</td><td>0.901</td><td>0.029</td><td>0.637</td><td></td></tr><tr><td>walls, T x 0.9</td><td>2579</td><td>0.916</td><td>0.015</td><td>0.648</td><td>template scale</td></tr><tr><td>walls, T x 1.1</td><td>2579</td><td>0.955</td><td>0.015</td><td>0.676</td><td>template scale</td></tr><tr><td>walls, no direction info (beta = 0 forced via shuffled d)</td><td>2579</td><td>0.899</td><td></td><td>0.635</td><td>top-bottom shuffled</td></tr><tr><td>walls, n_TOF 224678-682</td><td>1422</td><td>0.877</td><td>0.019</td><td>0.620</td><td></td></tr><tr><td>walls, n_TOF 224683-687</td><td>1157</td><td>0.918</td><td>0.022</td><td>0.649</td><td></td></tr><tr><td>toy closure (5 toys of the "walls, all" fit)</td><td>2579</td><td>0.899</td><td>0.012</td><td>0.636</td><td>input 0.902</td></tr><tr><td>s68 of t_A - t_C after the fitted offsets + walk (muon TOF NOT removed)</td><td>2579</td><td>2.724</td><td></td><td>1.926</td><td></td></tr><tr><td>direction-tagged peak (dd < -4), Gaussian core</td><td>445</td><td>0.740</td><td></td><td>0.523</td><td>peak at +2.48 ns</td></tr><tr><td>direction-tagged peak (dd > +4), Gaussian core</td><td>396</td><td>0.728</td><td></td><td>0.515</td><td>peak at -2.53 ns</td></tr><tr><td>plastics (bar, group offsets, walk, height terms)</td><td>477</td><td>1.342</td><td>0.063</td><td>0.949</td><td></td></tr></table>
+<p>Per arm = σ(A−C)/√2 (arms assumed equal). The fit's σ includes the spread of T and any template mismatch; the
+direction-tagged cores need no template. The plain s68 with the TOF left in (2.72 ns)
+is what the first look quoted as an upper bound.</p>
+<p><img src="figures/beamoff_walls.png" alt="t_A - t_C after offsets and walk, and against the bar height difference"></p>
+<p>Left: t_A − t_C after the fitted offsets and walk; the two peaks are the two directions of the muon. Right: the
+bars' top−bottom difference sorts the muons by direction.</p>
+<h2>3. Checks</h2><ul>
+<li>Toy closure: the fit returns its input (input 0.902, refit
+0.899 ns).</li>
+<li>Stable in time (two halves of the n_TOF runs), with amplitude (both above median), and with the T template scaled
+±10 % (0.92–0.96 ns).</li>
+<li>Peak separation 5.0 ns, i.e. T ≈ 2.5 ns, against the template's 2.3: the beam-off muons are somewhat steeper.</li></ul>
+<h2>4. Beam runs (ac_tof.py): why they do not measure σ_t</h2>
+<p>A–C muons at 20–80 ms after the flash with a Micromegas line (the TOF subtracted per muon) give t_A − t_C cores of
+~6 ns whatever is corrected. Injected test pulses show the n_TOF pulse fit's wall timing degrades to 2.5–4.5 ns per hit
+under beam (0.4 ns without), which accounts for it.</p><table><tr><th>sample</th><th>n</th><th>s68_ns</th><th>core_ns</th><th>per_arm_core</th></tr><tr><td>raw dt (A - C)</td><td>727</td><td>7.47</td><td>6.36</td><td>4.49</td></tr><tr><td>dt - predicted muon TOF</td><td>727</td><td>7.79</td><td>6.76</td><td>4.78</td></tr><tr><td>- TOF, group offsets (cross-validated)</td><td>727</td><td>7.17</td><td>6.19</td><td>4.38</td></tr><tr><td>- TOF, group offsets + time walk (cross-validated)</td><td>727</td><td>6.96</td><td>6.06</td><td>4.29</td></tr><tr><td>same, fitted on the whole sample (not cross-validated)</td><td>727</td><td>6.85</td><td>6.05</td><td>4.28</td></tr><tr><td>  both amplitudes above median</td><td>189</td><td>7.63</td><td>6.49</td><td>4.59</td></tr><tr><td>  exactly one wall group fired per arm</td><td>702</td><td>7.04</td><td>6.25</td><td>4.42</td></tr><tr><td>  sep < 10 mm</td><td>380</td><td>7.26</td><td>6.43</td><td>4.55</td></tr><tr><td>no TOF prediction, offsets + walk (cross-validated)</td><td>727</td><td>6.29</td><td>5.56</td><td>3.93</td></tr><tr><td>>= 10 ms, - TOF, offsets + walk (cross-validated)</td><td>981</td><td>7.30</td><td>6.25</td><td>4.42</td></tr><tr><td>plastic: dt - TOF (amp > 300)</td><td>1</td><td></td><td></td><td></td></tr><tr><td>plastic: - TOF, bar offsets + position + walk (cross-validated)</td><td>1</td><td></td><td></td><td></td></tr></table>
+<h2>5. What this does not rule out</h2><ul>
+<li>It is the n_TOF readout. The LNL plan (V1742 at 5 GS/s for the walls, a CFD digitiser for the PMTs) could do
+better or worse; this is the as-built detector with this electronics, not a prediction for LNL.</li>
+<li>Arms assumed equal; A and C only. The per-arm split cannot be separated with two arms.</li>
+<li>The plastic number rests on 477 muons and a crude position correction (wall group, bar height).</li>
+<li>Offsets were fitted on the same sample (8 of 2,579 degrees of freedom).</li></ul>
+</body></html>
