@@ -123,7 +123,7 @@ for i, (c, t) in enumerate(ent):
     ax.add_patch(Rectangle((LX + 0.015, y - 0.045), 0.09, 0.09, fc=c, ec='none', zorder=4))
     ax.text(LX + 0.17, y, t, ha='left', va='center', fontsize=FS, color=INK, linespacing=1.05)
     y -= 0.38
-ax.text(LX, 0.30, 'centre of the board,\n4 $\\times$ 4 pads; $z$ stretched\n2.2$\\times$ against $x$, $y$',
+ax.text(LX, 0.30, 'center of the board,\n4 $\\times$ 4 pads; $z$ stretched\n2.2$\\times$ against $x$, $y$',
         ha='left', va='center', fontsize=FS, color=MUTED, linespacing=1.1)
 ax.text(0.0, H, '(c)', ha='left', va='top', fontsize=ps.BASE_PT, fontweight='bold', color=INK)
 fig.canvas.draw()
