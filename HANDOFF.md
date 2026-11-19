@@ -534,9 +534,9 @@ redeployed (dylan-cern-site 91d4386). Inputs on the desktop: $WORK_DATA/claude-j
 - Deck: `WORK_DATA=~/work_data .venv/bin/python papers/paper1/make_figures_deck.py --out <html>` then
   `dylan-cern-site/scripts/add-note.py <html> --slug mx17-paper1-figures --force --deploy`.
 
-## n_TOF pass 1: reprocess the n_TOF tracks on the final chain — updated 2026-11-18 (dylan-MS-7C84)
+## n_TOF pass 1: reprocess the n_TOF tracks on the final chain — updated 2026-11-19 (dylan-MS-7C84)
 
-**Resume (11-18 morning):** stage 3 with v(t) is **built (543/543) and on EOS** `Analysis_pass1/stage3/` (MD5SUMS verified
+**Resume (11-19):** stage 3 with v(t) is **built (543/543) and on EOS** `Analysis_pass1/stage3/` (MD5SUMS verified
 on lxplus). Remaining: the D L2-era rebuild once condor 4677439 lands (step 4 below), then N-G1/ledger rerun on it.
 
 **11-17/18 night (desktop): stage 3 with v(t) — done.** Code `99df18fb`; report `rerun/ntof/stage3/vt_score/report.html`.
@@ -552,7 +552,7 @@ on lxplus). Remaining: the D L2-era rebuild once condor 4677439 lands (step 4 be
 - Full set: 49.6 M rows, 17.47 M `gated` (0.6) → 16.01 M `gated_vt` (0.5); y guard 291 pass, 251 not_checked (cosmic),
   1 insufficient (run_110 stat090_0003, 1,037 tracks, same as 11-16). Local `$WORK_DATA/ntof_pass1/stage3/` (27 GB).
 - **Built on an interim canon** (`ledger_canon_interim_noL1.json`, copied beside the tables): the rerun_dbeam_L1 rule is
-  dropped, so **D L2-era beam rows (217 sub-runs) are on the L2 pin**. 4677439 at 11-18 ~01:00: 411/2,358 done, 461 running.
+  dropped, so **D L2-era beam rows (217 sub-runs) are on the L2 pin**. 4677439 at 11-18 ~01:00: 411/2,358 done, 461 running. **At 11-19: 2,209 `005` events in the log, 149 running, 0 idle: nearly done.**
 - run_104 needs `--side $WORK_DATA/ntof_pass1/run104` (the default `side/` path does not exist locally).
 
 **Next:**
