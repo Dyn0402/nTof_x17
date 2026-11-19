@@ -210,12 +210,11 @@ def side_view(ax):
             color=cL, **kw)
     # what one degree is, at the two places it matters (Dylan 2026-11-19: the angle is the figure of merit; the
     # position and time measurements matter inside the segment, where they make the slope)
-    ax.text(zs[0] - 5, ys[1] + 8, 'measured segment:\n1° is 0.5 mm across the gap', ha='right', va='bottom',
-            fontsize=7, color=cL, linespacing=0.95)
+    kinematics(ax)
     yd = yb - 12
     ax.annotate('', xy=(D, yd), xytext=(0, yd), arrowprops=dict(arrowstyle='<->', color=mut, lw=0.7, shrinkA=0,
                                                                 shrinkB=0))
-    ax.text(D / 2 - 24, yd - 3, f'air, d ≈ {D:.0f} mm: 1° is 4 mm at the target', ha='center', va='top',
+    ax.text(D / 2 - 16, yd - 3, f'air, d ≈ {D:.0f} mm: 1° is 4 mm at the target', ha='center', va='top',
             fontsize=7, color=mut)
     ax.set_xlim(-30, D + 6)
     ax.set_ylim(yd - 16, y1 + 26)
@@ -224,30 +223,33 @@ def side_view(ax):
     return dict(drawn_deflection_deg=round(float(np.degrees(bend_air + kink)), 1), origin_offset_mm=float(org[1]))
 
 
-def kinematics(ax):
-    """The pair at its origin: opening angle theta and the two energies (Dylan 2026-11-19). Drawn at the X17 edge of
-    the 20.58 MeV transition, 109 deg, with unequal energies so that y is not zero."""
+def kinematics(ax, x0=14.0, y0=92.0, L=62.0, rot=20.0, box=(-26.0, 78.0, 116.0, 82.0)):
+    """Inset in the free top-left corner of the side view (Dylan 2026-11-19): the pair at its origin, opening angle
+    theta and the two energies. Drawn at the X17 edge of the 20.58 MeV transition, 109 deg, with unequal energies so
+    that y is not zero, rotated so that one lepton runs along the path drawn below. Boxed off: it is not to scale and
+    not part of the geometry."""
     import matplotlib.patches as mp
     ink, mut = ps.INK, ps.MUTED
     cL = ps.DET_COLOR['det3']
-    half = np.radians(109.4 / 2)
-    for sgn, L, lab, en in ((+1, 1.0, '$e^+$', '$E_+$'), (-1, 0.78, '$e^-$', '$E_-$')):
-        tip = L * np.array([np.cos(half), sgn * np.sin(half)])
-        ax.annotate('', xy=tip, xytext=(0, 0),
+    ax.add_patch(mp.Rectangle(box[:2], box[2], box[3], fc='white', ec=mut, lw=0.6, zorder=9))
+    o = np.array([x0, y0])
+    op = 109.4
+    for ang, ln, lab, en, side in ((rot, 1.0, '$e^-$', '$E_-$', -1), (rot + op, 0.78, '$e^+$', '$E_+$', +1)):
+        u = np.array([np.cos(np.radians(ang)), np.sin(np.radians(ang))])
+        n = np.array([-u[1], u[0]])
+        tip = o + ln * L * u
+        ax.annotate('', xy=tip, xytext=o, zorder=11,
                     arrowprops=dict(arrowstyle='-|>', color=ink, lw=1.1, shrinkA=0, shrinkB=0, mutation_scale=9))
-        ax.text(*(tip + [0.0, sgn * 0.06]), lab, ha='center', va='bottom' if sgn > 0 else 'top', fontsize=8,
-                color=ink)
-        mid = 0.62 * tip
-        ax.text(mid[0] + 0.10, mid[1] - sgn * 0.02, en, ha='left', va='center', fontsize=8, color=ink)
-    ax.add_patch(mp.Arc((0, 0), 0.52, 0.52, theta1=-np.degrees(half), theta2=np.degrees(half), color=cL, lw=1.0))
-    ax.text(0.33, 0.0, r'$\theta$', ha='left', va='center', fontsize=9, color=cL)
-    ax.plot(0, 0, 'o', ms=3.2, color=ink, zorder=5)
-    ax.text(0.18, -1.12, '$E=E_++E_-$\n$y=(E_+-E_-)/E$', ha='center', va='top', fontsize=7, color=mut,
-            linespacing=1.3)
-    ax.set_xlim(-0.35, 0.80)
-    ax.set_ylim(-1.50, 1.12)
-    ax.set_aspect('equal')
-    ax.axis('off')
+        ax.text(*(tip + 7 * u), lab, ha='center', va='center', fontsize=8, color=ink, zorder=11)
+        ax.text(*(o + 0.62 * ln * L * u + side * 8 * n), en, ha='center', va='center', fontsize=8, color=ink,
+                zorder=11)
+    ax.add_patch(mp.Arc(o, 0.5 * L, 0.5 * L, theta1=rot, theta2=rot + op, color=cL, lw=1.0, zorder=11))
+    b = np.radians(rot + op / 2)
+    ax.text(*(o + 0.36 * L * np.array([np.cos(b), np.sin(b)])), r'$\theta$', ha='center', va='center', fontsize=9,
+            color=cL, zorder=11)
+    ax.plot(*o, 'o', ms=3.2, color=ink, zorder=12)
+    ax.text(box[0] + box[2] - 3, box[1] + box[3] - 3, '$E=E_++E_-$\n$y=(E_+-E_-)/E$', ha='right', va='top',
+            fontsize=7, color=mut, linespacing=1.3, zorder=11)
 
 
 def main():
@@ -265,10 +267,8 @@ def main():
     toy = {sx: [pointing_toy(tx, sx, s, rng) for s in SIG_TH] for sx in SIG_X}
 
     fig = plt.figure(figsize=(ps.FULL[0], 3.0))
-    axk = fig.add_axes([0.0, 0.06, 0.16, 0.86])
-    axa = fig.add_axes([0.165, 0.02, 0.44, 0.96])
-    axb = fig.add_axes([0.695, 0.15, 0.215, 0.80])
-    kinematics(axk)
+    axa = fig.add_axes([0.0, 0.02, 0.48, 0.96])
+    axb = fig.add_axes([0.595, 0.15, 0.275, 0.80])
     drawn = side_view(axa)
 
     # (b) error on the initial direction of one lepton, one projection, against its kinetic energy.
@@ -330,9 +330,8 @@ def main():
                      for t in (20, 30, 45)},
                  chord_deg_per_mm_position=round(float(np.degrees(1.0 / D)), 3),
                  note='d(theta) = dx/g near the normal; = sin cos x (dz/g) for a depth error at inclination theta')
-    axk.text(0.0, 1.0, '(a)', transform=axk.transAxes, fontsize=ps.BASE_PT, fontweight='bold', va='top', ha='left')
-    axa.text(0.0, 1.0, '(b)', transform=axa.transAxes, fontsize=ps.BASE_PT, fontweight='bold', va='top', ha='left')
-    axb.text(-0.36, 1.04, '(c)', transform=axb.transAxes, fontsize=ps.BASE_PT, fontweight='bold', va='top',
+    axa.text(0.0, 1.0, '(a)', transform=axa.transAxes, fontsize=ps.BASE_PT, fontweight='bold', va='top', ha='left')
+    axb.text(-0.28, 1.04, '(b)', transform=axb.transAxes, fontsize=ps.BASE_PT, fontweight='bold', va='top',
              ha='left')
 
     ps.save(fig, a.out)
