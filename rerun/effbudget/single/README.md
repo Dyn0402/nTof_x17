@@ -7,6 +7,7 @@ Three questions from Dylan on the det3 efficiency, answered on the pass-1 tables
 
 | script | question | output |
 |---|---|---|
+| `eff_vs_angle.py` | does the single-track efficiency depend on the track angle? (2026-11-20, Paper I Sec. 7.4) Interior, 5° bins over ±20°: X 95.3–96.5 % (χ² 3.6/7), Y 94.8–96.6 % (17.7/7), polar 94.7–96.0 %; no trend. Full-area dip near normal in Y (1.4 pt) is the edge zone. Not measured beyond ~20°. | `eff_vs_angle.json` |
 | `single_track.py` | can a single-track efficiency be isolated without the chamber selecting itself? | `single_track.json`, per-event parquet |
 | `xy_pairing.py` | with two particles, are X and Y segments paired correctly, on real cosmics? | `xy_pairing.json`, per-event parquet |
 | `radius.py` | efficiency against the matching radius; a reason for R | `radius.json` |

@@ -324,6 +324,9 @@ resim/depth/phase scripts pad by 4 strips, chambers_C.py does not. The det3 temp
 - **The five suggestions are closed (11-20):** Dylan applied 1, 2, 3, 5 in Overleaf; Sec. 6.2 (now "What the resolution
   means for a pair") leads with the opening angle (chambers alone 1.3, air alone 2.0, together 2.4 deg for the 9.8 MeV
   pair), pointing second; conclusions name the two requirements. Dylan has not read Sec. 6.2 or later yet.
+- **Sec. 2 marked ready (11-20).** Sec. 7.4 gained a paragraph on efficiency against track angle
+  (`rerun/effbudget/single/eff_vs_angle.py`; flat within about a point over ±20°, unmeasured beyond). Still open in Sec. 2:
+  "Both requirements call for as little material" does not say why efficiency needs it (Dylan to decide).
 - JINST and wrapped figures: no explicit rule found; a sister SISSA journal forbids wrapfig. Not used.
 - Build here: `~/bin/latexmk` is missing on the desktop; `pdflatex -output-directory=<scratch> main.tex` twice works.
   Draft notes off: `pdflatex '\AddToHook{package/drafting/after}{\draftnotesfalse}\input{main}'`.

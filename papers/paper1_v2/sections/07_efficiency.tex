@@ -1,6 +1,7 @@
 \section{Operating point and efficiency}\label{sec:efficiency}
 \sectionstate{partial}{\texttt{rerun/effbudget/single/README.md} and \texttt{results/single\_track\_area.json} (chamber~A, Runs 1 and 2);
 \texttt{rerun/effbudget/PASS1\_RESULT\_2026-10-31.md} (all chambers); \texttt{rerun/paper1\_ops} (scans, discharges, currents);
+efficiency against the reference angle: \texttt{rerun/effbudget/single/eff\_vs\_angle.py}, \texttt{results/eff\_vs\_angle.json} (2026-11-20);
 bookkeeping checked in \texttt{papers/paper1\_v2/figs/out/two\_particle\_numbers.md} and \texttt{NUMBERS\_RUNDOWN.md}. v2 2026-11-10:
 the old sections 4 and 5.2--5.4 in three pages; one efficiency number per area; the definition, the selection variants and the
 loss classes are in \cref{app:effdef}; the two-particle material is \cref{sec:twoparticle}.}
@@ -88,6 +89,16 @@ area and the interior.
 \emph{The rest: 0.7\,\%.} Fits that are off with nothing flagged (0.34\,\%), second deposits that are not
 particle-like (0.18\,\%) and tracks with the right angle more than 5\,mm from the reference (0.16\,\%), of which
 about two thirds are muons that scattered between the reference planes.
+
+\emph{Uniformity over the track angle.} \Cref{sec:requirement} asks that the efficiency not depend on the angle of
+the track. In the interior, in 5\textdegree{} bins of the reference angle over $\pm20$\textdegree, the single-track
+efficiency stays between 95.3 and 96.5\,\% in X and between 94.8 and 96.6\,\% in Y, and between 94.7 and 96.0\,\%
+against the polar angle up to 25\textdegree, with no trend in the size of the angle. In X the bins agree within their
+errors ($\chi^2/\mathrm{ndf}=3.6/7$ about the mean); in Y they scatter by more ($17.7/7$), at the level of one point.
+Over the full area the tracks within 5\textdegree{} of the normal in Y are 1.4 points below the others. That is the
+edge zone and not the angle: 72\,\% of the tracks of the edge zone are within 5\textdegree{} of the normal in Y,
+against 40\,\% in the interior, and the difference is absent in the interior. The bench provides few tracks beyond
+20\textdegree, so the efficiency for steeper tracks is not measured.
 
 All but 0.6 points of the inefficiency is therefore real ionization that the reconstruction does not yet handle. Every
 loss class, with an event display and the result of trying to recover it, is in \cref{app:effdef}.
