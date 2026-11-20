@@ -162,7 +162,7 @@ def main():
     from scipy.optimize import curve_fit
     layout = os.environ.get('ANGRES_LAYOUT', 'top')
     if layout == 'top':
-        fig = plt.figure(figsize=(ps.WIDTH['full'], 4.6), layout='constrained')
+        fig = plt.figure(figsize=(ps.WIDTH['full'], 3.7), layout='constrained')
         gs = fig.add_gridspec(2, 2, height_ratios=[1.0, 1.0])
         a0 = fig.add_subplot(gs[0, :]); a1 = fig.add_subplot(gs[1, 0]); a2 = fig.add_subplot(gs[1, 1])
     else:  # 'left': square 2D spanning both rows on the left, (b) and (c) stacked on the right
@@ -178,7 +178,7 @@ def main():
     a0.plot([-LIM, LIM], [-LIM, LIM], ls=(0, (3, 2)), color='#e07b00', lw=0.6, alpha=0.85)
     a0.set_xlim(-LIM, LIM); a0.set_ylim(-LIM, LIM)
     a0.set_xticks(np.arange(-20, 21, 5 if layout == 'top' else 10)); a0.set_yticks([-20, -10, 0, 10, 20])
-    a0.set_xlabel(r'$\theta_{\rm ref}$ [deg]'); a0.set_ylabel(r'$\theta_{\rm fit}$ [deg]')
+    a0.set_xlabel(r'$\theta_{\rm ref}$ [°]'); a0.set_ylabel(r'$\theta_{\rm fit}$ [°]')
     a0.grid(False)
     cb = fig.colorbar(im, ax=a0, pad=0.01, fraction=0.025 if layout == 'top' else 0.05, aspect=15)
     cb.ax.tick_params(labelsize=7, length=2, pad=1); cb.set_label('tracks per cell', fontsize=7, labelpad=1)
@@ -212,7 +212,7 @@ def main():
         a1.plot(xf[inn], gauss(xf[inn], *P) / 1e3, color=cA, lw=1.0, ls=ps.VIEW_LS[p], zorder=2)
         a1.plot(xf, gauss(xf, *P) / 1e3, color=cA, lw=0.6, ls=':', alpha=0.7, zorder=1)
         g = res['A'][p]['gauss_core']
-        lines.append(f'{p.upper()}: $\\sigma$ = {g["sigma"]:.2f}$^\\circ$, {100 * g["frac_in_gauss"]:.0f} % of tracks')
+        lines.append(f'{p.upper()}: $\\sigma$ = {g["sigma"]:.2f}°')  # '% of tracks' dropped 11-20 (Dylan)
         hmax = max(hmax, h.max() / 1e3)
         csv += [dict(panel='b', view=p.upper(), x=c, lo=lo, hi=hi, n=int(n), gauss=float(gauss(c, *P)))
                 for c, lo, hi, n in zip(cen, edges[:-1], edges[1:], h)]
@@ -223,11 +223,11 @@ def main():
         fa = np.abs(deg(np.tan(np.radians(A[p].fit.to_numpy()))))[np.abs(dd) > 10]
         res['A'][p]['far10_abs_theta_fit_p10_p50_p90'] = [float(v) for v in np.percentile(fa, [10, 50, 90])]
         res['A'][p]['max_abs_residual'] = float(np.abs(dd).max())
-    a1.set_xlim(-GR, GR); a1.set_ylim(0, 1.42 * hmax)  # headroom for the fit box
-    a1.set_xticks([-6, -4, -2, 0, 2, 4, 6])
-    a1.set_xlabel(r'$\theta_{\rm fit}-\theta_{\rm ref}$ [deg]')
-    a1.set_ylabel(r'tracks per %.1f$^\circ$ [$10^3$]' % GB)
-    a1.text(0.03, 0.97, 'Gaussian fit to the core\n' + '\n'.join(lines), transform=a1.transAxes, ha='left', va='top',
+    a1.set_xlim(-GR, GR); a1.set_ylim(0, 2.6)  # 11-20: box is two short lines, fits left of the peak
+    a1.set_xticks([-6, -4, -2, 0, 2, 4, 6]); a1.set_yticks(np.arange(0, 2.51, 0.5))
+    a1.set_xlabel(r'$\theta_{\rm fit}-\theta_{\rm ref}$ [°]')
+    a1.set_ylabel(r'tracks per %.1f° [$10^3$]' % GB)
+    a1.text(0.03, 0.97, 'Gaussian core\n' + '\n'.join(lines), transform=a1.transAxes, ha='left', va='top',
             fontsize=7.5, color=ps.INK, linespacing=1.3)
     # (c) s68 vs theta_ref
     for p in 'xy':
@@ -240,7 +240,7 @@ def main():
                      s68_err=b['s68_err']) for b in bb]
     a2.set_xlim(-LIM - 1, LIM + 1); a2.set_ylim(0.0, 1.5)
     a2.set_xticks([-20, -10, 0, 10, 20]); a2.set_yticks(np.arange(0, 1.41, 0.2))
-    a2.set_xlabel(r'$\theta_{\rm ref}$ [deg]'); a2.set_ylabel(r'angular resolution $s_{68}$ [deg]')
+    a2.set_xlabel(r'$\theta_{\rm ref}$ [°]'); a2.set_ylabel(r'angular resolution $s_{68}$ [°]')
     ps.panel_labels([a0, a1, a2])
     ps.legend_above(fig, ps.view_handles(color=cA), ncol=2, handlelength=2.2)
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
