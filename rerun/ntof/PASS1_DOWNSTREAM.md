@@ -283,3 +283,23 @@ a Geant4 track crossing ≥ 20 mm of the gap with true |tan| < 0.5; a reco track
   reconstruction (`SAME_CHAMBER_PAIRS.md` "Next for the factor ~8").
 - Still caveated: the data's rate fit is poor (χ²/ndf 67 A, 18 C), and r2 (Geant4 pairs per single) comes from the
   `g4_same_arm` truth tables, unchanged.
+
+### Capsule pose fits on pass 1 (data and Geant4 library both pass 1) — 11-20
+`POSE2_LIB=ear2_L19p5 POSE2_LIB_CHAIN=pass1`, `capsule_pose shear`, then `pose2 / pose2z / pose2d` for the three families
+of the is2-era reference (`capsule_pose_ear2`) → `ana/capsule_pose/pose2*_xb*_xc*.csv` (logs `ana/logs/pose_*`).
+Best point per family (x: χ² over 10 dof; z: χ²_z over 5):
+
+| family (beam x_b, capsule x_c) | x fit pass 1 (is2) | best pose pass 1 | z fit pass 1 (is2) |
+|---|---|---|---|
+| x_b 0, x_c −16…−20 (centred beam, capsule off it) | 50.8 (—) | x_c −16, θ 15°, φ 90° | **19.0** (1.0) |
+| x_b −5, x_c −10, −15 | 34.2 (24.7) | x_c −15, θ 15°, φ 135° | 35.0 (12.1) |
+| x_b −10, x_c −10, −15 (beam on the capsule, 10 mm off the frame) | **25.4** (12.1) | x_c −10, θ 10°, φ 135° | — |
+
+The ranking is the is2 one: the x view prefers the beam on the capsule 10 mm off the frame centre; the z view
+prefers a centred beam. Both χ² rose (pass 1 has ~30 % more late tracks, so smaller errors, and the toy's
+response is now pass 1's), so neither reading fits well. The ambiguity HANDOFF_CAPSULE_POSE_FIT describes is not
+resolved by the new reconstruction. pose2d (depth) is flat (χ²_d ≈ 0 everywhere). Pose report/deck not regenerated.
+
+### Geant4 EAR2 library through pass 1 (second sample) — 11-20
+`run_pass1.sh ear2_L19p5` (9,837 A / 9,965 C): p1 0.762 / 0.728, p2 0.398 / 0.433, close splits 0 / 0.054 %;
+p2/p1 0.52 / 0.59 against the nose library's 0.54 / 0.53. The same-chamber data/G4 ≈ 0.10 does not depend on the library.
