@@ -90,13 +90,11 @@ the position resolution (\cref{sec:position}) and, at an angle the bench does no
 v2: the figure shows both views (\texttt{figs/make\_displays\_v2.py}).}
 A full waveform is recorded for each readout strip: the DREAM electronics sample every 60\,ns over the drift window, so one can view an event as a picture of amplitude against strip position and time (\cref{fig:reco}, left). 
 
-Performing an independent waveform analysis on each strip to produce hits per strip can lead to bias: each waveform is an aggregate of charge from several different drift depths, mixed onto the strip by drift diffusion as well as the prompt charge footprint and, in the orientation parallel to the resistive strips, by the RC spreading along those strips. 
-%
-This compresses the spread of the hit times across an inclined track by 20--30\,\% and reads tracks too
-steep~\cite{paperIIb}, whatever estimator defines the hit time. We therefore use the hits only to
-find candidate tracks, and take the geometry from a fit of the whole strip $\times$ time picture. The model is a
-straight track, with its position at the mesh, its transverse drift rate $w$ and its start time $t_0$ as free
-parameters; the charge arriving in each 60\,ns slice of drift is shared onto the strips, spread onto their
+Performing an independent waveform analysis on each strip to produce hits per strip can lead to bias: each waveform is an aggregate of charge from several different drift depths, mixed onto the strip by drift diffusion as well as the prompt charge footprint and, in the orientation parallel to the resistive strips, by the RC spreading along those strips. This compresses the spread of the hit times across an inclined track by 20--30\,\% and reads tracks too steep~\cite{paperIIb}, for any estimator used to define the hit time. 
+
+%We therefore use precomputed hits only to find candidate tracks, and from there fit the cluster's full strip $\times$ time data. We model a straight track, with its position at the mesh, transverse drift rate $w$ and start time $t_0$ as free parameters.
+
+We therefore use precomputed hits only to find candidate tracks, and from there fit the cluster's full strip $\times$ time data. The model is a straight track, with its position at the mesh, its transverse drift rate $w$ and its start time $t_0$ as free parameters. These three parameters are enough to define a line through the  The charge arriving in each 60\,ns slice of drift is shared onto the strips, spread onto their
 neighbors by the resistive layer (an RC kernel), and folded with the measured pulse shape of the electronics
 (\cref{fig:reco}, right). The charge profile along the track is solved inside the fit, and the angle follows from the
 transverse rate and the drift velocity, $\tan\theta=w/\vd$. The two views are fitted separately and paired by their
