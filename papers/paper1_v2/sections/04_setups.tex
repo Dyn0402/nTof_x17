@@ -8,33 +8,27 @@ uses, and the five chambers: which are good, which are not, and their runs.}
 \subsection{Cosmic bench}
 % Checked 2026-11-20 against run_config.json of every June bench run on EOS (cosmic_bench/june_tests): gas
 % "Ar/Iso 95/5" in all of them; the five long runs: n_samples_per_waveform 32, sample_period 60 ns, zero_suppress false.
-The bench (\crefp{fig:setups}{a}) triggers on the coincidence of two $60\times60$\,cm scintillators and carries four
+The bench (\crefp{fig:setups}{a}) triggers on the coincidence of two $60\times60$\,cm scintillators + PMTs which bracket the stet-up on top and bottom. Four
 $50\times50$\,cm reference tracking planes, two above and two below the two slots for chambers under test
-($40\times40$\,cm), over a lever arm of 1278\,mm. All of them are square. A track
+($40\times40$\,cm), provide reference tracks over a lever arm of 1278\,mm. A track
 reconstructed in them with one cluster per plane and $\chi^2<1.0$ is called the \emph{reference track}, and its
 extrapolation to the chamber under test the \emph{reference ray}. At the chamber the reference ray points to
 0.21--0.28\,mm per coordinate, and its angle is known to better than 0.14\textdegree{} (\cref{sec:angle}).
 
 The chambers under test and the reference planes are read by the same DREAM electronics. On each trigger every strip
 is sampled 32 times at 60\,ns intervals, a window of 1.92\,\textmu s that holds the whole drift column at the
-drift fields of the long runs, and is recorded without zero suppression, so that the reconstruction sees the full
-waveform of every strip. All bench data were taken in Ar/iC$_4$H$_{10}$ 95/5, the mixture recorded in the
-configuration of every bench run. No other record of the gas exists, so its water content is measured from the data
-(\cref{sec:gas}).
+drift fields of the long runs, and is recorded without zero suppression, so that the full waveform of every strip is recorded. Ar/iC$_4$H$_{10}$ 95/5\% was used for all bench data. 
 
 \subsection{SPS H4 beam}
 Only chamber~E went to the SPS: the test (chamber~E installed on 31 July 2026, data taken from 1 to 3 August) ran while
-chambers A--D were installed at n\_TOF, so the one chamber not needed there, with its known non-amplifying stripes
+chambers A--D were installed and taking data at n\_TOF, so the one chamber not needed there, with its known non-amplifying stripes
 (\cref{app:beam}), was the one available. The beam crosses two uRWELL reference trackers and chamber~E, which could be
-yawed by 25.4\textdegree{} (\crefp{fig:setups}{b}).
+rotated by up to 25.4\textdegree{} (\crefp{fig:setups}{b}).
 
-Chamber~E had its own gas line and ran in two mixtures: Ar/CO$_2$/iC$_4$H$_{10}$ 95/3/2 until the evening of 1 August,
-and Ar/CF$_4$/iC$_4$H$_{10}$ 88/10/2 after it. The flow was about 2\,l/h through a gas volume of about 4.6\,l, so a
-change of mixture took most of a night to complete. The run taken during the change (run 60) is used only for the
-angle scale, where the drift velocity comes from the run itself. The readout was the same as on the bench, with
-60\,ns samples, but with 64 samples (3.84\,\textmu s), since the drift in these mixtures is slower (\cref{sec:attachment}), and
-with zero suppression at 3--5 standard deviations of the pedestal noise in all runs but one. \Cref{tab:spsruns} lists
-the runs used.
+Chamber~E had its own gas line and ran two mixtures: Ar/CO$_2$/iC$_4$H$_{10}$ 95/3/2\% for the fist day and Ar/CF$_4$/iC$_4$H$_{10}$ 88/10/2\% for the next two. The flow was about 2\,l/h through a gas volume of about 4.6\,l, so a
+change of mixture took most of a night to complete. 
+%The run taken during the change (run 60) is used only for the angle scale, where the drift velocity comes from the run itself. 
+The readout was the same as on the bench, with 60\,ns samples, but with 64 samples (3.84\,\textmu s), since the drift was slower in the newly flushed chamber (\cref{sec:attachment}), and with zero suppression at 3--5 standard deviations of the pedestal noise in all runs but one. \Cref{tab:spsruns} lists the runs used.
 \askDylan{Gas bookkeeping (2026-11-20). The Ar/CF$_4$/iC$_4$H$_{10}$ 88/10/2 is confirmed everywhere. The CO$_2$ mixture
 is not: our SPS analysis (\texttt{sps\_beam\_test\_26/analysis/RUN\_TIMELINE.md}, ``confirmed 2026-08-02'') and the
 Magboltz grid of the gas fit (\texttt{cloud\_basics/magboltz\_drift.py}) use \textbf{95/3/2}, but the corrected
