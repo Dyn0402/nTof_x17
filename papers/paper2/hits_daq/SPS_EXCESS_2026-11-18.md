@@ -7,6 +7,25 @@ arm (gas, field), or is it something else?
 **Answer: the ladder follows the bench law. The excess is hits that are not on the ladder.** Existing data only
 (the 11-09 window pickles, EOS `hits_daq/windows/sps_*.pkl`; desktop copy `$WORK_DATA/paper2_hits/sps/`).
 
+> **Correction 2026-11-20 (GAS9352): the gas Dp was 0.006 from a Magboltz grid for Ar/CO2/iso 95/3/2, a wrong label; the
+> gas was the ATLAS NSW mixture 93/5/2 (`docs/GAS_MIXTURES.md`).** On 93/5/2, at each row's composition from the SPS gas
+> fit (run57 1.69 % water / 322 ppm O2, run59 1.75 % / 282 ppm) and the row's own v, `sps_resim.gas_dp` gives
+> D_T = 179 / 175 / 172 / 170 / 169 µm/√cm and **Dp = 0.0049 / 0.0051 / 0.0052 / 0.0054 / 0.0053** (d550 … d700, run59).
+> Everything that used the gas Dp was rerun at those values; every other arm reproduced to the last digit.
+> - "model, Magboltz Dp" column: 1.040 / 1.032 / 1.027 / 1.024 / 1.023 → **1.038 / 1.030 / 1.025 / 1.023 / 1.022**;
+>   "gas Dp, RC off": 1.026 / 1.021 / 1.016 / 1.015 / 1.015 → **1.023 / 1.019 / 1.015 / 1.014 / 1.014**.
+>   Data without far hits minus model: +0.008…+0.011 → **+0.009…+0.013**. Model far hits per plane 0.23 / 0.30 → 0.24 / 0.30
+>   (d550 / d700). `results/sps_resim.json` (now written by `sps_resim.py --summary`) and `results/sps_outliers.json`.
+> - **Dp refit** (`sps_dp_scan.py --dp 0.003,gas,0.006,0.009,0.014,0.020`, 200 planes per view, the 0.006 column
+>   reproduces the table below exactly): at d550's gas value 0.0049, **74 % (X) / 81 % (Y)** of planes have χ² below their
+>   χ²(0.020) (75 / 81 % at 0.006), median Δχ²/χ² **−13 % / −18 %** (−13 / −18), 69 % / 80 % have their best χ² at ≤ 0.009;
+>   median |w| 0.192 / 3.599 µm/ns against 0.229 / 3.543 at 0.020, so **the Y slope moves by 1.6 %** (1.4 % at 0.006).
+>   At d700's 0.0054: 80 % / 83 %, −13 % / −12 %, 94 % / 92 % of planes best below 0.020, Y slope **+0.65 %** (4.859 against
+>   4.828; 0.6 % at 0.006). The summed χ² still favours 0.020. Conclusions unchanged.
+> - The old products are kept beside the new ones: `$WORK_DATA/paper2_hits/sps/resim_sps_dp0.006_95-3-2.parquet`,
+>   `dpscan_d{550,700}_95-3-2grid.parquet`.
+> The numbers below are as first written.
+
 ## Numbers (inclined view, 3000 planes per row)
 
 | row | field [V/cm] | v [µm/ns] | data, all hits | data, robust line | data, hits within 4 pitches of the track | model, Magboltz Dp 0.006 | model, pass Dp 0.020 | model, gas Dp, RC off | geometry only |

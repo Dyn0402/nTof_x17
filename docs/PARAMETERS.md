@@ -88,9 +88,11 @@ than on Y (narrower than 0.28 mm, with a flat same-time floor of ~10 % on the fa
 compromise. The pass is unchanged; the kw angle calibration absorbs the angle-scale part.
 
 **SPS rows carry the bench `Dp` (found 2026-11-18, not changed):** every SPS pass row is fitted with chamber E's bench
-`Dp` = 0.020. For the wet Ar/CO2/iso of run57/59 (93/5/2, `docs/GAS_MIXTURES.md`) Magboltz gives 0.0050–0.0055 (D_T 166–177 µm/√cm at 8–10 µm/ns, the 93/5/2 grid at the refitted 1.6–1.8 % water; the old 95/3/2 grid gave 0.0055–0.0060, and the 0.006 refit below was made with that). Refitted at
-0.006, 75–81 % of planes have a lower χ² and the inclined-view slope moves by 1.4 % (`papers/paper2/hits_daq/sps_dp_scan.py`,
-`SPS_EXCESS_2026-11-18.md`). The CF4 rows were not checked.
+`Dp` = 0.020. For the wet Ar/CO2/iso of run57/59 (93/5/2, `docs/GAS_MIXTURES.md`) Magboltz gives **0.0049–0.0054** per row
+(`sps_resim.gas_dp`: D_T 169–179 µm/√cm at the gas-fit composition, times √v with the row's own v of 7.5–10.1 µm/ns; the old
+95/3/2 grid gave 0.0055–0.0060, used as 0.006 until 2026-11-20). Refitted at the row's value, 74–83 % of planes have a lower
+χ² than at 0.020 and the inclined-view slope moves by 1.6 % (191 V/cm) and 0.65 % (243 V/cm); at 0.006 it was 75–82 % and
+1.4 / 0.6 % (`papers/paper2/hits_daq/sps_dp_scan.py`, `SPS_EXCESS_2026-11-18.md`). The CF4 rows were not checked.
 
 The old copy-amplitude parameters (`c1`, `c2`, `kY`, `tau_s`, `sigma_s`) are retired. A bundle that still has them must have c2 < c1
 (`wft.calib.check_kernel_ordering`), and on an r06 bundle the ratio is in `c2_over_c1` (read it with `wft.calib.effective_c2`).

@@ -1,25 +1,30 @@
 # Handoff
 
-## SPS CO2-epoch gas = NSW 93/5/2: verified, documented, GAS9352 refit DONE; Paper I update waits for Dylan — updated 2026-11-20 (dylan-MS-7C84)
+## SPS CO2-epoch gas = NSW 93/5/2: everything downstream redone (GAS9352 + follow-up) — updated 2026-11-20 (dylan-MS-7C84)
 
-**Resume:** the refit is done and on main. Waiting for Dylan (editing Paper I on Overleaf) before touching `papers/paper1_v2`;
-then apply the "Paper I changes" below and remove `\analysis{GAS9352}`.
+**Resume:** done. One thing waits for Dylan: the Paper IIa Overleaf pull conflicts (below), so IIa's repo changes are not on
+Overleaf yet.
 
-**Done:**
-- Gas verified as 93/5/2 (EOS run configs, ATLAS Run 3 paper, NSW literature); record in `docs/GAS_MIXTURES.md`.
-- Every condition label relabelled 95/3/2 -> 93/5/2 (commit 007fee02).
-- GAS9352 refit: new 93/5/2 Magboltz grid (condor 4694770, 432 points, all exit 0), gas fit + 10 arms + verdict + report,
-  attachment figures in `rerun/paper1_spsfigs/figures/`. CF4 unchanged; CO2 water 1.56-1.75 %, O2 282-403 ppm.
-  Same `co2` tag: all 432 air_hs/air_merged co2 files replaced; the 47 old ones elsewhere moved to `legacy_co2_95-3-2/`.
+**Done (all on main):**
+- Gas verified as 93/5/2 (`docs/GAS_MIXTURES.md`); labels relabelled (007fee02); Magboltz grid, gas fit + arms, Paper I v2
+  text and figures on 93/5/2 (a51368cb, bacfdd66).
+- Follow-up audit and reruns, table in `docs/GAS_MIXTURES.md` § "Everything else …":
+  - wet Ar/CO2/iso Garfield bracket + dry beamtest table regenerated (condor 4696666, 5/5): v(243) at 1.5 % water 12.7 -> 10.7
+    um/ns; dated corrections in `TWOGAS_HEADON_2026-08-11.md` (the August single-water test no longer passes as posed; the
+    one-water-floor statement rests on the gas fit) and `RAW_RUN71_REANALYSIS_2026-08-04.md`;
+  - CO2 midpoints regenerated (condor 4696665, 12/12), `mb_mid_check.json` and the drop-one test redone; quoted in
+    `rerun/sps_gasfit/README.md` and `MB_FINE_2026-10-31.md`;
+  - SPS known-angle model (`sps_resim.py`, `sps_outliers.py`) and the Dp refit (`sps_dp_scan.py`) at the 93/5/2 Dp per row
+    (0.0049-0.0054, was 0.006); `SPS_EXCESS_2026-11-18.md` correction; IIb text + figure pushed to Overleaf; IIa §4 edited.
+  - cloud_basics FINDINGS §18/§25, det4_gap, PAPER1_NUMBERS, paper1_spsfigs README, PARAMETERS: dated CO2 corrections.
+- "What still carries 95/3/2" is down to parked legacy files that nothing reads.
 
-**Paper I changes (not applied; Dylan asked to wait):**
-- `papers/make_figures.py paper1_v2 --only attachment attachment_charge` (copies the rebuilt figures).
-- Sec. 5.4 (`05_gas.tex`): "226 and 443 ppm" -> "226 and 403 ppm" (text and Fig. attachment_charge caption);
-  caption "chi2 842 and 10 600 against 49 and 258" -> "842 and 9060 against 49 and 271".
-- App. E.3 (`A5_beam_test.tex`): "1.7 to 2.1 % of water ... 130 to 440 ppm" -> "1.6 to 1.9 % ... 130 to 400 ppm".
-- Remove `\analysis{GAS9352}` in `04_setups.tex`.
+**Waiting for Dylan:** `papers/overleaf.sh pull paper2` conflicts in `hits_daq/SPS_EXCESS_2026-11-18.md` (Overleaf has the
+pre-d700 version of that note; the repo's is newer). Not resolved, nothing pushed to the IIa Overleaf. The IIa files changed in
+the repo since: `sections/04_forward_model.tex` (Dp 0.005, 74 %, 1.6 %), `hits_daq/SPS_EXCESS_2026-11-18.md`,
+`hits_daq/sps_{resim,outliers,dp_scan}.py`, `hits_daq/results/sps_{resim,outliers}.json`.
 
-**Key files:** `docs/GAS_MIXTURES.md`; `rerun/sps_gasfit/README.md` (refit box + table); `rerun/sps_gasfit/results/verdict.json`.
+**Key files:** `docs/GAS_MIXTURES.md`; `rerun/sps_gasfit/README.md`; `papers/paper2/hits_daq/SPS_EXCESS_2026-11-18.md`.
 
 ## Arm-to-arm scintillator timing from cosmics (σ_t) — updated 2026-11-19 (dylan-MS-7C84)
 
@@ -139,7 +144,7 @@ on a copy with a script that clicks the preset button (`v-pap`, `v-fig`, …). A
 - IIb `papers/tpc_mixing_review/`: the SPS known-angle excess is closed (`papers/paper2/hits_daq/SPS_EXCESS_2026-11-18.md`):
   the ladder follows the bench law (1.03–1.05); far hits in 60–65 % of planes make the plain line read 1.07–1.13. New fig.
   `known_angle`. NUMBERS.md and figures regenerate unchanged on the desktop.
-- Found: SPS pass rows carry the bench Dp 0.020 (Magboltz 0.006 for the CO2 gas); slope effect 1.4 % (`docs/PARAMETERS.md` §2).
+- Found: SPS pass rows carry the bench Dp 0.020 (Magboltz 0.006 for the CO2 gas; 0.0049-0.0054 on 93/5/2, 2026-11-20); slope effect 1.4 % (1.6 % at the 93/5/2 value) (`docs/PARAMETERS.md` §2).
 - Overleaf: "MX17 Paper IIa (reconstruction)" and "MX17 Paper IIb (single-time bias)", linked (`papers/overleaf_remotes.txt`), not shared.
 
 **Next steps:** the `\askDylan` answers (k_w and the reference; CF4 rows with a Magboltz Dp; gain invariance number; the
