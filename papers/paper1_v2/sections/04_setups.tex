@@ -8,8 +8,9 @@ uses, and the five chambers: which are good, which are not, and their runs.}
 \subsection{Cosmic bench}
 % Checked 2026-11-20 against run_config.json of every June bench run on EOS (cosmic_bench/june_tests): gas
 % "Ar/Iso 95/5" in all of them; the five long runs: n_samples_per_waveform 32, sample_period 60 ns, zero_suppress false.
-The bench (\crefp{fig:setups}{a}) triggers on the coincidence of two scintillators and carries four reference tracking
-planes, two above and two below the two slots for chambers under test, over a lever arm of 1278\,mm. A track
+The bench (\crefp{fig:setups}{a}) triggers on the coincidence of two $60\times60$\,cm scintillators and carries four
+$50\times50$\,cm reference tracking planes, two above and two below the two slots for chambers under test
+($40\times40$\,cm), over a lever arm of 1278\,mm. All of them are square. A track
 reconstructed in them with one cluster per plane and $\chi^2<1.0$ is called the \emph{reference track}, and its
 extrapolation to the chamber under test the \emph{reference ray}. At the chamber the reference ray points to
 0.21--0.28\,mm per coordinate, and its angle is known to better than 0.14\textdegree{} (\cref{sec:angle}).
@@ -80,11 +81,12 @@ the position resolution (\cref{sec:position}) and, at an angle the bench does no
 \begin{figure}[tbp]
   \centering
   \includegraphics[width=\linewidth]{setups}
-  \caption{The two test setups. (a) The Saclay cosmic bench, side view, muons going down ($z$ drawn compressed to 0.35
-  of the transverse scale, as the scale bars show; slab thicknesses exaggerated). The readout is triggered by the
-  coincidence of the top and bottom scintillators ($60\times60$\,cm). The four reference planes ($50\times50$\,cm;
-  $z=24$, 144, 1185, 1302\,mm) reconstruct each muon independently of the chamber under test. The two test slots are
-  at $z=232$ and 702\,mm; chamber~A ran in the top slot for Runs 1 and 2. Scintillator positions are schematic.
+  \caption{The two test setups. (a) The Saclay cosmic bench, side view, muons going down (transverse sizes to scale;
+  $z$ drawn compressed to 0.35 of the transverse scale, as the scale bars show; slab thicknesses exaggerated). All
+  elements are square. The readout is triggered by the coincidence of the top and bottom
+  scintillators ($60\times60$\,cm). The four reference planes ($50\times50$\,cm; $z=24$, 144, 1185, 1302\,mm)
+  reconstruct each muon independently of the chamber under test ($40\times40$\,cm). The two test slots are at $z=232$
+  and 702\,mm; chamber~A ran in the top slot for Runs 1 and 2. Scintillator positions in $z$ are schematic.
   (b) The SPS H4 setup, plan view, to scale (slab thicknesses exaggerated): the beam crosses two uRWELL reference
   trackers ($z=0$ and 1370\,mm) and chamber~E, yawed by 25.4\textdegree{} about the vertical, so that beam tracks cross
   its drift gap at that angle. The drift window faces upstream.}

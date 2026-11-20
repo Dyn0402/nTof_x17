@@ -344,7 +344,7 @@ def main() -> int:
     ap.add_argument('--dca', type=float, default=30.0)
     ap.add_argument('--workers', type=int, default=8)
     a = ap.parse_args()
-    rs = _runs(paths.out('stage3_fullpass'))
+    rs = _runs(paths.out(paths.STAGE3))
     if a.runs:
         rs = {r: rs[r] for r in a.runs.split(',')}
     stem = 'campaign' if not a.runs else a.runs.replace(',', '_')

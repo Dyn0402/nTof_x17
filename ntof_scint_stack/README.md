@@ -23,6 +23,13 @@ python3 ~/PycharmProjects/dylan-cern-site/scripts/add-note.py \
     /media/dylan/data/x17/scint_stack/deck/scint-stack.html --slug scint-stack --force --deploy
 ```
 
+## On n_TOF pass 1 (2026-11-20)
+
+`extract --src <out>/stage3_pass1` (the analysis view: k = 1, `tan_raw_*` = the v(t) tan) and `ana --arms ACD` (B has no
+angle in pass 1). With `X17_SCINT_OUT=$WORK_DATA/ntof_pass1/ana/scint_stack`: λ = 0.847 (A), 0.840 (C), 0.847 (D), against
+0.59–0.64 with the is2-era k below; the chamber-to-chamber spread was calibration, the common 0.85 is beam-electron
+scattering. Numbers and caveats: `rerun/ntof/PASS1_DOWNSTREAM.md`.
+
 ## The track calibration (2026-10-06)
 
 Slopes are the **single-track imaging calibration**: `m = k · tan_raw`, each

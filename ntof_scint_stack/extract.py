@@ -294,7 +294,7 @@ def geometry_table(runs) -> pd.DataFrame:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split('\n')[1])
-    ap.add_argument('--src', default=str(paths.out('stage3_fullpass')))
+    ap.add_argument('--src', default=str(paths.out(paths.STAGE3)))
     ap.add_argument('--slim', default=str(paths.out('slim')))
     ap.add_argument('--runs', default='')
     ap.add_argument('--jobs', type=int, default=6)

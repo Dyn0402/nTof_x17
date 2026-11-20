@@ -35,6 +35,15 @@ def load(name, yoff, hh):
     s = s.replace("fig.add_axes([0.05 / W, 0.05 / H, AX_W / W, AX_H / H])",
                   f"fig.add_axes([0.05 / W, ({yoff} + 0.05) / H, AX_W / W, AX_H / H])")
     s = s.replace("'M3 reference planes", "'reference planes")
+    # 2026-11-20 (Dylan): give the transverse sizes on the drawing. Every element is square; the slabs are already
+    # drawn to scale in x, so only the labels change. The bench panel is widened to the right (into the spare width
+    # of the shared figure) so that each size fits on its label's line.
+    s = s.replace("XL, XR, YB, YT = -640, 700, -95, 560", "XL, XR, YB, YT = -640, 945, -95, 560")
+    s = s.replace("'trigger scintillator'", "'trigger scintillator, 60 × 60 cm'")
+    s = s.replace("'reference planes\\n(2 + 2)'", "'reference planes, 50 × 50 cm\\n(2 + 2)'")
+    s = s.replace("((M3_Z[0], M3_Z[1]), 'reference planes')", "((M3_Z[0], M3_Z[1]), 'reference planes, 50 × 50 cm')")
+    s = s.replace("'test chamber (top slot)'", "'test chamber (top slot), 40 × 40 cm'")
+    s = s.replace("'test chamber (bottom slot)'", "'test chamber (bottom slot), 40 × 40 cm'")
     s = re.sub(r"^fig\.savefig\(.*$", "", s, flags=re.M)
     s = re.sub(r"^fig\.canvas\.draw\(\).*$", "", s, flags=re.M)
     s = re.sub(r"^ps\.save\(.*$", "", s, flags=re.M)

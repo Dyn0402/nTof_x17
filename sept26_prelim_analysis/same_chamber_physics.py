@@ -136,9 +136,14 @@ def vertex_y(chain: str, arm: str, bins=Y_BINS) -> pd.DataFrame:
 # --------------------------------------------------------------------------- #
 # the toy
 # --------------------------------------------------------------------------- #
+#: pass 1: the same table on the pass-1 analysis view (rerun/ntof/stage3/resolution_line.py, run_149 A-C line)
+RESOLUTION_PASS1 = (Path(__file__).resolve().parent.parent / 'rerun' / 'ntof' / 'stage3' / 'resolution'
+                    / 'resolution_pass1.csv')
+
+
 def _resolution(arm: str):
     """sigma(|tan|) per view, and the tail fraction, from the cosmic A-C truth."""
-    R = pd.read_csv(RESOLUTION)
+    R = pd.read_csv(RESOLUTION if CHAIN in LEGACY else RESOLUTION_PASS1)
     R = R[R.arm == arm]
     out = {}
     for v in ('x', 'y'):
@@ -322,7 +327,8 @@ def main() -> int:
     C.to_csv(od / 'physics_compare.csv', index=False)
     json.dump(dict(capsule_v=CAPSULE_V, capsule_r=CAPSULE_R, d_plane=D_PLANE,
                    chain=CHAIN, chains=chains, tan_max=TAN_MAX, n_throw=a.n, g4_conv=str(G4_CONV),
-                   ipc_shape=str(IPC_SHAPE), resolution=str(RESOLUTION)),
+                   ipc_shape=str(IPC_SHAPE),
+                   resolution=str(RESOLUTION if CHAIN in LEGACY else RESOLUTION_PASS1)),
               open(od / 'physics.meta.json', 'w'), indent=1)
     pd.set_option('display.width', 200)
     print(C.to_string(index=False))

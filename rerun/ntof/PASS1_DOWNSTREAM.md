@@ -168,3 +168,68 @@ chamber-to-chamber part was calibration. The common 0.85 is the beam-electron ef
 (electrons scatter between the gap and the wall; beam/cosmic wall gap, HANDOFF_TRACKING §10–13), not an angle error.
 Still from the is2 era: `ana.CAPSULE_XYZ = (−9.3, −31.3, −3.45)`; pass 1 gives x −9.1, y −30.4 / −32.1, z −5.5 (imaging) or −1.7 (tilt).
 The report and deck (`make_report`, `make_deck`) are not regenerated yet.
+
+## How the rest of the analysis is pointed at pass 1 (11-20)
+- `paths.STAGE3` / `paths.RECO` (default `stage3_pass1` / `reco_pass1`, links in both output roots to the view and the
+  reco tree) replace every hard-wired `stage3_fullpass` / `reco_fullpass` / `fullpass` default in the downstream
+  scripts (det_a_intra, det_a_scint, chamber_b, campaign_angle, tight_coincidence, campaign_imaging,
+  campaign_acceptance, campaign_efficiency, pair_qa, pair_timing, source_imaging, normal_incidence, trigger_time,
+  scintillators, trackqa_shards, capsule_y, the Athens pair_vertex_imaging and insitu_maps / overhead figure, the scint
+  stack, calorimetry). `X17_STAGE3=stage3_fullpass X17_RECO=reco_fullpass` restores the production chain.
+- The pass-1 output root is `$WORK_DATA/ntof_pass1/ana` (`X17_SEPT26_OUT`), with the chain-independent inputs linked in
+  (`ipc`, `slim`, `stage0`, `stage1`, `trigtime`, `channel_masks`, `noisy_channels`, `hot_strata`), so a migrated
+  study writes there and never over the retired chain's products.
+- Retired sets and what replaced them: `RETIRE_PRE_PASS1_2026-11-20.md`.
+
+### Wall calibration and chamber B (`scintillators`, `chamber_b`, run_145) — migrated 11-20
+`ana/scint/`, `ana/chamber_b/`. The along-bar sign of every arm is the opposite of the old file's: that file is from
+08-09, before the y fix; pass 1 is y up like every regenerated table. Wall-matched tracks 14,412 → 28,938.
+
+| arm | u-segment match (Sep production → pass 1) | shuffled | along-bar corr v |
+|---|---|---|---|
+| A | 0.707 → **0.788** | 0.26 → 0.27 | 0.41 → **0.55** |
+| B | 0.357 → **0.519** | 0.25 → 0.24 | 0.10 → **0.27** |
+| C | 0.586 → **0.750** | 0.26 → 0.27 | 0.29 → **0.41** |
+| D | 0.393 → **0.506** | 0.23 → 0.23 | 0.11 → **0.21** |
+
+B, the position-only chamber, points at the right wall segment half the time against a quarter by chance.
+
+### Two-arm tight coincidences (`tight_coincidence --all-runs`) — migrated 11-20
+`ana/tight_coincidence/`. Tagged two-arm pairs 5,317 → 10,707; tight (|t_arm| ≤ 30, |Δt| ≤ 20 ns) 1,452 → 4,775;
+back-to-back (> 170°, through-goers) 378 → 2,258; tight non-back-to-back pairs 1,074 → 2,517. The tight opening-angle
+shape is still far from the event-mixed one (χ²/dof 2,643) and closer to the tagged one (88).
+
+### Calorimetry beam through-goers (`ntof_calorimetry.mip_sample beam`) — migrated 11-20
+`X17_CALO_OUT=ana/calorimetry`; reads the view through `pass1_tracks` (no campaign file). A–C through-goer pairs
+20,583 → 41,289; corr(joined-line slope, track tan) A x 0.30 → 0.59, y 0.36 → 0.63; C x 0.21 → 0.54, y 0.27 → 0.57.
+B–D pairs (1,238) drop out: B has no direction in pass 1. **Not rerun:** the cosmic MIP sample (reads the retired
+`ntof_cosmics/results/tracking/k_run_147` tables), `scint_ecal`, `mm_edep_*`, the passport.
+
+### Single-track resolution (`rerun/ntof/stage3/resolution_line.py`) — new 11-20
+run_149, one gated track per chamber, A–C lines within 60 mm: 11,974 lines (is2 table: ~2,000).
+
+| | A x | A y | C x | C y |
+|---|---|---|---|---|
+| σ, \|tan\| < 0.04 (is2 table) | **0.033** (0.31) | 0.066 (0.29) | 0.036 (0.41) | 0.079 (0.24) |
+| σ, 0.12–0.20 | 0.028 (0.028) | 0.027 (0.027) | 0.031 (0.036) | 0.036 (0.052) |
+| σ, 0.30–0.45 | 0.033 (0.041) | 0.024 (0.032) | 0.042 (0.058) | 0.035 (0.046) |
+| tail > 0.15, 0.30–0.45 | 4.3 % (8.1) | 3.2 % (7.0) | 5.0 % (14.2) | 2.2 % (10.3) |
+
+Near normal the angle is now measured (σ 0.03–0.08 against 0.24–0.41). The 0.45–0.60 bin has a −0.02…−0.04 bias: the
+truth runs to 0.6 while `gated` cuts the reconstructed tan at 0.5. `same_chamber_physics` uses this table on pass 1.
+
+### Geant4 through the pass-1 reconstruction (P5 test 8) — running 11-20
+`ntof_cosmics/g4_digi/run_pass1.sh <tag>` → `$WORK_DATA/ntof_pass1/g4_digi/g4_<arm>_<tag>_pass1.parquet`. Three fixes
+were needed before the digitiser could stand in for pass 1:
+1. **Signal model.** `plane_waveform` generated the retired copy-kernel response (it reads `sigma_s`, `c1`, `c2`, which
+   the RC bundles do not have). New `digitise.plane_waveform_rc`: each electron (smeared by σ_p0 and diffusion) lands
+   as a point, its charge is integrated over the strip pitch and, on Y, spread as the RC line at the `RC_EDGES`
+   delays, with the X template on both views, as `wft.model.build_matrix_rc`. lor/core/asym/drain are refused if set.
+2. **t0.** It drew t0 from is2's free-t0 fits; pass 1 pins t0 per clock phase. New `--t0-tracks`: t0 = the bundle pin
+   for the overlay trigger's ftst + a residual drawn from pass-1 run_145 (median −25 ns, 68 % −57…+11 ns).
+3. **Dead channels.** Seeding now bridges and windows pad across the bundle's dead list, as `reconstruct_subrun`.
+   Charge: `--q-x-median` / `--yx` set to pass-1 run_145 (A 1626 / 1.041, C 1661 / 1.016; is2: 1553 / 0.881, 1585 / 0.688).
+
+Closure on 240 synthetic muons (A, frozen `A_E2_beam`): fitted/true tan 1.001 (x), 1.031 (y); res68 0.017 / 0.010;
+x charge 1693 against 1626; y/x 1.049 against 1.041; ≥ 1 track 94 % (the same digitiser on is2: 70 %); 2 tracks 5 %
+(is2: 5 %, the overlay's own content, not the splitter). The nose and EAR2 libraries are running (A, C).

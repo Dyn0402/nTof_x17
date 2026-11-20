@@ -237,7 +237,7 @@ def build_shard(src: Path, dest: Path, gated_only: bool = False,
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split('\n')[1])
     ap.add_argument('--src', type=Path, default=None,
-                    help='default <out>/stage3_fullpass')
+                    help='default <out>/<paths.STAGE3> (n_TOF pass 1)')
     ap.add_argument('--dest', type=Path, default=None,
                     help='default <out>/trackqa_web/tracks')
     ap.add_argument('--run', default=None, help='one run; default all present')
@@ -247,7 +247,7 @@ def main() -> int:
     ap.add_argument('--force', action='store_true')
     a = ap.parse_args()
 
-    src = a.src or paths.out('stage3_fullpass')
+    src = a.src or paths.out(paths.STAGE3)
     dest = a.dest or (paths.out('trackqa_web') / 'tracks')
     paths.require(src, 'stage3 track tables')
 

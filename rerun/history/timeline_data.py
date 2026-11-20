@@ -349,6 +349,22 @@ LESSONS = [
      '4636420.NNN.out) still fitted, which hid the pattern.',
      'ntof.sub takes logdir= (one directory per submission); the lxplus condor_submit shim refuses a submission whose AFS '
      'log directory would pass 25,000 entries; lxstore status lists directories filling up (claude-skills)', 'chain'),
+    ('2026-11-20', 'process', 'n_TOF pass-1 stage 3 carries the v(t) angles beside the frozen ones (tanx_vt next to tanx), '
+     'but every downstream script of the is2 era reads the plain names: left alone they would have run on the frozen v '
+     'and the old 0.6 acceptance, silently.',
+     'one analysis view (rerun/ntof/stage3/vt_view.py: <col> = <col>_vt, tan_raw = tan, k = 1) and paths.STAGE3 / '
+     'paths.RECO as the only names downstream code uses (rerun/ntof/PASS1_DOWNSTREAM.md)', 'chain'),
+    ('2026-11-20', 'model', 'The Geant4 digitiser (ntof_cosmics/g4_digi) generated its signal with the retired copy-kernel '
+     'model, drew t0 from free-t0 fits and seeded without dead-channel bridging, so it could not stand in for the pass-1 '
+     'reconstruction (RC kernel, pinned t0, DEAD_SEED): its DIGI response and the capsule-pose toy were the is2 chain\'s.',
+     'digitise.plane_waveform_rc (RC point-charge generator, as build_matrix_rc), t0 = the bundle pin + a pass-1 '
+     'residual, dead bridging; run_pass1.sh (synthetic muons close: scale 1.00 x / 1.03 y, y/x charge 1.05 vs 1.04)',
+     'chain'),
+    ('2026-11-20', 'fit', 'Pass 1 reconstructs two tracks in one plane: same-chamber pairs x2.8 (A) / x2.2 (C), with a '
+     'close-pair (< 40 mm) excess over event mixing that vertexes less often than mixed pairs, i.e. looks like split '
+     'single tracks. The two-track contract (split-ab, F) was set on the is2-era bundles.',
+     'treat pass-1 pair fractions as upper bounds until Geant4 through the pass-1 reco (run_pass1.sh) gives the fake-'
+     'pair rate per separation (PASS1_DOWNSTREAM.md, same-chamber section)', 'open'),
 ]
 
 # (claimed, claim, corrected, by what)

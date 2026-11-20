@@ -344,7 +344,7 @@ def main() -> int:
               f'{sum(1 for r in rows if r.get("skipped"))} already present')
         return 0
 
-    src = a.src or paths.out('stage3_fullpass')
+    src = a.src or paths.out(paths.STAGE3)
     if not a.campaign_only:
         pairs = subruns_from(src)
         print(f'backfilling {len(pairs)} stage-3 sub-run table(s) under {src}')

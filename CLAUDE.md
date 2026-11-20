@@ -71,7 +71,7 @@ position, and write that fact next to the constant. Frame, conventions and the e
 - `ntof_scint_stack/` — every SiPM wall, plastic and liquid mapped (efficiency,
   response) by the MM tracks that point at them; output in
   `/media/dylan/data/x17/scint_stack/`. Its README has the track-extrapolation
-  calibration (note: stage-3 `tanx = k · tan_raw`, not `/ k`).
+  calibration (note: on the retired chains stage-3 `tanx = k · tan_raw`, not `/ k`; on n_TOF pass 1 k = 1 and tan_raw is the v(t) tan).
 - `ntof_pedestal_qa/` — the DREAM pedestal history of the n_TOF campaign, per
   channel and per chip. Two of its findings are campaign-wide and are listed
   under "Two n_TOF conditions" below; read them before comparing anything
@@ -196,3 +196,8 @@ from the control-room browser with no file-system access.
 - **The from-scratch pass is done (2026-10-30).** All bench and SPS products are in EOS `Analysis_pass1` (code `6a0bb1f`),
   calibrated from nothing; all five chambers pass G1 against the audit. Analysis reads those tables, not Analysis_rr1 or the
   audit bundles. Status, findings and exclusions: `rerun/PASS1_STATUS_2026-10-30.md`; per-row ledger `rerun/PASS1_LEDGER.md`.
+- **n_TOF pass 1 is done too (stage 3 final 2026-11-20)**: EOS `july_beam/Analysis_pass1/stage3/`, ledger clean. Every n_TOF
+  analysis reads it through the analysis view (`$WORK_DATA/ntof_pass1/stage3_vt/`, v(t) angles under the plain column names,
+  `gated` = true |tan| < 0.5, no k; `sept26_prelim_analysis/pass1_tracks.py`, `paths.STAGE3` / `paths.RECO`). The earlier sets
+  (`stage3_fullpass`, `stage3_is2_v2[_cf]`, `kcal_*`, the is2 bundles) are retired: `rerun/ntof/RETIRE_PRE_PASS1_2026-11-20.md`.
+  Migration status and every number against the retired chain: `rerun/ntof/PASS1_DOWNSTREAM.md`.

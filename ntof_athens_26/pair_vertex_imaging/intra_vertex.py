@@ -547,7 +547,7 @@ def mult_figure(T, M, SS, cap):
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split('\n')[1])
-    ap.add_argument('--src', default=str(paths.spell('out', 'stage3_fullpass')))
+    ap.add_argument('--src', default=str(paths.spell('out', paths.STAGE3)))
     ap.add_argument('--jobs', type=int, default=8)
     ap.add_argument('--seed', type=int, default=71)
     ap.add_argument('--derive-only', action='store_true')

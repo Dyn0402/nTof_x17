@@ -448,7 +448,7 @@ def build(src: Path, dca_max: float, jobs: int, include_pre_access: bool,
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split('\n')[1])
-    ap.add_argument('--src', default=str(paths.spell('out', 'stage3_fullpass')))
+    ap.add_argument('--src', default=str(paths.spell('out', paths.STAGE3)))
     ap.add_argument('--dca', type=float, default=60.0,
                     help='leg pointing ceiling at BUILD time; the published '
                          '30 mm is then one point on a scan (default 60)')

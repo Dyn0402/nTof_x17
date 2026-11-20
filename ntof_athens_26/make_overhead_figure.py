@@ -104,7 +104,7 @@ HIST_RANGE, HIST_BINS = (-160.0, 160.0), 90
 
 # --------------------------------------------------------------------- sample
 def subruns() -> list:
-    d = paths.root('out') / 'reco_fullpass' / RUN
+    d = paths.root('out') / paths.RECO / RUN
     return sorted(p.name for p in d.iterdir()
                   if p.is_dir() and p.name.startswith('stat090_'))
 
@@ -122,7 +122,7 @@ def noisy_columns(subs, col: str = 'x_local') -> pd.DataFrame:
     from pair_vertex_imaging import z_image as ZI
     from ntof_tracking import run145_target_imaging as TI
     from sept26_prelim_analysis.build_tracks import y_up
-    src = paths.root('out') / 'stage3_fullpass'
+    src = paths.root('out') / paths.STAGE3
     t = pd.concat([y_up(pd.read_parquet(src / f'tracks_{RUN}_{s}.parquet',
                                         columns=['arm', 'gated', col, 'x_p0']),
                         src / f'tracks_{RUN}_{s}.parquet') for s in subs])
@@ -152,7 +152,7 @@ def arm_sample(arm, subs, k, hot_tab, charge_window=True, clean=True,
     from sept26_prelim_analysis import k_arm as K
     from sept26_prelim_analysis import source_imaging as SI
 
-    merged = str(paths.root('out') / 'reco_fullpass' / RUN)
+    merged = str(paths.root('out') / paths.RECO / RUN)
     tr = SI.transforms(RUN)[f'mx17_{arm}']
     cols = {c: [] for c in ('xl', 'yl', 'tx', 'ty')}
     funnel = dict(coincident=0, hotstrip_dropped=0, charge_window=0)
@@ -255,7 +255,7 @@ def dead_spans(subs) -> dict:
     chamber D's is a quarter of its plane and it is the hole in D's fan."""
     from sept26_prelim_analysis import source_imaging as SI
     from ntof_tracking import run145_target_imaging as TI
-    merged = str(paths.root('out') / 'reco_fullpass' / RUN)
+    merged = str(paths.root('out') / paths.RECO / RUN)
     out = {}
     for arm in ('A', 'B', 'C', 'D'):
         occ = SI.plane_occupancy(RUN, subs, arm, merged)

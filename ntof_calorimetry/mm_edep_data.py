@@ -32,7 +32,8 @@ from ntof_calorimetry.mip_sample import OUT  # noqa: E402
 
 RUN = 'run_145'
 WAVES = Path('/media/dylan/data/x17/beam_july/runs')
-STAGE3 = Path('/media/dylan/data/x17/sept26_prelim/stage3_fullpass')
+from sept26_prelim_analysis import paths  # noqa: E402
+STAGE3 = paths.spell('out', paths.STAGE3)      # n_TOF pass 1 by default (was stage3_fullpass)
 EDEP = OUT / 'mm_edep'
 SUBS = ('stat090_0000', 'stat090_0001', 'stat090_0002')
 KEEP = ['subrun', 'event_id', 'arm', 'track_id', 'x_p0', 'y_p0', 'x_tan_theta', 'y_tan_theta', 'tanx',

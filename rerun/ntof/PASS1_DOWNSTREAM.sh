@@ -16,6 +16,8 @@ P=${WORK_DATA:-/media/ucla/work}/ntof_pass1
 ANA=$P/ana
 LOG=$ANA/logs
 mkdir -p "$LOG"
+# migrated studies write under the pass-1 root, never over the retired chain's products
+export X17_SEPT26_OUT=$ANA X17_CALO_OUT=$ANA/calorimetry
 JOBS=${JOBS:-8}
 PROD=$($PY -c "
 import csv
@@ -33,9 +35,13 @@ step() {                                   # step <name> <cmd...>
 }
 WANT=("$@")
 
-# --- 0. the derived inputs
+# --- 0. the derived inputs, and the pass-1 output root (links: the view, the reco tree, chain-independent inputs)
 step vt_view    $PY rerun/ntof/stage3/vt_view.py --jobs $JOBS
 step reco_tree  $PY rerun/ntof/stage3/reco_tree.py --jobs $JOBS
+ln -sfn ../stage3_vt $ANA/stage3_pass1; ln -sfn ../reco_tree $ANA/reco_pass1
+OLD=/media/dylan/data/x17/sept26_prelim
+for d in ipc slim stage0 stage1 trigtime channel_masks noisy_channels hot_strata; do [ -e $OLD/$d ] && ln -sfn $OLD/$d $ANA/$d; done
+step resolution $PY rerun/ntof/stage3/resolution_line.py
 
 # --- 1. capsule pointing per run (scale-free crossing; feeds the measured axis of the pair studies)
 step imaging    $PY -m sept26_prelim_analysis.campaign_imaging --reco $P/reco_tree --runs $PROD --no-y \
@@ -67,5 +73,20 @@ step sc_cmp     $PY -m sept26_prelim_analysis.same_chamber_compare --chain pass1
 export X17_SCINT_OUT=$ANA/scint_stack
 step scint_x    $PY -m ntof_scint_stack.extract --src $P/stage3_vt --runs $PROD --jobs 4
 step scint_ana  $PY -m ntof_scint_stack.ana --jobs 4
+
+# --- 4. the rest of the downstream on pass 1
+step scintillators $PY -m sept26_prelim_analysis.scintillators
+step chamber_b     $PY -m sept26_prelim_analysis.chamber_b
+step tight         $PY -m sept26_prelim_analysis.tight_coincidence --all-runs
+step calo_beam     $PY -m ntof_calorimetry.mip_sample beam
+step trackqa       $PY -m sept26_prelim_analysis.trackqa_shards
+for s in "vertex_lab --jobs 4" "diagnostics --jobs 4" "vertex_image --jobs 4" "z_image --jobs 4" "vertex3d" \
+         "y_image --jobs 4" "intra_vertex --jobs 4"; do
+  step pv_${s%% *} bash -c "cd ntof_athens_26 && PYTHONPATH=..:. ../$PY -m pair_vertex_imaging.$s"
+done
+
+# --- 5. Geant4 through the pass-1 reconstruction (P5 test 8; hours on 14 cores)
+step g4_nose    bash ntof_cosmics/g4_digi/run_pass1.sh nose
+step g4_ear2    bash ntof_cosmics/g4_digi/run_pass1.sh ear2_L19p5
 
 echo "=== done: $ANA" | tee -a "$LOG/chain.log"
