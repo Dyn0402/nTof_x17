@@ -17,7 +17,8 @@ The report is generated: `~/x17/cosmic_bench/cloud_basics/attachment/report.html
 - **Gas compositions as model curves** (§25). One physics model with no free loss rate.
   - Beam run_71: 1.51 % water + 0.078 % air (163 ppm O2).
   - run_63 the night before: 230 → 147 ppm O2 over hours.
-  - CO2 period: ~290 ppm.
+  - CO2 period: ~290 ppm (on the wrong 95/3/2 grid; 278 ppm on 93/5/2, 2026-11-20; quoted value: the SPS gas fit,
+    282–403 ppm, `rerun/sps_gasfit/README.md`).
   - Bench det3, six fields: 0.95 % water, no air (≲ 10 ppm O2).
   - Water and O2 are not in room-air proportion.
 - **SPS constants on the bench** (§27, 2026-10-11; notes/mx17-sps-to-bench): the beam O2 does not spoil

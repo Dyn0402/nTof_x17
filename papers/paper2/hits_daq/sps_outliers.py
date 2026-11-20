@@ -76,7 +76,8 @@ def main():
         D = pickle.load(open(f, 'rb'))
         meta = D['meta']
         sel = [p for p in D['planes'] if p['view'] == 'y' and p.get('q') is not None][:a.nmax]
-        SRS.init(a.bundle, meta, len(sel[0]['q']), 'base:,gas:Dp=0.006', 5.0)
+        g = SRS.gas_dp(meta, D['planes'])        # Ar/CO2/iso 93/5/2 at the gas-fit composition (0.006 before 2026-11-20)
+        SRS.init(a.bundle, meta, len(sel[0]['q']), f"base:,gas:Dp={g['Dp']:.6f}", 5.0)
         wm, V = SRS.G['wm'], SRS.G['V']
         recs = dict(data=[], base=[], gas=[])
         for p in sel:
@@ -95,12 +96,16 @@ def main():
                 if r is not None:
                     recs[name].append(r)
         res[meta['key']] = {k: summarise(v) for k, v in recs.items()}
+        res[meta['key']]['gas_dp'] = g
         print('==', meta['key'])
-        for k, o in res[meta['key']].items():
+        for k, o in ((k, o) for k, o in res[meta['key']].items() if k != 'gas_dp'):
             print(f"   {k:5s} hits/plane {o['hits_per_plane']:.1f}  outliers/plane {o['outliers_per_plane']:.2f}  "
                   f"(|dx|<=1.5: {o['out_near_per_plane']:.2f}, 1.5-4: {o['out_mid_per_plane']:.2f}, >4: {o['out_far_per_plane']:.2f})  "
                   f"cathode side {o['out_cathode_side_frac']:.2f}  rel amp out/in {o['out_rel_amp_med']:.2f}/{o['in_rel_amp_med']:.2f}  "
                   f"|dx| q25/50/75/90 {np.round(o['out_absdx_q'], 1)}  u q10/50/90 {np.round(o['out_u_q'], 0)}", flush=True)
+    if os.path.exists(a.json):                        # keep what this script does not compute (plain_line_without_far_hits)
+        old = json.load(open(a.json))
+        res = {**{k: v for k, v in old.items() if k not in res}, **res}
     json.dump(res, open(a.json, 'w'), indent=1)
 
 

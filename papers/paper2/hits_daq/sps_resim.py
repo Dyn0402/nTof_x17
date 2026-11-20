@@ -32,11 +32,42 @@ import emulate as E  # noqa: E402
 from resim import PAD, padded, parse_variants  # noqa: E402
 from tiers import ladder_u  # noqa: E402
 
-# 'gas' = the Magboltz diffusion of the beam's wet Ar/CO2/iso (D_T 180-190 um/sqrt(cm) at 9-11 um/ns: Dp = 0.006), in
-# place of the bench bundle's 0.020 the pass rows were fitted with (sps_dp_scan.py)
-ARMS = ('base:,rc0:rc_D_y=0,rc2:rc_D_y=x2,dp0:Dp=1e-6,gas:Dp=0.006,gasrc0:Dp=0.006;rc_D_y=0,'
+# 'gas' = the Magboltz diffusion of the beam's wet Ar/CO2/iso, in place of the bench bundle's 0.020 the pass rows were
+# fitted with (sps_dp_scan.py).  'Dp=gas' is resolved per row by gas_dp(): Ar/CO2/iso 93/5/2 (the ATLAS NSW gas,
+# docs/GAS_MIXTURES.md) at the row's gas-fit composition, 0.0049-0.0054.  Until 2026-11-20 it was a fixed 0.006, from the
+# 95/3/2 grid (a wrong mixture label).
+ARMS = ('base:,rc0:rc_D_y=0,rc2:rc_D_y=x2,dp0:Dp=1e-6,gas:Dp=gas,gasrc0:Dp=gas;rc_D_y=0,'
         'rc0dp0:rc_D_y=0;Dp=1e-6,point:rc_D_y=0;Dp=1e-6;sigma_p0=0.07')
+GAP_REGISTRY_CM = 2.88                     # the registry's field labels: HV / 28.8 mm
+GASFIT_GROUP = {'run57': 'co2_run57', 'run59': 'co2_run59'}
 G = {}
+
+
+def row_field(key):
+    """drift field of an SPS CO2 known-angle row [V/cm], the registry convention (HV / 28.8 mm); run59 is at 700 V."""
+    hv = float(key.split('__d')[1]) if '__d' in key else 700.0
+    return hv / GAP_REGISTRY_CM
+
+
+def gas_dp(meta, planes):
+    """Dp [mm/sqrt(ns)] of the row's gas: sigma^2 = D_T^2 z = D_T^2 v t, so Dp = D_T sqrt(v), with D_T from Magboltz
+    (cloud_basics GasGrid 'co2' on air_merged, Ar/CO2/iso 93/5/2) at the row's water and air from the SPS gas fit
+    (rerun/sps_gasfit/results/verdict.json) and v the row's own drift velocity (median |w| / tan(stage)), since the
+    diffusion acts over the measured drift time."""
+    import json
+    repo = os.path.abspath(os.path.join(HERE, '..', '..', '..'))
+    sys.path.insert(0, os.path.join(repo, 'sps_beam_test_26', 'analysis', 'cloud_basics'))
+    import gasmodel
+    V = json.load(open(os.path.join(repo, 'rerun', 'sps_gasfit', 'results', 'verdict.json')))
+    grp = GASFIT_GROUP[meta['key'].split('_')[0]]
+    c = next(t for t in V['table'] if t['group'] == grp)
+    E = row_field(meta['key'])
+    DT = gasmodel.GasGrid('co2', 'air_merged')(c['water'], c['air'], E)['DT']          # um / sqrt(cm)
+    w = np.median([abs(p['w']) for p in planes if p['view'] == 'y'])                     # mm / ns
+    v = w / np.tan(np.radians(float(meta['stage_deg'])))                                 # mm / ns
+    dp = DT * 1e-3 / np.sqrt(10.0) * np.sqrt(v)                                          # mm/sqrt(mm) * sqrt(mm/ns)
+    return dict(Dp=float(dp), DT_um_rtcm=float(DT), v_um_ns=float(v * 1e3), E_Vcm=float(E), group=grp,
+                water=float(c['water']), air=float(c['air']), o2_ppm=float(c['o2_ppm']))
 
 
 def init(bundle, meta, K, spec, nsig):
@@ -85,8 +116,9 @@ def main():
     ap.add_argument('--nmax', type=int, default=0)
     ap.add_argument('--nsig', type=float, default=5.0)
     ap.add_argument('--jobs', type=int, default=12)
+    ap.add_argument('--summary', help='also write the per-row, per-arm summary JSON (results/sps_resim.json)')
     a = ap.parse_args()
-    out = []
+    out, gas = [], {}
     for f in a.pickles:
         D = pickle.load(open(f, 'rb'))
         meta = D['meta']
@@ -94,7 +126,12 @@ def main():
         if a.nmax:
             sel = sel[:a.nmax]
         K = len(sel[0]['q'])
-        with mp.Pool(a.jobs, initializer=init, initargs=(a.bundle, meta, K, a.arms, a.nsig)) as pool:
+        spec = a.arms
+        if 'Dp=gas' in spec:
+            gas[meta['key']] = gas_dp(meta, D['planes'])
+            spec = spec.replace('Dp=gas', f"Dp={gas[meta['key']]['Dp']:.6f}")
+            print(f"   gas Dp {meta['key']}: {gas[meta['key']]}", flush=True)
+        with mp.Pool(a.jobs, initializer=init, initargs=(a.bundle, meta, K, spec, a.nsig)) as pool:
             for rows in pool.imap_unordered(one, sel, chunksize=20):
                 out += rows
         T = pd.DataFrame([r for r in out if r['row'] == meta['key']])
@@ -106,6 +143,33 @@ def main():
     os.makedirs(os.path.dirname(os.path.abspath(a.out)), exist_ok=True)
     pd.DataFrame(out).to_parquet(a.out)
     print(f'[sps_resim] wrote {a.out}')
+    if a.summary:
+        summary(pd.DataFrame(out), gas, a.summary)
+
+
+def summary(T, gas, path):
+    """median ratio u / w per row, arm and mode, with 1.2533 x 1.4826 MAD / sqrt(n) as the error of the median."""
+    import json
+    rows = {}
+    for r, g in T.groupby('row', sort=False):
+        y = g[(g.arm == 'base') & (g['mode'] == 'res')]
+        R = rows[r] = dict(v_stage_um_ns=float(np.median(np.abs(y.w_true)) * 1e3 / np.tan(np.radians(25.4))), arms={})
+        if r in gas:
+            R['gas_dp'] = gas[r]
+        for (arm, mode), h in g.groupby(['arm', 'mode'], sort=False):
+            k = np.isfinite(h.u) & (np.abs(h.w_true) > 0)
+            x = (h.u[k] / h.w_true[k]).values
+            R['arms'].setdefault(arm, {})[mode] = dict(
+                ratio=float(np.median(x)), ratio_robust=float(np.nanmedian(h.ur[k] / h.w_true[k])),
+                n_hits=float(np.mean(h.n_hits[k])), dropped=float(np.mean(h.n_hits[k] - h.n_rob[k])),
+                coverage=float(k.mean()), ratio_err=float(1.2533 * 1.4826 * np.median(np.abs(x - np.median(x))) / np.sqrt(len(x))))
+    doc = ('sps_resim.py on the five SPS CO2 rows at the 25.4 deg stage, inclined (Y) view: median hits-ladder slope / '
+           'generating slope per arm and mode (res = the plane residual added back, base/res is the data; noise = pure model '
+           '+ white noise; zs = noise with the data zero suppression). gas = the Magboltz Dp of the row (Ar/CO2/iso 93/5/2 at '
+           'the gas-fit composition, gas_dp: 0.0049-0.0054; 0.006 from the wrong 95/3/2 grid before 2026-11-20), '
+           'base = the pass Dp 0.020.')
+    json.dump(dict(_doc=doc, rows=rows), open(path, 'w'), indent=1)
+    print(f'[sps_resim] wrote {path}')
 
 
 if __name__ == '__main__':

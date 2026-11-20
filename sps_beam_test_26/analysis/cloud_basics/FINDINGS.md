@@ -477,6 +477,12 @@ its stripes run across X). That gives no beam-like loss at modest significance o
 
 ## 18 · Air model: 1.55 % water + 0.07 % air; the water cannot come from the same leak
 
+> **2026-11-20, CO2 rows only:** the CO2-period numbers below were computed for Ar/CO2/iso 95/3/2, a wrong label; the gas
+> was the ATLAS NSW mixture 93/5/2 (`docs/GAS_MIXTURES.md`). The same estimate on the 93/5/2 grid (`make_comp_figures.co2_estimate`,
+> `air_hs`) gives water 1.25 % (was ~1.60 %) and 244–338 ppm O2 (was 270–385). Both are superseded by the SPS gas fit on the
+> final pass (`rerun/sps_gasfit/README.md`: CO2 water 1.56–1.75 %, O2 282–403 ppm at 27.9 mm), which uses each row's own
+> field instead of the nominal 243 V/cm and the 12.33 µm/ns of run_57. The CF4 and bench numbers are unaffected.
+
 Magboltz grid (condor 4410646, `results/air/`): water 0–3 % (bench 0–1 %) × air 0–2 % (N2/O2/Ar
 78.08/20.95/0.93, replacing Ar) for the CF4, CO2 and bench gases. `air_fit.py` fits v(E) and r(E)
 together. v comes from the run_63 ladder slopes (7.77 / 5.83 / 4.04 µm/ns at 142 / 108 / 75 V/cm) and
@@ -577,6 +583,12 @@ Even at 3e8 collisions the attachment estimate scatters ±10–15 % between neig
 across its 1.0 → 1.7 % water step. Smoothed, η·v(E) is flat from 75 to 150 V/cm and rises at 243.
 
 ## 25 · Gas compositions as model curves (`beam_comp_fit.py`, `driftscan_fit.py`, `bench_fit.py`, `make_comp_figures.py`)
+
+> **2026-11-20, the run_56 CO2 row only:** it was computed on a 95/3/2 grid, a wrong mixture label (`docs/GAS_MIXTURES.md`).
+> Recomputed on 93/5/2 (`co2_estimate()`, same inputs): water **1.25 %** (was 1.56 %), air 0.133 % [0.116, 0.161] (was 0.139 %),
+> O2 **278 (244–338) ppm** (was 291, 257–355). Still rough by construction; the quoted CO2 composition is the SPS gas fit's
+> (`rerun/sps_gasfit/README.md`). The deck and report built from `compositions.json` (outside the repo) carry the old row
+> until `make_comp_figures.py` is next run.
 
 One physics model for both setups: `predict.current_field` (uniform ionisation, Magboltz v/η/D_L,
 optional linear field profile k and gap spread), a parametric shaper, trigger jitter. No free loss rate.

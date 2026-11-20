@@ -138,7 +138,7 @@ def main():
                 for A in arms.values()) + '</tr>')
         H.append('</table>')
     H.append('<h2>Figures</h2><p><img src="figures/summary.png"><br>Water and O₂ per group at the one quoted gap, in time order, with stat (black) and total errors. Orange: CO₂ epoch '
-             '(Ar/CO₂/iso 93/5/2, fitted here on a 95/3/2 Magboltz grid: refit pending, docs/GAS_MIXTURES.md); blue: CF₄ epoch (Ar/CF₄/iso 88/10/2).</p>')
+             '(Ar/CO₂/iso 93/5/2, the ATLAS NSW gas, on its own Magboltz grid since 2026-11-20, docs/GAS_MIXTURES.md); blue: CF₄ epoch (Ar/CF₄/iso 88/10/2).</p>')
     for g in MAIN:
         if os.path.exists(os.path.join(fd, f'stacks_{g}.png')):
             H.append(f'<p><img src="figures/stacks_{g}.png"><br>{g}: the head-on strip-sum stacks (grey: jackknife error), the fit, '

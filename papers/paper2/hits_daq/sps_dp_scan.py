@@ -3,8 +3,10 @@
 -- which transverse diffusion do the SPS rows prefer?
 
 The SPS pass rows are fitted with the bench bundle's Dp (chamber E: 0.020 mm/sqrt(ns)), a gas property that does not
-transfer (model_audit F20): Magboltz for the beam's wet Ar/CO2/iso (1.6 % water, cloud_basics FINDINGS 18) gives
-D_T = 180-190 um/sqrt(cm) at v = 9-11 um/ns, i.e. Dp = D_T sqrt(v) = 0.0055-0.006.  This script refits every plane of a row
+transfer (model_audit F20): Magboltz for the beam's wet Ar/CO2/iso 93/5/2 (the ATLAS NSW gas, docs/GAS_MIXTURES.md) at
+the SPS gas-fit composition (1.7 % water, 280-320 ppm O2) gives D_T = 169-179 um/sqrt(cm) at v = 7.5-10 um/ns, i.e.
+Dp = D_T sqrt(v) = 0.0049-0.0054 (sps_resim.gas_dp; 'gas' in --dp is that row's value).  Until 2026-11-20 this said
+0.0055-0.006, from a Magboltz grid for 95/3/2, a wrong mixture label.  This script refits every plane of a row
 with the pass fitter (wft.reco.fit_plane, the row's adaptation as sps_reco._init) at a list of Dp values, everything else
 as the pass, and stores chi2, dof and the fit (p0, w, t0) per plane, view and Dp.  The X view (normal incidence, no RC
 term) measures the diffusion directly from the growth of the lateral width with drift time; the Y view (inclined, RC)
@@ -67,7 +69,15 @@ def main():
     a = ap.parse_args()
     D = pickle.load(open(a.pickle, 'rb'))
     meta = D['meta']
-    dps = [float(x) for x in a.dp.split(',')]
+    dps = []
+    for x in a.dp.split(','):
+        if x == 'gas':
+            import sps_resim
+            g = sps_resim.gas_dp(meta, D['planes'])
+            print(f"   gas Dp {meta['key']}: {g}", flush=True)
+            dps.append(round(g['Dp'], 5))
+        else:
+            dps.append(float(x))
     sel = []
     for v in 'xy':
         sel += [p for p in D['planes'] if p['view'] == v and p.get('q') is not None][:a.nmax]
@@ -88,7 +98,7 @@ def main():
               f'with their best chi2 here, median |w| [um/ns]')
         best = piv.idxmin(axis=1)
         for dp in piv.columns:
-            print(f'     Dp {dp:.3f}  dsum {piv[dp].sum() - ref.sum():+10.0f}  med {np.median(piv[dp] - ref):+7.1f}'
+            print(f'     Dp {dp:.4f}  dsum {piv[dp].sum() - ref.sum():+10.0f}  med {np.median(piv[dp] - ref):+7.1f}'
                   f'  best {np.mean(best == dp):.2f}  |w| {np.median(np.abs(wp[dp])) * 1e3:.3f}', flush=True)
 
 
