@@ -9,13 +9,14 @@ names (default `stage3_vtmap/`; after the 11-20 switch this IS `stage3_vt/`, the
     <col>_nomap   = the v(t) value without the map (the input view's <col>)
     <col>_frozen  = unchanged (frozen bundle v)
 
-The map (`angle_map/angle_map.json`, fitted by rerun/ntof/improve/angle_map.py on the A-C cosmic lines of every beam-off
-sub-run; study and validation: rerun/ntof/improve/README.md) corrects each view's GLOBAL slope s = d_p/d_z as
+The map (`angle_map/angle_map.json`: A, C fitted by rerun/ntof/improve/angle_map.py on the A-C cosmic lines of every
+beam-off sub-run, D by bd_map.py on the B-D lines after the censored-window cut; study and validation:
+rerun/ntof/improve/README.md) corrects each view's GLOBAL slope s (d_p/d_z on A, C; d_p/d_x on D, FRAME) as
 s' = (s - a(x, y)) / (1 + s_(x, y)), with a and s_ bilinear in the track's (x_local, y_local) over 50 mm cells.  In the
 view's own tan t = g s, g = +-1 per arm and view (checked per table), so t' = (t - g a) / (1 + s_).  The corrected tans
 go through build_tracks' own geometry with k = 1 (local_and_global, pointing, predictions), exactly as vt_join does,
 so every derived column sits on one calibration.  drift_len_mm (v only) is unchanged; path_len_mm and q_per_len
-follow the new secant.  B and D rows pass through unchanged (no map; their `_nomap` twins equal the plain columns).
+follow the new secant.  B rows pass through unchanged (no angle; their `_nomap` twins equal the plain columns).
 
     map_view.py [--src $WORK_DATA/ntof_pass1/stage3_vt] [--out $WORK_DATA/ntof_pass1/stage3_vtmap] [--jobs 14]
 """
@@ -36,7 +37,10 @@ sys.path.insert(0, str(HERE.parents[2]))
 MAP_FILE = HERE / 'angle_map' / 'angle_map.json'
 VIEW = 'pass1_vt_map'
 TAN_MAX = 0.5
-MAP_ARMS = ('A', 'C')
+MAP_ARMS = ('A', 'C', 'D')
+#: the global coordinate each view's tan measures, and the chamber normal: the map is fitted on global slopes
+#: d_<coord>/d_<normal> (A, C against the A-C cosmic line; D against the B-D line)
+FRAME = {'A': {'x': 'x', 'y': 'y', 'n': 'z'}, 'C': {'x': 'x', 'y': 'y', 'n': 'z'}, 'D': {'x': 'z', 'y': 'y', 'n': 'x'}}
 
 
 def interp(mp, x, y):
@@ -87,7 +91,8 @@ def apply(t, maps, trs):
         new = {}
         for p in 'xy':
             tt = a[f'tan{p}'].to_numpy(float)
-            g = slope_sign(tt, a[f'd_{p}'].to_numpy(float), a['d_z'].to_numpy(float))
+            fr = FRAME[arm]
+            g = slope_sign(tt, a[f'd_{fr[p]}'].to_numpy(float), a[f'd_{fr["n"]}'].to_numpy(float))
             if g is None:
                 new[p] = tt
                 continue
@@ -142,7 +147,7 @@ def one(src, out, maps, map_md5, force):
     mj = src.with_suffix('.meta.json')
     meta = json.load(open(mj)) if mj.exists() else {}
     meta['map'] = dict(name=VIEW, source=str(src), map_file=str(MAP_FILE), map_md5=map_md5,
-                       rule="s' = (s - a)/(1 + s_) on the global slope per (x_local, y_local); A, C only; <col>_nomap = "
+                       rule="s' = (s - a)/(1 + s_) on the global slope per (x_local, y_local); A, C, D; <col>_nomap = "
                             'the v(t) view value; gated/in_acceptance recomputed (true |tan| < 0.5)',
                        n_gated_by_arm={k: int(x) for k, x in v.groupby('arm')['gated'].sum().items()},
                        n_gated_nomap_by_arm={k: int(x) for k, x in v.groupby('arm')['gated_nomap'].sum().items()},

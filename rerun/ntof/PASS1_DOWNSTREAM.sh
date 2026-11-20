@@ -58,6 +58,15 @@ step focus_split $PY -m ntof_cosmics.focus_split --src pass1 --label $LABEL --ta
 for s in data data_z data_depth; do
   step pose_$s  $PY -m sept26_prelim_analysis.capsule_pose $s --out $ANA/capsule_pose
 done
+# pose fits: data and the pass-1 Geant4 library (EAR2, L 19.5 m), the three beam/capsule families of 11-20
+export POSE2_LIB=ear2_L19p5 POSE2_LIB_CHAIN=pass1
+step pose_shear $PY -m sept26_prelim_analysis.capsule_pose shear --out $ANA/capsule_pose
+for fam in "0 -16,-18,-20" "-5 -10,-15" "-10 -10,-15"; do
+  set -- $fam
+  for s in pose2 pose2z pose2d; do
+    step pose_${s}_xb$1 env POSE2_XB=$1 POSE2_XC=$2 $PY -m sept26_prelim_analysis.capsule_pose $s --out $ANA/capsule_pose
+  done
+done
 step capsule_tof $PY -m sept26_prelim_analysis.capsule_tof tof --chains pass1,is2_v2_cf
 step capsule_tilt $PY -m sept26_prelim_analysis.capsule_tof tilt --chains pass1
 
