@@ -304,7 +304,7 @@ resim/depth/phase scripts pad by 4 strips, chambers_C.py does not. The det3 temp
 
 ## Paper I text from the feedback note — updated 2026-11-20 (dylan-MS-7C84)
 
-**Resume:** Paper I v2: Sec. 2 rewritten ("a track", not "the angle"); apply Dylan's pick of 5 open suggestions, then Fig. 8/11.
+**Resume:** Paper I v2: Sec. 2 rewritten ("a track", not "the angle"); the 5 suggestions are closed (11-20); next Fig. 8/11.
 
 **2026-11-19/20 (Sec. 2 + Fig. 2, asked in chat, pushed to origin + Overleaf v2):**
 - **Sec. 2 rebuilt twice.** Final argument (Dylan's): (1) a point source needs only one hit per lepton, (2) sources are
@@ -321,10 +321,9 @@ resim/depth/phase scripts pad by 4 strips, chambers_C.py does not. The det3 temp
   Sec. 6.2 follows: "230 mm away, 4.0 (3.6) mm". Numbers: `figs/out/pointing.json` (`air_only`, `pair_symmetric`).
 - **Physics to keep straight:** the source-to-hit line is less sensitive to scattering than a local angle (1.1 vs 1.7 deg
   at 8 MeV) because deflections LATE in the path barely move the hit. An earlier draft had this backwards.
-- **Open suggestions, not applied (Dylan to pick):** (1) Fig. 2 caption title "Why a TPC is needed" does not match what
-  the figure shows; (2) intro "What the measurement needs" still calls the track angle "the figure of merit"; (3) Sec. 2
-  last sentence still points to Secs. 8, 9 with no reason given; (4) Sec. 6.2 still leads with pointing; (5) end of
-  Sec. 2 first paragraph says "angular resolution" before the text says one hit would do.
+- **The five suggestions are closed (11-20):** Dylan applied 1, 2, 3, 5 in Overleaf; Sec. 6.2 (now "What the resolution
+  means for a pair") leads with the opening angle (chambers alone 1.3, air alone 2.0, together 2.4 deg for the 9.8 MeV
+  pair), pointing second; conclusions name the two requirements. Dylan has not read Sec. 6.2 or later yet.
 - JINST and wrapped figures: no explicit rule found; a sister SISSA journal forbids wrapfig. Not used.
 - Build here: `~/bin/latexmk` is missing on the desktop; `pdflatex -output-directory=<scratch> main.tex` twice works.
   Draft notes off: `pdflatex '\AddToHook{package/drafting/after}{\draftnotesfalse}\input{main}'`.
