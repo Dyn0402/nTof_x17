@@ -1,5 +1,41 @@
 # Handoff
 
+## Paper I v2 prose in Dylan's writing style — updated 2026-11-20 (dylan-MS-7C84)
+
+**Resume:** Sec. 5-11 + app. A-E rewritten in Dylan's style and on Overleaf; next: his reaction, then titles/cuts he picks.
+
+**Goal:** Dylan finds Claude's paper prose too complicated. Learn his simpler, pedagogical style and write the papers in it.
+
+**Done:**
+- Style learned from his thesis, Vernier note, moving-average note, bench manual and (best evidence) the word-diffs
+  of his own Overleaf edits to Sec. 1-4. Guide: `papers/WRITING_STYLE.md`; pointers in `CLAUDE.md`, `papers/README.md`, memory.
+- `papers/paper1_v2/sections/05_gas.tex` to `11_conclusions.tex` and `A1`-`A5`: prose rewritten, nothing else changed
+  (`papers/check_rewrite.py` passes on all; builds, 64 pages with notes). Pushed to origin main and Overleaf, pulled back.
+
+**In progress / where it stopped:**
+- Nothing half-done. Dylan has not read the rewrite yet.
+
+**Next steps:**
+1. `papers/overleaf.sh status paper1_v2` then `pull`: if Dylan edited the rewritten sections, read the word-diffs
+   and add what they show to `WRITING_STYLE.md` (and update the memory `feedback-dylan-writing-style`).
+2. If he agrees: plainer subsection titles (6.4, 7.1, 7.4, 8.2, 8.4, 9.1-9.3, 10.2, app. C), then
+   `papers/note_outline.py paper1_v2 --write` so the feedback note follows.
+3. Cuts proposed, not made: doubling-voltage parenthesis and fixed-window event-time sentences (6.4), core chi2/ndf (6.1),
+   10/15/65 V sentence (7.2), cost-function 96.6 % sentence (8.3), delta-ray strip counts (9.1), g/pi sentence (10.2),
+   X-Y ramp ratio and drift-column-duration paragraph (`A4_bow.tex`).
+4. Same treatment for Paper IIa / IIb when he asks; teaching manuals in the corpus are still unread.
+
+**Gotchas / decisions:**
+- Interpretations to confirm: "event time" defined in 6.3 (track time relative to the scintillator trigger); 8.4 efficiency
+  "falls as the separation decreases"; 10.2 causes phrased "This is expected if"; "charge column" -> "drift column" in 6.4;
+  A1 "113 strips" kept literally.
+- Not touched: Sec. 1-4, `A6_moved.tex`, tables, all titles. Pre-rewrite text: commit before "prose rewritten in Dylan's style".
+- No `latexmk` on the desktop: build with `pdflatex -output-directory=<tmp> main.tex` twice.
+
+**Key files & commands:**
+- `papers/WRITING_STYLE.md` - the style guide; `papers/check_rewrite.py <before> <after>` - content-preservation check
+- `$WORK_DATA/writing_style_corpus/` - 16 Overleaf projects cloned read-only (regenerable)
+
 ## SPS CO2-epoch gas = NSW 93/5/2: redone everywhere; FIRST: Paper IIa consistency review — updated 2026-11-20 (dylan-MS-7C84)
 
 **Resume:** FIRST THING: review the Dp 0.006 -> 0.005 change for consistency across Paper IIa/IIb, then the IIa Overleaf conflict.
