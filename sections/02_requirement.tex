@@ -1,5 +1,5 @@
 \section{What the tracker must deliver: a track}\label{sec:requirement}
-\sectionstate{partial}{new section (Dylan 2026-11-10). Toy and figure: \texttt{papers/paper1\_v2/figs/make\_pointing.py},
+\sectionstate{ready}{done 2026-11-20 (Dylan's editing passes + typo passes; update only if later sections change). New section (Dylan 2026-11-10). Toy and figure: \texttt{papers/paper1\_v2/figs/make\_pointing.py},
 numbers in \texttt{figs/out/pointing.json} (keys \texttt{air\_only}, \texttt{air\_only.pair\_symmetric}). Kept general
 (Dylan 2026-11-11): air only, generic source size, no n\_TOF capsule and no foils of this chamber. 2026-11-19, second
 rebuild the same day (Dylan): the argument is no longer ``the angle is the figure of merit'' but (1) a point source
@@ -30,7 +30,7 @@ that falls smoothly with $\theta$. There, one degree of opening angle is 0.10\,M
   deflection in the air is drawn about five times too large for an 8\,MeV electron). The chamber measures a segment
   about 30\,mm long, about 230\,mm from the target (an idealized geometry). One degree on its direction is 0.5\,mm
   across the drift gap and 4\,mm at the target: the measured angle, extrapolated back (blue, dashed), misses the
-  origin by $b$; the dotted line continues the initial direction, the one that indicates the true opening angle. Inset (top left): diagram of the opening angle $\theta$ and the energies $E_+$ and
+  origin by $b$; the dotted line continues the initial direction, the one that defines the true opening angle. Inset (top left): diagram of the opening angle $\theta$ and the energies $E_+$ and
   $E_-$ of the two leptons. (b) Error on the initial
   direction of one lepton, in one projection, against its kinetic energy, with 20\,cm of air as the only traversed material.
   Orange: the line from the assumed origin to one point measured with 1\,mm position uncertainty at 230\,mm, for a point source (solid) and for an extended source of
@@ -56,7 +56,7 @@ came from the target, and two tracks say whether they came from the same point. 
 \end{equation}
 An angle error of 1\textdegree{} translates to 4.0\,mm of uncertainty at the target, significant with respect to the size of a source. A realistic position uncertainty is small beside the angular term: 0.5\,mm is 1.5\,\% of the variance, because the lever arm is eight times the length of the segment. The time resolution of the track serves only to keep non-coincident tracks from being paired, and is typically superseded by the time measured by a matched hit in the triggering scintillators behind.
 
-This makes the track itself, more than any one of its parameters, what the chamber is judged on, and it sets two requirements: angular resolution of about one degree and high efficiency. The angular resolution is needed to about a degree. Scattering before the measurement sets that scale, and the
+This makes the track itself, more than any one of its parameters, what the chamber is judged on, and it sets two requirements: angular resolution of about one degree and high efficiency. Scattering before the measurement sets the scale of the first: the
 air between the target and the chamber deflects an electron by 3.2\textdegree{} rms in each projection
 at 4\,MeV, by 1.7\textdegree{} at 8\,MeV and by 0.9\textdegree{} at 16\,MeV, before any target wall, window or foil is
 counted (those of the present chambers are in \cref{sec:material}). A chamber much better than 1\textdegree{} would
@@ -64,4 +64,5 @@ gain little and a worse one would cost: the 2.4\textdegree{} above is 2.0\textde
 3.5\textdegree{} with chambers of 2\textdegree. Then, the efficiency must be as high as possible. Both leptons must be detected, so the efficiency for a pair is the square of that for a single track. This efficiency must also be uniform over the active area and over all track angles; otherwise the opening-angle distribution can be distorted. Both requirements call for as little
 material as possible in front of the drift volume.
 
-\Cref{sec:tracking} discusses the angular resolution of the chambers and \cref{sec:efficiency} their efficiency.
+\Cref{sec:tracking} discusses the angular resolution of the chambers and \cref{sec:efficiency} their efficiency,
+including its uniformity over the track angle (\cref{sec:single}).
