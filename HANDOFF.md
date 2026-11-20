@@ -17,6 +17,12 @@
 
 **In progress / where it stopped:**
 - Nothing half-done. Dylan has not read the rewrite yet.
+- **Sec. 4 reviewed with Dylan 2026-11-21** (`04_setups.tex`; 4.3 and 4.4 now `ready`). "Forward model" is defined in 4.3
+  and used in 3.1, 6.1, 9.1 and the 9.3 title. Chamber E: "broken resistive strips" everywhere (E.1 title too). Chamber D:
+  "poorly mounted readout card". Beam: 150 GeV/c muons (Dylan). Feedback note headings regenerated.
+- **FOLLOW-UP (Dylan asked for this note):** when Section 3 (design and production) is written, re-read Section 4. The
+  chambers A-E are introduced by two sentences at the top of Section 3; check that 4.2 and 4.5 still make sense and do
+  not repeat the introduction, and move those sentences into the production subsection if that reads better.
 
 **Next steps:**
 1. `papers/overleaf.sh status paper1_v2` then `pull`: if Dylan edited the rewritten sections, read the word-diffs
