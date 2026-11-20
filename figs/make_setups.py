@@ -27,6 +27,22 @@ W, H = 6.1, H_B + H_S + GAP
 fig = plt.figure(figsize=(W, H))
 
 
+DIMS = '''
+DIM_C = '#8a8f98'
+def dim(w, ymid, lab, xl=0):
+    """A thin dimension line of length w (plot units = mm), centred on x = 0 at height ymid, label in a gap."""
+    kw = dict(color=DIM_C, lw=0.45, zorder=4, solid_capstyle='butt')
+    ax.plot([-w / 2, w / 2], [ymid, ymid], **kw)
+    for xe in (-w / 2, w / 2):
+        ax.plot([xe, xe], [ymid - 5, ymid + 5], **kw)
+    ax.text(xl, ymid, lab, ha='center', va='center', fontsize=FS * 0.82, color=DIM_C, zorder=5,
+            bbox=dict(fc='white', ec='none', pad=0.6))
+dim(SC_W, Y(SCINT_Z['bottom']) - SC_T / 2 - 15, '60 cm')
+dim(M3_W, Y(M3_Z[2]) - M3_T / 2 - 15, '50 cm')
+dim(MX_W, Y(SLOT_Z['top']) + MX_T / 2 + 15, '40 cm', xl=-110)   # off the muon's path
+'''
+
+
 def load(name, yoff, hh):
     s = (SRC / name).read_text()
     s = s.replace("sys.path[:0] = [str(HERE.parents[2] / 'papers')]", "sys.path[:0] = [str(REPO_ROOT / 'papers')]")
@@ -35,15 +51,12 @@ def load(name, yoff, hh):
     s = s.replace("fig.add_axes([0.05 / W, 0.05 / H, AX_W / W, AX_H / H])",
                   f"fig.add_axes([0.05 / W, ({yoff} + 0.05) / H, AX_W / W, AX_H / H])")
     s = s.replace("'M3 reference planes", "'reference planes")
-    # 2026-11-20 (Dylan): give the transverse sizes on the drawing. Every element is square; the slabs are already
-    # drawn to scale in x, so only the labels change. The bench panel is widened to the right (into the spare width
-    # of the shared figure) so that each size fits on its label's line.
-    s = s.replace("XL, XR, YB, YT = -640, 700, -95, 560", "XL, XR, YB, YT = -640, 945, -95, 560")
-    s = s.replace("'trigger scintillator'", "'trigger scintillator, 60 × 60 cm'")
-    s = s.replace("'reference planes\\n(2 + 2)'", "'reference planes, 50 × 50 cm\\n(2 + 2)'")
-    s = s.replace("((M3_Z[0], M3_Z[1]), 'reference planes')", "((M3_Z[0], M3_Z[1]), 'reference planes, 50 × 50 cm')")
-    s = s.replace("'test chamber (top slot)'", "'test chamber (top slot), 40 × 40 cm'")
-    s = s.replace("'test chamber (bottom slot)'", "'test chamber (bottom slot), 40 × 40 cm'")
+    # 2026-11-20 (Dylan): the transverse sizes as thin dimension lines, one per kind of element (every element is
+    # square, said in the caption). The slabs are already drawn to scale in x. The panel gains a little room below
+    # for the scintillator's line, and the muon arrow stops just above it.
+    s = s.replace("XL, XR, YB, YT = -640, 700, -95, 560", "XL, XR, YB, YT = -640, 700, -118, 560")
+    s = s.replace("x0, z0, x1, z1 = 150, 1510, -135, -150", "x0, z0, x1, z1 = 150, 1510, -126, -120")
+    s = s.replace("# muon, going down", DIMS + "\n# muon, going down")
     s = re.sub(r"^fig\.savefig\(.*$", "", s, flags=re.M)
     s = re.sub(r"^fig\.canvas\.draw\(\).*$", "", s, flags=re.M)
     s = re.sub(r"^ps\.save\(.*$", "", s, flags=re.M)
