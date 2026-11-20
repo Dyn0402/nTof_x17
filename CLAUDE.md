@@ -127,6 +127,11 @@ or resolve a pull conflict without Dylan's say-so: stop and report. Don't edit a
 last pull, don't regenerate a figure Stephan replaced, push small and often, and list the pushed files in the report.
 Full rules and the command table: `papers/README.md` § "Shared editing with Stephan".
 
+## Paper prose: Dylan's style
+
+Before writing or editing paper text, read `papers/WRITING_STYLE.md`: simple and pedagogical, one claim per sentence, no
+aphorisms or shorthand, each figure introduced by name. `papers/check_rewrite.py` checks a rewrite kept its numbers.
+
 ## Reporting results — write an HTML report, not just PNGs
 
 Every analysis should ship a `report.html` in its output directory alongside

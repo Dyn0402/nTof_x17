@@ -18,6 +18,12 @@ Journals (decided 2026-11-01, split 2026-11-13): Paper I → JINST, IIa → NIM 
 PAPER_PLAN.md still owns the outline states and the work list. The `.tex` sections carry the same
 state in a box at the top of each section; when a state changes, change both.
 
+## Writing style
+
+Paper text is written in Dylan's style: simple, pedagogical, one claim per sentence. Read `WRITING_STYLE.md` before
+writing or editing any section. `check_rewrite.py <before> <after>` checks that a prose rewrite kept every number,
+reference, label, box and comment.
+
 ## Layout of a paper
 
     main.tex            class, packages, \input of the sections (one file per section, so edits rarely collide)

@@ -10,52 +10,63 @@ efficiency is Sec.~7), then position and time,
 and how little of it depends on the gain.}
 
 \subsection{Angular resolution}\label{sec:angle}
-The angle is measured against the reference track on cosmic muons, in the interior of the chamber
-(\cref{sec:definitions}). \Cref{fig:angle} gives the result for chamber~A: over Runs 1 and 2, 25\,400 matched single
-tracks per view, the resolution is
+We measure the angular resolution with cosmic muons, by comparing the angle fitted in the chamber to the angle of
+the reference track. Only tracks in the interior of the chamber are used (\cref{sec:definitions}). \Cref{fig:angle}
+shows the result for chamber~A. Runs 1 and 2 together contain 25\,400 matched single tracks per view, and for these
+tracks the resolution is
 \[ s_{68}=0.99^\circ\ \text{(X)}\qquad\text{and}\qquad 0.90^\circ\ \text{(Y)}, \]
-with a median residual below 0.02\textdegree. Four properties of this number matter.
+with a median residual below 0.02\textdegree. Four properties of this result are important, and we discuss them in
+turn.
 
-\emph{It is the chamber's own.} The reference angle is far better than the chamber's. The telescope and the multiple
-scattering of the muons between its planes contribute about 0.05\textdegree, and the data bound that contribution at
-0.11\textdegree{} in X and 0.14\textdegree{} in Y; in quadrature with one degree that is under one per cent.
+\emph{The resolution is that of the chamber.} The angle of the reference track is known far better than the angle
+measured by the chamber. The reference telescope and the multiple scattering of the muons between its planes
+contribute about 0.05\textdegree{} to the residual. The data bound that contribution at 0.11\textdegree{} in X and
+0.14\textdegree{} in Y. Added in quadrature to a resolution of one degree, this contribution changes the result by
+less than one percent.
 \askDylan{The 0.11/0.14\textdegree{} bound is from the two-chamber position pin of chambers C and D (26 June); for chamber~A
 alone a kink regression gives ${\le}0.055$\textdegree. The material of the bench was never recorded. Say which bound you want
 quoted.}
 
-\emph{It holds out of sample.} The calibration was made on Run~1. Run~1 gives $0.98^\circ$ and $0.90^\circ$; Run~2,
-which the calibration never saw, gives $0.99^\circ$ and $0.90^\circ$.
+\emph{The resolution holds on data not used for the calibration.} The reconstruction was calibrated on Run~1 only.
+Run~1 gives $0.98^\circ$ and $0.90^\circ$. Run~2, which was not used in the calibration, gives $0.99^\circ$ and
+$0.90^\circ$.
 
-\emph{It does not depend on the angle.} Across the $\pm20$\textdegree{} that the bench provides, the resolution stays
-within about 0.15\textdegree{} of its mean (\crefp{fig:angle}{c}). In the beam, with chamber~E yawed by
-25.4\textdegree{}, the angle scale is $0.98\pm0.03$ of the known angle~\cite{paperII}, so the scale holds beyond the
-reach of the bench.
+\emph{The resolution does not depend on the track angle.} The bench provides track angles within $\pm20$\textdegree.
+Over this range the resolution stays within about 0.15\textdegree{} of its mean (\crefp{fig:angle}{c}). In the beam,
+where chamber~E was yawed by 25.4\textdegree{}, the angle scale is $0.98\pm0.03$ of the known angle~\cite{paperII}.
+The angle scale therefore remains correct at an angle larger than those the bench can reach.
 \analysis{SPS25}{a resolution at 25\textdegree{} with the beam as reference is not quoted: the two existing numbers (0.96--0.99\textdegree{} on an
 older fit, 1.02--1.10\textdegree{} on the final one) clip at 5\textdegree{} with 20\,\% of tracks beyond 10\textdegree. A clean one needs a single-track
 selection and unclipped $s_{68}$ on the CF$_4$ runs that have a column-measured $\vd$; those runs exist.}
 
-\emph{It includes one correction.} The readout boards are bowed, which tilts the drift direction by an amount that
-varies across the chamber (\cref{sec:bow}). The correction is part of the calibration. Without it chamber~A reads
-1.10\textdegree{} and 1.07\textdegree.
+\emph{The resolution includes one correction.} The readout boards are bowed. This tilts the drift direction by an
+amount that varies across the chamber (\cref{sec:bow}). We correct for this tilt as part of the calibration. Without
+the correction, the resolution of chamber~A would be 1.10\textdegree{} and 1.07\textdegree.
 
-The residual is a Gaussian core with a tail (\crefp{fig:angle}{b}). A Gaussian fitted within $\pm2\,s_{68}$ of the
-median has $\sigma=0.92^\circ$ (X) and $0.83^\circ$ (Y) and holds 95 and 94\,\% of the tracks; with 25\,000 tracks the
-core is close to Gaussian but not exactly so ($\chi^2/\mathrm{ndf}=29/17$ and $45/15$), and $s_{68}$ sits 7--8\,\%
-above $\sigma$ because of the tail. The tail is a flat floor: 3.4\,\% of tracks in each view are more than
-5\textdegree{} off, and these are fits far steeper than the track, not a wider core. They are the
-events of \cref{sec:straight}, in which a $\delta$-ray or a second deposit pulls a straight-line fit.
+The distribution of the residual has a Gaussian core and a tail (\crefp{fig:angle}{b}). A Gaussian fitted within
+$\pm2\,s_{68}$ of the median has a width of $\sigma=0.92^\circ$ (X) and $0.83^\circ$ (Y), and this range contains 95
+and 94\,\% of the tracks. With 25\,000 tracks, the core is close to a Gaussian but not exactly one
+($\chi^2/\mathrm{ndf}=29/17$ and $45/15$). Because of the tail, $s_{68}$ is 7--8\,\% larger than $\sigma$. The tail
+is roughly flat: in each view, 3.4\,\% of the tracks have a residual larger than 5\textdegree. For these tracks the
+fitted angle is far steeper than the true one, so they are not simply the edge of a wider core. They are the events
+discussed in \cref{sec:straight}, in which a $\delta$-ray or a second charge deposit pulls the fit of a single
+straight track away from the muon.
 
-Chamber~B, the second good chamber, reaches $1.05^\circ$ and $1.13^\circ$, also flat in angle (not shown).
-Chambers C, D and E reach $1.26/1.51^\circ$, $1.23/1.46^\circ$ and $2.41/2.08^\circ$; these three were calibrated on the runs they are quoted on, and they are the chambers with
-defects of \cref{sec:datasets} (\cref{fig:effmap}).
+Chamber~B, the second good chamber, has a resolution of $1.05^\circ$ and $1.13^\circ$, which also does not depend on
+the track angle (not shown). Chambers C, D and E have resolutions of $1.26/1.51^\circ$, $1.23/1.46^\circ$ and
+$2.41/2.08^\circ$. These three chambers were calibrated on the same runs for which their resolutions are quoted, and
+they are the chambers with the defects described in \cref{sec:datasets} (\cref{fig:effmap}).
 
-\paragraph{What it is compared with.} A conventional micro-TPC analysis fits a straight line to one time per strip.
-On the same chamber~A events and with one statistic for both, that gives 2.1\textdegree{} and 2.7\textdegree{} where
-the waveform fit gives 1.0\textdegree~\cite{paperII}. A simulation of the reconstruction on ideal events gives
-0.3--0.5\textdegree, so the chamber is a factor of two above what its geometry and sampling allow. Part of the
-excess is in events with saturated strips or unusually large charge. The rest behaves as an event-to-event
-fluctuation of the charge pattern that is larger in the data than in the simulation; it is characterized in the
-companion paper and its origin in the signal is not identified.
+\paragraph{What it is compared with.} It is useful to compare this resolution with two other numbers. The first is
+the resolution of a conventional micro-TPC analysis, which extracts one time per strip and fits a straight line to
+these times. Applied to the same chamber~A events, and evaluated with the same statistic, the conventional analysis
+gives 2.1\textdegree{} and 2.7\textdegree, while the waveform fit gives 1.0\textdegree~\cite{paperII}. The second is
+the resolution expected for an ideal chamber. A simulation of ideal events, passed through the same reconstruction,
+gives 0.3--0.5\textdegree. The measured resolution is therefore about a factor of two larger than what the geometry
+and the sampling of the chamber allow. Part of this excess comes from events with saturated strips or with an
+unusually large charge. The rest behaves like a fluctuation of the charge pattern from event to event that is larger
+in the data than in the simulation. This fluctuation is characterized in the companion paper, but we have not
+identified its origin in the signal.
 \askDylan{This replaces ``an unexplained remainder of 0.56--0.65\textdegree{} on clean events is measured and bounded but not
 identified''. That number is on another footing from the headline ($s_{68}$ within $\pm5$\textdegree, calibration runs, a
 different arm), so it is not quoted here; give it in the companion paper with its definition, or tell me to put it back.
@@ -66,47 +77,55 @@ correction: 1.04/1.01\textdegree), which is why it is not drawn in \cref{fig:ang
   \centering
   \figorbox{angle_resolution_v2}{fitted against reference angle, residual distribution, resolution against angle, chamber A}
   \caption{Angular resolution of chamber~A on cosmic muons (Runs 1 and 2, 25\,400 reference-matched single tracks per
-  view). (a) Fitted angle $\theta_\mathrm{fit}$ against the reference angle $\theta_\mathrm{ref}$, X and Y views
-  together, in 0.5\textdegree{} cells (logarithmic color scale; empty cells white); dashed, $\theta_\mathrm{fit}=\theta_\mathrm{ref}$.
+  view). (a) Fitted angle $\theta_\mathrm{fit}$ as a function of the reference angle $\theta_\mathrm{ref}$, X and Y views
+  together, in 0.5\textdegree{} cells (logarithmic color scale; empty cells white). The dashed line is $\theta_\mathrm{fit}=\theta_\mathrm{ref}$.
   (b) The residual $\theta_\mathrm{fit}-\theta_\mathrm{ref}$ in 0.2\textdegree{} bins, X filled and Y open, with a
   Gaussian fitted within $\pm2\,s_{68}$ of the median (solid for X, dashed for Y, over the fit range; dotted beyond it).
-  Beyond $\pm6$\textdegree{} lie 3.2\,\% (X) and 3.3\,\% (Y) of the tracks.
-  (c) $s_{68}$ in 2\textdegree{} bins of the reference angle, X solid and Y dashed; bootstrap errors. $s_{68}$ is the 68th
+  The residual is beyond $\pm6$\textdegree{} for 3.2\,\% (X) and 3.3\,\% (Y) of the tracks.
+  (c) $s_{68}$ in 2\textdegree{} bins of the reference angle, X solid and Y dashed, with bootstrap errors. $s_{68}$ is the 68th
   percentile of $|\theta_\mathrm{fit}-\theta_\mathrm{ref}-\mathrm{median}|$, with no clipping.}
   \label{fig:angle}
 \end{figure}
 
 \subsection{What the resolution means for a pair}\label{sec:pointing}
-\Cref{sec:requirement} asked for an angle to about a degree, the scale set by the scattering of the leptons before
-they are measured. Chamber~A meets it. For the symmetric pair at the $^4$He edge, two leptons of 9.8\,MeV, the two
-chambers alone would give the opening angle to 1.3\textdegree; the scattering in 20\,cm of air alone gives
-2.0\textdegree, and the two together 2.4\textdegree{} (\cref{sec:requirement}). The chamber is therefore not what
-limits the opening angle, and a better one would gain little.
+\Cref{sec:requirement} set the requirement of an angular resolution of about one degree. This scale is set by the
+scattering of the leptons before they are measured. Chamber~A meets this requirement. To see what this means for a
+pair, consider again the symmetric pair at the $^4$He edge, with two leptons of 9.8\,MeV. The resolution of the two
+chambers alone would give an uncertainty on the opening angle of 1.3\textdegree. The scattering in 20\,cm of air
+alone gives 2.0\textdegree, and the two effects together give 2.4\textdegree{} (\cref{sec:requirement}). The chamber
+is therefore not what limits the measurement of the opening angle, and a chamber with a better resolution would
+improve it only slightly.
 
-The same track, extrapolated back, tests whether a particle came from the target. With \cref{eq:pointing}, a track
-measured to 0.99\textdegree{} (0.90\textdegree) points back to the target, 230\,mm away, to 4.0\,mm (3.6\,mm), and
-the position resolution of the next subsection contributes 0.1\,\% of that variance. For the leptons the chambers
-were built for, the multiple scattering in the air and in the entrance foils of the chamber is larger than this at
-every energy: 4.5\,mm at 16\,MeV, 8.8\,mm at 8\,MeV and 17\,mm at 4\,MeV (\cref{tab:material}). Here too the
-chamber's own resolution is not the limit. The foils are worth attention for the same reason. The copper of the
-cathode alone, if it is the 9\,\textmu m assumed here, scatters as much as the 20\,cm of air.
+The same track can be extrapolated back to test whether the particle came from the target. Using
+\cref{eq:pointing}, a track with an angular resolution of 0.99\textdegree{} (0.90\textdegree) points back to a
+target 230\,mm away with an uncertainty of 4.0\,mm (3.6\,mm). The position resolution, discussed in the next
+subsection, contributes only 0.1\,\% of that variance. For the leptons these chambers were built to measure, the
+multiple scattering in the air and in the entrance foils of the chamber produces a larger uncertainty at the target
+than this at every energy: 4.5\,mm at 16\,MeV, 8.8\,mm at 8\,MeV and 17\,mm at 4\,MeV (\cref{tab:material}). Here
+again, the resolution of the chamber itself is not the limit. For the same reason, the material of the entrance foils
+deserves attention. The copper of the cathode alone, if its thickness is the 9\,\textmu m assumed here, scatters the
+leptons as much as the 20\,cm of air.
 
 \subsection{Position resolution}\label{sec:position}
-The residual of the reconstructed position to the reference ray at the mesh has a Gaussian core of 0.55\,mm in X and
-0.53\,mm in Y for chamber~A. Little of that is the chamber. The residual holds three terms: the chamber, the pointing
-of the reference ray (0.24 and 0.21\,mm), and the scattering of the muon between the reference planes, which shows as
-a growth of the residual with the $\chi^2$ of the reference track. Extrapolating the core width of tracks near normal
-incidence to $\chi^2\to0$ removes the scattering (\crefp{fig:posres}{a}) and leaves $275\pm15$ and
-$236\pm18$\,\textmu m; subtracting the pointing in quadrature leaves the chamber, $128\pm33$\,\textmu m in X and
-$113\pm36$\,\textmu m in Y. The subtraction dominates the uncertainty: a change of 10\,\% in the pointing moves these to
-63--166 and 62--145\,\textmu m (\crefp{fig:posres}{b}). We quote an intrinsic resolution of about
-$120\pm60$\,\textmu m for chamber~A near normal incidence. Chamber~B gives $163\pm29$ and $176\pm21$\,\textmu m.
+We measure the position resolution from the residual between the reconstructed position of the track at the mesh
+and the reference ray. For chamber~A, this residual has a Gaussian core of 0.55\,mm in X and 0.53\,mm in Y. Only a
+small part of this width comes from the chamber. The residual contains three contributions: the resolution of the
+chamber, the pointing resolution of the reference ray (0.24 and 0.21\,mm), and the scattering of the muon between the
+reference planes. The scattering can be recognized because it makes the residual grow with the $\chi^2$ of the
+reference track. To remove it, we take tracks near normal incidence and extrapolate the core width to $\chi^2\to0$
+(\crefp{fig:posres}{a}). This leaves $275\pm15$ and $236\pm18$\,\textmu m. We then subtract the pointing resolution
+in quadrature, which leaves the contribution of the chamber: $128\pm33$\,\textmu m in X and $113\pm36$\,\textmu m in
+Y. This subtraction dominates the uncertainty. If the pointing resolution is changed by 10\,\%, the results move to
+63--166 and 62--145\,\textmu m (\crefp{fig:posres}{b}). We therefore quote an intrinsic resolution of about
+$120\pm60$\,\textmu m for chamber~A near normal incidence. The same procedure for chamber~B gives $163\pm29$ and
+$176\pm21$\,\textmu m.
 
-The beam gives an independent check with another reference. In its working region (\cref{app:beam}), chamber~E
-measures $138$\,\textmu m in X and $120$\,\textmu m in Y after the pointing of the telescope is subtracted, with
-ranges of 112--153 and 89--136\,\textmu m from the uncertainty of the telescope and upper bounds of 153 and
-145\,\textmu m that assume nothing about it (\crefp{fig:posres}{c--e}). Chamber~E runs at reduced gain over most of
-its board, so this is a cross-check and not the headline; the two setups agree.
+The beam data provide an independent check with a different reference. In its working region (\cref{app:beam}),
+chamber~E has a resolution of $138$\,\textmu m in X and $120$\,\textmu m in Y after the pointing resolution of the
+telescope is subtracted. The uncertainty on the resolution of the telescope gives ranges of 112--153 and
+89--136\,\textmu m. If nothing is assumed about the telescope, the upper bounds are 153 and 145\,\textmu m
+(\crefp{fig:posres}{c--e}). Chamber~E operates at reduced gain over most of its board, so we treat this as a
+cross-check rather than as the main result. The two setups agree.
 
 \begin{figure}[tbp]
   \centering
@@ -124,36 +143,44 @@ its board, so this is a cross-check and not the headline; the two setups agree.
 \end{figure}
 
 \subsection{Time resolution}\label{sec:time}
-The reconstruction returns the time at which the charge of a track starts to arrive, in each view. Against the
-scintillator trigger, the event time of chamber~A has a resolution of 41.6\,ns in Run~1 and 40.3\,ns in Run~2. The
-difference between the two views, which cancels everything they share, gives 22.4 and 22.2\,ns for
-$(t_X-t_Y)/\sqrt2$, the part of the resolution that is uncorrelated between the views; what the two views share is 38
-and 37\,ns. In a TPC time is depth: at 36\,\textmu m/ns the event time is 1.5\,mm along the drift. Chambers B and D
-reach 42 and 46\,ns, chamber~C 78\,ns (\cref{app:gain}).
+For each view, the reconstruction returns the time at which the charge of a track begins to arrive. We call the
+time of the track, measured relative to the scintillator trigger, the event time. For chamber~A the event time has a
+resolution of 41.6\,ns in Run~1 and 40.3\,ns in Run~2. The resolution can be separated into two parts. The difference
+between the times of the two views cancels everything the two views have in common, so the width of
+$(t_X-t_Y)/\sqrt2$ gives the part of the resolution that is uncorrelated between the views. This part is 22.4 and
+22.2\,ns. The part that is common to the two views is 38 and 37\,ns. In a TPC a time corresponds to a depth: at a
+drift velocity of 36\,\textmu m/ns, the event time resolution corresponds to 1.5\,mm along the drift direction.
+Chambers B and D have event time resolutions of 42 and 46\,ns, and chamber~C of 78\,ns (\cref{app:gain}).
 
-The time resolution is set by the size of the signal, as the next subsection shows, and a correction for time walk
-changes it by less than 1\,\%. The dependence on the drift field is in \cref{app:gain}.
+The time resolution is determined by the size of the signal, as the next subsection shows. A correction for time walk
+changes it by less than 1\,\%. Its dependence on the drift field is shown in \cref{app:gain}.
 
 \subsection{What the gain buys: time, and nothing else}\label{sec:gain}
-Chamber~A was scanned in $HV_\mathrm{resist}$ from 425 to 525\,V at fixed drift field (\cref{fig:gainscan}). Between
-425 and 490\,V the charge of a track grows by a factor $13.1\pm0.5$, doubling every $17.5\pm0.3$\,V on average (every
-19\,V at the bottom of the range and every 15\,V at the top), and the fraction of tracks with a strip at the limit of
-the ADC rises from zero to 30\,\%.
+To study how the performance depends on the gain, the voltage $HV_\mathrm{resist}$ of chamber~A was scanned from
+425 to 525\,V at a fixed drift field (\cref{fig:gainscan}). Between 425 and 490\,V, the charge of a track increases
+by a factor of $13.1\pm0.5$. On average the charge doubles every $17.5\pm0.3$\,V (every 19\,V at the bottom of the
+range and every 15\,V at the top). Over the same range, the fraction of tracks with at least one strip at the limit
+of the ADC rises from zero to 30\,\%.
 
-Over that factor of 13 the angular resolution does not move: 0.91--1.03\textdegree{} in X and 0.80--0.96\textdegree{}
-in Y up to 505\,V, with an angle scale of 0.99--1.02 in both views (\crefp{fig:gainscan}{b}). Nor does the core of the
-position residual (\crefp{fig:gainscan}{c}), nor the efficiency (\cref{sec:hvscan}). The time resolution does: the
-uncorrelated part falls from $83\pm10$\,ns at 425\,V to $24\pm1$\,ns at 490\,V, and the event time from $102\pm8$ to
-$38\pm2$\,ns (\crefp{fig:gainscan}{d}).
+While the charge changes by this factor of 13, the angular resolution does not change. It stays within
+0.91--1.03\textdegree{} in X and 0.80--0.96\textdegree{} in Y up to 505\,V, with an angle scale of 0.99--1.02 in both
+views (\crefp{fig:gainscan}{b}). The core of the position residual does not change either
+(\crefp{fig:gainscan}{c}), and neither does the efficiency (\cref{sec:hvscan}). The time resolution, however,
+improves strongly with the gain. Its uncorrelated part falls from $83\pm10$\,ns at 425\,V to $24\pm1$\,ns at 490\,V,
+and the event time resolution falls from $102\pm8$ to $38\pm2$\,ns (\crefp{fig:gainscan}{d}).
 
-The reason is that the two come from different parts of the signal. The time is read from the start of the charge
-column, the first electrons, made next to the mesh: a small part of the signal, whose timing degrades as it nears the
-noise. The angle is fitted to the whole column, every strip and every sample. Two measurements support this. Track
-by track, among unsaturated tracks of the scan points below 510\,V, the angle residual does not depend on the charge
-of the track over a factor 17 in charge. And in a fixed window of early amplitude the uncorrelated time changes only
-from $44\pm5$\,ns at 435\,V to $30\pm4$\,ns at 490\,V, against a factor of about four over the same voltages for all
-signal sizes: most of its dependence on the voltage is the size of the signal. The event time in the same window still falls, from $82\pm8$ to $39\pm4$\,ns, so
-the part common to the two views has a dependence on the voltage that the amplitude does not account for.
+The reason for this difference is that the time and the angle are measured from different parts of the signal. The
+time is taken from the start of the drift column, which is made by the first electrons to arrive, those produced
+next to the mesh. This is a small part of the signal, and its timing degrades as its amplitude approaches the noise.
+The angle, in contrast, is fitted to the whole drift column, using every strip and every sample. Two measurements
+support this explanation. First, we look track by track at the unsaturated tracks of the scan points below 510\,V,
+and find that the angle residual does not depend on the charge of the track over a factor 17 in charge. Second, we
+select tracks in a fixed window of early amplitude. In this window, the uncorrelated time resolution changes only
+from $44\pm5$\,ns at 435\,V to $30\pm4$\,ns at 490\,V, while for all signal sizes it changes by a factor of about
+four over the same voltages. Most of the dependence of the uncorrelated time resolution on the voltage is therefore
+a dependence on the size of the signal. The event time resolution in the same window still falls, from $82\pm8$ to
+$39\pm4$\,ns. The part of the time resolution that is common to the two views therefore has a dependence on the
+voltage that is not explained by the amplitude.
 \askDylan{Three corrections from the HV rundown (\texttt{figs/out/gain\_scan.json}): (1) the time values against HV are now
 those of reference-matched tracks, as everywhere else in the paper (83/102\,ns at 425\,V); the old text and one appendix
 figure used all clean triggers, 80\,\% of which have no reference track (109/105\,ns). (2) The gain: one doubling voltage
@@ -164,10 +191,11 @@ field (\cref{app:gain}), not the voltage. The angle-by-charge-decile numbers (0.
 no producer in the repo, so they are not quoted; the sentence ``does not depend on the charge of the track over a factor
 17'' rests on the same missing script and needs re-deriving or dropping. The fixed-window numbers are on all clean
 triggers, not on reference-matched tracks.}
-Two limits apply. The angular resolution includes the small reference term, which could hide a change in the
-chamber's own; and the statement holds down to 425\,V, $1/13$ of the gain of the long runs, below which the scan does
-not go. For operation the consequence is margin: the chamber could run well below 490\,V with no loss of efficiency,
-angle or position, at the price of the time resolution.
+These conclusions have two limits. First, the measured angular resolution includes the small contribution of the
+reference track, which could hide a change in the resolution of the chamber itself. Second, the conclusions hold
+down to 425\,V, where the gain is $1/13$ of the gain of the long runs. The scan does not go below this voltage. For
+operation, this result means that there is margin: the chamber could be operated well below 490\,V with no loss of
+efficiency, angular resolution or position resolution. The cost would be a worse time resolution.
 \askDylan{The bench runs used 490\,V; the scans support any HV from ${\sim}460$\,V up for efficiency. Is timing
 (depth, $t_0$) the argument we want to make for 490\,V, or was it chosen for gain margin at n\_TOF? Note the noise floor
 doubled there (23 July), which would favor margin, but we have no n\_TOF HV scan to show it.}

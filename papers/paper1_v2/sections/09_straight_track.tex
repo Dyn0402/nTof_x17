@@ -7,31 +7,38 @@ miss (bending things)''). Data: the $\delta$-ray, deposit and position-tail clas
 \intent{The reconstruction assumes one straight track per particle. Say what that costs on the data we have, and what it
 would cost on the particles the chambers were built for, which the data cannot show.}
 
-The reconstruction of \cref{sec:reco} fits a straight line with a free charge profile along it. Whatever in the
-chamber is not a straight line is either fitted as one anyway or left unexplained. On cosmic muons this assumption
-is nearly exact for the muon itself and fails for what the muon produces; for the electrons the chambers were built
-for it is not exact even for the particle.
+The reconstruction of \cref{sec:reco} fits a straight line, with a free charge profile along that line. Any charge in
+the chamber that does not lie on a straight line is therefore either fitted as if it did, or left unexplained. For
+cosmic muons, the straight-line assumption is nearly exact for the muon itself, but it fails for the secondary
+particles that the muon produces. For the electrons that the chambers were built to measure, the assumption is not
+exact even for the particle itself. This section discusses both cases.
 
 \subsection{On muons: what the muon makes}\label{sec:delta}
-A GeV muon is straight over 30\,mm of gas to a few thousandths of a degree. What bends is its company
-(\cref{fig:notstraight}). The largest loss of single tracks, 2.4\,\% (\cref{sec:single}), is a muon with a knock-on
-electron, a $\delta$-ray, and it takes three forms with the size of the deposit. A $\delta$-ray that leaves along the
-track adds charge on one side of it and pulls the fitted line by more than 5\,mm (0.81\,\%; a clean muon covers a
-median of 12 strips, these 34). A compact $\delta$-ray saturates a few strips and tilts the line toward itself
-(0.87\,\%; 19 strips). A large branching one exceeds the 50 strips at which the reconstruction takes the event for a
-discharge, and nothing is fitted (0.76\,\%; 67 strips). None of the three comes with extra activity in the reference
-planes above or below the chamber, so the deposit is made by the muon in the chamber's own gas, cathode or window; the
-rate is of the order expected for knock-on electrons above 0.1\,MeV. A smaller class is a second deposit that is not
-shaped like a particle crossing the gap at all (0.18\,\%).
+A GeV muon is straight over 30\,mm of gas to within a few thousandths of a degree. What is not straight is the
+secondary charge that the muon produces (\cref{fig:notstraight}). The largest loss of single tracks, 2.4\,\%
+(\cref{sec:single}), comes from muons accompanied by a knock-on electron, or $\delta$-ray. These events fall into three
+classes, depending on the size of the deposit. In the first class, a $\delta$-ray leaves along the track. It adds
+charge on one side of the track and pulls the fitted line by more than 5\,mm. This class is 0.81\,\% of single tracks.
+A clean muon covers a median of 12 strips, while the events of this class cover a median of 34. In the second class, a
+compact $\delta$-ray saturates a few strips and tilts the fitted line toward itself (0.87\,\%; 19 strips). In the third
+class, a large branching $\delta$-ray covers more than the 50 strips at which the reconstruction treats the event as a
+discharge, and so no fit is made (0.76\,\%; 67 strips). None of the three classes shows extra activity in the reference
+planes above or below the chamber. This indicates that the deposit is produced by the muon in the gas, cathode or
+window of the chamber itself. The rate is of the order expected for knock-on electrons above 0.1\,MeV. A smaller,
+separate class of events (0.18\,\%) has a second deposit that does not have the shape of a particle crossing the gap
+at all.
 
-These events are also the tail of the angular resolution. The 3.4\,\% of tracks reconstructed more than 5\textdegree{}
-from the reference (\cref{sec:angle}) are fits pulled far steeper than the muon, not a wider core.
+These events also make up the tail of the angular resolution. In \cref{sec:angle}, 3.4\,\% of tracks are
+reconstructed more than 5\textdegree{} from the reference. These are fits that were pulled far steeper than the muon,
+rather than a wider core of the distribution.
 
-The model cannot be patched cheaply. Adding a compact deposit to the forward model, and excluding the saturated
-samples from the fit, raises the agreement with the reference on 350 views with a saturated blob from 71.4 to at
-most 72.9\,\%: the deposit is itself a short, curling track over 5 to 10 strips, and not a point. Recovering
-these events needs a reconstruction that first recognizes the topology, and then fits the muon on the charge that
-belongs to it. That could return up to the 2.4 points lost here; how much of it is reachable has not been measured.
+We find that these events cannot be recovered by a small addition to the model. We tested this on 350 views that
+contain a saturated blob, by adding a compact deposit to the forward model and excluding the saturated samples from
+the fit. The agreement with the reference rises from 71.4 to at most 72.9\,\%. The reason is that the deposit is not
+a point: it is itself a short, curling track that extends over 5 to 10 strips. To recover these events, a
+reconstruction would first need to recognize the topology of the event, and then fit the muon using only the charge
+that belongs to it. Such a reconstruction could recover up to the 2.4 points lost here. How much of this can actually
+be recovered has not been measured.
 
 \begin{figure}[tbp]
   \centering
@@ -45,23 +52,25 @@ belongs to it. That could return up to the 2.4 points lost here; how much of it 
 \end{figure}
 
 \subsection{On electrons: the particle itself}\label{sec:gasscatter}
-The data of this paper are cosmic muons and high-energy beam particles. The chambers were built for electrons and
-positrons of 3 to 16\,MeV, and for these the track is not straight even inside the chamber: they scatter in the gas
-while they are being measured. No data set of this paper contains such electrons with a known direction, so this
-cannot be measured here; a simple simulation gives its size.
+The data in this paper are cosmic muons and high-energy beam particles. The chambers, however, were built for
+electrons and positrons of 3 to 16\,MeV. For these particles the track is not straight even inside the chamber, since
+they scatter in the gas while they are being measured. None of the data sets of this paper contains such electrons
+with a known direction, so we cannot measure this effect here. Instead, we estimate its size with a simple simulation.
 
-\Cref{fig:gasscatter} follows electrons through the 28.2\,mm of drift gas, $2.4\times10^{-4}$ radiation lengths, with
-multiple scattering as a Gaussian process of the Highland width. An 8\,MeV electron changes direction by
-0.96\textdegree{} rms between entering and leaving the gap, and a 3\,MeV electron by 2.4\textdegree. The straight line
-that best fits such a path, sampled uniformly along the gap as the TPC samples it, differs from the direction at
-entry by 0.61 of that: 0.59\textdegree{} at 8\,MeV and 1.5\textdegree{} at 3\,MeV.
+\Cref{fig:gasscatter} shows simulated electrons crossing the 28.2\,mm of drift gas, which is $2.4\times10^{-4}$
+radiation lengths. Multiple scattering is modeled as a Gaussian process with the Highland width. An 8\,MeV electron
+changes direction by 0.96\textdegree{} rms between entering and leaving the gap, and a 3\,MeV electron by
+2.4\textdegree. The TPC samples the path uniformly along the gap, so we fit a straight line to each simulated path
+sampled in the same way. The direction of this fitted line differs from the direction at entry by 0.61 of the change
+between entry and exit: 0.59\textdegree{} at 8\,MeV and 1.5\textdegree{} at 3\,MeV.
 
-Two things follow. First, the bend is invisible to the chamber: the path deviates from its fitted line by 0.02 to
-0.06\,mm, well below the position resolution, so the fit is as good as for a muon and nothing flags the event. Second,
-its size is that of the chamber's own resolution. For leptons below about 5\,MeV the direction of the line in the gas
-differs from the direction with which the particle entered by more than the 1\textdegree{} measured on muons
-(\crefp{fig:gasscatter}{b}). The resolution of \cref{sec:angle} is thus the detector's term; for the leptons of
-interest the gas adds its own, and the foils and the air in front add more (\cref{tab:material}).
+Two conclusions follow. First, the chamber cannot see this bend. The path deviates from its fitted line by only 0.02
+to 0.06\,mm, well below the position resolution. The fit is therefore as good as for a muon, and nothing identifies
+the event as scattered. Second, the size of the effect is comparable to the resolution of the chamber itself. For
+leptons below about 5\,MeV, the direction of the fitted line in the gas differs from the direction with which the
+particle entered by more than the 1\textdegree{} measured on muons (\crefp{fig:gasscatter}{b}). The resolution of
+\cref{sec:angle} is therefore only the contribution of the detector. For the leptons of interest, scattering in the
+gas adds a further contribution, and the foils and the air in front of the chamber add more (\cref{tab:material}).
 \askDylan{Caveats to keep or state: the Highland formula is used below its stated range ($10^{-3}X_0$; a Lynch--Dahl estimate
 is 5\,\% lower), single-scatter tails are not modeled, normal incidence only, and the two terms (chamber on muons, scattering
 in the gas) are not combined in one curve. A Geant4 check of this exists in principle in the full simulation; it was not run here.}
@@ -80,10 +89,11 @@ in the gas) are not combined in one curve. A Geant4 check of this exists in prin
 \end{figure}
 
 \subsection{What the model leaves out by construction}
-Three further things are outside a one-straight-track model and are not measured in this paper. A low-energy
-electron that stops or scatters through large angles inside the gap leaves a deposit that does not span the gap as a
-column, and is not sought. A track with a single hard scatter, a kink, is fitted with one line. And any event with more than 50
-strips above threshold is set aside as a discharge before a fit is tried: of the tracks so lost, the true discharges
-are a minority (0.47\,\% of single tracks, against 0.76\,\% for large $\delta$-rays and 1.0\,\% in the edge zone).
-A veto that counts strips per cluster instead of per plane is the first step to getting those back
-(\cref{app:moved}).
+Three further cases lie outside a model of one straight track, and are not measured in this paper. The first is a
+low-energy electron that stops, or scatters through large angles, inside the gap. Such an electron leaves a deposit
+that does not span the gap as a column, and the reconstruction does not search for it. The second is a track with a
+single hard scatter (a kink), which is fitted with one line. The third is any event with more than 50 strips above
+threshold, which is set aside as a discharge before a fit is attempted. Of the tracks lost in this way, the true
+discharges are a minority: they are 0.47\,\% of single tracks, compared to 0.76\,\% for large $\delta$-rays and
+1.0\,\% in the edge zone. A veto that counts strips per cluster instead of per plane would be the first step toward
+recovering these tracks (\cref{app:moved}).
