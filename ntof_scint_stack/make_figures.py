@@ -31,6 +31,10 @@ from ntof_scint_stack.ana import (  # noqa: E402
     WALL_HALF_V)
 
 ARMS = ('A', 'B', 'C', 'D')
+try:    # the arms the analysis ran on (n_TOF pass 1: A, C, D -- B has no angle there)
+    ARMS = tuple(json.loads((paths.spell('scint') / 'ana' / 'meta.json').read_text())['arms'])
+except Exception:    # noqa: BLE001
+    pass
 
 
 def ana() -> Path:
@@ -334,7 +338,7 @@ def fig_eff_summary():
                 ax.errorbar(i + dx, r.eff.iloc[0], yerr=r.err.iloc[0],
                             marker=st['marker'], color=st['color'], mfc=fill,
                             mec=st['color'], ms=7, mew=1.2, ls='none')
-        ax.set_xticks(range(4))
+        ax.set_xticks(range(len(ARMS)))
         ax.set_xticklabels(ARMS)
         ax.set_title(lab, loc='left', fontsize=10)
         ax.set_ylim(0, 1.05)
@@ -398,7 +402,7 @@ def fig_liquid():
             ax.errorbar(i + dx, 100 * r.eff.iloc[0], yerr=100 * r.err.iloc[0],
                         marker=st['marker'], color=st['color'], mfc=fill,
                         mec=st['color'], ms=7, mew=1.2, ls='none')
-    ax.set_xticks(range(4))
+    ax.set_xticks(range(len(ARMS)))
     ax.set_xticklabels([f'LIQ {a}' for a in ARMS])
     ax.set_ylabel('liquid lit | wall + plastic, %')
     ax.text(0.03, 0.9, 'open: behind plastic bar 1 (L)\nfilled: behind bar 2 (R)',
@@ -477,7 +481,7 @@ def fig_gain_summary():
         for k, (_, r) in enumerate(d.iterrows()):
             ax.text(i + [-0.24, -0.08, 0.08, 0.24][k], r['median'] + 0.6,
                     f'g{k}', ha='center', fontsize=7, color=fs.MUTED)
-    ax.set_xticks(range(4))
+    ax.set_xticks(range(len(ARMS)))
     ax.set_xticklabels([f'WAL{a}' for a in ARMS])
     ax.set_ylabel('MIP response, mV')
     ax.set_ylim(0, 42)
@@ -496,7 +500,7 @@ def fig_gain_summary():
               & G.channel.isin(['bar1_through', 'bar2_through'])]
         ax.plot(i + 0.17 + np.array([-0.04, 0.04]), d['median'] / 1000,
                 marker='*', color=st['color'], ls='none', ms=9)
-    ax.set_xticks(range(4))
+    ax.set_xticks(range(len(ARMS)))
     ax.set_xticklabels([f'PSS{a}' for a in ARMS])
     ax.set_ylabel('median deposit, MeVee')
     ax.set_ylim(0, 5)
@@ -595,7 +599,7 @@ def fig_both_ends():
                 color=st['color'], ms=7, ls='none')
         ax.plot(i + 0.1, 100 * (1 - r.keep_acc_both), marker='x',
                 color=st['color'], ms=8, ls='none', mew=1.6)
-    ax.set_xticks(range(4))
+    ax.set_xticks(range(len(ARMS)))
     ax.set_xticklabels(ARMS)
     ax.set_ylabel('removed by demanding both ends, %')
     ax.set_title('Real hits lost vs accidentals removed', loc='left',

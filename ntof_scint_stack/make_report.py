@@ -32,6 +32,10 @@ from sept26_prelim_analysis.report_style import HEAD  # noqa: E402
 from ntof_scint_stack.ana import MM_HALF_V  # noqa: E402
 
 ARMS = ('A', 'B', 'C', 'D')
+try:    # the arms the analysis ran on (n_TOF pass 1: A, C, D -- B has no angle there)
+    ARMS = tuple(json.loads((paths.spell('scint') / 'ana' / 'meta.json').read_text())['arms'])
+except Exception:    # noqa: BLE001
+    pass
 
 
 def figure(name: str, caption: str) -> str:
