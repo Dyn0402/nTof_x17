@@ -92,25 +92,16 @@ A full waveform is recorded for each readout strip: the DREAM electronics sample
 
 Performing an independent waveform analysis on each strip to produce hits per strip can lead to bias: each waveform is an aggregate of charge from several different drift depths, mixed onto the strip by drift diffusion as well as the prompt charge footprint and, in the orientation parallel to the resistive strips, by the RC spreading along those strips. This compresses the spread of the hit times across an inclined track by 20--30\,\% and reads tracks too steep~\cite{paperIIb}, for any estimator used to define the hit time. 
 
-%We therefore use precomputed hits only to find candidate tracks, and from there fit the cluster's full strip $\times$ time data. We model a straight track, with its position at the mesh, transverse drift rate $w$ and start time $t_0$ as free parameters.
-
-We therefore use precomputed hits only to find candidate tracks, and from there fit the cluster's full strip $\times$ time data. The model is a straight track whose position at the mesh and transverse drift rate $w$ are free. Its start time $t_0$ is set by the trigger: on the bench the scintillator coincidence fixes it, up to the recorded phase of the 10\,ns DREAM clock, to a value measured for each chamber and view; in the beam, where that calibration does not apply, $t_0$ is free as well. These three parameters are enough to define a line through the  The charge arriving in each 60\,ns slice of drift is shared onto the strips, spread onto their
-neighbors by the resistive layer (an RC kernel), and folded with the measured pulse shape of the electronics
-(\cref{fig:reco}, right). The charge profile along the track is solved inside the fit, and the angle follows from the
-transverse rate and the drift velocity, $\tan\theta=w/\vd$. The two views are fitted separately and paired by their
-charge balance and charge-arrival time (\cref{sec:pairing}). Dead channels and saturated samples are excluded from the
-fit rather than read as zero charge. The reconstruction uses no information from the reference tracks. The model, its
-calibration (per chamber and per run condition) and its limits are the subject of the companion
-paper~\cite{paperII}; every result in this paper uses it.
+We therefore use precomputed hits only to find candidate tracks, and from there fit the cluster's full strip $\times$ time waveforms. The model is a straight track whose position at the mesh and transverse drift rate $w$ are free. Its start time is an optionally free parameter $t_0$: fixed on the bench with respect to the scintillator trigger but left free at the beam. These three parameters are enough to define a line through the chamber, representing the path of a charged particle. From there, we model the energy deposition along the track to produce a number of primary electrons which then diffuse as they drift toward the mesh and deposit charge that is spread onto neighboring strips by the resistive layer (an RC kernel). This charge deposition is folded with the response of the DAQ electronics to produce a full waveform prediction for each strip. This charge per strip is quantized into 60 ns slices to match the readout electronics, and the initial energy deposition profile along the track can be solved to match as closely as possible the observed signal (\cref{fig:reco}, right). The reconstructed angle follows from the transverse rate and the drift velocity, $\tan\theta=w/\vd$. The two views (X and Y) are fitted separately and paired by their charge balance and charge-arrival time (\cref{sec:pairing}). Dead channels and saturated samples are excluded from the fit rather than interpreted as zero charge. The reconstruction uses no information from the reference tracks. The model, its calibration (per chamber and per run condition) and its limits are the subject of the companion paper~\cite{paperII}; every result in this paper uses it.
 \begin{figure}[tbp]
   \centering
   \includegraphics[width=\linewidth]{muon_data_model}
   \caption{What a chamber records, and what the reconstruction fits: one cosmic muon in chamber~A (Run~1). Left, the
-  data: amplitude per strip and 60\,ns sample in the X view (top) and the Y view (bottom); the track appears as a
-  slanted column from the mesh ($t_0$) to the cathode ($t_0+g/\vd$, gray lines). Right, the forward model evaluated at
-  the fit, on the same color scale: the whole strip $\times$ time picture is fitted, not per-strip times. Solid black:
+  data: amplitude per strip in 60\,ns sampled bins in the X view (top) and the Y view (bottom). The track appears as a
+  slanted column from the mesh ($t_0$) to the cathode ($t_0+g/\vd$, horizontal gray lines). Right, the forward model evaluated at
+  the fit, on the same color scale: the whole strip $\times$ time picture is fitted, not per-strip hit times and amplitudes. Solid black:
   the reference track; dashed: the fitted track. Each pulse lasts a few samples after its electrons arrive (the
-  shaping), so the charge extends above the cathode line.}
+  shaping and RC spread), so the charge extends above the cathode line.}
   \label{fig:reco}
 \end{figure}
 
