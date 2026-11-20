@@ -8,7 +8,7 @@ uses, and the five chambers: which are good, which are not, and their runs.}
 \subsection{Cosmic bench}
 % Checked 2026-11-20 against run_config.json of every June bench run on EOS (cosmic_bench/june_tests): gas
 % "Ar/Iso 95/5" in all of them; the five long runs: n_samples_per_waveform 32, sample_period 60 ns, zero_suppress false.
-The bench (\crefp{fig:setups}{a}) triggers on the coincidence of two $60\times60$\,cm scintillators + PMTs which bracket the setup on top and bottom. Four
+The bench (\crefp{fig:setups}{a}) triggers on the coincidence of two $60\times60$\,cm scintillators read by PMTs, which bracket the setup above and below. Four
 $50\times50$\,cm planes, two above and two below the two slots for chambers under test
 ($40\times40$\,cm), provide a lever arm of 1278\,mm. A track
 reconstructed in them with one cluster per plane and $\chi^2<1.0$ is called the \emph{reference track}, and its
@@ -19,17 +19,20 @@ per view. The same bench recently characterized the Micromegas modules of the sP
 
 The chambers under test and the reference planes are read by the same DREAM electronics~\cite{Flouzat2014DREAM,Acker2020MVT}. On each trigger every strip
 is sampled 32 times at 60\,ns intervals, a window of 1.92\,\textmu s that holds the whole drift column at the
-drift fields of the long runs, and is recorded without zero suppression, so that the full waveform of every strip is recorded. Ar/iC$_4$H$_{10}$ 95/5\% was used for all bench data. 
+drift fields of the long runs. No zero suppression is applied, so the full waveform of every strip is recorded. Ar/iC$_4$H$_{10}$ 95/5\% was used for all bench data. 
 
 \subsection{SPS H4 beam}
-Only chamber~E went to the SPS. The test (chamber~E installed on 31 July 2026, data taken from 1 to 3 August) ran while
+Only chamber~E went to the SPS. The H4 beam line delivered muons of about 200\,GeV/$c$.
+\askDylan{Beam particle and momentum: the only record in the repository is the planning note of 31 July (``200 GeV muon
+characterisation''). Please confirm or correct.}
+The test (chamber~E installed on 31 July 2026, data taken from 1 to 3 August) ran while
 chambers A--D were installed and taking data at n\_TOF, so the one chamber not needed there, with its known non-amplifying stripes
 (\cref{app:beam}), was the only one available. The beam crosses two uRWELL reference trackers and chamber~E, which could be
 rotated by up to 25.4\textdegree{} (\crefp{fig:setups}{b}).
 
 Chamber~E had its own gas line and ran two mixtures: Ar/CO$_2$/iC$_4$H$_{10}$ 93/5/2\% for the first day and Ar/CF$_4$/iC$_4$H$_{10}$ 88/10/2\% for the next two. The flow was about 2\,l/h through a gas volume of about 4.6\,l, so a
-change of mixture took most of a night to complete. 
-The readout was the same DREAM DAQ as on the bench with 60\,ns samples, but with 64 samples (3.84\,\textmu s), since the drift was slower in the newly flushed chamber (\cref{sec:attachment}), and with zero suppression at 3--5 standard deviations of the pedestal noise in all runs but one. \Cref{tab:spsruns} lists the runs used.
+change of mixture took most of a night to complete. Run 60 was taken during this change. It is used only for the angle scale, for which the drift velocity is measured from the run itself.
+The readout was the same DREAM electronics as on the bench, with 60\,ns samples. We recorded 64 samples (3.84\,\textmu s) instead of 32, since the drift was slower in the newly flushed chamber (\cref{app:beamgas}). Zero suppression at 3--5 standard deviations of the pedestal noise was applied in all runs but one. \Cref{tab:spsruns} lists the runs used.
 % Gas (Dylan, 2026-11-20): the CO2 mixture was the ATLAS NSW gas, Ar/CO2/iC4H10 93/5/2 (the earlier 95/3/2 in our SPS
 % notes was wrong; the corrected run_config.json on EOS agrees). Run 59's beam data (20:02-20:24 on 1 August) precede the
 % 20:24 gas-change access, so they are CO2, although EOS labels run 59 CF4. The 2 l/h is Dylan's recollection
@@ -39,7 +42,7 @@ The readout was the same DREAM DAQ as on the bench with 60\,ns samples, but with
   \centering\small
   \caption{The beam runs of chamber~E used in this paper. Orientation: normal incidence, or yawed by
   25.4\textdegree{}. Voltages: $HV_\mathrm{resist}$ / $HV_\mathrm{drift}$ (\cref{sec:definitions}), several values
-  where the run scanned them. All runs read 64 samples of 60\,ns.}
+  where the run scanned them.}
   \label{tab:spsruns}
   \setlength{\tabcolsep}{4.5pt}
   \begin{tabular}{llllll}
@@ -87,18 +90,20 @@ the position resolution (\cref{sec:position}) and, at an angle the bench does no
 \subsection{Reconstruction}\label{sec:reco}
 \sectionstate{partial}{added 2026-11-06 at Dylan's request (brief, points to Paper~II); \texttt{wft/model.py}, \texttt{wft/reco.py}, \texttt{RECONSTRUCTION\_BASIS.md}.
 v2: the figure shows both views (\texttt{figs/make\_displays\_v2.py}).}
-A full waveform is recorded for each readout strip: the DREAM electronics sample every 60\,ns over the drift window, so one can view an event as a picture of amplitude against strip position and time (\cref{fig:reco}, left). 
+A full waveform is recorded for each readout strip. The DREAM electronics sample every 60\,ns over the drift window, so we can view an event as a picture of the amplitude as a function of strip position and time (\cref{fig:reco}, left).
 
-Analyzing each strip's waveform on its own, to produce one hit per strip, leads to a bias: each waveform is an aggregate of charge from several different drift depths, mixed onto the strip by drift diffusion and the prompt charge footprint and, in the view read along the resistive strips (Y), by the RC spreading along those strips. This compresses the spread of the hit times across an inclined track by 20--30\,\%, so that tracks are read too steep~\cite{paperIIb}, whatever estimator defines the hit time.
+Analyzing each strip's waveform on its own, to produce one hit per strip, leads to a bias: each waveform is an aggregate of charge from several different drift depths, mixed onto the strip by drift diffusion and the prompt charge footprint and, in the view read along the resistive strips (Y), by the RC spreading along those strips. This compresses the spread of the hit times across an inclined track by 20--30\,\%, so that tracks are reconstructed too steep~\cite{paperIIb}, regardless of the estimator used to define the hit time.
 
-We therefore use precomputed hits only to find candidate tracks, and then fit the full strip $\times$ time waveforms of each candidate cluster. The model is a straight track. In each view its position at the mesh and its transverse drift rate $w$, the distance the arriving charge moves across the strips per unit of drift time, are free. Its start time $t_0$, at which the charge from the mesh end of the track arrives, is fixed on the bench by the scintillator trigger and left free in the beam. These three parameters define the track in one view: a line in the strip $\times$ time picture and the point on it where the drift gap begins. The charge deposited along the track is not predicted. The drift is divided into slices of 60\,ns, the sampling period, and the charge of each slice is a free, non-negative parameter. The electrons of a slice diffuse as they drift toward the mesh and land on the strips with a Gaussian footprint, the prompt footprint of the avalanche widened by that diffusion; in the Y view the charge then spreads along the resistive strips onto the neighboring readout strips (an RC kernel). Folding with the measured pulse response of the electronics gives a predicted waveform for every strip. For each trial track the charge profile that best matches the data is solved directly, so that the fit searches only the three track parameters (\cref{fig:reco}, right). The reconstructed angle follows from the transverse rate and the drift velocity, $\tan\theta=w/\vd$. The two views (X and Y) are fitted separately and paired by their charge balance and charge-arrival time (\cref{sec:pairing}). Dead channels are excluded from the fit rather than interpreted as zero charge, and saturated samples enter only as lower limits. The reconstruction uses no information from the reference tracks. The model, its calibration (per chamber and per run condition) and its limits are the subject of the companion paper~\cite{paperII}; every result in this paper uses it.
+We therefore use per-strip hits only to find candidate tracks, and then fit the full strip $\times$ time waveforms of each candidate cluster. The model is a straight track. In each view its position at the mesh and its transverse drift rate $w$, the distance the arriving charge moves across the strips per unit of drift time, are free. Its start time $t_0$, at which the charge from the mesh end of the track arrives, is fixed on the bench by the scintillator trigger and left free in the beam. These three parameters define the track in one view: a line in the strip $\times$ time picture and the point on it where the drift gap begins.
+
+The charge deposited along the track is not predicted. The drift is divided into slices of 60\,ns, the sampling period, and the charge of each slice is a free, non-negative parameter. The electrons of a slice diffuse as they drift toward the mesh and land on the strips with a Gaussian footprint, the prompt footprint of the avalanche widened by that diffusion; in the Y view the charge then spreads along the resistive strips onto the neighboring readout strips (an RC kernel). Folding with the measured pulse response of the electronics gives a predicted waveform for every strip. We call this calculation, from the track parameters to the predicted waveforms, the \emph{forward model}. For each trial track the charge profile that best matches the data is solved directly, so that the fit searches only the three track parameters (\cref{fig:reco}, right). The reconstructed angle follows from the transverse rate and the drift velocity, $\tan\theta=w/\vd$. The two views (X and Y) are fitted separately and paired by their charge balance and charge-arrival time (\cref{sec:pairing}). Dead channels are excluded from the fit rather than interpreted as zero charge, and saturated samples enter only as lower limits. The reconstruction uses no information from the reference tracks. The model, its calibration (per chamber and per run condition) and its limits are the subject of the companion paper~\cite{paperII}. Every result in this paper uses this reconstruction.
 \begin{figure}[tbp]
   \centering
   \includegraphics[width=\linewidth]{muon_data_model}
   \caption{What a chamber records, and what the reconstruction fits: one cosmic muon in chamber~A (Run~1). Left, the
   data: amplitude in each strip and 60\,ns sample, in the X view (top) and the Y view (bottom). The track appears as a
   slanted column from the mesh ($t_0$) to the cathode ($t_0+g/\vd$, horizontal gray lines). Right, the forward model evaluated at
-  the fit, on the same color scale: the whole strip $\times$ time picture is fitted, not per-strip hit times and amplitudes. Solid black:
+  the fitted parameters, on the same color scale: the whole strip $\times$ time picture is fitted, not per-strip hit times and amplitudes. Solid black:
   the reference track; dashed: the fitted track. Each pulse lasts a few samples after its electrons arrive (the
   shaping and, in Y, the RC spread), so the charge extends above the cathode line.}
   \label{fig:reco}
@@ -112,11 +117,11 @@ position from the strips perpendicular to them. Each view gives one coordinate a
 \textbf{Interior.} The part of the active area at least 30\,mm from the two $x$ sides and 8\,mm from the two $y$
 sides. Angles and positions are quoted in the interior, because the drift field fringes near the $x$ sides
 (\cref{sec:edge}); efficiencies are quoted over the full active area unless the interior is named.
-The interior is defined on the footprint of the track through the whole drift gap, in both views.
+A track is in the interior when its whole path through the drift gap lies inside this region in both views.
 \textbf{Matched.} A reconstructed track is matched to the reference when it lies within $R=5$\,mm of the reference ray
 at the mesh (\cref{sec:effdef,app:effdef}).
-\textbf{Angle scale.} The slope of the fitted $\tan\theta$ of a view against the true one: on the bench, the
-$\tan\theta$ of the reference track; in the beam, the tangent of the known yaw of the chamber. A scale of 1 means the
+\textbf{Angle scale.} The slope of the fitted $\tan\theta$ of a view as a function of the true $\tan\theta$. On the bench, the true
+$\tan\theta$ is that of the reference track; in the beam, it is the tangent of the known yaw of the chamber. A scale of 1 means the
 fitted angles are neither compressed nor stretched. Since $\tan\theta=w/\vd$, it can be read as a correction to the drift velocity.
 \textbf{$\boldsymbol{s_{68}}$.} Resolutions are quoted as $s_{68}$, the 68th percentile of the absolute residual after its median is subtracted. It equals $\sigma$ for a Gaussian and, unlike a fitted width, includes the non-Gaussian tails.
 \textbf{Voltages.} The mesh is at ground. $HV_\mathrm{resist}$, on the resistive strips, sets the amplification gain;
@@ -133,7 +138,7 @@ went to the SPS instead. Each chamber's bench numbers come from its \emph{long r
 voltages (\cref{tab:datasets}). The long runs were taken at 490--495\,V on the resistive strips. This voltage was chosen before the voltage
 scans were analyzed, so it is sub-optimal in some cases (\cref{sec:hvscan}).
 
-The five chambers are not alike, and what follows cannot be read without knowing how. \Cref{fig:effmap} maps, for each
+The five chambers differ in quality, and these differences matter for the results that follow. \Cref{fig:effmap} maps, for each
 chamber, the fraction of reference rays for which the chamber reconstructs a matched track (the efficiency, defined in
 \cref{sec:effdef}). Chambers A and B are relatively uniform over their active area. The other three are not:
 \begin{itemize}
@@ -151,7 +156,7 @@ the mechanism (saturated or baseline-shifted strips in the fit, clusters cut by 
 Their lower drift field (700 and 600\,V against 1000\,V) is another difference between these runs and those of A and B.}
 
 Chamber~A has two long runs, taken back to back on the night of 27--28 June at the same voltages and in the same slot:
-\textbf{Run~1}, which started after its voltage and drift-field scans, and \textbf{Run~2}, the overnight run that followed. We treat them as one data set of 10\,h and 29\,398 reference tracks over the full active area. Analyzed separately they agree on
+\textbf{Run~1}, which started after the voltage and drift-field scans of chamber~A, and \textbf{Run~2}, the overnight run that followed. We treat them as one data set of 10\,h and 29\,398 reference tracks over the full active area. Analyzed separately, the two runs agree on
 every quantity this paper measures (\cref{app:gain}), with one exception: the drift velocity rose through the night as
 the gas dried (\cref{sec:drying}). The calibration of the reconstruction was made on Run~1 and applied to Run~2 with
 only the drift velocity refitted. 
@@ -178,11 +183,11 @@ only the drift velocity refitted.
 \begin{figure}[tbp]
   \centering
   \includegraphics[width=\linewidth]{efficiency_map}
-  \caption{Kept-track efficiency (\cref{sec:effdef}) maps of the five chambers (8\,mm disk on a 2\,mm grid; axes in cm), on one scale.
-  Each map pools all runs of its chamber within 3 points of the efficiency of its long run, at the drift field of that
+  \caption{Efficiency maps of the five chambers (kept-track definition, \cref{sec:effdef}; 8\,mm disk on a 2\,mm grid; axes in cm), on one scale.
+  Each map pools all runs of its chamber within 3 percentage points of the efficiency of its long run, at the drift field of that
   run: for chamber~A 30 runs and scan points with 70\,470 reference rays, of which Runs 1 and 2 are two; for C and D
   the pool includes scan points at lower voltage. Solid box: active area; white dashed: interior; hatched on (a): the
-  passivated strip ends, outside the active area. (d) Chamber~D: a fault of the X readout affects channels 0--255, so
+  passivated strip ends, outside the active area. (d) Chamber~D: a poorly mounted readout card affects X channels 0--255, so
   only the right half (orange box) is quoted. Blank: outside the active area or fewer than 15 rays.}
   \label{fig:effmap}
 \end{figure}
