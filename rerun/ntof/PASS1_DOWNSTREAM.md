@@ -92,6 +92,7 @@ antisymmetric between the two). **On is2_v2 the common part was +9.7 %; on pass 
 What is left is antisymmetric, A − C = 4.6 %, which is the geometric kind; the sign split is the nominal axis
 (the source sits at x ≈ −9 mm). So the v(t) scale with κ removes the common focus tension the old chain had; the
 G5 residual (N-G1, run_145, frozen v, A +8.1 / C +4.5 %) should be re-read on the v(t) angles before it is quoted.
+**Update 11-20 (`rerun/ntof/improve/`): the antisymmetric 4.6 % is mostly not geometry.** An angle map fitted on the A–C cosmic lines alone (no source information) brings the focus to A 0.990 / C 0.990 on the late capsule tracks; it is A's position-dependent angle distortion (edge tilts), so D's −5.55 mm z crossing is not confirmed by the A/C focus.
 The populations still split as before: early (< 10 ms), wall-not-fired, χ² > median and other-arms-fired tracks
 do not focus (miss 50–90 mm), i.e. they are not capsule tracks.
 

@@ -1,0 +1,80 @@
+<!doctype html><html><head><meta charset="utf-8"><title>n_TOF pass-1 tracking: what to improve</title>
+<style>body{font-family:system-ui,sans-serif;max-width:980px;margin:2em auto;padding:0 16px;color:#1b2430;line-height:1.45}
+table{border-collapse:collapse;margin:0.6em 0 1.2em;font-size:0.9em}td,th{border:1px solid #c9ced6;padding:3px 8px;text-align:right}
+th{background:#f1f3f6}img{max-width:100%}.verdict{background:#f6f0f7;border-left:4px solid #8a3f8f;padding:0.6em 1em}
+figcaption{font-size:0.9em;color:#4a5563;margin-bottom:1.5em}code{background:#f1f3f6;padding:0 3px}</style></head><body>
+<h1>n_TOF pass 1: where the tracking can still improve</h1>
+<p>Study code <code>rerun/ntof/improve/</code>; inputs: the pass-1 analysis view (v(t) angles, gated = true |tan| &lt; 0.5).
+Cosmic truth: 46,171 A–C lines from 72 beam-off runs (one gated track per chamber, lines within 60 mm).
+Beam check: the late (≥ 20 ms) capsule tracks of the production runs.</p>
+
+<div class="verdict"><b>Verdict.</b> The largest fixable error in the A and C angles is a <b>position-dependent angle
+distortion</b> of 0.008–0.016 rms in tan (up to 0.04–0.05 at the edges), stable in time. An in-situ correction map fitted
+on the cosmic lines improves the held-out single-view resolution by 11–18 %. On the beam capsule tracks,
+which are independent of the map, the map also raises the capsule-pointing excess, narrows the core and removes the
+A−C focus asymmetry (A − C: +0.050 → +0.000). The bench bow carried into pass 1 helps C and is neutral on A, so it stays.
+The 13 % angle tail on the cosmic line is mostly impure truth (showers, two-particle events), not failed fits.</div>
+
+<h2>1. The angle tails are mostly in the truth sample</h2>
+<p>13–14 % of views miss the joined A–C line by more than 0.15 in tan. The misses are shared: A and C are both wrong
+3× more often than chance (x: 5.5 % against 1.9 %). When the other chamber and this chamber's other view agree with the
+line within 0.05, a view's own tail is 1.0–2.1 %. The flagged views carry about half the charge, a fifth of the Δχ²,
+and 5–9 competing-cluster strips on A: extra particles in the chamber. So this is not a fit failure to chase.</p>
+
+<h2>2. The bench bow block: keep it</h2>
+<p>The plan (NTOF_PASS_PLAN §5) asked for bow-on against bow-off on the A–C line. Bow-off is the constant mapping
+w/(kw v) from the stored fit speed; "cell rms" is the rms of the median residual over 50 mm cells.</p>
+<table><tr><th>arm</th><th>view</th><th>σ on</th><th>σ off</th><th>cell rms on</th><th>cell rms off</th></tr>
+<tr><td>A</td><td>x</td><td>0.0415</td><td>0.0419</td><td>0.0139</td><td>0.0121</td></tr>
+<tr><td>A</td><td>y</td><td>0.0383</td><td>0.0383</td><td>0.0095</td><td>0.0098</td></tr>
+<tr><td>C</td><td>x</td><td>0.0475</td><td>0.0515</td><td>0.0156</td><td>0.0232</td></tr>
+<tr><td>C</td><td>y</td><td>0.0506</td><td>0.0568</td><td>0.0145</td><td>0.0229</td></tr></table>
+<p>On C the bow lowers σ by 8–11 % and the local bias by a third. On A it is neutral (x slightly worse in the cell rms,
+y the same).</p>
+
+<h2>3. A position-dependent angle distortion remains</h2>
+<figure><img src="figures/angle_maps.png"><figcaption><b>Figure 1.</b> The in-situ map: tilt a (top) and scale s (bottom) of the
+residual r = a + s·j per 50 mm cell, for A and C and each view. Cells with fewer than 80 clean lines are blank (they
+take the chamber-wide fit). C has a scale gradient along y in both views (about +0.1 at y ≈ −150 mm to −0.1…−0.2 at
++175 mm). A has edge tilts in x of −0.03 and +0.04 at x ≈ ∓175 mm.</figcaption></figure>
+<p>The pattern is real. Split by run parity, the two halves agree cell by cell with correlation 0.94–0.97. Split
+early/late in the campaign, the tilt terms agree at 0.70–0.97 and C's scale at 0.84–0.92. The cell statistical error is
+~0.003.</p>
+
+<h2>4. The correction, held out and on the beam</h2>
+<table><tr><th>arm</th><th>view</th><th>σ pass 1</th><th>σ map</th><th>σ edge pass 1</th><th>σ edge map</th><th>gain</th></tr>
+<tr><td>A</td><td>x</td><td>0.0312</td><td>0.0259</td><td>0.0319</td><td>0.0273</td><td>17.0%</td></tr>
+<tr><td>A</td><td>y</td><td>0.0286</td><td>0.0254</td><td>0.0287</td><td>0.0265</td><td>11.0%</td></tr>
+<tr><td>C</td><td>x</td><td>0.0348</td><td>0.0284</td><td>0.0419</td><td>0.0321</td><td>18.3%</td></tr>
+<tr><td>C</td><td>y</td><td>0.0388</td><td>0.0320</td><td>0.0392</td><td>0.0330</td><td>17.3%</td></tr></table>
+<figure><img src="figures/heldout_sigma.png"><figcaption><b>Figure 2.</b> Single-view resolution on held-out clean cosmic lines, before and
+after the map, all cells and edge cells. Each split trains on one run parity and tests on the other.</figcaption></figure>
+<table><tr><th>arm</th><th>angles</th><th>pointing excess &lt; 15 mm</th><th>core half-width 68 % [mm]</th><th>tail 15–45 mm share</th><th>sharpest focus s</th><th>edge |x|&gt;125: excess</th><th>edge: core [mm]</th></tr>
+<tr><td>A</td><td>pass 1</td><td>0.445</td><td>12.625</td><td>0.198</td><td>1.035</td><td>0.072</td><td>26.926</td></tr>
+<tr><td>A</td><td>with cosmic map</td><td>0.461</td><td>12.143</td><td>0.176</td><td>0.990</td><td>0.113</td><td>24.615</td></tr>
+<tr><td>C</td><td>pass 1</td><td>0.417</td><td>12.945</td><td>0.223</td><td>0.985</td><td>0.236</td><td>14.754</td></tr>
+<tr><td>C</td><td>with cosmic map</td><td>0.436</td><td>12.531</td><td>0.201</td><td>0.990</td><td>0.267</td><td>13.919</td></tr></table>
+<figure><img src="figures/beam_pointing.png"><figcaption><b>Figure 3.</b> Late capsule tracks, x view: the signed miss at the source minus
+a shuffled-angle null, with and without the cosmic map. The map is trained only on beam-off cosmics.</figcaption></figure>
+<p>The A−C antisymmetric focus residual of pass 1 (4.6 % in focus_split) had been read as geometry (a distance or an
+axis offset). The cosmic map removes it without knowing where the source is, so most of it is the angle distortion above.
+D's source z crossing (−5.55 mm) is therefore not confirmed by the A/C focus. It may carry D's own distortion, which
+this study cannot measure: the B–D cosmic lines do not close (D's line misses B's point by a median +117 mm in both
+coordinates), so B cannot yet serve as D's truth.</p>
+
+<h2>What this does not rule out</h2>
+<ul><li>The cosmic truth uses A and C positions in the global frame. A position error of 1 mm moves j by 0.002, well below
+the map, but an error in a chamber's global placement that varies over the plate would enter the map as an angle term.</li>
+<li>The map is fitted on cosmic angles (|j| &lt; 0.45, mostly steep in y). Beam electrons at the edges of the angle
+range rely on the per-cell linear term.</li>
+<li>Edge cells with few lines fall back to the chamber-wide fit; the map clamps at the outer cell centres (±175 mm).</li>
+<li>D and B have no map; D's angles keep whatever distortion they have.</li>
+<li>Nothing here changes the same-chamber data/Geant4 factor ~10, which is the source model, not the angles.</li></ul>
+
+<h2>Next steps (existing data only)</h2>
+<ol><li>Decide whether the map becomes a table-level correction in the analysis view (like the v(t) κ step), with
+<code>&lt;col&gt;_map</code> twins, and rerun the angle-sensitive downstream (capsule focus and pose, same-chamber and two-arm
+opening angles, vertex imaging).</li>
+<li>Fold the map into a bundle-level angle correction for the bench-bow terms on A (whose bench bow is neutral).</li>
+<li>Find why the B–D cosmic lines do not close; with them, D gets its own map and its source z can be re-measured.</li></ol>
+</body></html>
