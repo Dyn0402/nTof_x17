@@ -2,7 +2,7 @@
 
 Analysis of the one sub-run where det4 sat **perpendicular to the beam at its
 highest flat voltage**: `run_56/meshscan_m70V`, 2026-08-01 15:47:25–15:59:34,
-Ar/CO₂/iso 95/3/2, drift held 700 V, resist stepping 590 V → 625 V inside the
+Ar/CO₂/iso 93/5/2, drift held 700 V, resist stepping 590 V → 625 V inside the
 sub-run. Written 2026-08-03.
 
 Scripts (all in this directory, run in order):

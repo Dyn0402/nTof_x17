@@ -292,7 +292,7 @@ def consistency_slide(D):
              ('run 63 R2', res('run63', 'p_mid', 'R2 (cross-check: X band 201-214)')['X'], res('run63', 'p0', 'R2 (cross-check: X band 201-214)')['Y'],
               'run 63, the second live band (lower gain; X in telescope zone 1.5)'),
              ('run 66 R', res('run66', 'p_mid')['X'], res('run66', 'p0')['Y'], 'run 66 r755+r780, CF4, ZS 32, R'),
-             ('run 53 R', res('run53', 'c_pos')['X'], res('run53', 'c_pos')['Y'], 'run 53, Ar/CO2/iso 95/3/2, ZS 32, R (centroid: no v, so no p_mid)')]
+             ('run 53 R', res('run53', 'c_pos')['X'], res('run53', 'c_pos')['Y'], 'run 53, Ar/CO2/iso 93/5/2, ZS 32, R (centroid: no v, so no p_mid)')]
     P = sd.Plot(1100, 640, x=(-0.5, len(items) - 0.5), y=(0, 0.42), ylabel='σ [mm]', margin=(30, 20, 92, 104))
     P.xticks([(i, it[0]) for i, it in enumerate(items)]).yticks([(v, f'{v:.1f}') for v in (0, 0.1, 0.2, 0.3, 0.4)])
     for i, (lab, X, Y, desc) in enumerate(items):

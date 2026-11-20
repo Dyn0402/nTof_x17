@@ -1,5 +1,8 @@
 # Gas flushing at H4 — the timeline, the time constant, and what was ever in the chamber
 
+> **2026-11-20:** the CO₂ mixture is the ATLAS NSW gas, **Ar/CO₂/iso 93/5/2** (Dylan). This note first said 95/3/2;
+> the label is corrected throughout. The flush timing below does not depend on it.
+
 **2026-08-05.** Every gas statement in this campaign so far has been about what
 was *flowed*; this note is about what was *in the chamber*. The flow rate was
 **~2 ln/h** (operator recollection, Dylan, 2026-08-05 — no flowmeter log
@@ -26,7 +29,7 @@ The H4 accesses are dated to the second by `XTAX_022_023:POSITION_MEAS`
 
 | event | TAX window | gas action |
 |---|---|---|
-| install access | Fri 07-31 **21:22 → 22:37** | det4 installed; **Ar/CO₂/iso 95/3/2 flush starts ≈ 22:00 ± 30 min** (chamber starts full of air) |
+| install access | Fri 07-31 **21:22 → 22:37** | det4 installed; **Ar/CO₂/iso 93/5/2 flush starts ≈ 22:00 ± 30 min** (chamber starts full of air) |
 | rotation to 25.64° | Sat 08-01 **16:05 → 16:35** | none |
 | gas-change access | Sat 08-01 **20:24:07 → 21:09:59** | **switch to Ar/CF₄/iso 88/10/2 ≈ 20:45 ± 20 min** |
 | rotation to 15.465° | Sun 08-02 **11:03 → 11:22** | none |
@@ -86,7 +89,7 @@ Consequences for existing conclusions:
   says up to ~4 % air (≈ 0.8 % O₂) remained for the run_53 column
   specifically. It cannot explain the shift persisting into run_56/57
   (< 2 % air even pessimistically), so the *gas identity* (candidate 1: the
-  H4 mixtures are 95/3/2 and 88/10/2, not the bench's Ar/iso 95/5) remains
+  H4 mixtures are 93/5/2 and 88/10/2, not the bench's Ar/iso 95/5) remains
   the leading explanation for the bulk of the 175 V.
 
 ## 3. The water floor — why "never fully flushed" is right anyway

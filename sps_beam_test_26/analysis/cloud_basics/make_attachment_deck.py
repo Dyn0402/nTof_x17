@@ -760,7 +760,7 @@ excludes a beam-like loss; the drift scan (slide §§bench-scan§§) is the shar
 def s_gasmodel(D, d):
     steps = [
         dict(label='Composition', sub='base gas + water % + air % (N₂/O₂/Ar replacing Ar)', color=INK,
-             tip='Beam: Ar/CF₄/iso 88/10/2; CO₂ period Ar/CO₂/iso 95/3/2; bench Ar/iso 95/5. Water and air replace argon.'),
+             tip='Beam: Ar/CF₄/iso 88/10/2; CO₂ period Ar/CO₂/iso 93/5/2; bench Ar/iso 95/5. Water and air replace argon.'),
         dict(label='Magboltz', sub='v, η, D_L, D_T at each field', color=BLUE, tip=G['magboltz']),
         dict(label='Arriving current', sub='uniform ionisation, drift, diffusion, survival e^(−ηz)', color=BLUE,
              tip='predict.current_field: optional linear drift-field profile k and gap spread (geometry), shared per dataset.'),

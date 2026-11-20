@@ -214,7 +214,7 @@ inclination as the explanation; the bench's own angle-binned number rules that o
 <h2>What this does not rule out</h2>
 <ul>
 <li><strong>det4 is not det3.</strong> This is the worst chamber of the fleet by efficiency, run
-in Ar/CO₂/iso 95/3/2 at H4 at a gain point that was still climbing, and only its live bands
+in Ar/CO₂/iso 93/5/2 at H4 at a gain point that was still climbing, and only its live bands
 contribute. It bounds what the <em>technology</em> does at normal incidence; it is not a
 measurement of the bench chambers.</li>
 <li><strong>The front plane's resolution is assumed, not measured.</strong> Its weight is 3.3 %,

@@ -1,7 +1,7 @@
 {
  "run55_flatdrift__d400": {
   "field_Vcm": 138.9,
-  "gas": "Ar/CO2/iso 95/3/2",
+  "gas": "Ar/CO2/iso 93/5/2",
   "mount": "flat",
   "x": {
    "n": 1000,
@@ -26,7 +26,7 @@
  },
  "run55_flatdrift__d500": {
   "field_Vcm": 173.7,
-  "gas": "Ar/CO2/iso 95/3/2",
+  "gas": "Ar/CO2/iso 93/5/2",
   "mount": "flat",
   "x": {
    "n": 1000,
@@ -51,7 +51,7 @@
  },
  "run55_flatdrift__d600": {
   "field_Vcm": 208.4,
-  "gas": "Ar/CO2/iso 95/3/2",
+  "gas": "Ar/CO2/iso 93/5/2",
   "mount": "flat",
   "x": {
    "n": 1000,
@@ -76,7 +76,7 @@
  },
  "run55_flatdrift__d700": {
   "field_Vcm": 243.2,
-  "gas": "Ar/CO2/iso 95/3/2",
+  "gas": "Ar/CO2/iso 93/5/2",
   "mount": "flat",
   "x": {
    "n": 1000,
@@ -101,7 +101,7 @@
  },
  "run56_m70V__590V": {
   "field_Vcm": 243.1,
-  "gas": "Ar/CO2/iso 95/3/2",
+  "gas": "Ar/CO2/iso 93/5/2",
   "mount": "flat",
   "x": {
    "n": 1000,
@@ -126,7 +126,7 @@
  },
  "run56_m70V__625V": {
   "field_Vcm": 243.1,
-  "gas": "Ar/CO2/iso 95/3/2",
+  "gas": "Ar/CO2/iso 93/5/2",
   "mount": "flat",
   "x": {
    "n": 1000,
@@ -151,7 +151,7 @@
  },
  "run57_rot25_co2__d550": {
   "field_Vcm": 191.0,
-  "gas": "Ar/CO2/iso 95/3/2",
+  "gas": "Ar/CO2/iso 93/5/2",
   "mount": "25.64 deg",
   "x": {
    "n": 1000,
@@ -176,7 +176,7 @@
  },
  "run57_rot25_co2__d600": {
   "field_Vcm": 208.4,
-  "gas": "Ar/CO2/iso 95/3/2",
+  "gas": "Ar/CO2/iso 93/5/2",
   "mount": "25.64 deg",
   "x": {
    "n": 1000,
@@ -201,7 +201,7 @@
  },
  "run57_rot25_co2__d650": {
   "field_Vcm": 225.8,
-  "gas": "Ar/CO2/iso 95/3/2",
+  "gas": "Ar/CO2/iso 93/5/2",
   "mount": "25.64 deg",
   "x": {
    "n": 1000,
@@ -226,7 +226,7 @@
  },
  "run57_rot25_co2__d700": {
   "field_Vcm": 243.2,
-  "gas": "Ar/CO2/iso 95/3/2",
+  "gas": "Ar/CO2/iso 93/5/2",
   "mount": "25.64 deg",
   "x": {
    "n": 1000,
@@ -251,7 +251,7 @@
  },
  "run59_co2__co2": {
   "field_Vcm": 243.2,
-  "gas": "Ar/CO2/iso 95/3/2",
+  "gas": "Ar/CO2/iso 93/5/2",
   "mount": "25.64 deg",
   "x": {
    "n": 1000,

@@ -4,7 +4,7 @@
    {
     "key": "run55_flatdrift__d400",
     "run": "run55",
-    "gas": "Ar/CO2/iso 95/3/2",
+    "gas": "Ar/CO2/iso 93/5/2",
     "V": 549.75,
     "drift_V": 400.1,
     "ref": "run55_flatdrift__d700",
@@ -23,7 +23,7 @@
    {
     "key": "run55_flatdrift__d500",
     "run": "run55",
-    "gas": "Ar/CO2/iso 95/3/2",
+    "gas": "Ar/CO2/iso 93/5/2",
     "V": 549.75,
     "drift_V": 500.3,
     "ref": "run55_flatdrift__d700",
@@ -42,7 +42,7 @@
    {
     "key": "run55_flatdrift__d600",
     "run": "run55",
-    "gas": "Ar/CO2/iso 95/3/2",
+    "gas": "Ar/CO2/iso 93/5/2",
     "V": 549.75,
     "drift_V": 600.3,
     "ref": "run55_flatdrift__d700",
@@ -61,7 +61,7 @@
    {
     "key": "run55_flatdrift__d700",
     "run": "run55",
-    "gas": "Ar/CO2/iso 95/3/2",
+    "gas": "Ar/CO2/iso 93/5/2",
     "V": 549.75,
     "drift_V": 700.3,
     "ref": "run55_flatdrift__d700",
@@ -80,7 +80,7 @@
    {
     "key": "run56_m70V__590V",
     "run": "run56",
-    "gas": "Ar/CO2/iso 95/3/2",
+    "gas": "Ar/CO2/iso 93/5/2",
     "V": 590.0,
     "drift_V": 700.0,
     "ref": "run56_m70V__625V",
@@ -99,7 +99,7 @@
    {
     "key": "run56_m70V__625V",
     "run": "run56",
-    "gas": "Ar/CO2/iso 95/3/2",
+    "gas": "Ar/CO2/iso 93/5/2",
     "V": 624.7,
     "drift_V": 700.0,
     "ref": "run56_m70V__625V",
@@ -341,7 +341,7 @@
     ],
     "reco_only_ratio_c50": 1.073101085094232
    },
-   "run55 d700 + run56 (Ar/CO2/iso 95/3/2, 550-625 V)": {
+   "run55 d700 + run56 (Ar/CO2/iso 93/5/2, 550-625 V)": {
     "telescope_c50": {
      "slope_per10V": -0.008144766050739298,
      "err": 0.0007138353316740204,
@@ -379,7 +379,7 @@
    {
     "key": "run55_flatdrift__d700",
     "run": "run55",
-    "gas": "Ar/CO2/iso 95/3/2",
+    "gas": "Ar/CO2/iso 93/5/2",
     "V": 549.75,
     "c50_reco": 2384.0,
     "c50_fit_reco": 4371.8983365384875,
@@ -388,7 +388,7 @@
    {
     "key": "run56_m70V__590V",
     "run": "run56",
-    "gas": "Ar/CO2/iso 95/3/2",
+    "gas": "Ar/CO2/iso 93/5/2",
     "V": 590.0,
     "c50_reco": 2698.0,
     "c50_fit_reco": 5612.453722691997,
@@ -397,7 +397,7 @@
    {
     "key": "run56_m70V__625V",
     "run": "run56",
-    "gas": "Ar/CO2/iso 95/3/2",
+    "gas": "Ar/CO2/iso 93/5/2",
     "V": 624.7,
     "c50_reco": 2681.0,
     "c50_fit_reco": 5980.664183393244,

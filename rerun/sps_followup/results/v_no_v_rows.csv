@@ -1,15 +1,15 @@
 key,control,gas,mount,field_Vcm,n_samples,registry_v,verdict,v_box,v_sys,T_box_x,T_flat_x,grad_x,T_box_y,T_flat_y,grad_y
-run55_flatdrift__d700,False,Ar/CO2/iso 95/3/2,flat,243.2,64,,fade,,,2520.0,1640.0,-1.0,2190.0,1520.0,-1.0
-run55_flatdrift__d600,False,Ar/CO2/iso 95/3/2,flat,208.4,64,,fade,,,2200.0,1340.0,-1.0,1750.0,1380.0,-1.0
-run55_flatdrift__d500,False,Ar/CO2/iso 95/3/2,flat,173.7,64,,fade,,,2160.0,1350.0,-1.0,1760.0,1530.0,-0.93
-run55_flatdrift__d400,False,Ar/CO2/iso 95/3/2,flat,138.9,64,,overrun,,,2140.0,1310.0,-1.0,1780.0,1400.0,-1.0
-run56_m70V__590V,False,Ar/CO2/iso 95/3/2,flat,243.1,64,,fade,,,2770.0,1750.0,-1.0,2640.0,1670.0,-1.0
-run56_m70V__625V,False,Ar/CO2/iso 95/3/2,flat,243.1,64,,fade,,,2840.0,2020.0,-1.0,2700.0,1640.0,-0.99
-run57_rot25_co2__d700,False,Ar/CO2/iso 95/3/2,25.64 deg,243.2,64,,fade,,,3040.0,2800.0,-0.79,2990.0,2880.0,-0.57
-run57_rot25_co2__d650,False,Ar/CO2/iso 95/3/2,25.64 deg,225.8,64,,fade,,,3350.0,2930.0,-0.79,3100.0,3010.0,-0.48
-run57_rot25_co2__d600,False,Ar/CO2/iso 95/3/2,25.64 deg,208.4,64,,fade,,,3400.0,2750.0,-0.92,3120.0,2880.0,-0.67
-run57_rot25_co2__d550,False,Ar/CO2/iso 95/3/2,25.64 deg,191.0,64,,fade,,,3350.0,2830.0,-0.87,3150.0,2940.0,-0.58
-run59_co2__co2,False,Ar/CO2/iso 95/3/2,25.64 deg,243.2,64,,fade,,,2910.0,2670.0,-0.78,2840.0,2700.0,-0.57
+run55_flatdrift__d700,False,Ar/CO2/iso 93/5/2,flat,243.2,64,,fade,,,2520.0,1640.0,-1.0,2190.0,1520.0,-1.0
+run55_flatdrift__d600,False,Ar/CO2/iso 93/5/2,flat,208.4,64,,fade,,,2200.0,1340.0,-1.0,1750.0,1380.0,-1.0
+run55_flatdrift__d500,False,Ar/CO2/iso 93/5/2,flat,173.7,64,,fade,,,2160.0,1350.0,-1.0,1760.0,1530.0,-0.93
+run55_flatdrift__d400,False,Ar/CO2/iso 93/5/2,flat,138.9,64,,overrun,,,2140.0,1310.0,-1.0,1780.0,1400.0,-1.0
+run56_m70V__590V,False,Ar/CO2/iso 93/5/2,flat,243.1,64,,fade,,,2770.0,1750.0,-1.0,2640.0,1670.0,-1.0
+run56_m70V__625V,False,Ar/CO2/iso 93/5/2,flat,243.1,64,,fade,,,2840.0,2020.0,-1.0,2700.0,1640.0,-0.99
+run57_rot25_co2__d700,False,Ar/CO2/iso 93/5/2,25.64 deg,243.2,64,,fade,,,3040.0,2800.0,-0.79,2990.0,2880.0,-0.57
+run57_rot25_co2__d650,False,Ar/CO2/iso 93/5/2,25.64 deg,225.8,64,,fade,,,3350.0,2930.0,-0.79,3100.0,3010.0,-0.48
+run57_rot25_co2__d600,False,Ar/CO2/iso 93/5/2,25.64 deg,208.4,64,,fade,,,3400.0,2750.0,-0.92,3120.0,2880.0,-0.67
+run57_rot25_co2__d550,False,Ar/CO2/iso 93/5/2,25.64 deg,191.0,64,,fade,,,3350.0,2830.0,-0.87,3150.0,2940.0,-0.58
+run59_co2__co2,False,Ar/CO2/iso 93/5/2,25.64 deg,243.2,64,,fade,,,2910.0,2670.0,-0.78,2840.0,2700.0,-0.57
 run60_flush__ov00,False,Ar/CO2->CF4 TRANSITION (see GAS_FLUSH_TIMELINE),25.64 deg,243.2,64,,fade,,,2820.0,2190.0,-0.87,2670.0,2310.0,-0.82
 run60_flush__ov01,False,Ar/CO2->CF4 TRANSITION (see GAS_FLUSH_TIMELINE),25.64 deg,243.2,64,,defined,9.97,0.03,2900.0,2710.0,-0.73,2880.0,2850.0,-0.35
 run60_flush__ov02,False,Ar/CO2->CF4 TRANSITION (see GAS_FLUSH_TIMELINE),25.64 deg,243.2,64,,fade,,,2750.0,2170.0,-0.86,2570.0,2370.0,-0.78

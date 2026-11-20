@@ -314,7 +314,7 @@ def main():
     ax.legend(fontsize=7, ncol=2)
     ax.grid(alpha=0.3)
     fig.suptitle(f"det4 charge spreading — run 56 m70V, flat mount, "
-                 f"{args.plateau}, Ar/CO2/iso 95/3/2, drift 700 V", y=1.02)
+                 f"{args.plateau}, Ar/CO2/iso 93/5/2, drift 700 V", y=1.02)
     fig.tight_layout()
     fig.savefig(args.out + f"charge_spreading_{args.plateau}.png", dpi=115,
                 bbox_inches="tight")

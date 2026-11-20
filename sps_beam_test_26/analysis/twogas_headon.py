@@ -2,7 +2,7 @@
 """Head-on two-gas A/B on det4 SPS waveforms. See TWOGAS_HEADON_2026-08-11.md.
 
 Same detector, same live band, same electronics, same drift field (243 V/cm):
-  CO2 arm : run56 wf_m70V.npz         (Ar/CO2/iso 95/3/2, resist 590/625 V, ZS 5s)
+  CO2 arm : run56 wf_m70V.npz         (Ar/CO2/iso 93/5/2, resist 590/625 V, ZS 5s)
   CF4 arm : run63 wf_run63_flat.npz   (Ar/CF4/iso 88/10/2, resist 770 V, ZS 4s)
   CF4 RAW : run71 wf_run71_raw_det4only.npz (ZS off; drift 700/450/275 V)
 

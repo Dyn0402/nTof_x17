@@ -17,6 +17,8 @@ which crosses midnight -- stays monotonic.
 Authority for each field:
   mount/gas      RUN_TIMELINE.md epochs (NOT run_config.json, which is stale
                  for gas, mount and start_time on this whole campaign)
+                 CO2 epoch gas = Ar/CO2/iso 93/5/2, the ATLAS NSW mixture (corrected 2026-11-20,
+                 Dylan; was 95/3/2 here until then).  The corrected run_config.json on EOS agrees.
   sub-run bounds <run>/dream_daq.log
   HV plateaus    the recovered hv_monitor.csv traces, cross-checked against
                  our own scan logs
@@ -55,7 +57,7 @@ DATASETS = {
     "run56_m70V": dict(
         stage=STAGE_ROOT + "run_56_m70V/",
         base_date="2026-08-01",
-        mount="flat", gas="Ar/CO2/iso 95/3/2",
+        mount="flat", gas="Ar/CO2/iso 93/5/2",
         n_samples=64, sample_ns=60, zs_sigma=5.0, peaking_ns=180,
         ped="EicP2Bt_pedestals_pedthr_260801_12H19_000_03.fdf",
         # (sub-run, stem, t0, [file indices])
@@ -232,7 +234,7 @@ DATASETS["run60_flush"] = dict(
 DATASETS["run59_co2"] = dict(
     stage=STAGE_ROOT + "run_59/",
     base_date="2026-08-01",
-    mount="25.64 deg", gas="Ar/CO2/iso 95/3/2",
+    mount="25.64 deg", gas="Ar/CO2/iso 93/5/2",
     # the 18:12 threshold reload reused the 16H21 pedestal data (the
     # pedestals_08-01-26_18-12-15 dir on EOS contains the 16H21 fdf)
     n_samples=64, sample_ns=60, zs_sigma=3.0, peaking_ns=180,
@@ -507,7 +509,7 @@ DATASETS["run61_rot15_ladder"] = dict(
 DATASETS["run55_flatdrift"] = dict(
     stage=STAGE_ROOT + "run_55/",
     base_date="2026-08-01",
-    mount="flat", gas="Ar/CO2/iso 95/3/2",
+    mount="flat", gas="Ar/CO2/iso 93/5/2",
     n_samples=64, sample_ns=60, zs_sigma=5.0, peaking_ns=180,
     ped="EicP2Bt_pedestals_pedthr_260801_12H19_000_03.fdf",
     subruns=[
@@ -580,7 +582,7 @@ DATASETS["run55_flatdrift"] = dict(
 DATASETS["run57_rot25_co2"] = dict(
     stage=STAGE_ROOT + "run_57/",
     base_date="2026-08-01",
-    mount="25.64 deg", gas="Ar/CO2/iso 95/3/2",
+    mount="25.64 deg", gas="Ar/CO2/iso 93/5/2",
     n_samples=64, sample_ns=60, zs_sigma=3.0, peaking_ns=180,
     ped="EicP2Bt_pedestals_pedthr_260801_16H21_000_03.fdf",
     subruns=[

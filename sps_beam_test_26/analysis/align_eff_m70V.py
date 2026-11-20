@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """det4 <-> uRWELL alignment and efficiency for run_56 / meshscan_m70V.
 
-Flat mount, Ar/CO2/iso 95/3/2, drift 700 V.  The sub-run straddles two det4
+Flat mount, Ar/CO2/iso 93/5/2, drift 700 V.  The sub-run straddles two det4
 resist plateaus, so everything here is done per plateau and never merged:
 
     590.0 V   15:47:25 - 15:52:50     (the m60V ladder's last point, running on)
@@ -217,7 +217,7 @@ def main():
                            prof=prof, prof_any=prof_any, pc=pc, A=R["A"])
 
     fig.suptitle("det4 (mx17_E) at H4 — run 56 meshscan_m70V, flat mount, "
-                 "Ar/CO2/iso 95/3/2, drift 700 V", y=0.98, fontsize=13)
+                 "Ar/CO2/iso 93/5/2, drift 700 V", y=0.98, fontsize=13)
     fig.tight_layout()
     fig.savefig(args.out + "m70V_efficiency.png", dpi=115, bbox_inches="tight")
     print("\nwrote " + args.out + "m70V_efficiency.png")

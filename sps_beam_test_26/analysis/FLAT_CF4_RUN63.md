@@ -103,7 +103,7 @@ any measurement in this campaign.
 
 ### Across gas, voltage and threshold
 
-| | run_56 (CO₂ 95/3/2, resist 625 V, ZS 5σ) | run_63 (CF₄ 88/10/2, resist 770 V, ZS 4σ) | change |
+| | run_56 (CO₂ 93/5/2, resist 625 V, ZS 5σ) | run_63 (CF₄ 88/10/2, resist 770 V, ZS 4σ) | change |
 |---|---:|---:|---:|
 | `c1` X | 0.2506 | 0.2525 | **+0.8 %** |
 | `c1` Y | 0.2805 | 0.2330 | −17 % |

@@ -34,7 +34,7 @@ WIN = (500.0, 3800.0)
 NORM = (1080.0, 1260.0)
 REG = {r['key']: r for r in csv.DictReader(open(os.path.join(REPO, 'rerun', 'sps_registry.csv')))}
 #: one composition per group.  CF4 epoch (Ar/CF4/iso 88/10/2, >= 26 h after the switch, GAS_FLUSH_TIMELINE §2);
-#: CO2 epoch (Ar/CO2/iso 95/3/2, 16-22 h after the flush start).  run63 flat700 (one hour) is also split in time.
+#: CO2 epoch (Ar/CO2/iso 93/5/2, 16-22 h after the flush start).  run63 flat700 (one hour) is also split in time.
 GROUPS = {
     'cf4_run62_ladder': dict(gas='beam', keys=['run62_rot25_ladder__d700', 'run62_rot25_ladder__d600', 'run62_rot25_ladder__d500',
                                                'run62_rot25_ladder__d400', 'run62_rot25_ladder__d300', 'run62_rot25_ladder__d200']),

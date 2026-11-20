@@ -15,13 +15,13 @@ into one curve.
 
 Directory naming on the data disk is `<mount>_<gas>__<runs>`:
 
-    flat_ArCO2iso_95-3-2__run53-56          flat,      Ar/CO2/iso 95/3/2
-    rot25_ArCO2iso_95-3-2__run57            25.64 deg, Ar/CO2/iso 95/3/2
+    flat_ArCO2iso_95-3-2__run53-56          flat,      Ar/CO2/iso 93/5/2
+    rot25_ArCO2iso_95-3-2__run57            25.64 deg, Ar/CO2/iso 93/5/2
     rot15_ArCF4iso_88-10-2__run61_1214-1400 15.465deg, Ar/CF4/iso 88/10/2
     rot25_ArCF4iso_88-10-2__run61_1606on    25.64 deg, Ar/CF4/iso 88/10/2
 
 Gas tracked P2's own line throughout (we ran the same mixture on our own line):
-Ar/CO2/iso **95/3/2** from the Friday-night install until the ~21:00 access on
+Ar/CO2/iso **93/5/2** from the Friday-night install until the ~21:00 access on
 2026-08-01, Ar/CF4/iso **88/10/2** from then on. run_60 (21:20-09:26) was taken
 while that exchange was still flushing and belongs to neither.
 

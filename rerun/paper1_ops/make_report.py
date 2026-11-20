@@ -65,7 +65,7 @@ SCANS = [('mx17_2', 'mx17_det2_det3_overnight_6-22-26', 1000.0),
 # rerun/vt_within_rows/README.md), so their efficiency-vs-HV mixes HV and time; shown in the trade-off table only
 SPS_SERIES = {'run66 CF4 (flat, 205 s plateaus)': ('run66_flat_resist__r', 'Ar/CF4/iso 88/10/2'),
               'run55/56 Ar/CO2/iso (flat)': (('run55_flatdrift__d700', 'run56_m70V__590V', 'run56_m70V__625V'),
-                                             'Ar/CO2/iso 95/3/2')}
+                                             'Ar/CO2/iso 93/5/2')}
 
 
 def boot(fn, *arrs, n=N_BOOT):
@@ -595,7 +595,7 @@ def main():
     P = pd.DataFrame(P)
     fits = {}
     series = {'run66 (Ar/CF4/iso 88/10/2, one sub-run, 580-780 V)': G.key.str.startswith('run66'),
-              'run55 d700 + run56 (Ar/CO2/iso 95/3/2, 550-625 V)': G.key.isin(['run55_flatdrift__d700',
+              'run55 d700 + run56 (Ar/CO2/iso 93/5/2, 550-625 V)': G.key.isin(['run55_flatdrift__d700',
                                                                                  'run56_m70V__590V',
                                                                                  'run56_m70V__625V'])}
     for name, m in series.items():

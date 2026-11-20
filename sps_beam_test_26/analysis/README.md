@@ -102,7 +102,7 @@ copy-pasted scripts that then drifted, and half of each combined curve turned
 out to be at the other angle.
 
 ```
-run56_m70V           flat, Ar/CO2/iso 95/3/2, ZS 5 sigma, resist 590 then 625 V
+run56_m70V           flat, Ar/CO2/iso 93/5/2, ZS 5 sigma, resist 590 then 625 V
 run63_rot25          25.64 deg (PRE-access), Ar/CF4/iso, drift ladder at fixed resist
 run63_flat           flat (POST-access), Ar/CF4/iso, 53 min at the operating point
 run71_raw            flat, Ar/CF4/iso, RAW (no ZS), drift 700 / 450 / 275 V

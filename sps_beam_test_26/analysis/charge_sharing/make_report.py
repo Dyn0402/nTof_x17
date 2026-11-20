@@ -176,7 +176,7 @@ strips of detector; Y spans ~45 mm of illuminated area. With a ~15 % in-band gai
 taken from the earlier drift study; it is used to remove
 {R['width_x']['tilt_term_mm']*1e3:.0f} µm in quadrature from X. It explains the X kernel's
 left/right skew ({R['controls_x']['asym_minus_over_plus']:.2f}) but has not been fitted here.</li>
-<li><strong>One gas, one gain point.</strong> Ar/CO₂/iso 95/3/2 at the run-53 operating point.
+<li><strong>One gas, one gain point.</strong> Ar/CO₂/iso 93/5/2 at the run-53 operating point.
 Charge sharing is set by the resistive layer and diffusion, both of which move with gas and
 field; the campaign's own kernel work found the time-domain kernel gain- and drift-invariant,
 but that is a different quantity from this lateral profile.</li>

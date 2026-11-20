@@ -2,7 +2,7 @@
 """Pair det4 (FEU 3) against the uRWELL reference for run_56 / meshscan_m70V.
 
 This is the flat-mount, high-gain sub-run: det4 perpendicular to the beam,
-Ar/CO2/iso 95/3/2, drift held 700 V, resist stepping 590 V -> 625 V inside the
+Ar/CO2/iso 93/5/2, drift held 700 V, resist stepping 590 V -> 625 V inside the
 sub-run.  It is the highest voltage det4 ever ran flat.
 
 Configuration, taken from the machine record rather than assumed:

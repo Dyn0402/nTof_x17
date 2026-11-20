@@ -8,14 +8,17 @@ uses, and the five chambers: which are good, which are not, and their runs.}
 \subsection{Cosmic bench}
 % Checked 2026-11-20 against run_config.json of every June bench run on EOS (cosmic_bench/june_tests): gas
 % "Ar/Iso 95/5" in all of them; the five long runs: n_samples_per_waveform 32, sample_period 60 ns, zero_suppress false.
-The bench (\crefp{fig:setups}{a}) triggers on the coincidence of two $60\times60$\,cm scintillators + PMTs which bracket the stet-up on top and bottom. Four
+The bench (\crefp{fig:setups}{a}) triggers on the coincidence of two $60\times60$\,cm scintillators + PMTs which bracket the set-up on top and bottom. Four
 $50\times50$\,cm reference tracking planes, two above and two below the two slots for chambers under test
 ($40\times40$\,cm), provide reference tracks over a lever arm of 1278\,mm. A track
 reconstructed in them with one cluster per plane and $\chi^2<1.0$ is called the \emph{reference track}, and its
 extrapolation to the chamber under test the \emph{reference ray}. At the chamber the reference ray points to
 0.21--0.28\,mm per coordinate, and its angle is known to better than 0.14\textdegree{} (\cref{sec:angle}).
+The reference planes are MultiGen detectors~\cite{Bouteille2016MultiGen,Radics2019}: resistive Micromegas with a
+two-dimensional readout of 1037 strips per view, which genetic multiplexing~\cite{Procureur2013} reads on 61 channels
+per view. The same bench characterized the Micromegas modules of the sPHENIX TPOT~\cite{TPOT2024}.
 
-The chambers under test and the reference planes are read by the same DREAM electronics. On each trigger every strip
+The chambers under test and the reference planes are read by the same DREAM electronics~\cite{Flouzat2014DREAM,Acker2020MVT}. On each trigger every strip
 is sampled 32 times at 60\,ns intervals, a window of 1.92\,\textmu s that holds the whole drift column at the
 drift fields of the long runs, and is recorded without zero suppression, so that the full waveform of every strip is recorded. Ar/iC$_4$H$_{10}$ 95/5\% was used for all bench data. 
 
@@ -25,19 +28,17 @@ chambers A--D were installed and taking data at n\_TOF, so the one chamber not n
 (\cref{app:beam}), was the one available. The beam crosses two uRWELL reference trackers and chamber~E, which could be
 rotated by up to 25.4\textdegree{} (\crefp{fig:setups}{b}).
 
-Chamber~E had its own gas line and ran two mixtures: Ar/CO$_2$/iC$_4$H$_{10}$ 95/3/2\% for the fist day and Ar/CF$_4$/iC$_4$H$_{10}$ 88/10/2\% for the next two. The flow was about 2\,l/h through a gas volume of about 4.6\,l, so a
+Chamber~E had its own gas line and ran two mixtures: Ar/CO$_2$/iC$_4$H$_{10}$ 93/5/2\% for the first day and Ar/CF$_4$/iC$_4$H$_{10}$ 88/10/2\% for the next two. The flow was about 2\,l/h through a gas volume of about 4.6\,l, so a
 change of mixture took most of a night to complete. 
 %The run taken during the change (run 60) is used only for the angle scale, where the drift velocity comes from the run itself. 
 The readout was the same as on the bench, with 60\,ns samples, but with 64 samples (3.84\,\textmu s), since the drift was slower in the newly flushed chamber (\cref{sec:attachment}), and with zero suppression at 3--5 standard deviations of the pedestal noise in all runs but one. \Cref{tab:spsruns} lists the runs used.
-\askDylan{Gas bookkeeping (2026-11-20). The Ar/CF$_4$/iC$_4$H$_{10}$ 88/10/2 is confirmed everywhere. The CO$_2$ mixture
-is not: our SPS analysis (\texttt{sps\_beam\_test\_26/analysis/RUN\_TIMELINE.md}, ``confirmed 2026-08-02'') and the
-Magboltz grid of the gas fit (\texttt{cloud\_basics/magboltz\_drift.py}) use \textbf{95/3/2}, but the corrected
-\texttt{run\_config.json} of runs 1--58 on EOS (\texttt{gas\_note} dated 2026-08-16, no source given) say \textbf{93/5/2}.
-Which bottle was it? If 93/5/2, the CO$_2$-epoch water and oxygen (\cref{app:beamgas}, \cref{fig:attach} red points, the
-443\,ppm of \cref{sec:attachment}) were fitted in the wrong base gas and need a new Magboltz grid; nothing else in the
-paper depends on it. Also: EOS labels run 59 Ar/CF$_4$ (note of 2026-10-14), but its beam data (20:02--20:24 on
-1 August) precede the 20:24 gas-change access, so they are CO$_2$, as the analysis has them. The 2\,l/h is your
-recollection (\texttt{GAS\_FLUSH\_TIMELINE.md}); no flowmeter log exists.}
+% Gas (Dylan, 2026-11-20): the CO2 mixture was the ATLAS NSW gas, Ar/CO2/iC4H10 93/5/2 (the earlier 95/3/2 in our SPS
+% notes was wrong; the corrected run_config.json on EOS agrees). Run 59's beam data (20:02-20:24 on 1 August) precede the
+% 20:24 gas-change access, so they are CO2, although EOS labels run 59 CF4. The 2 l/h is Dylan's recollection
+% (GAS_FLUSH_TIMELINE.md); no flowmeter log exists.
+\analysis{GAS9352}{the CO$_2$-epoch gas fit (\cref{app:beamgas}, the red points of \cref{fig:attach}, the 443\,ppm of
+\cref{sec:attachment} and \cref{fig:attach_charge}c) was made on a Magboltz grid for 95/3/2; it is being redone on a
+93/5/2 grid (2026-11-20). The CF$_4$-epoch numbers do not change.}
 \begin{table}[tbp]
   \centering\small
   \caption{The beam runs of chamber~E used in this paper. Orientation: normal incidence, or yawed by

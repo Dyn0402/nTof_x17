@@ -47,14 +47,15 @@ cd sps_beam_test_26/analysis
 | | |
 |---|---|
 | **~21:00** | Installed at the 1-hour Friday-night access. **Perpendicular to the beam** (flat, 0°), **upstream of the back uRWELL and downstream of the last P2 detector**, in the ~25 cm of free space between them. |
-| **overnight** | Flushed with **Ar/CO₂/iso 95/3/2** — the mixture P2 was already running, but **on our own gas line**. No data taken. |
+| **overnight** | Flushed with **Ar/CO₂/iso 93/5/2** — the mixture P2 was already running, but **on our own gas line**. No data taken. |
 
 **?** Nothing in the machine record dates the install: banco's runs ran
 straight through Friday night into Saturday morning, and det4 was not in the
 readout until run_53, so its arrival leaves no trace. What the other FEUs were
 carrying before then is P2's business and out of scope here.
 
-**✓ Gas — Ar/CO₂/iso 95/3/2** (confirmed 2026-08-02). `run_config.json` says
+**✓ Gas — Ar/CO₂/iso 93/5/2**, the ATLAS NSW mixture (corrected 2026-11-20 by Dylan; this note said 95/3/2,
+"confirmed 2026-08-02", which was wrong. The corrected `run_config.json` on EOS had 93/5/2 since 2026-08-16). `run_config.json` says
 `Ar/Iso 95/5` for every run of the campaign, including run_61 today; **the
 config is stale and is to be ignored**, exactly as it is for the mount angle.
 This is the gas for every flat-mount and 25° measurement, and it is what any
@@ -189,9 +190,9 @@ Directory naming on the data disk follows this table; the key is
 
 | # | from | to | mount | gas | notes |
 |---|---|---|---|---|---|
-| 0 | Fri 07-31 ~21:00 | Sat 08-01 12:59 | flat (0°) | Ar/CO₂/iso 95/3/2 | install + flush, no data |
-| 1 | Sat 12:59 | Sat 16:01 | **flat** | Ar/CO₂/iso 95/3/2 | runs 53–56 |
-| 2 | Sat 16:50 | Sat ~21:00 | **25.64°** | Ar/CO₂/iso 95/3/2 | runs 57, 58, 59 |
+| 0 | Fri 07-31 ~21:00 | Sat 08-01 12:59 | flat (0°) | Ar/CO₂/iso 93/5/2 | install + flush, no data |
+| 1 | Sat 12:59 | Sat 16:01 | **flat** | Ar/CO₂/iso 93/5/2 | runs 53–56 |
+| 2 | Sat 16:50 | Sat ~21:00 | **25.64°** | Ar/CO₂/iso 93/5/2 | runs 57, 58, 59 |
 | 3 | Sat ~21:00 | Sun 08-02 ~11:00 | 25.64° | **Ar/CF₄/iso 88/10/2, flushing** | run 60 — gas in transition, do not treat as either mixture |
 | 4 | Sun ~11:00 | Sun ~14:00 | **15.465°** | Ar/CF₄/iso 88/10/2 | run 61 `m00V`–`m30V` (to 14:00) |
 | 5 | Sun ~14:00 | **Mon 08-03 00:40** | **25.64°** | Ar/CF₄/iso 88/10/2 | run 61 `m30V` (from 16:08) onward, run 62, run 63 `operating_00/_01` — see §3b, the ~21:00 rotation did NOT happen |
@@ -298,7 +299,7 @@ own decodes, so the uRWELL side had to be re-decoded too.
 - **Saturday's rotation to 25° is the 16:01–16:50 access**, not ~14:00.
   Confirmed 2026-08-02. The H4 beam record cannot resolve accesses at all —
   see the box in §1.
-- **The first-night gas is Ar/CO₂/iso 95/3/2**; `Ar/Iso 95/5` in the config is
+- **The first-night gas is Ar/CO₂/iso 93/5/2**; `Ar/Iso 95/5` in the config is
   stale for every run. Confirmed 2026-08-02.
 - **Sunday's ~14:00 rotation back to 25°** is confirmed, and it is what the
   14:00–16:06 alignment jump was.
@@ -310,7 +311,7 @@ own decodes, so the uRWELL side had to be re-decoded too.
   had stopped before it; the NXCALS backfill covers it.
 
 - **The gas tracked P2's own line throughout** — the same mixture, run on our
-  own line. Ar/CO₂/iso **95/3/2** from the Friday install to the Saturday
+  own line. Ar/CO₂/iso **93/5/2** from the Friday install to the Saturday
   ~21:00 access, Ar/CF₄/iso **88/10/2** after it. Confirmed 2026-08-02.
 - **Rotation sign convention**: the detector rotates **down about the vertical
   axis, signed by the right-hand rule** — the angle that belongs in

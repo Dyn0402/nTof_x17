@@ -26,8 +26,8 @@ constant), Y view only (X view carries the standing tilt), central-strip peak
 
 | arm | gas | resist | drift field | ZS | n clean |
 |---|---|---|---|---|---|
-| co2_590V | Ar/CO₂/iso 95/3/2 | 590 V | 243 V/cm | 5σ | 2 523 |
-| co2_625V | Ar/CO₂/iso 95/3/2 | 625 V | 243 V/cm | 5σ | 3 709 |
+| co2_590V | Ar/CO₂/iso 93/5/2 | 590 V | 243 V/cm | 5σ | 2 523 |
+| co2_625V | Ar/CO₂/iso 93/5/2 | 625 V | 243 V/cm | 5σ | 3 709 |
 | cf4_zs_770V | Ar/CF₄/iso 88/10/2 | 770 V | 243 V/cm | 4σ | 5 315 |
 | cf4_raw_d700 | Ar/CF₄/iso 88/10/2 | 770 V | 243 V/cm | **RAW** | 3 992 |
 | cf4_raw_d450 | Ar/CF₄/iso 88/10/2 | 770 V | 156 V/cm | **RAW** | 3 172 |
@@ -122,7 +122,7 @@ drift-ladder ⊗ shaper picture predicts.
 
 ## 5. The wet-CO₂ bracket — LANDED, and the single-water-fraction test PASSES
 
-Condor 11988752 (5 mixtures, Ar/CO₂/iso 95/3/2 + 0/0.5/1/1.5/2 % H₂O, water
+Condor 11988752 (5 mixtures, Ar/CO₂/iso 93/5/2 + 0/0.5/1/1.5/2 % H₂O, water
 displacing argon, CERN 720.8 Torr, ncoll 5, generator
 `garfield_sim/wetco2_one_mixture.py`, tables in
 `garfield_sim/results/drift_wetco2_*.json`).
@@ -158,7 +158,7 @@ strongly nonlinear in fraction, hence the geo/lin spread); do NOT transfer
   amp-range `.gas` exist — but det4's amplification gap is unpinned (its own
   assessment: continuously varying) so absolute amplitude would be
   uninterpretable; shape-only, if ever.
-- No amp-range Magboltz table exists for the CO₂ 95/3/2 mix (drift-range
+- No amp-range Magboltz table exists for the CO₂ 93/5/2 mix (drift-range
   only); only needed if a CO₂-epoch gain question ever becomes live.
 
 ## Reproduce

@@ -58,7 +58,7 @@ EOS: `/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/paper1_ops/` (`spark/`
      lowest).
    - **run66 (Ar/CF₄/iso, one 30-min sub-run, 580→780 V):** the median charge goes 2140 → 3538 ADC (×1.65) and the
      detection fraction 85 → 98 %.
-   - **runs 55/56 (Ar/CO₂/iso 95/3/2, 550–625 V):** flat (×0.94); detection 99 %.
+   - **runs 55/56 (Ar/CO₂/iso 93/5/2, 550–625 V):** flat (×0.94); detection 99 %.
    - **Comparison:** the bench chambers double every 16–19 V. A bench-like slope would move det4's lead strips to the
      rail (f_sat stays ≈ 1 %, median lead peak 388 → 460 ADC).
    - **Bench scale (same DREAM registers 6/7 = 0xAAAA, 200 fC, at both sites):** det4's median MIP-like lead strip is

@@ -179,7 +179,7 @@ Magboltz v, η and D<sub>L</sub> for the gas (high-statistics grid, condor 44107
 because Magboltz's attachment Monte Carlo still scatters ±10–15 % between neighbouring fields), an optional linear
 drift-field profile and gap spread (geometry), a parametric shaper and trigger jitter. <b>No free loss rate</b>: the loss
 follows from the composition. Shared across every field and view of a dataset: composition, geometry, shaper. Free per
-stack: amplitude and t0. Gases: beam Ar/CF<sub>4</sub>/iso 88/10/2 (CO<sub>2</sub> period Ar/CO<sub>2</sub>/iso 95/3/2),
+stack: amplitude and t0. Gases: beam Ar/CF<sub>4</sub>/iso 88/10/2 (CO<sub>2</sub> period Ar/CO<sub>2</sub>/iso 93/5/2),
 bench Ar/iso 95/5; water and air (N<sub>2</sub>/O<sub>2</sub>/Ar 78.08/20.95/0.93) replace argon.</p>
 @@COMP_TABLE@@
 <figure><img src="figures/f9_beam_composition.png" alt="beam composition" loading="lazy"><figcaption><b>Beam.</b> run_71 RAW,

@@ -27,7 +27,7 @@ use run 71 (RAW) for a resolution.**
     2026-10-31 telescope remake, `rerun/sps_junk`). That is the 2026-08-13 176 ± 10 µm again.
   - Its limits:
     - only Y has the 0.5 mm zone; X has two zones, so X is pointing-model dependent;
-    - the gas (Ar/CO2/iso 95/3/2) and gain (resist 505–535 V) are not those of the CF4 data;
+    - the gas (Ar/CO2/iso 93/5/2) and gain (resist 505–535 V) are not those of the CF4 data;
     - it is ZS with 32 samples, and the pass's angle scale is wrong there (no v), which spoils the wft fit (see 2).
 - **Run 71 (RAW) cannot give the resolution.**
   - Only 25 % of its telescope tracks pass the cross-view fiducial, against 62–75 % on ZS. The 3.84 µs RAW window
@@ -227,7 +227,7 @@ strips above 50 ADC within ±4 samples of the lead's peak.
     excess at 155–158 mm is now ≤ 0.55 % (run55 d700: 19.7 % → ≤ 0). The cut above is no longer needed on those rows.
     The RAW run71 rows were re-run and promoted the same day (code `48244778`).
 - **Time resolution:** not measured (section 4).
-- **The SPS gases (Ar/CO2/iso 95/3/2, Ar/CF4/iso 88/10/2) are not n_TOF's.** These numbers characterise the
+- **The SPS gases (Ar/CO2/iso 93/5/2, Ar/CF4/iso 88/10/2) are not n_TOF's.** These numbers characterise the
   detector technology at normal incidence, not the n_TOF conditions.
 
 ---

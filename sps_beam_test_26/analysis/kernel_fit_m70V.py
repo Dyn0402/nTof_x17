@@ -190,7 +190,7 @@ def main():
     ap.add_argument("--raw", action="store_true",
                     help="input is a RAW run: correct for the uniform "
                          "FEU packet loss by dividing by the acceptance")
-    ap.add_argument("--label", default="run 56 m70V, Ar/CO2/iso 95/3/2, drift 700 V",
+    ap.add_argument("--label", default="run 56 m70V, Ar/CO2/iso 93/5/2, drift 700 V",
                     help="dataset description for figure/print headers")
     args = ap.parse_args()
     q0lo, q0hi = (float(x) for x in args.q0.split(","))
