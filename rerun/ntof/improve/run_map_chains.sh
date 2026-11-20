@@ -43,16 +43,15 @@ STEPS="resolution focus focus_split pose_data pose_data_z pose_data_depth pose_s
   pv_vertex_lab pv_diagnostics pv_vertex_image pv_z_image pv_vertex3d pv_y_image pv_intra_vertex"
 R=rerun/ntof/stage3/resolution
 
-# 3. map only
-say "chain: map"
-X17_PASS1_VIEW=stage3_vtmap X17_PASS1_ANA=$P/ana_map LABEL=pass1map RESOLUTION_OUT=$R/resolution_pass1map.csv \
-  X17_RESOLUTION=$R/resolution_pass1map.csv bash rerun/ntof/PASS1_DOWNSTREAM.sh $STEPS >> $LOG 2>&1 || say "chain map FAILED"
-git checkout -- ntof_athens_26/pair_vertex_imaging/figures 2>/dev/null
-
-# 4. map + censored-window cut (the analysis view)
-say "chain: map + cut (the view)"
-X17_PASS1_VIEW=stage3_vt X17_PASS1_ANA=$P/ana LABEL=pass1 RESOLUTION_OUT=$R/resolution_pass1.csv \
-  X17_RESOLUTION=$R/resolution_pass1.csv bash rerun/ntof/PASS1_DOWNSTREAM.sh $STEPS >> $LOG 2>&1 || say "chain view FAILED"
+# 3-4. map only, and map + censored-window cut (the analysis view), in parallel (16 cores; each chain ~6 h alone)
+say "chains: map, and map + cut (the view), in parallel"
+( X17_PASS1_VIEW=stage3_vtmap X17_PASS1_ANA=$P/ana_map LABEL=pass1map RESOLUTION_OUT=$R/resolution_pass1map.csv \
+    X17_RESOLUTION=$R/resolution_pass1map.csv bash rerun/ntof/PASS1_DOWNSTREAM.sh $STEPS > $P/map_chain_map.log 2>&1 \
+    && say "chain map done" || say "chain map FAILED" ) &
+( X17_PASS1_VIEW=stage3_vt X17_PASS1_ANA=$P/ana LABEL=pass1 RESOLUTION_OUT=$R/resolution_pass1.csv \
+    X17_RESOLUTION=$R/resolution_pass1.csv bash rerun/ntof/PASS1_DOWNSTREAM.sh $STEPS > $P/map_chain_view.log 2>&1 \
+    && say "chain view done" || say "chain view FAILED" ) &
+wait
 git checkout -- ntof_athens_26/pair_vertex_imaging/figures 2>/dev/null
 
 # 5. the baseline's same-chamber comparison with today's rate-fit window (FIT_MS), so all three use one method
