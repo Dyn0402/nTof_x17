@@ -56,14 +56,38 @@ Per-run authority in code: `sps_beam_test_26/analysis/datasets.py`; narrative: `
   (run55 > run59) kept in all arms. The CO₂ water now matches the CF₄ epoch's (1.7–1.85 %), as one gas line at one flow
   should.
 - **Figures:** `rerun/paper1_spsfigs/figures/attachment` and `attachment_charge` rebuilt (CO₂ column: 403 ppm, χ² 271 against
-  9063 without O₂; was 443, 258 against 10 600). Paper I text and figure copies wait for Dylan (`\analysis{GAS9352}`).
+  9063 without O₂; was 443, 258 against 10 600). Paper I v2 text and figure copies updated the same day (commit `bacfdd66`).
+
+## Everything else that used the CO₂-epoch gas physics, redone on 93/5/2 (GAS9352 follow-up, 2026-11-20)
+
+| product | depended on | action | old (95/3/2) → new (93/5/2) |
+|---|---|---|---|
+| `garfield_sim/wetco2_one_mixture.py`, `results/drift_wetco2_*.json` | its own Garfield runs | rerun, condor 4696666 (5/5 exit 0), each JSON carries `gas` and `comps` | v(243 V/cm) dry/0.5/1/1.5/2 % water: 40.1/28.7/18.4/12.7/9.7 → **32.9/21.4/14.4/10.7/8.5** µm/ns |
+| `garfield_sim/results/drift_velocity_beamtest_co2_CERN.json` | same | now written by the `co2dry` job | dry v(233) 39.4 → **31.6** µm/ns |
+| `TWOGAS_HEADON_2026-08-11.md` §5, `RAW_RUN71_REANALYSIS_2026-08-04.md` | the two tables above | dated corrections | implied water at the hits-span v 12.33: 1.57 → **1.27 %**; the August single-water test no longer passes as posed; the one-water-floor statement rests on the gas fit |
+| CO₂ midpoint check (`cloud_basics/results/air_mid`, `mb_mid_check.json`) | 12 Magboltz midpoints | regenerated, condor 4696665 (12/12 exit 0); `mb_fine_collect.py --check-only` | ≤ 0.011 % water / ≤ 11 ppm O₂ (one point 53) → **≤ 0.008 % / ≤ 17 ppm (two points 21, 33)** |
+| drop-one test `mb_interp_test.json` (co2 rows) | the `air_hs` co2 grid | rerun locally | co2 water-equivalent ≤ 0.03 → **≤ 0.025 %** (doubled step); O₂ 12–24 → **11–24 ppm** |
+| cloud_basics FINDINGS §18, §25, README (run_56 CO₂ "rough" estimate) | `GasGrid('co2')` | `co2_estimate()` rerun, dated notes | water 1.56 → **1.25 %**, O₂ 291 (257–355) → **278 (244–338) ppm**; superseded by the gas fit |
+| `papers/paper2/hits_daq/sps_resim.py`, `sps_outliers.py` (IIb known-angle model) | `Dp` 0.006 | `Dp` per row from Magboltz at the gas-fit composition (`sps_resim.gas_dp`) | Dp 0.006 → **0.0049–0.0054**; model ratio 1.040–1.023 → **1.038–1.022**; RC off 1.026–1.015 → **1.023–1.014** |
+| `papers/paper2/hits_daq/sps_dp_scan.py` (`SPS_EXCESS_2026-11-18.md`, IIa §4) | `Dp` 0.006 | refit at the row's 93/5/2 Dp (0.0049 / 0.0054) | see `SPS_EXCESS_2026-11-18.md` § "Correction 2026-11-20" |
+| IIb §5.x text and `known_angle` figure | the resim JSONs | updated | D_T 180–190 → **169–179** µm/√cm; data − model +0.008…+0.011 → **+0.009…+0.013** |
+| `rerun/det4_gap/README.md`, `rerun/PAPER1_NUMBERS_2026-10-31.md`, `rerun/paper1_spsfigs/README.md`, `docs/PARAMETERS.md` | the gas fit's CO₂ numbers | dated corrections | CO₂ water at 28.8 mm 1.75–1.94 → **1.50–1.63 %** |
+| `rerun/sps_gasfit/make_report.py` | caption text only | "refit pending" removed, report regenerated | — |
+
+Checked and **not** gas-dependent (left alone): `rerun/det4_gap` geometric gap (strip extent, no v, no pulse model) and
+its charge gradient k; `rerun/model_audit/ws_spsv` (CF₄ rows); the SPS ladder/drift-window measurements in the August notes
+(data, not Magboltz); `garfield_sim/mm_config.py` and `penning_probe.py` (already 93/5/2: NSW gain/Penning studies);
+every Ar/CO₂ 70/30, 90/10 etc. study in `garfield_sim/` (other gases).
 
 ## What still carries 95/3/2
 
-- `garfield_sim/wetco2_one_mixture.py` and `garfield_sim/results/drift_velocity_beamtest_co2_CERN.json`, `drift_wetco2_*.json`
-  (Garfield runs for the August notes; nothing current reads them).
-- The CO₂ midpoint interpolation check (`cloud_basics/results/mb_mid_check.json`), not redone (same grid spacing).
-- `papers/paper2/hits_daq/sps_dp_scan.py`'s refit at `Dp` 0.006 (`SPS_EXCESS_2026-11-18.md`): the 93/5/2 grid gives 0.0050–0.0055.
+Only parked files, on purpose:
+- `sps_beam_test_26/analysis/cloud_basics/results/{air,air_mid}/legacy_co2_95-3-2/` (`air_fine/legacy_co2_95-3-2/` holds only a README): the old
+  coarse CO₂ grid of `results/air` (35 files) and the 12 old midpoints. Nothing reads them: `gasmodel.GasGrid` and
+  `air_fit.load_grid` glob only the top level, no current product uses `results/air` for gas `co2`, and the fit grid is
+  `air_merged`. Kept for the record, not regenerated (no consumer).
+- `$WORK_DATA/paper2_hits/sps/resim_sps_dp0.006_95-3-2.parquet` (desktop scratch, the superseded known-angle resim).
+- Papers I v1 (`papers/paper1`, frozen) and `papers/paper1/review_deck` still quote the old CO₂ numbers; v1 is not edited.
 
 **Directory names.** The data directories `sps_run53_det4_check/flat_ArCO2iso_95-3-2__run53-56/` and
 `rot25_ArCO2iso_95-3-2__run57/` keep their names because scripts and notes point at them. The `95-3-2` in those names is
