@@ -377,10 +377,24 @@ resim/depth/phase scripts pad by 4 strips, chambers_C.py does not. The det3 temp
 
 **Key files:** `hits_daq/coupling/` (`observables.py`, `fit_kernel.py`, `run_fits.sh`, `profile.py`, `boundary.py`, `extra.py`, `make_report.py`, `physics/`), `hits_daq/coupling_scan.py`, `hits_daq/condor/make_ana_dag.py` (stages `spsrow`, `estim`), `papers/paper2/HITS_DAQ_PLAN_2026-11-05.md`.
 
-## Paper I v2 Sec. 4 (setups): gas bookkeeping, bench sizes, reference-plane citations, t0 — updated 2026-11-20 (dylan-MS-7C84)
+## Paper I v2 Sec. 4 (setups): 4.3 + Fig. 5 reviewed, suggestions open — updated 2026-11-20 (dylan-MS-7C84)
 
-**Resume:** done and on Overleaf; Dylan is editing Sec. 4.3 from here (his sentence "These three parameters are enough to
-define a line through the ..." is unfinished, and on the bench only two are fitted).
+**Resume:** Sec. 4.3 + Fig. 5 caption reviewed and pushed (252c4d8a); next: `papers/overleaf.sh pull paper1_v2` (Dylan
+has newer Overleaf edits), then his call on the five open suggestions below.
+
+**Review of Dylan's first pass on 4.3 / Fig. 5 (evening 11-20, checked against `wft/model.py`, `docs/PARAMETERS.md`):**
+- Corrected in the text: the charge profile is a free non-negative charge per 60 ns slice of DRIFT (not a modelled energy
+  deposition, not "charge per strip quantized"); RC spreading is the Y view only (`rc_D_x` = 0); saturated samples are
+  lower limits, only dead channels are excluded; "three parameters" = a line in strip x time plus where the gap begins,
+  per view. Typos in 4.1/4.2 (`\textmu m`, missing "was").
+- Suggested, NOT applied (Dylan decides): (1) Fig. 5 Y panel, fit -1.5 deg vs reference -0.4 deg (1.1 deg residual, s68
+  0.90; numbers in `papers/paper1_v2/figs/out/displays_v2.json`): quote the residuals in the caption or pick another
+  event; (2) "too steep" -> "too inclined (|tan| too large)"; (3) caption: charge just below the t0 line in (a) is not
+  explained; (4) the 10 ns clock-phase detail of the bench t0 pin was dropped, fine if Paper II carries it; (5) chamber E
+  "non-amplifying stripes" left as is (read as bands of area).
+- Not pulled: Overleaf commit 82ac87fe (Dylan, 11-20 evening). The pull refused because another session has uncommitted
+  n_TOF files in this checkout; pull once the tree is clean.
+- This text was edited before `papers/WRITING_STYLE.md` was read; check the new 4.3 sentences against it.
 
 **Done (all pushed to origin + Overleaf v2):**
 - 4.1/4.2 written from run configs: bench Ar/iso 95/5, 32 x 60 ns, no ZS (EOS `cosmic_bench/june_tests/*/run_config.json`);
