@@ -5,7 +5,7 @@ holds the results that the old section 2.1 quoted before the detector was descri
 section 5.6 in three sentences (the long version is in \cref{app:moved}).}
 \intent{What the chambers do, what varies between them, what the design choices bought, and what limits the result.}
 
-\Cref{tab:summary} collects the performance of the five chambers.
+\Cref{tab:summary} summarizes the measured performance of the five chambers.
 
 \begin{table}[tbp]
   \centering\small
@@ -34,44 +34,50 @@ section 5.6 in three sentences (the long version is in \cref{app:moved}).}
   \end{tabular}
 \end{table}
 
-\paragraph{What a chamber delivers.} A compact resistive Micromegas TPC with a 28\,mm drift gap measures the direction
-of a track from a single chamber to 1.0\textdegree{} and 0.9\textdegree{} in its two views, independently of the angle,
-the gain and the drift field, and out of sample. That meets the first requirement of \cref{sec:requirement}, an
-angle to about a degree, and it is below the multiple scattering that leptons of 3 to 16\,MeV undergo in the air and
-in the entrance foils before they are measured. The chamber needs no external calibration of its drift: two velocities
-and a geometric gap, all from the data, agree to 2\,\%, and the velocity doubles as a monitor of the water in the gas.
-It detects 94.8\,\% of single tracks over its full area, the second requirement, pairs the two views of two-particle events correctly in
-97.7\,\%, reconstructs both of two tracks more than 18\,mm apart in 95\,\% of cases with their opening angle known to
-1.3\textdegree, resolves positions to about 120\,\textmu m and times to 40\,ns.
+\paragraph{What a chamber delivers.} A single compact resistive Micromegas TPC with a 28\,mm drift gap measures the
+direction of a track with a resolution of 1.0\textdegree{} and 0.9\textdegree{} in its two views. This resolution is
+independent of the track angle, the gain and the drift field, and it is measured on tracks that were not used in the
+calibration. It meets the first requirement of \cref{sec:requirement}, an angular resolution of about one degree. It is
+also smaller than the multiple scattering that leptons of 3 to 16\,MeV undergo in the air and in the entrance foils
+before they are measured. The chamber needs no external calibration of its drift velocity. Two velocity measurements
+and a geometric measurement of the gap, all taken from the data, agree to 2\,\%, and the measured velocity also serves
+as a monitor of the water content of the gas. The chamber detects 94.8\,\% of single tracks over its full active area,
+which addresses the second requirement, a high efficiency. In two-particle events, the two views are paired correctly
+in 97.7\,\% of cases. When two tracks are more than 18\,mm apart, both are reconstructed in 95\,\% of cases, and the
+uncertainty on their opening angle is 1.3\textdegree. Positions are resolved to about 120\,\textmu m and times to
+40\,ns.
 
-\paragraph{What varies between chambers.} Two of five chambers, A and B, reach this. Chambers C and D have no plateau: discharges set in
-before it, and at the voltage of the long runs they cost 17 and 24\,\% of the tracks. In short scans both were more
-efficient at lower voltage, around 85 to 90\,\% (\cref{sec:hvscan}). Chamber~D also has a fault on half of its X readout, and 62\,\% of the area
-of chamber~E does not amplify, in stripes (\cref{app:beam}). What does not vary is the geometry: all five boards are dished by 1.3 to 1.9\,mm, and all five share the charge equally between
-the views.
+\paragraph{What varies between chambers.} Two of the five chambers, A and B, reach this performance. Chambers C and D have no efficiency plateau, because
+discharges set in before the plateau is reached. At the voltage of the long runs, these discharges cost 17 and
+24\,\% of the tracks. In short voltage scans, both chambers were more efficient at lower voltage, at around 85 to
+90\,\% (\cref{sec:hvscan}). Chamber~D also has a fault on half of its X readout. In chamber~E, 62\,\% of the area does
+not amplify, in stripes (\cref{app:beam}). The geometry, on the other hand, does not vary between chambers: all five
+boards are dished by 1.3 to 1.9\,mm, and all five share the charge equally between the two views.
 \askStephan{What distinguishes boards A and B from C, D and E in production? This paragraph is where the paper should say
 it.}
 \askDylan{``62\,\% of the area of chamber~E does not amplify'' is the old number; the story file replaced it by ``52\,\% of the $x$
 range below half the plateau; 41\,\% two-view detection''. Which do you want?}
 
-\paragraph{The design choices, judged by the data.} \emph{Pads for an equal charge share} worked: the X strips read
-0.485 to 0.513 of the charge, with a track-to-track spread of 6\,\% in the ratio, and that equality is what pairs the
-views (\cref{sec:pairing}). \emph{The resistive layer} did what it was chosen for: no dead time is measurable after a
-discharge. Its cost is in the reconstruction, which has to model the spreading of the charge (\cref{sec:reco}).
-\emph{Resistive strips} draw a dark current of about 1\,\textmu A at the working point; no board with a uniform layer
-was on the bench to compare. \emph{The orientation of the strips} put the 10\,\% of area lost to passivation where it
-was wanted, but the better resolution expected across the strips is not seen: chamber~A measures the angle better
-along them (0.99\textdegree{} across, 0.90\textdegree{} along), chamber~B the reverse, and the position residuals of the
-two views agree to 12\,\textmu m. The two sides left without passivation fringe over 20 to 30\,mm, which costs a
-fiducial margin for the angle and 0.9 points of efficiency.
+\paragraph{The design choices, judged by the data.} \emph{Pads for an equal charge share} worked as intended. The X strips
+collect 0.485 to 0.513 of the charge, with a track-to-track spread of 6\,\% in the ratio, and this equality is what
+allows the two views to be paired (\cref{sec:pairing}). \emph{The resistive layer} did what it was chosen for: we
+measure no dead time after a discharge. Its cost is in the reconstruction, which has to model the spreading of the
+charge (\cref{sec:reco}). \emph{Resistive strips} draw a dark current of about 1\,\textmu A at the working point. No
+board with a uniform resistive layer was on the bench for comparison. \emph{The orientation of the strips} placed the
+10\,\% of the area lost to passivation where it was wanted. However, the better resolution that was expected across the
+strips is not observed. Chamber~A measures the angle better along the strips (0.99\textdegree{} across,
+0.90\textdegree{} along), chamber~B measures it better across them, and the position residuals of the two views agree
+to 12\,\textmu m. The two sides left without passivation have a fringe field that extends over 20 to 30\,mm. This
+costs a fiducial margin for the angle measurement and 0.9 points of efficiency.
 
 \paragraph{What limits it, and what could be recovered.} The chamber hardware accounts for 0.6 points of
-inefficiency; it alone would allow 99.4\,\%. The rest is real ionization that a one-straight-track reconstruction does
-not describe: $\delta$-rays (2.4 points), the edge zone (0.9), a second particle merged in one projection. A
-reconstruction that recognizes the topology before it fits, a drift model that knows the edges and a veto that counts
-strips per cluster are the named routes, and none of them has been measured. For the leptons the chambers were built
-for, the limit is elsewhere: scattering in the gas while the track is measured, and in the foils and the air before
-(\cref{sec:straight,sec:pointing}).
+inefficiency, so the hardware alone would allow an efficiency of 99.4\,\%. The rest of the inefficiency is real
+ionization that a reconstruction assuming one straight track does not describe: $\delta$-rays (2.4 points), the edge
+zone (0.9) and a second particle merged in one projection. We have identified three ways in which these tracks could
+be recovered: a reconstruction that recognizes the topology of the event before it fits, a drift model that includes
+the fringe field at the edges, and a discharge veto that counts strips per cluster. None of them has been tested. For
+the leptons the chambers were built for, the limit is a different one. It is the scattering in the gas while the track
+is measured, and in the foils and the air before the chamber (\cref{sec:straight,sec:pointing}).
 
 \tbw{What the n\_TOF campaign used the chambers for; comparison with other micro-TPC and resistive Micromegas results in the
 literature (ATLAS NSW micro-TPC, T2K resistive Micromegas TPCs, charge-dispersion readouts): one paragraph, with numbers.}

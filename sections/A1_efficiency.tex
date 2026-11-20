@@ -8,32 +8,39 @@ holds the definition and the choice of the matching radius, the variants of the 
 class with a real event and the result of trying to recover it.}
 
 \subsection{Definition and matching radius}
-\textbf{Denominator.} One reference ray per event: a clean reference track ($\chi^2<1$, four clusters), complete
-events only, whose footprint at the chamber lies inside the measured active area. The headline numbers use the whole
-active area; \cref{fig:effradius,fig:residuals} are drawn in the interior. Nothing else leaves the denominator: tracks
-whose reference may be bent, edge effects, discharges, $\delta$-rays and second particles we cannot separate count as
-losses. Only a second particle shown to be independent of the muon (seen in both views with matching charge) leaves
-the single-track sample, and then the event is counted with the two-particle events, not dropped
-(\cref{sec:twoeff}).
+\textbf{Denominator.} The denominator contains one reference ray per event. We require a clean reference track
+($\chi^2<1$, four clusters) in a complete event, and the footprint of the track at the chamber must lie inside the
+measured active area. The headline numbers use the whole active area, while \cref{fig:effradius,fig:residuals} are
+drawn in the interior. No other track is removed from the denominator. Tracks whose reference may be bent, edge
+effects, discharges, $\delta$-rays and second particles that we cannot separate are all counted as losses. The only
+exception is a second particle that is shown to be independent of the muon (it is seen in both views with matching
+charge). Such an event leaves the single-track sample, but it is not dropped: it is counted with the two-particle
+events (\cref{sec:twoeff}).
 
-\textbf{Numerator: any candidate.} The reconstruction returns several track candidates per view when the event has
-more than one deposit. A muon counts as found when, in each view, the candidate nearest to the reference ray, whatever
-rank the reconstruction gave it, is within $R$ of it at the mesh. If the reconstruction keeps the wrong one of two
-tracks and the other matches the muon, the event is therefore efficient. Every efficiency quoted for chamber~A uses
-this rule (full area: 94.2\,\% of all reference tracks, 94.8\,\% of single tracks; interior: 95.1\,\% and 95.7\,\%). The
-stricter kept-track count, in which only the track the reconstruction keeps may match and each view may have at most
-two competing strips, gives 91.5\,\% over the full area and 92.3\,\% in the interior; it measures the track selection
-as well as the chamber, and is used only to compare chambers (\cref{sec:fleet}). One limit of the any-candidate rule:
-the nearest candidates of the two views are chosen independently, so it does not check that they are the same
-particle. The pairing of X and Y is studied on its own in \cref{sec:pairing}.
+\textbf{Numerator: any candidate.} When an event has more than one deposit, the reconstruction returns several track
+candidates per view. We count a muon as found when, in each view, the candidate nearest to the reference ray is within
+$R$ of it at the mesh, whatever rank the reconstruction gave to that candidate. This means that an event is still
+efficient if the reconstruction keeps the wrong one of two tracks, as long as the other track matches the muon. Every
+efficiency quoted for chamber~A uses this rule (full area: 94.2\,\% of all reference tracks, 94.8\,\% of single tracks;
+interior: 95.1\,\% and 95.7\,\%).
 
-\textbf{The radius.} The efficiency against $R$ (\cref{fig:effradius}) has two regimes: the resolution core, steep up
-to about 4\,mm, then a slow rise of 0.1--0.2 points per mm out to 40\,mm. We use $R=5$\,mm, the knee, where the chance
-of an accidental match is 0.07\,\%, below the statistical error and 70 times below the inefficiency; $R$ between 4 and
-8\,mm moves the efficiency by $-0.5/{+0.7}$ points. The accidental curve is the probability that an unrelated track
-lands inside $R$: the chamber's fit of one event is compared with the reference ray of another (event mixing, 20
-shifts), scaled by the fraction of events with a fit. It is an upper bound on fakes, since in a real event the muon is
-also there.
+We also define a stricter \emph{kept-track count}, in which only the track that the reconstruction keeps may match,
+and each view may have at most two competing strips. The kept-track count gives 91.5\,\% over the full area and
+92.3\,\% in the interior. It measures the track selection as well as the chamber, and we use it only to compare
+chambers (\cref{sec:fleet}).
+
+The any-candidate rule has one limit. The nearest candidates of the two views are chosen independently, so the rule
+does not check that they belong to the same particle. The pairing of X and Y is studied separately in
+\cref{sec:pairing}.
+
+\textbf{The radius.} \Cref{fig:effradius} shows the efficiency as a function of $R$. There are two regimes. Up to
+about 4\,mm the efficiency rises steeply, which is the core of the resolution. Beyond that it rises slowly, by
+0.1--0.2 points per mm, out to 40\,mm. We use $R=5$\,mm, at the knee between the two regimes. At this radius the
+probability of an accidental match is 0.07\,\%, which is below the statistical error and 70 times smaller than the
+inefficiency. Varying $R$ between 4 and 8\,mm changes the efficiency by $-0.5/{+0.7}$ points. The accidental curve is
+the probability that an unrelated track lands inside $R$. To estimate it, we compare the chamber's fit of one event
+with the reference ray of another event (event mixing, 20 shifts), and scale by the fraction of events with a fit.
+This is an upper bound on the rate of fake matches, since in a real event the muon is also present.
 
 \begin{figure}[tbp]
   \centering
@@ -45,23 +52,26 @@ also there.
   \label{fig:effradius}
 \end{figure}
 
-\textbf{Why 5\,mm and not a few $\sigma$ of the resolution.} The residual at the mesh is not the chamber's
-resolution: a Gaussian fit to its core (\crefp{fig:residuals}{a}, $|r|<1.5$\,mm) gives $\sigma=0.55\pm0.02$ (X) and
-$0.53\pm0.03$\,mm (Y), of which the chamber contributes about 0.12\,mm (\cref{sec:position}); the rest is the
-pointing of the reference ray (0.24 and 0.21\,mm) and the multiple scattering of soft cosmic muons. Its tails are not
-Gaussian: only 94 and 92\,\% (X, Y) of the fitted tracks lie within 3$\sigma$ of the reference, 98\,\% within 5\,mm. A
-cut at 3$\sigma$ (about 1.6\,mm) would count 11 points of tracks the chamber did find, on the right particle, as
-losses, mixing the tails of the reference into the efficiency. The efficiency asks whether the chamber saw the muon;
-how well it measured it is the resolution (\cref{sec:tracking}). Between 1.6 and 5\,mm the efficiency rises by 11
-points while the accidental rate stays below 0.07\,\%, so those tracks are the muon, measured less well.
+\textbf{Why 5\,mm and not a few $\sigma$ of the resolution.} The residual at the mesh is not a measurement of the
+chamber's resolution. A Gaussian fit to the core of the residual distribution (\crefp{fig:residuals}{a},
+$|r|<1.5$\,mm) gives $\sigma=0.55\pm0.02$ (X) and $0.53\pm0.03$\,mm (Y). The chamber contributes only about 0.12\,mm
+of this (\cref{sec:position}). The rest comes from the pointing of the reference ray (0.24 and 0.21\,mm) and from the
+multiple scattering of soft cosmic muons. In addition, the tails of the distribution are not Gaussian: only 94 and
+92\,\% (X, Y) of the fitted tracks lie within 3$\sigma$ of the reference, while 98\,\% lie within 5\,mm. A cut at
+3$\sigma$ (about 1.6\,mm) would therefore count as losses 11 points of tracks that the chamber did find, on the right
+particle. This would mix the tails of the reference into the efficiency. The efficiency is meant to answer whether
+the chamber saw the muon. How well the chamber measured the muon is a separate question, which is answered by the
+resolution (\cref{sec:tracking}). Between 1.6 and 5\,mm the efficiency rises by 11 points while the accidental rate
+stays below 0.07\,\%, so the tracks in this range are the muon, only measured less well.
 
-\textbf{What lies beyond 5\,mm} (\crefp{fig:residuals}{b}). The gray curve is the distance to another event's
-reference ray, scaled as if every fit were unrelated to its muon: an unrelated fit lands mostly more than 40\,mm
-away. The data have 7 tracks there against 16\,300 for that hypothesis, so at most about 0.05\,\% of fits are
-unrelated, and they contribute less than one of the 244 tracks at 10--20\,mm. The shoulder from 5 to 20\,mm is
-therefore correlated with the muon: fits pulled by its $\delta$-rays, a secondary fitted instead of the muon, and
-bent reference tracks (the classes below). We cut before it, and count what lies beyond as loss. The residual
-distributions are those of the track the reconstruction keeps (both views fitted, no radius cut).
+\textbf{What lies beyond 5\,mm} (\crefp{fig:residuals}{b}). The gray curve is the distance from a fit to the reference
+ray of another event, scaled as if every fit were unrelated to its muon. An unrelated fit lands mostly more than
+40\,mm away. The data have 7 tracks there, where this hypothesis would give 16\,300. At most about 0.05\,\% of fits
+are therefore unrelated, and unrelated fits contribute less than one of the 244 tracks at 10--20\,mm. This means that
+the shoulder from 5 to 20\,mm is correlated with the muon. It is made of fits pulled by the $\delta$-rays of the
+muon, of fits to a secondary instead of the muon, and of bent reference tracks (the classes below). We place the cut
+before this shoulder and count everything beyond it as a loss. The residual distributions shown are those of the track
+that the reconstruction keeps (both views fitted, no radius cut).
 
 \begin{figure}[tbp]
   \centering
@@ -76,9 +86,9 @@ distributions are those of the track the reconstruction keeps (both views fitted
 \end{figure}
 
 \subsection{Variants of the single-track selection}
-\Cref{tab:single} shows how much the single-track efficiency depends on how single tracks are selected. A sample
-selected by the chamber's own flag is biased upwards, because a failure that looks like two tracks leaves the sample;
-the two-view rule of \cref{sec:single} is not.
+\Cref{tab:single} shows how much the single-track efficiency depends on the way single tracks are selected. A sample
+selected by the chamber's own flag is biased upward, because a failure that looks like two tracks is removed from the
+sample. The two-view rule of \cref{sec:single} does not have this bias.
 \begin{table}[tbp]
   \centering\small
   \caption{Efficiency of chamber~A in the interior, $R=5$\,mm, by selection, Runs 1 and 2. Unlike the numbers of the
@@ -104,11 +114,11 @@ removed), so that the caveat in its caption is not needed. That is a re-run of \
 settings; not done.}
 
 \subsection{Loss classes}\label{app:losses}
-\Cref{tab:losses} follows every reference track in the interior of chamber~A that the kept-track count does not
-detect to the one class it ends in, and says whether a change to the reconstruction that does not use the reference
-recovers it. The classes count every interior reference track, including those with a second particle, and use the
-stricter kept-track count; their fractions are therefore larger than the single-track losses of \cref{sec:single}. One
-real event of each class is shown in \cref{fig:gallery1,fig:gallery2}.
+\Cref{tab:losses} takes every reference track in the interior of chamber~A that the kept-track count does not detect
+and assigns it to exactly one class. For each class, the table also states whether a change to the reconstruction that
+does not use the reference recovers the tracks. The classes include every interior reference track, also those with a
+second particle, and they use the stricter kept-track count. Their fractions are therefore larger than the
+single-track losses of \cref{sec:single}. One real event of each class is shown in \cref{fig:gallery1,fig:gallery2}.
 
 \begin{table}[tbp]
   \centering\small
@@ -126,34 +136,37 @@ real event of each class is shown in \cref{fig:gallery1,fig:gallery2}.
 
 The 7.71\,\% of interior reference tracks that are not detected fall into five groups.
 
-\textbf{The chamber itself: noise bands and discharges (0.72\,\%).} A noise band is a baseline offset over the whole
-readout window on a contiguous patch of strips, seen in the X and Y views together. The track itself is clean, but the
-view fails the cut on competing clusters. The reconstruction excludes the band from the fit, which brought the class
-in Run~1 from 1.43\,\% to 0.22\,\%; under the any-candidate rule of the body half of the remaining band tracks are
-found, which is why the body quotes 0.10\,\%. A discharge (0.50\,\%) lights up whole chips, which ring: a real
-discharge has 113 strips over threshold, beyond the 50 strips at which the fit is not attempted. It is not
-recoverable.
+\textbf{The chamber itself: noise bands and discharges (0.72\,\%).} A noise band is a baseline offset that lasts the
+whole readout window on a contiguous patch of strips, and it is seen in the X and Y views together. The track itself
+is clean in these events, but the view fails the cut on competing clusters. The reconstruction now excludes the band
+from the fit, which reduced this class in Run~1 from 1.43\,\% to 0.22\,\%. Under the any-candidate rule of the body,
+half of the remaining band tracks are found, which is why the body quotes 0.10\,\%. In a discharge (0.50\,\%), whole
+chips light up and ring. A real discharge has 113 strips over threshold, which is beyond the limit of 50 strips above
+which the fit is not attempted. These tracks are not recoverable.
 
-\textbf{A second particle or deposit in the chamber (3.68\,\%).} The largest group. When the chamber sees two
-particle-like clusters in a view, three things happen. The reference particle is fitted but the view fails the cut on
-competing clusters (1.15\,\%), which the any-candidate rule recovers. The reconstruction fits the other, brighter
-particle (1.51\,\%), which needs a rule to choose the triggering track and so cannot be recovered without the
-reference. Or the two lie within the 12\,mm in which candidates are merged in one projection, with the fit between
-them (0.46\,\%); the joint two-track fit of \cref{sec:twoeff} recovers a reference-matched track in 25 of the 146 lost
-tracks of this class. A clean muon with an unrelated deposit elsewhere in the plane can also exceed the 50-strip limit
-(0.35\,\%), and a second deposit that is not particle-like (0.21\,\%) is not recovered.
+\textbf{A second particle or deposit in the chamber (3.68\,\%).} This is the largest group. When the chamber sees two
+particle-like clusters in a view, there are three possible outcomes. In the first, the reference particle is fitted
+but the view fails the cut on competing clusters (1.15\,\%). The any-candidate rule recovers these tracks. In the
+second, the reconstruction fits the other, brighter particle (1.51\,\%). Recovering these tracks would need a rule to
+choose the triggering track, so it cannot be done without the reference. In the third, the two particles lie within
+the 12\,mm in which candidates are merged in one projection, and the fit falls between them (0.46\,\%). The joint
+two-track fit of \cref{sec:twoeff} recovers a reference-matched track in 25 of the 146 lost tracks of this class. In
+addition, a clean muon with an unrelated deposit elsewhere in the plane can exceed the 50-strip limit (0.35\,\%), and a
+second deposit that is not particle-like (0.21\,\%) is not recovered.
 
-\textbf{$\delta$-rays made by the muon (2.61\,\%).} Three classes, one population of increasing size
-(\cref{sec:delta}): a $\delta$-ray along the track (0.87\,\%), a compact saturated one (0.93\,\%), and a shower at the
-crossing (0.81\,\%) that exceeds the 50-strip limit. None is recovered.
+\textbf{$\delta$-rays made by the muon (2.61\,\%).} There are three classes here, which are one population of
+increasing size (\cref{sec:delta}): a $\delta$-ray along the track (0.87\,\%), a compact saturated $\delta$-ray
+(0.93\,\%), and a shower at the crossing (0.81\,\%) that exceeds the 50-strip limit. None of these is recovered.
 
-\textbf{The reconstruction (0.30\,\%).} A fit that is off with no second cluster or saturation flagged (0.28\,\%), and a
-fit that failed in one view (0.02\,\%). The latter was a class of tracks at normal incidence whose two-strip cluster in
-X was never seeded (0.26\,\% in Run~1); seeding such clusters recovers them.
+\textbf{The reconstruction (0.30\,\%).} This group contains fits that are off although no second cluster or
+saturation is flagged (0.28\,\%), and fits that failed in one view (0.02\,\%). The second of these used to be larger:
+tracks at normal incidence whose two-strip cluster in X was never seeded made up 0.26\,\% in Run~1. Seeding such
+clusters recovers them.
 
-\textbf{The reference and the geometry (0.37\,\%).} A position tail where the fit agrees with the charge but not with
-the reference (0.17\,\%; about two thirds are tracks bent between the reference planes), and tracks at the edge of the
-other coordinate (0.20\,\%). These are not losses of the chamber. The remaining 0.03\,\% is not classed further.
+\textbf{The reference and the geometry (0.37\,\%).} This group contains a position tail, in which the fit agrees with
+the charge but not with the reference (0.17\,\%; about two thirds are tracks bent between the reference planes), and
+tracks at the edge of the other coordinate (0.20\,\%). These are not losses of the chamber. The remaining 0.03\,\% is
+not classified further.
 
 \begin{figure}[p]
   \centering

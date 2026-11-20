@@ -8,37 +8,41 @@ measured ways: every readout board is bowed, and the field fringes at the two si
 the tracking numbers are obtained: the first through a correction, the second through the fiducial.}
 
 \subsection{The readout boards are bowed}\label{sec:bow}
-A TPC converts the time structure of its signals into a track angle under two assumptions: that the readout plane is
-flat, and that the drift field is perpendicular to it. On all five chambers both fail at the millimeter level, in the
-way a bowed readout board predicts. Three observables show it.
+A TPC converts the time structure of its signals into a track angle under two assumptions. The first is that the
+readout plane is flat, and the second is that the drift field is perpendicular to it. In all five chambers, both
+assumptions fail at the millimeter level, in the way expected for a bowed readout board. We show this with three
+observables.
 
-\emph{Positions.} A track of slope $\tan\theta$ crosses a mesh displaced by $h$ along the drift direction at a point
-shifted by $h\tan\theta$. The slope of the position residual against the slope of the reference track is therefore the
-local height of the mesh, $h(x,y)$, measured independently by the X and the Y strips. \Crefp{fig:bow}{a, b} shows it
-for chamber~A: a dish, lower at the center than at the rim, in both directions and in both views. A quadratic surface
-fitted to all tracks puts the center $1.31\pm0.22$\,mm below a point 150\,mm out for chamber~A, and between 1.7 and
-1.9\,mm for the other four (\crefp{fig:bow}{c}). The center is the part further from the cathode, the direction in which
-the weight of the board, the overpressure of the gas and the tension of the mesh all push.
+\emph{Positions.} Consider a mesh that is displaced by $h$ along the drift direction. A track of slope $\tan\theta$
+crosses this mesh at a point shifted by $h\tan\theta$. The slope of the position residual as a function of the slope
+of the reference track is therefore the local height of the mesh, $h(x,y)$. This height is measured independently by
+the X and the Y strips. \Crefp{fig:bow}{a, b} shows it for chamber~A. The mesh has the shape of a dish, lower at the
+center than at the rim, in both directions and in both views. A quadratic surface fitted to all tracks places the
+center $1.31\pm0.22$\,mm below a point 150\,mm from the center for chamber~A, and between 1.7 and 1.9\,mm below for
+the other four chambers (\crefp{fig:bow}{c}). The center is the part of the mesh farthest from the cathode. This is the
+direction in which the weight of the board, the overpressure of the gas and the tension of the mesh all push.
 
-\emph{Drift direction.} If the drift lines leave the mesh normal to its surface, charge made at a height $d$ above it
-arrives displaced by $d\,\partial h/\partial x$, and the fitted transverse rate acquires an offset
-$w_0=\vd\,r_f\,\partial h/\partial x$, with $r_f$ between $1/2$ for a flat cathode and 1 for a cathode bowed with the
-board. For a dish, $w_0$ must ramp linearly across the chamber, with a slope fixed by the curvature measured from the
-positions. It does, in all ten chamber views, with $r_f$ between 0.52 and 1.00 (\crefp{fig:bow}{d}). The sign is
-predicted by the geometry, not fitted.
+\emph{Drift direction.} If the drift lines leave the mesh perpendicular to its surface, charge produced at a height
+$d$ above the mesh arrives displaced by $d\,\partial h/\partial x$. The fitted transverse rate then acquires an offset
+$w_0=\vd\,r_f\,\partial h/\partial x$, where $r_f$ is between $1/2$ for a flat cathode and 1 for a cathode bowed in the
+same way as the board. For a dish, $w_0$ must therefore vary linearly across the chamber, with a slope fixed by the
+curvature measured from the positions. We observe this linear variation in all ten chamber views, with $r_f$ between
+0.52 and 1.00 (\crefp{fig:bow}{d}). The sign of the variation is predicted by the geometry and is not fitted.
 
-\emph{Cluster width.} The cluster of strips is narrowest for a track that runs along the local drift lines. This uses
-amplitudes only, no times and no fitted angle, and the angle of the narrowest cluster moves across the chamber with
-the predicted sign in all ten views, beyond two standard deviations in eight.
+\emph{Cluster width.} The cluster of strips is narrowest for a track that runs along the local drift lines. This
+observable uses only the amplitudes, with no times and no fitted angle. The angle at which the cluster is narrowest
+changes across the chamber with the predicted sign in all ten views, and by more than two standard deviations in eight
+of them.
 
-The bow is a static property of each chamber: nineteen runs, on other nights, in the other slot of the bench
-and at other voltages, all give their chamber's depth within two standard deviations. A bow of the reference planes
-could imitate the position signal but not the other two, and its contribution to the depth is bounded at
+The bow is a static property of each chamber. Nineteen runs, taken on other nights, in the other slot of the bench
+and at other voltages, all give the depth of their chamber within two standard deviations. A bow of the reference
+planes could imitate the position observable, but not the other two. Its contribution to the depth is bounded at
 $0.4\pm0.2$\,mm (\cref{app:bow}).
 
-For the reconstruction the bow is a correction, part of each chamber's calibration: a surface per chamber for the
-drift direction and the height of the track point. It improves the angular resolution by a median of 16\,\% over the
-ten views, tested on tracks held out of its fit; for chamber~A from 1.10 to 0.99\textdegree{} in X and from 1.07 to
+In the reconstruction, the bow is treated as a correction that is part of each chamber's calibration. The correction
+is one surface per chamber, which is applied to the drift direction and to the height of the track point. We test it
+on tracks that were held out of the fit of the surface. It improves the angular resolution by a median of 16\,\% over
+the ten views. For chamber~A, the angular resolution improves from 1.10 to 0.99\textdegree{} in X and from 1.07 to
 0.90\textdegree{} in Y. The position residual improves by 5 to 18\,\%.
 \askDylan{One new caveat, from the agent that rebuilt the figure. The bow fit has no position cut, and 7--15\,\% of its tracks
 lie within 30\,mm of an unpassivated $x$ side, where the field fringes (\cref{sec:edge}). Without them the dish depths move
@@ -62,28 +66,31 @@ gain in resolution do not depend on it.}
 \end{figure}
 
 \subsection{The field fringes at the unpassivated sides}\label{sec:edge}
-The resistive strips end at the two $y$ sides, where their ends are passivated; the two $x$ sides, at strip
-coordinates 0 and 398.6\,mm, are not (\cref{sec:design_choices}). Within 20 to 30\,mm of the $x$ sides the chamber
-behaves differently, in three ways that share one depth (\cref{fig:edge}).
+The resistive strips end at the two $y$ sides, where their ends are passivated. The two $x$ sides, at strip
+coordinates 0 and 398.6\,mm, are not passivated (\cref{sec:design_choices}). Within 20 to 30\,mm of the $x$ sides the
+chamber behaves differently from the interior. We observe three effects, all of which extend over the same distance
+from the side (\cref{fig:edge}).
 
-The X angle is biased. The fitted slope differs from the reference by up to 0.1--0.36 in $\tan\theta$ within 5 to
-20\,mm of a side and by less than 0.01 beyond 30\,mm, with opposite signs on the two sides (chambers A, C and E): the
-drift lines converge
-inwards, so charge released near the cathode lands further inside than it started. The drift column is longer, by up
-to 1.1\,\textmu s at 5 to 10\,mm from a side in chamber~A, with more charge on more strips: the edge strips collect
-electrons from outside the strip area, over longer paths. And the efficiency reaches its plateau only 10 to 20\,mm
-from an $x$ side, against about 5\,mm from a passivated $y$ side. The second of these uses no track model and the
-other two use the reference. A fringe of this reach is what a gap of 28\,mm gives: the field of an open edge decays
-with a length of about $g/\pi\approx9$\,mm, so three such lengths reach 30\,mm.
+First, the X angle is biased. Within 5 to 20\,mm of an $x$ side, the fitted slope differs from the reference by up to
+0.1--0.36 in $\tan\theta$, and beyond 30\,mm it differs by less than 0.01. The bias has opposite signs on the two sides
+(chambers A, C and E). This is the behavior expected if the drift lines converge inwards, so that charge released near
+the cathode lands further inside than it started. Second, the drift column is longer, by up to 1.1\,\textmu s at 5 to
+10\,mm from a side in chamber~A, and it has more charge on more strips. This is expected if the edge strips collect
+electrons from outside the strip area, over longer paths. Third, the efficiency reaches its plateau only 10 to 20\,mm
+from an $x$ side, compared to about 5\,mm from a passivated $y$ side. The second of these observations uses no track
+model, and the other two use the reference tracks. A fringe field that extends this far is what we expect for a gap of
+28\,mm: the field of an open edge decays with a length of about $g/\pi\approx9$\,mm, so three such lengths reach
+30\,mm.
 
-This is not the bow. The bow puts the mesh nearer the cathode at the rim and predicts a shorter column there, by 45
-to 64\,ns; the fringe makes it longer. The shifts measured at the edges of the five chambers, between $-115$ and
-$+78$\,ns, are the sum of the two.
+This effect is distinct from the bow. The bow places the mesh nearer the cathode at the rim, and therefore predicts a
+shorter drift column there, by 45 to 64\,ns. The fringe field makes the drift column longer. The shifts measured at the
+edges of the five chambers, between $-115$ and $+78$\,ns, are the sum of the two effects.
 
-The fringe sets the fiducial. Angles and positions are quoted at least 30\,mm from the $x$ sides. The passivated $y$
-sides are sharp for the efficiency but not for the angle: a band 10 to 30\,mm from them keeps the full efficiency,
-while its Y angle is 1.3 to 1.9 times worse than in the interior. The efficiency does not need a fiducial at all: over
-the full active area it is 0.9 points lower than in the interior (\cref{sec:single}).
+The fringe field determines the fiducial region. We quote angles and positions at least 30\,mm from the $x$ sides. At
+the passivated $y$ sides the efficiency turns on sharply, but the angle is still affected: in a band 10 to 30\,mm from
+the $y$ sides the efficiency is at its full value, while the Y angle is 1.3 to 1.9 times worse than in the interior.
+The efficiency does not require a fiducial region at all. Over the full active area it is 0.9 points lower than in the
+interior (\cref{sec:single}).
 \askDylan{The angle numbers of \cref{sec:angle} use the interior as defined in \cref{sec:definitions}, 8\,mm from the $y$ sides, so
 they include the band in which the Y angle is 1.3--1.9 times worse. Either the fiducial for angles becomes 30\,mm on every
 side (and the numbers are re-derived; Y should improve), or this paragraph says that the 8\,mm was kept.}
