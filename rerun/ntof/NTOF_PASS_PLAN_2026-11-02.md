@@ -697,3 +697,14 @@ A failing arm is held, as on the bench.
   Built with an interim canon (`$WORK_DATA/ntof_pass1/ledger_canon_interim_noL1.json`: rerun_dbeam_L1 rule dropped) because
   4677439 was ~11 % done; D L2-era beam rows (217 sub-runs) are on the L2 pin until it lands, then rebuild them with the real canon.
 
+
+### 11-20: P7 downstream migration and P5 test 8 (`rerun/ntof/PASS1_DOWNSTREAM.md`)
+- Every downstream study reads the pass-1 analysis view (`stage3_vt`: v(t) angles under the plain names, |tan| < 0.5, k = 1)
+  through `paths.STAGE3` / `paths.RECO`; retired sets listed in `RETIRE_PRE_PASS1_2026-11-20.md` (kept, nothing deleted).
+- Headline changes: common capsule-focus scale +9.7 % → −0.3 % (A − C 4.6 % left); 3D pair-vertex peak 18 → 1 mm from the
+  capsule (20 → 28 σ), z imaged through D; resolution near normal 0.24–0.41 → 0.03–0.08; wall segment match up on all four
+  chambers; λ 0.85 on A, C, D.
+- Test 8 done: Geant4 nose and EAR2 libraries through the pass-1 reco (RC-kernel digitiser): p1 0.88 / 0.80, p2 0.48 / 0.42;
+  close splits 0.05 % (= the data's close-pair excess); same-chamber data/G4 0.10 (A, C).
+- Worse / open: pose fit χ² (x 12 → 25, z 1 → 19), pair rate-fit χ²/ndf 67, focus median miss +1–4 mm, early-window purity.
+- Before/after page: https://dylan-neff.web.cern.ch/notes/ntof-pass1-before-after.html

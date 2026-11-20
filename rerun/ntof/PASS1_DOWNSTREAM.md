@@ -1,6 +1,7 @@
 # n_TOF pass 1: moving the downstream analysis onto it (NTOF_PASS_PLAN P7)
 
-*Started 2026-11-20. One row per downstream study: what it now reads, the command, and its headline number on pass 1
+*Started and finished 2026-11-20 (open items: HANDOFF.md, "n_TOF pass 1 downstream"). Visual before/after of everything here:
+<https://dylan-neff.web.cern.ch/notes/ntof-pass1-before-after.html> (`compare_page/make_page.py`). One row per downstream study: what it now reads, the command, and its headline number on pass 1
 next to the retired chain's. Chain script: `rerun/ntof/PASS1_DOWNSTREAM.sh`.*
 
 ## What the downstream reads now
@@ -22,7 +23,6 @@ the angle as it is.
 
 ## Studies
 
-(filled in as each one is migrated)
 
 ### Capsule pointing per run (`campaign_imaging`, scale-free band crossing) — migrated 11-20
 `campaign_imaging --reco reco_tree --runs <production> --no-y` → `ana/imaging_campaign/`. 33 runs imaged (run_126 has too few

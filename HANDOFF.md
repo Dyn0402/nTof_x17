@@ -675,28 +675,59 @@ redeployed (dylan-cern-site 91d4386). Inputs on the desktop: $WORK_DATA/claude-j
 
 ## n_TOF pass 1 downstream (P7): the analysis moved onto pass 1 — updated 2026-11-20 (dylan-MS-7C84)
 
-**Resume:** read `rerun/ntof/PASS1_DOWNSTREAM.md` (every study, its command and its numbers against the retired chain);
-`rerun/ntof/PASS1_DOWNSTREAM.sh` reruns it all. Retired sets: `rerun/ntof/RETIRE_PRE_PASS1_2026-11-20.md`.
+**Resume:** P7 migrated; open: same-chamber G4 source model (data/G4 0.10), pose ambiguity, Dylan's deploy/delete calls.
 
-- Everything downstream reads `paths.STAGE3` / `paths.RECO` = `stage3_pass1` / `reco_pass1` (links to
-  `$WORK_DATA/ntof_pass1/stage3_vt` = v(t) angles under the plain names, and `reco_tree`); pass-1 outputs under
-  `$WORK_DATA/ntof_pass1/ana` (`X17_SEPT26_OUT`). Both derived dirs are regenerable from EOS (`vt_view.py`, `reco_tree.py`).
-- Done on pass 1: capsule imaging / focus / focus split / capsule_tof / pose data side; same-chamber pairs (all, late,
-  physics, compare); scint stack (λ 0.85 on A, C, D); wall calibration + chamber B; tight coincidences; calorimetry beam
-  through-goers; pair-vertex imaging (3D peak 1 mm from the capsule, 28σ); qa-tracks shards (built, NOT deployed);
-  pass-1 resolution table (`rerun/ntof/stage3/resolution_line.py`).
-- Geant4 through pass 1 (test 8): digitiser on the RC model (`digitise.plane_waveform_rc`, pinned t0, dead bridging),
-  `run_pass1.sh`, `pair_response.py`. Nose: p1 0.88 / 0.80, p2 0.48 / 0.42 (A / C); close splits 0.05 % = the data's
-  close-pair excess; same-chamber data/G4 0.10 on A and C.
-- Not done: capsule pose fits on the pass-1 library (code ready: `POSE2_LIB_CHAIN=pass1`, default; EAR2 library
-  `run_pass1.sh ear2_L19p5` was running); calorimetry cosmic sample and the rest of that chain; scint-stack and
-  same-chamber reports/decks; Athens figures/notes (data steps only, figures moved to `ana/pair_vertex/figures_pass1`).
-- Dylan's calls: deploy the pass-1 qa-tracks shards (`ana/trackqa_web`, 8.3 GB) to the site; delete the retired sets
-  (~140 GB); delete `$WORK_DATA/claude-jobs/fe02fe1d/` (19 GB) and `$WORK_DATA/ntof_pass1/run104/` (2.4 GB).
+**Goal:** every n_TOF downstream study on pass 1 (NTOF_PASS_PLAN P7), with its numbers against the retired chain.
+
+**Done (11-20):**
+- Plumbing: analysis view `$WORK_DATA/ntof_pass1/stage3_vt` (`rerun/ntof/stage3/vt_view.py`: `<col>` = `<col>_vt`,
+  `tan_raw` = tan, k = 1, one schema), reco tree `reco_tree` (`reco_tree.py`), reader `sept26_prelim_analysis/pass1_tracks.py`,
+  `paths.STAGE3` / `paths.RECO` (= `stage3_pass1` / `reco_pass1`, links in both out roots); pass-1 out root
+  `$WORK_DATA/ntof_pass1/ana` with chain-independent inputs linked. Retired sets: `rerun/ntof/RETIRE_PRE_PASS1_2026-11-20.md`.
+- Rerun on pass 1 (numbers, commands, caveats: `rerun/ntof/PASS1_DOWNSTREAM.md`; chain `rerun/ntof/PASS1_DOWNSTREAM.sh`):
+  capsule imaging/focus/focus-split/tof/pose (data + fits), same-chamber pairs, scint stack (+ report), wall + chamber B,
+  tight coincidences, calorimetry beam through-goers, Athens pair-vertex imaging (data steps), qa-tracks shards, a pass-1
+  resolution table (`rerun/ntof/stage3/resolution_line.py`).
+- Geant4 through pass 1 (P5 test 8): `digitise.plane_waveform_rc` (RC kernel), t0 from the pin, dead bridging,
+  `tracks_json`; `ntof_cosmics/g4_digi/run_pass1.sh {nose,ear2_L19p5}`, `pair_response.py`. p2/p1 0.30 → 0.54; close splits
+  0.05 % = the data's close-pair excess; same-chamber data/G4 0.10 on A and C (was 0.13 / 0.12).
+- Before/after page: https://dylan-neff.web.cern.ch/notes/ntof-pass1-before-after.html (`rerun/ntof/compare_page/make_page.py`
+  + `template.html`; 44 metrics, 31 better / 11 worse / 2 same).
+- Docs: CLAUDE.md (n_TOF pass 1 line), PARAMETERS.md (view, resolution), LESSONS.md (3 lessons), scint-stack README.
+
+**In progress / where it stopped:** nothing running. All products on ucla only (regenerable from EOS + repo).
+
+**Next steps:**
+1. Same-chamber factor 10: the Geant4 capsule / source model (SAME_CHAMBER_PAIRS.md "Next for the factor ~8"); the rate fit
+   (χ²/ndf 67 A) needs a better model than a + b·rate.
+2. Capsule pose: x prefers beam-on-capsule 10 mm off the frame, z a centred beam, both χ² worse on pass 1; needs an outside
+   fact (survey/photo, tip height) or a richer toy.
+3. Not rerun: calorimetry cosmic MIP sample onward (reads retired `ntof_cosmics/results/tracking/k_run_147`); same-chamber
+   and pose reports/decks; Athens figures/notes (pass-1 figures in `ana/pair_vertex/figures_pass1/`); vertex3d 3D html (plotly
+   not in the venv).
+4. Dylan's calls: deploy pass-1 qa-tracks shards (`ana/trackqa_web`, 8.3 GB; `dylan-cern-site/scripts/deploy-trackqa.sh`);
+   delete retired sets (~140 GB), `$WORK_DATA/claude-jobs/fe02fe1d/` (19 GB), `$WORK_DATA/ntof_pass1/run104/` (2.4 GB).
+
+**Gotchas / decisions:**
+- Run migrated studies with `X17_SEPT26_OUT=$WORK_DATA/ntof_pass1/ana` (and `X17_SCINT_OUT`, `X17_CALO_OUT`), or they write
+  into the old tree. `X17_STAGE3=stage3_fullpass X17_RECO=reco_fullpass` restores production.
+- Pass-1 acceptance is true |tan| < 0.5 (`gated` in the view); pass `--tan-max-true 0.5` / `--tan-max 0.5` where a script cuts itself.
+- run_104 stat090_0016 has no flash time: ToF-cut code must skip it (det_a_intra does).
+- B has no angle on pass 1: scint `ana --arms ACD`; B–D through-goers drop out.
+- Digitiser fake pairs far apart are the overlay trigger's own tracks (accidentals); only < 40 mm splits count.
+- The old wall calibration (scint/, 09-08) predates the y fix: its flipped along-bar sign is not a pass-1 problem.
+- Athens data scripts write figures into the tracked `ntof_athens_26/pair_vertex_imaging/figures/`: restore with git checkout.
+- Before baselines differ per study (is2_v2, is2_v2_cf, Sep production): each is named in PASS1_DOWNSTREAM.md and on the page.
+
+**Key files & commands:**
+- `rerun/ntof/PASS1_DOWNSTREAM.md` / `.sh` — status and the whole chain
+- `.venv/bin/python rerun/ntof/compare_page/make_page.py` then
+  `python3 ~/PycharmProjects/dylan-cern-site/scripts/add-note.py $WORK_DATA/ntof_pass1/ana/compare/ntof-pass1-before-after.html --slug ntof-pass1-before-after --force --deploy`
+- `bash ntof_cosmics/g4_digi/run_pass1.sh nose` (~1.5 h, 14 cores) then `pair_response.py --digi ... --arm A --steps ... --out ...`
 
 ## n_TOF pass 1: reprocess the n_TOF tracks on the final chain — updated 2026-11-20 (dylan-MS-7C84)
 
-**Resume (11-20):** stage 3 is FINAL on EOS (543/543, D L2-era on L1); ledger clean. N-G1 rescored. Next: delete the backups, then analysis.
+**Resume (11-20):** stage 3 FINAL on EOS, ledger clean; the analysis is now on it (section "n_TOF pass 1 downstream" above).
 
 **11-19/20 (desktop): D L2-era rebuild on L1 — done.**
 - **Condor 4677439 accounted:** 2,358 `001` / 2,358 `005`, all return value 0; no `009`/`012`; one `004` (proc 2308,

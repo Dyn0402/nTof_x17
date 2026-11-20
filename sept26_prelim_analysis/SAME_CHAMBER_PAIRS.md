@@ -304,3 +304,17 @@ vertex_truthline.csv, sep_loss.csv`).
   capsule ~10 mm off the frame centre — the beam or the frame is not where the alignment says — or the beam is centred
   and the capsule is 13–18 mm off it and ≥ 14 mm lower than drawn (³He yield 1–15 %). Settled only by an outside
   survey/photo, the tip height and the beam spot. Neither reading explains the 1 : 8 on its own.
+
+## On n_TOF pass 1 (2026-11-20)
+
+Everything above is the is2_v2 / production era. On pass 1 (two-track on, v(t) angles, |tan| < 0.5) the chain is
+`det_a_intra` → `same_chamber_physics --chain pass1` → `same_chamber_compare --chain pass1` (outputs under
+`$WORK_DATA/ntof_pass1/ana/`), with the Geant4 response from the libraries reconstructed by pass 1
+(`ntof_cosmics/g4_digi/run_pass1.sh`, `pair_response.py`). Results (`rerun/ntof/PASS1_DOWNSTREAM.md`):
+- pairs ≥ 12 ms ×2.8 (A) / ×2.2 (C); the close-pair (< 40 mm) excess over mixing (0.047 % / 0.028 % of events) equals
+  Geant4's single-lepton split rate through pass 1 (0.053 % / 0.042 %): expected splitting, not physics.
+- Geant4 through pass 1: p1 0.88 / 0.80, p2 0.48 / 0.42 (is2: 0.54 / 0.45, 0.16 / 0.14).
+- **data / Geant4 = 0.10 on A and C** (is2: 0.13 / 0.12): the factor grows to ~10 and is now the same in both chambers;
+  the reconstruction is not where the pairs go. Next is the Geant4 capsule / source model, as above.
+- T1's F = 1200 / 2400 is superseded: pass 1 runs the frozen two-track settings (`TWO_TRACK_F` 300 + charge corroboration,
+  Q7 `rerun/ntof/tests/q7/FINDINGS.md`).
