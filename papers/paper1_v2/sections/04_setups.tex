@@ -15,22 +15,22 @@ reconstructed in them with one cluster per plane and $\chi^2<1.0$ is called the 
 extrapolation to the chamber under test the \emph{reference ray}. At the chamber, the reference ray pointing resolution is 210--280\,um per coordinate, with an angle known to better than 0.14\textdegree{} (\cref{sec:angle}).
 These reference planes are MultiGen detectors~\cite{Bouteille2016MultiGen,Radics2019}: resistive Micromegas with a
 two-dimensional readout of 1037 strips per view, which genetic multiplexing~\cite{Procureur2013} reduces to 61 channels
-per view. The same bench characterized the Micromegas modules of the sPHENIX TPOT~\cite{TPOT2024}.
+per view. The same bench recently characterized the Micromegas modules of the sPHENIX TPOT~\cite{TPOT2024}.
 
 The chambers under test and the reference planes are read by the same DREAM electronics~\cite{Flouzat2014DREAM,Acker2020MVT}. On each trigger every strip
 is sampled 32 times at 60\,ns intervals, a window of 1.92\,\textmu s that holds the whole drift column at the
 drift fields of the long runs, and is recorded without zero suppression, so that the full waveform of every strip is recorded. Ar/iC$_4$H$_{10}$ 95/5\% was used for all bench data. 
 
 \subsection{SPS H4 beam}
-Only chamber~E went to the SPS: the test (chamber~E installed on 31 July 2026, data taken from 1 to 3 August) ran while
+Only chamber~E went to the SPS. The test (chamber~E installed on 31 July 2026, data taken from 1 to 3 August) ran while
 chambers A--D were installed and taking data at n\_TOF, so the one chamber not needed there, with its known non-amplifying stripes
-(\cref{app:beam}), was the one available. The beam crosses two uRWELL reference trackers and chamber~E, which could be
+(\cref{app:beam}), was the only one available. The beam crosses two uRWELL reference trackers and chamber~E, which could be
 rotated by up to 25.4\textdegree{} (\crefp{fig:setups}{b}).
 
 Chamber~E had its own gas line and ran two mixtures: Ar/CO$_2$/iC$_4$H$_{10}$ 93/5/2\% for the first day and Ar/CF$_4$/iC$_4$H$_{10}$ 88/10/2\% for the next two. The flow was about 2\,l/h through a gas volume of about 4.6\,l, so a
 change of mixture took most of a night to complete. 
 %The run taken during the change (run 60) is used only for the angle scale, where the drift velocity comes from the run itself. 
-The readout was the same as on the bench, with 60\,ns samples, but with 64 samples (3.84\,\textmu s), since the drift was slower in the newly flushed chamber (\cref{sec:attachment}), and with zero suppression at 3--5 standard deviations of the pedestal noise in all runs but one. \Cref{tab:spsruns} lists the runs used.
+The readout the same DREAM DAQ as on the bench with 60\,ns samples, but with 64 samples (3.84\,\textmu s), since the drift was slower in the newly flushed chamber (\cref{sec:attachment}), and with zero suppression at 3--5 standard deviations of the pedestal noise in all runs but one. \Cref{tab:spsruns} lists the runs used.
 % Gas (Dylan, 2026-11-20): the CO2 mixture was the ATLAS NSW gas, Ar/CO2/iC4H10 93/5/2 (the earlier 95/3/2 in our SPS
 % notes was wrong; the corrected run_config.json on EOS agrees). Run 59's beam data (20:02-20:24 on 1 August) precede the
 % 20:24 gas-change access, so they are CO2, although EOS labels run 59 CF4. The 2 l/h is Dylan's recollection
@@ -64,9 +64,10 @@ The readout was the same as on the bench, with 60\,ns samples, but with 64 sampl
 % this campaign, README there). Uses: rerun/sps_gasfit (gas groups co2_run55/56/57/59, cf4_run62/63 ladder, run63 flat,
 % run71 raw), rerun/paper1_spsfigs known_angle (column-v rows: run60, run62 d600/d700, run63_rot25), rerun/sps_region
 % (position: run63 flat700, region R), kernel_forms (run71 raw). Resist voltages rounded (769.8 -> 770, 649.75 -> 650).
+
 The beam data are a cross-check in this paper. Every headline number comes from the cosmic bench. The beam confirms
 the position resolution (\cref{sec:position}) and, at an angle the bench does not reach, the angle scale
-(\cref{sec:angle}), and it shows the same gas analysis at work in other mixtures (\cref{sec:attachment}).
+(\cref{sec:angle}), and it shows consistency of the analysis in other gas mixtures (\cref{sec:attachment}).
 % NOTE (Dylan, 2026-11-09): mount angle 25.4 deg = measured yaw from the run-57 alignment (25.52 = midpoint of the measured
 % yaw and the configuration value; 25.64 = run-configuration value det_orientation.y, the old "25.6").
 
@@ -87,11 +88,11 @@ the position resolution (\cref{sec:position}) and, at an angle the bench does no
 \subsection{Reconstruction}\label{sec:reco}
 \sectionstate{partial}{added 2026-11-06 at Dylan's request (brief, points to Paper~II); \texttt{wft/model.py}, \texttt{wft/reco.py}, \texttt{RECONSTRUCTION\_BASIS.md}.
 v2: the figure shows both views (\texttt{figs/make\_displays\_v2.py}).}
-Each readout strip records a waveform: the DREAM electronics sample it every 60\,ns over the drift window, so one
-view of an event is a picture of amplitude against strip and time (\cref{fig:reco}, left). The per-strip hit times that
-a conventional micro-TPC analysis fits are biased: each is an aggregate of charge from several drift depths, mixed
-onto the strip by drift diffusion and the prompt charge footprint and, in the view read along the resistive strips,
-by the RC spreading along them. This compresses the drift-time ladder by 20--30\,\% and reads tracks too
+A full waveform is recorded for each readout strip: the DREAM electronics sample every 60\,ns over the drift window, so one can view an event as a picture of amplitude against strip position and time (\cref{fig:reco}, left). 
+
+Performing an independent waveform analysis on each strip to produce hits per strip can lead to bias: each waveform is an aggregate of charge from several different drift depths, mixed onto the strip by drift diffusion as well as the prompt charge footprint and, in the orientation parallel to the resistive strips, by the RC spreading along those strips. 
+%
+This compresses the drift-time ladder by 20--30\,\% and reads tracks too
 steep~\cite{paperIIb}, whatever estimator defines the hit time. We therefore use the hits only to
 find candidate tracks, and take the geometry from a fit of the whole strip $\times$ time picture. The model is a
 straight track, with its position at the mesh, its transverse drift rate $w$ and its start time $t_0$ as free
