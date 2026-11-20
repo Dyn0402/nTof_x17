@@ -1,5 +1,32 @@
 # Handoff
 
+## SPS CO2-epoch gas = NSW 93/5/2: verified, documented; GAS9352 refit open — updated 2026-11-20 (dylan-MS-7C84)
+
+**Resume:** gas settled (93/5/2); next is the GAS9352 Magboltz refit of the CO2 epoch on a 93/5/2 grid.
+
+**Goal:** settle for good whether the SPS CO2-epoch gas (ATLAS NSW gas) was Ar/CO2/iso 93/5/2 or 95/3/2.
+
+**Done:**
+- Verified 93/5/2: EOS `run_config.json` of runs 53-58 (corrected 2026-08-16) re-read over xrootd; ATLAS Run 3 detector
+  paper (baseline 93:5:2, backup 93:7) and every NSW talk/thesis found. 95/3/2 traced to our own old label, the T2K gas
+  (Ar/CF4/iso) and a loose line in an ePIC CyMBaL talk (Vandenbroucke/Bossù, not ours).
+- Canonical record `docs/GAS_MIXTURES.md`; pointer in `CLAUDE.md` Conventions; warnings on everything still computed on
+  95/3/2 (`magboltz_drift.py`, `gasmodel.py`, `garfield_sim/wetco2_one_mixture.py`, sps_gasfit report caption,
+  `docs/PARAMETERS.md` Dp line). Directory names `*_ArCO2iso_95-3-2__*` kept (paths), flagged as wrong labels.
+- Karl Floethner's DRD1 emails (CERN mail): no gas-options PDF; they only ask for each group's gas/flow/lines.
+
+**Next steps:**
+1. GAS9352 refit: set `BASES['co2']` in `sps_beam_test_26/analysis/cloud_basics/magboltz_drift.py` to 93/5/2 under a NEW
+   gas tag (so old `magboltz_co2_*` grids are not mixed in), rerun the grids, redo `rerun/sps_gasfit/` CO2 epoch, update
+   Paper I (`\analysis{GAS9352}` in `papers/paper1_v2/sections/04_setups.tex`).
+
+**Gotchas / decisions:**
+- Leftover worktree `.claude/worktrees/gas-93-5-2` (from the 007fee02 session) has UNCOMMITTED edits that change
+  `BASES['co2']` to 93/5/2 under the same `co2` tag. Not merged on purpose (same-tag mixing risk); left in place.
+
+**Key files & commands:**
+- `docs/GAS_MIXTURES.md` — the evidence and the list of what still carries 95/3/2
+
 ## Arm-to-arm scintillator timing from cosmics (σ_t) — updated 2026-11-19 (dylan-MS-7C84)
 
 **Resume:** finished; for the n_TOF paper, cite `ntof_cosmics/results/ac_tof/report.html` (numbers in `timing.json`).

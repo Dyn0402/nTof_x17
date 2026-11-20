@@ -2,6 +2,9 @@
 """
 wetco2_one_mixture.py <mixture_key> -- wet bracket for the SPS CO2-epoch
 gas Ar/CO2/iC4H10 95/3/2 (water displacing argon), CERN pressure.
+
+!! 2026-11-20: the real CO2-epoch gas is the ATLAS NSW mixture Ar/CO2/iC4H10 93/5/2, not
+!! 95/3/2 (docs/GAS_MIXTURES.md). This script and its outputs are 95/3/2; redo before use.
 Writes drift_wetco2_<key>.json. Cloned 2026-08-11 from
 mm_one_mixture.py to test whether ONE water fraction explains BOTH
 beam gases measured v_drift (CF4 epoch already bracketed 1-2%).

@@ -88,7 +88,7 @@ than on Y (narrower than 0.28 mm, with a flat same-time floor of ~10 % on the fa
 compromise. The pass is unchanged; the kw angle calibration absorbs the angle-scale part.
 
 **SPS rows carry the bench `Dp` (found 2026-11-18, not changed):** every SPS pass row is fitted with chamber E's bench
-`Dp` = 0.020. For the wet Ar/CO2/iso of run57/59 Magboltz gives 0.0055–0.0060 (D_T 180–190 µm/√cm at 9–11 µm/ns). Refitted at
+`Dp` = 0.020. For the wet Ar/CO2/iso of run57/59 (93/5/2, `docs/GAS_MIXTURES.md`; these Magboltz numbers are on the old 95/3/2 grid) Magboltz gives 0.0055–0.0060 (D_T 180–190 µm/√cm at 9–11 µm/ns). Refitted at
 0.006, 75–81 % of planes have a lower χ² and the inclined-view slope moves by 1.4 % (`papers/paper2/hits_daq/sps_dp_scan.py`,
 `SPS_EXCESS_2026-11-18.md`). The CF4 rows were not checked.
 

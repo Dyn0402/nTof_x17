@@ -4,7 +4,8 @@
 Two sources, same interface:
   'air'     results/air/magboltz_<gas>_w<w>_a<a>.json          (5e7 collisions, 12 fields per file)
   'air_hs'  results/air_hs/magboltz_<gas>_w<w>_a<a>_E<E>_c30.json  (3e8 collisions, one field per file)
-Gas tags: beam = Ar/CF4/iso 88/10/2, co2 = Ar/CO2/iso 95/3/2, bench = Ar/iso 95/5; water and air
+Gas tags: beam = Ar/CF4/iso 88/10/2, co2 = Ar/CO2/iso 95/3/2 (WRONG MIXTURE: the gas was 93/5/2, the NSW gas; these grids await the
+refit, docs/GAS_MIXTURES.md), bench = Ar/iso 95/5; water and air
 (N2/O2/Ar 78.08/20.95/0.93) replace argon.
 
     G = GasGrid('beam', 'air_hs');  G(w, a, E) -> dict(v=um/ns, eta=1/cm, etav=1/ns, DL=um/sqrt(cm), DT=...)

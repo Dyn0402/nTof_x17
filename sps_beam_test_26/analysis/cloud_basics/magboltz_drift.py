@@ -33,6 +33,8 @@ FIELDS = (60, 75, 92, 100, 108, 142, 150, 200, 243, 250, 300, 400)
 BASES = {
     'beam':  (720.8, [('ar', 88.0), ('cf4', 10.0), ('ic4h10', 2.0)]),     # Ar/CF4/iso, CERN
     'co2':   (720.8, [('ar', 95.0), ('co2', 3.0), ('ic4h10', 2.0)]),      # Ar/CO2/iso, CERN
+    # !! WRONG MIXTURE: the CO2-epoch gas was 93/5/2 (ATLAS NSW), docs/GAS_MIXTURES.md. Kept at 95/3/2 so the
+    # !! existing magboltz_co2_* grids match this table; change it (and the output tag) in the GAS9352 refit.
     'bench': (745.83, [('ar', 95.0), ('ic4h10', 5.0)]),                   # Ar/iso, Saclay
 }
 AIR = (('n2', 78.08), ('o2', 20.95), ('ar', 0.93))

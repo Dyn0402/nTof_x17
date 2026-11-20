@@ -100,8 +100,9 @@ account's "~14:00" was a misremembering, confirmed against the record):
 - The recovered HV monitor confirms it independently: monitoring runs
   continuously to **16:00:25** and does not resume until **16:35:35**, a 35-min
   hole with nothing else in the day like it.
-- Our own directory naming already agrees: `flat_ArCO2iso_95-3-2__run53-56` /
-  `rot25_ArCO2iso_95-3-2__run57`.
+- Our own directory naming already agrees on the mount: `flat_ArCO2iso_95-3-2__run53-56` /
+  `rot25_ArCO2iso_95-3-2__run57`. (The `95-3-2` in those names is the old wrong gas label; the gas is 93/5/2,
+  `docs/GAS_MIXTURES.md`.)
 
 > **The H4 beam record cannot see accesses, so it could not be used to decide
 > this.** Checked explicitly: on 08-01 the SPS extracted to `FTARGET`

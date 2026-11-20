@@ -173,6 +173,9 @@ from the control-room browser with no file-system access.
   the part common to all chambers means anything. Evidence and the mistake it
   came from: `capsule_y.py --sensitivity` and the Outcome box of
   `sept26_prelim_analysis/HANDOFF_CAPSULE_Y.md`.
+- **SPS gas:** the CO₂ epoch (runs 53–58 and run 59's beam data) is the ATLAS NSW mixture Ar/CO₂/iC₄H₁₀ **93/5/2**, never 95/3/2; the CF₄
+  epoch is 88/10/2; `run_config.json`'s `Ar/Iso 95/5` is stale. Evidence and what still carries 95/3/2:
+  `docs/GAS_MIXTURES.md`.
 - Anything calibrated (kernel, template, v, gap map) is per detector **and** per
   run condition. A bundle used outside its conditions is a silent error.
 - **Dead channels: one treatment everywhere** (closed 2026-10-26). A bundle's `dead` list (census dead + shorts,
