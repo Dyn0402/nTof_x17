@@ -382,6 +382,12 @@ resim/depth/phase scripts pad by 4 strips, chambers_C.py does not. The det3 temp
 **Resume:** Sec. 4.3 + Fig. 5 caption reviewed and pushed (252c4d8a); next: `papers/overleaf.sh pull paper1_v2` (Dylan
 has newer Overleaf edits), then his call on the five open suggestions below.
 
+**Later 11-20 (4.4/4.5):** `\boldsymbol{s_{68}}` label, a **View** definition (x/y strip orientation) in 4.4, and Dylan's
+Overleaf edits of `04_setups.tex` are merged and pushed (repo and Overleaf in step). Two wording suggestions to Dylan, NOT
+applied: 4.5 "Chamber D has a fault of the X readout" -> faulty contacts between the readout cards and the strips on
+X channels 0-255 (shorted/open pads; `rerun/det7_pogo/README.md`); 4.5 Run 1 "which closed its voltage and drift-field
+scans" -> "taken right after" (it was the long run after the Saturday scans, same folder).
+
 **Review of Dylan's first pass on 4.3 / Fig. 5 (evening 11-20, checked against `wft/model.py`, `docs/PARAMETERS.md`):**
 - Corrected in the text: the charge profile is a free non-negative charge per 60 ns slice of DRIFT (not a modelled energy
   deposition, not "charge per strip quantized"); RC spreading is the Y view only (`rc_D_x` = 0); saturated samples are
