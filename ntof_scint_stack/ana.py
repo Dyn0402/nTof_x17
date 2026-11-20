@@ -1794,7 +1794,8 @@ def merge(arms) -> None:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split('\n')[1])
-    ap.add_argument('--arms', default='ABCD')
+    ap.add_argument('--arms', default='ABCD',
+                    help='n_TOF pass 1: ACD (B has no angle there, positions only)')
     ap.add_argument('--jobs', type=int, default=4)
     a = ap.parse_args()
     arms = list(a.arms)
@@ -1802,7 +1803,7 @@ def main() -> int:
         res = list(ex.map(run_arm, arms))
     for r in res:
         print('\n'.join(r['log']), flush=True)
-    merge(ARMS)
+    merge(arms)
     (out_dir() / 'ana' / 'meta.json').write_text(json.dumps(dict(
         schema=SCHEMA, arms=arms,
         n_tracks={r['arm']: r['n'] for r in res},

@@ -150,3 +150,21 @@ What changed: pass 1 reconstructs two tracks in one plane (two-track on, 4-pitch
 
 Needed to close it: (1) the split-ab contract and F ladder on the pass-1 bundles (T1); (2) g4_digi re-reconstructed
 with the pass-1 code (P5 test 8) for DIGI and the pose toy; (3) a pass-1 resolution table from the run_149 A–C line.
+
+### Scintillator stack mapped by the tracks (`ntof_scint_stack extract / ana`) — migrated 11-20
+`X17_SCINT_OUT=ana/scint_stack`; `extract --src stage3_vt --runs <production>`; `ana --arms ACD` (B has no angle in
+pass 1, so its pointing calibration cannot run; `merge` now merges only the arms run). m = tan (v(t), k = 1).
+
+| | A | C | D |
+|---|---|---|---|
+| tracks, is2-era fullpass → pass 1 | 2.87 M → 3.55 M | 2.87 M → 2.85 M | 5.65 M → 5.94 M |
+| k used | 1.23 → 1 | 1.45 → 1 | 1.62 → 1 |
+| λ (slope that the wall edges want, × m) | 0.636 → **0.847** | 0.627 → **0.840** | 0.587 → **0.847** |
+| wall offset from survey (mm) | — → +0.9 | — → +3.4 | — → +7.1 |
+
+λ < 1 means the wall edges are fitted best with a shallower slope than the chamber measures. On pass 1 it is
+the same on all three chambers (0.84–0.85) where the is2-era k gave 0.59–0.64 with chamber-to-chamber spread: the
+chamber-to-chamber part was calibration. The common 0.85 is the beam-electron effect already known from Geant4
+(electrons scatter between the gap and the wall; beam/cosmic wall gap, HANDOFF_TRACKING §10–13), not an angle error.
+Still from the is2 era: `ana.CAPSULE_XYZ = (−9.3, −31.3, −3.45)`; pass 1 gives x −9.1, y −30.4 / −32.1, z −5.5 (imaging) or −1.7 (tilt).
+The report and deck (`make_report`, `make_deck`) are not regenerated yet.
