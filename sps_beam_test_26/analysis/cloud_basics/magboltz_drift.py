@@ -34,7 +34,8 @@ BASES = {
     'beam':  (720.8, [('ar', 88.0), ('cf4', 10.0), ('ic4h10', 2.0)]),     # Ar/CF4/iso, CERN
     'co2':   (720.8, [('ar', 93.0), ('co2', 5.0), ('ic4h10', 2.0)]),      # Ar/CO2/iso 93/5/2 (ATLAS NSW), CERN
     # (95/3/2 until 2026-11-20: wrong mixture, docs/GAS_MIXTURES.md. Every magboltz_co2_* grid in air_hs/air_merged was
-    # regenerated on 93/5/2 that day, condor 4694770; the 'air', 'air_fine' and 'air_mid' co2 files are still 95/3/2.)
+    # regenerated on 93/5/2 that day, condor 4694770, and the 12 air_mid co2 midpoints too, condor 4696665. The old
+    # 95/3/2 co2 files of 'air', 'air_fine' and 'air_mid' are parked in their legacy_co2_95-3-2/ subfolders; nothing reads them.)
     'bench': (745.83, [('ar', 95.0), ('ic4h10', 5.0)]),                   # Ar/iso, Saclay
 }
 AIR = (('n2', 78.08), ('o2', 20.95), ('ar', 0.93))

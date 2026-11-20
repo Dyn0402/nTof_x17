@@ -12,6 +12,10 @@
 
 --hs: the directory holding every air_hs point incl. the gas-fit extension (lxplus ~/cloud_basics_condor/att);
 default results/air_hs.  Files are copied, not linked, so the repo dirs stand alone.
+
+--check-only: refile nothing; recompute mb_mid_check.json from the midpoints already in results/air_mid against the
+current air_merged (the 'fine' argument is then ignored).  Used 2026-11-20 after the CO2 midpoints were regenerated on
+Ar/CO2/iso 93/5/2 (condor 4696665; the 95/3/2 ones are in air_mid/legacy_co2_95-3-2/).
 """
 import argparse
 import glob
@@ -40,7 +44,11 @@ def fill(dst, files):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('fine'); ap.add_argument('--hs', default=os.path.join(RES, 'air_hs'))
+    ap.add_argument('--check-only', action='store_true')
     a = ap.parse_args()
+    if a.check_only:
+        return check({os.path.basename(f): f for f in glob.glob(os.path.join(RES, 'air_mid', 'magboltz_*_c30.json'))},
+                     json.load(open(os.path.join(RES, 'mb_mid_check.json'))).get('missing', []))
     fine = {os.path.basename(f): f for f in glob.glob(os.path.join(a.fine, 'magboltz_*_c30.json'))}
     hs = {os.path.basename(f): f for f in glob.glob(os.path.join(a.hs, 'magboltz_*_c30.json'))}
     want = {f'magboltz_{t}_E{e}_c{J.NCOLL}.json' for t, e in J.jobs('bench')}
@@ -53,8 +61,12 @@ def main():
     merged = [p for p in have.values() if p] + [p for n, p in hs.items() if not n.startswith('magboltz_bench_')]
     shutil.rmtree(os.path.join(RES, 'air_merged'), ignore_errors=True)
     fill(os.path.join(RES, 'air_merged'), merged)
+    check(fine, missing)
 
-    # midpoint check against the grid the SPS gas fit uses
+
+def check(fine, missing):
+    """midpoint check against the grid the SPS gas fit uses"""
+    mid = {f'magboltz_{t}_E{e}_c{J.NCOLL}.json' for t, e in J.jobs('mid')}
     out = []
     for gas in ('beam', 'co2'):
         G = M.GasGrid(gas, 'air_merged')
@@ -68,7 +80,7 @@ def main():
             dvdw = (G(w + 0.05, x, E)['v'] - G(w - 0.05, x, E)['v']) / 0.1
             deda = (G(w, x + 0.01, E)['eta'] - G(w, max(0, x - 0.01), E)['eta']) / (x + 0.01 - max(0, x - 0.01))
             dv = p['v'] - pt['v_true_um_ns']; de = p['eta'] - pt['eta_per_cm']
-            out.append(dict(gas=gas, water=w, air=x, E=E, v_mc=pt['v_true_um_ns'], v_grid=p['v'],
+            out.append(dict(gas=gas, comp=json.load(open(fine[n]))['comp'], water=w, air=x, E=E, v_mc=pt['v_true_um_ns'], v_grid=p['v'],
                             dv_rel=dv / pt['v_true_um_ns'], eta_mc=pt['eta_per_cm'], eta_grid=p['eta'],
                             deta_rel=de / pt['eta_per_cm'] if pt['eta_per_cm'] > 0 else None,
                             water_shift=dv / dvdw if dvdw else None,
