@@ -44,16 +44,26 @@ Per-run authority in code: `sps_beam_test_26/analysis/datasets.py`; narrative: `
   93/5/2 nor Ar/CO₂/iso 95/3/2. It is a loose label in a talk about a different detector, not a source on the NSW gas.
   It is not ours.
 
-## What still carries 95/3/2 (deliberately, until the refit)
+## The refit on 93/5/2 (GAS9352, done 2026-11-20)
 
-These were computed on a 95/3/2 Magboltz grid and are labelled as such. They are to be redone on 93/5/2; Paper I tracks
-this as `\analysis{GAS9352}` in `papers/paper1_v2/sections/04_setups.tex`.
+- **Magboltz:** `BASES['co2']` in `sps_beam_test_26/analysis/cloud_basics/magboltz_drift.py` is 93/5/2. All 432 `magboltz_co2_*`
+  points of `results/air_hs` and `results/air_merged` were regenerated on it (condor 4694770, 3e8 collisions, the same
+  water × air × field nodes; each JSON carries its `comp`). The tag stays `co2`: no 95/3/2 file is left where `gasmodel.py`
+  looks. The 47 older 95/3/2 files of `air`, `air_fine`, `air_mid` were moved to `legacy_co2_95-3-2/` there, out of the
+  loader's glob. At 1 % water and 225 V/cm the drift is 21 % slower in 93/5/2 (13.0 against 16.4 µm/ns).
+- **Gas fit** (`rerun/sps_gasfit/`, baseline + 10 arms + verdict + report): CF₄ epoch unchanged to the last digit; CO₂
+  epoch water 1.94–2.12 → **1.56–1.75 %**, O₂ 322–443 → **282–403 ppm**; χ² about the same, no grid edge, the O₂ ordering
+  (run55 > run59) kept in all arms. The CO₂ water now matches the CF₄ epoch's (1.7–1.85 %), as one gas line at one flow
+  should.
+- **Figures:** `rerun/paper1_spsfigs/figures/attachment` and `attachment_charge` rebuilt (CO₂ column: 403 ppm, χ² 271 against
+  9063 without O₂; was 443, 258 against 10 600). Paper I text and figure copies wait for Dylan (`\analysis{GAS9352}`).
 
-- `sps_beam_test_26/analysis/cloud_basics/magboltz_drift.py` (`BASES['co2']`) and every `magboltz_co2_*` grid it wrote,
-  read by `gasmodel.py` as gas tag `co2`.
-- `rerun/sps_gasfit/` CO₂-epoch results (the red points of the attachment figure, the 443 ppm O₂).
-- `garfield_sim/wetco2_one_mixture.py` and `garfield_sim/results/drift_velocity_beamtest_co2_CERN.json`.
-- The Magboltz D_T / `Dp` values for the wet CO₂ runs quoted in `docs/PARAMETERS.md` ("SPS rows carry the bench `Dp`").
+## What still carries 95/3/2
+
+- `garfield_sim/wetco2_one_mixture.py` and `garfield_sim/results/drift_velocity_beamtest_co2_CERN.json`, `drift_wetco2_*.json`
+  (Garfield runs for the August notes; nothing current reads them).
+- The CO₂ midpoint interpolation check (`cloud_basics/results/mb_mid_check.json`), not redone (same grid spacing).
+- `papers/paper2/hits_daq/sps_dp_scan.py`'s refit at `Dp` 0.006 (`SPS_EXCESS_2026-11-18.md`): the 93/5/2 grid gives 0.0050–0.0055.
 
 **Directory names.** The data directories `sps_run53_det4_check/flat_ArCO2iso_95-3-2__run53-56/` and
 `rot25_ArCO2iso_95-3-2__run57/` keep their names because scripts and notes point at them. The `95-3-2` in those names is

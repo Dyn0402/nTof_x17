@@ -1,31 +1,25 @@
 # Handoff
 
-## SPS CO2-epoch gas = NSW 93/5/2: verified, documented; GAS9352 refit open — updated 2026-11-20 (dylan-MS-7C84)
+## SPS CO2-epoch gas = NSW 93/5/2: verified, documented, GAS9352 refit DONE; Paper I update waits for Dylan — updated 2026-11-20 (dylan-MS-7C84)
 
-**Resume:** gas settled (93/5/2); next is the GAS9352 Magboltz refit of the CO2 epoch on a 93/5/2 grid.
-
-**Goal:** settle for good whether the SPS CO2-epoch gas (ATLAS NSW gas) was Ar/CO2/iso 93/5/2 or 95/3/2.
+**Resume:** the refit is done and on main. Waiting for Dylan (editing Paper I on Overleaf) before touching `papers/paper1_v2`;
+then apply the "Paper I changes" below and remove `\analysis{GAS9352}`.
 
 **Done:**
-- Verified 93/5/2: EOS `run_config.json` of runs 53-58 (corrected 2026-08-16) re-read over xrootd; ATLAS Run 3 detector
-  paper (baseline 93:5:2, backup 93:7) and every NSW talk/thesis found. 95/3/2 traced to our own old label, the T2K gas
-  (Ar/CF4/iso) and a loose line in an ePIC CyMBaL talk (Vandenbroucke/Bossù, not ours).
-- Canonical record `docs/GAS_MIXTURES.md`; pointer in `CLAUDE.md` Conventions; warnings on everything still computed on
-  95/3/2 (`magboltz_drift.py`, `gasmodel.py`, `garfield_sim/wetco2_one_mixture.py`, sps_gasfit report caption,
-  `docs/PARAMETERS.md` Dp line). Directory names `*_ArCO2iso_95-3-2__*` kept (paths), flagged as wrong labels.
-- Karl Floethner's DRD1 emails (CERN mail): no gas-options PDF; they only ask for each group's gas/flow/lines.
+- Gas verified as 93/5/2 (EOS run configs, ATLAS Run 3 paper, NSW literature); record in `docs/GAS_MIXTURES.md`.
+- Every condition label relabelled 95/3/2 -> 93/5/2 (commit 007fee02).
+- GAS9352 refit: new 93/5/2 Magboltz grid (condor 4694770, 432 points, all exit 0), gas fit + 10 arms + verdict + report,
+  attachment figures in `rerun/paper1_spsfigs/figures/`. CF4 unchanged; CO2 water 1.56-1.75 %, O2 282-403 ppm.
+  Same `co2` tag: all 432 air_hs/air_merged co2 files replaced; the 47 old ones elsewhere moved to `legacy_co2_95-3-2/`.
 
-**Next steps:**
-1. GAS9352 refit: set `BASES['co2']` in `sps_beam_test_26/analysis/cloud_basics/magboltz_drift.py` to 93/5/2 under a NEW
-   gas tag (so old `magboltz_co2_*` grids are not mixed in), rerun the grids, redo `rerun/sps_gasfit/` CO2 epoch, update
-   Paper I (`\analysis{GAS9352}` in `papers/paper1_v2/sections/04_setups.tex`).
+**Paper I changes (not applied; Dylan asked to wait):**
+- `papers/make_figures.py paper1_v2 --only attachment attachment_charge` (copies the rebuilt figures).
+- Sec. 5.4 (`05_gas.tex`): "226 and 443 ppm" -> "226 and 403 ppm" (text and Fig. attachment_charge caption);
+  caption "chi2 842 and 10 600 against 49 and 258" -> "842 and 9060 against 49 and 271".
+- App. E.3 (`A5_beam_test.tex`): "1.7 to 2.1 % of water ... 130 to 440 ppm" -> "1.6 to 1.9 % ... 130 to 400 ppm".
+- Remove `\analysis{GAS9352}` in `04_setups.tex`.
 
-**Gotchas / decisions:**
-- Leftover worktree `.claude/worktrees/gas-93-5-2` (from the 007fee02 session) has UNCOMMITTED edits that change
-  `BASES['co2']` to 93/5/2 under the same `co2` tag. Not merged on purpose (same-tag mixing risk); left in place.
-
-**Key files & commands:**
-- `docs/GAS_MIXTURES.md` — the evidence and the list of what still carries 95/3/2
+**Key files:** `docs/GAS_MIXTURES.md`; `rerun/sps_gasfit/README.md` (refit box + table); `rerun/sps_gasfit/results/verdict.json`.
 
 ## Arm-to-arm scintillator timing from cosmics (σ_t) — updated 2026-11-19 (dylan-MS-7C84)
 
