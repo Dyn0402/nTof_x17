@@ -22,8 +22,29 @@ Everything reads the pass-1 analysis view (v(t) angles, gated = true |tan| < 0.5
 5. **So the A−C focus asymmetry was not geometry.** PASS1_DOWNSTREAM read the antisymmetric 4.6 % as a distance or axis
    offset (it would be a 5.4 mm source offset toward C, the same as D's −5.55 mm z crossing). The cosmic map, which
    knows nothing about the source, removes it, so most of it is A's edge tilt. D's −5.55 mm is not confirmed by A/C.
-6. **B–D cosmic lines do not close**: D's line misses B's point by a median +117 mm in both z and y (65 k B–D pairs,
+6. **B–D cosmic lines did not close** (explained by 7–8 below): D's line misses B's point by a median +117 mm in both z and y (65 k B–D pairs,
    3.4 k within 60 mm). Until that is understood B cannot be D's truth, and D has no map.
+
+7. **D's fake tracks: censored fit windows** (`rerun/ntof/stage3/censor_join.py`). A fit window made of the bundle's
+   dead/hot wildcard strips carries no charge measurement; the NNLS puts unbounded charge there (q_sum to 1e22),
+   chi2 ~ 0, and the candidate still wins the plane's ranking.  D x (154 dead, many hot channels on connectors 1, 2, 8)
+   is hit hardest: 21 % of D's gated beam tracks in run_145 have an all-censored x window, at the hot connector's edge
+   (x_local ~ -196 mm, tan x ~ 0, 3-strip seed); in the beam-off runs 69 % of D's gated tracks are censored-window fakes
+   (371,692 -> 115,706).  Wall chance level is 0.6 %, real tracks confirm ~90 %.  Rule (chosen on D's late-window
+   wall purity): an all-censored x window, or a y window >= 50 % censored.  Late D: keeps 96 % of wall-confirmed
+   tracks, removes 16 %, purity 0.69 -> 0.79.  On A it removes early (< 12 ms) tracks on A's dead y edge, which the
+   wall confirms less than A's others in every ToF bin; >= 12 ms it removes 87 of A's tracks.  B, C: ~0.
+8. **With D's fakes gone the B-D cosmic lines close** (median miss 7 / 4 mm, was 73 / 64; 45 % within 60 mm, was 5 %),
+   so finding 6 was D's fakes.  D gets its first external angle anchor: slope against the B-D line z view 0.996,
+   y view 0.973 (~2k lines each, +-0.004), residual MAD 0.036-0.037.  The "D ~10 % off its bundle" note in vt_join was
+   likely the fakes; D y reads 2.7 % shallow, like A/C's kappa (0.97-0.98).
+9. **Same-chamber rate fit** (`same_chamber_compare.FIT_MS`, default 25 ms).  The pair fraction is flat from 25 to 75 ms
+   (A 0.41 %, chi2 3.6/7 with a + b rho) while 12-20 ms carries a different population (pointing at the capsule 0.12 vs
+   0.30, worst-leg chi2/dof 11.9 vs 2.8, wider separations) that is not proportional to the tracked rate.  Fitting
+   12-75 ms forced it into b rho: a was 0.23 %, chi2/ndf 67.  From 25 ms: a = 0.384 +- 0.018 % (A), 0.312 +- 0.019 % (C);
+   data/G4 0.10 -> 0.18 (A) / 0.14 (C); the shape tables use real pairs >= 25 ms too.  The correlated opening-angle
+   shape is close to the event-mixed one, not Geant4's one-photon e+e-: two independent particles from one capture
+   (e.g. a gamma cascade) rather than conversions.  That is the source-model question, not tracking.
 
 ## Not decided (Dylan)
 

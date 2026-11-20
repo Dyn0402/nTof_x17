@@ -45,6 +45,7 @@ pair, which the simulation's accounting does not carry.
 """
 from __future__ import annotations
 
+import os
 import argparse
 import json
 from pathlib import Path
@@ -64,7 +65,7 @@ def src_dir(chain: str) -> Path:
     if chain in LEGACY:
         return SRC
     from sept26_prelim_analysis import pass1_tracks as P1
-    return P1.base() / 'ana' / 'same_chamber'
+    return P1.ana_dir() / 'same_chamber'
 
 
 G4_CONV = Path.home() / 'CLionProjects/MX17_Full_Geant/analysis/al_pair/convpair_reco.npz'
@@ -137,8 +138,8 @@ def vertex_y(chain: str, arm: str, bins=Y_BINS) -> pd.DataFrame:
 # the toy
 # --------------------------------------------------------------------------- #
 #: pass 1: the same table on the pass-1 analysis view (rerun/ntof/stage3/resolution_line.py, run_149 A-C line)
-RESOLUTION_PASS1 = (Path(__file__).resolve().parent.parent / 'rerun' / 'ntof' / 'stage3' / 'resolution'
-                    / 'resolution_pass1.csv')
+RESOLUTION_PASS1 = Path(os.environ.get('X17_RESOLUTION') or (Path(__file__).resolve().parent.parent / 'rerun' / 'ntof'
+                                                              / 'stage3' / 'resolution' / 'resolution_pass1.csv'))
 
 
 def _resolution(arm: str):

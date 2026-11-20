@@ -13,7 +13,12 @@ cd "$(dirname "$0")/../.."
 PY=.venv/bin/python
 export PYTHONPATH=.:ntof_athens_26
 P=${WORK_DATA:-/media/ucla/work}/ntof_pass1
-ANA=$P/ana
+# the analysis view and the output root; a side-by-side rerun (e.g. on another view) sets both, e.g.
+#   X17_PASS1_VIEW=stage3_vtmap X17_PASS1_ANA=$P/ana_map LABEL=pass1map bash rerun/ntof/PASS1_DOWNSTREAM.sh <steps>
+VIEW=${X17_PASS1_VIEW:-stage3_vt}
+ANA=${X17_PASS1_ANA:-$P/ana}
+LABEL=${LABEL:-pass1}
+export X17_PASS1_VIEW=$VIEW X17_PASS1_ANA=$ANA
 LOG=$ANA/logs
 mkdir -p "$LOG"
 # migrated studies write under the pass-1 root, never over the retired chain's products
@@ -38,18 +43,18 @@ WANT=("$@")
 # --- 0. the derived inputs, and the pass-1 output root (links: the view, the reco tree, chain-independent inputs)
 step vt_view    $PY rerun/ntof/stage3/vt_view.py --jobs $JOBS
 step reco_tree  $PY rerun/ntof/stage3/reco_tree.py --jobs $JOBS
-ln -sfn ../stage3_vt $ANA/stage3_pass1; ln -sfn ../reco_tree $ANA/reco_pass1
+ln -sfn ../$VIEW $ANA/stage3_pass1; ln -sfn ../reco_tree $ANA/reco_pass1
 OLD=/media/dylan/data/x17/sept26_prelim
 for d in ipc slim stage0 stage1 trigtime channel_masks noisy_channels hot_strata; do [ -e $OLD/$d ] && ln -sfn $OLD/$d $ANA/$d; done
-step resolution $PY rerun/ntof/stage3/resolution_line.py
+step resolution $PY rerun/ntof/stage3/resolution_line.py --out ${RESOLUTION_OUT:-rerun/ntof/stage3/resolution/resolution_pass1.csv}
 
 # --- 1. capsule pointing per run (scale-free crossing; feeds the measured axis of the pair studies)
 step imaging    $PY -m sept26_prelim_analysis.campaign_imaging --reco $P/reco_tree --runs $PROD --no-y \
                     --jobs 10 --out $ANA/imaging_campaign
 
 # --- 1b. capsule focus (x view, nominal axis; and split by population) and the capsule-pose data side
-step focus      $PY -m ntof_cosmics.capsule_focus --src $P/stage3_vt --label pass1 --tan-max 0.5 --jobs 4
-step focus_split $PY -m ntof_cosmics.focus_split --src pass1 --label pass1 --tan-max 0.5
+step focus      $PY -m ntof_cosmics.capsule_focus --src $P/$VIEW --label $LABEL --tan-max 0.5 --jobs 4
+step focus_split $PY -m ntof_cosmics.focus_split --src pass1 --label $LABEL --tan-max 0.5
 for s in data data_z data_depth; do
   step pose_$s  $PY -m sept26_prelim_analysis.capsule_pose $s --out $ANA/capsule_pose
 done
@@ -59,10 +64,10 @@ step capsule_tilt $PY -m sept26_prelim_analysis.capsule_tof tilt --chains pass1
 # --- 2. same-chamber pairs (A, C): all ToF and late (>= 12 ms), then data vs Geant4
 for arm in A C; do
   step sc_$arm      $PY -m sept26_prelim_analysis.det_a_intra --arm $arm --runs $PROD --t0-max 300 --axis measured \
-                        --wall --src $P/stage3_vt --reco $P/reco_tree --imaging $ANA/imaging_campaign/per_run.csv \
+                        --wall --src $P/$VIEW --reco $P/reco_tree --imaging $ANA/imaging_campaign/per_run.csv \
                         --tan-max-true 0.5 --out $ANA/same_chamber/pass1_$arm --jobs 6
   step sc_late_$arm $PY -m sept26_prelim_analysis.det_a_intra --arm $arm --runs $PROD --t0-max 300 --axis measured \
-                        --wall --src $P/stage3_vt --reco $P/reco_tree --imaging $ANA/imaging_campaign/per_run.csv \
+                        --wall --src $P/$VIEW --reco $P/reco_tree --imaging $ANA/imaging_campaign/per_run.csv \
                         --tan-max-true 0.5 --tof-min-ms 12 --out $ANA/same_chamber_late/pass1_$arm --jobs 6
 done
 step sc_events  $PY -m sept26_prelim_analysis.same_chamber_compare events --chain pass1
@@ -71,7 +76,7 @@ step sc_cmp     $PY -m sept26_prelim_analysis.same_chamber_compare --chain pass1
 
 # --- 3. scintillator stack mapped by the tracks (k = 1: m = tan, the v(t) angle)
 export X17_SCINT_OUT=$ANA/scint_stack
-step scint_x    $PY -m ntof_scint_stack.extract --src $P/stage3_vt --runs $PROD --jobs 4
+step scint_x    $PY -m ntof_scint_stack.extract --src $P/$VIEW --runs $PROD --jobs 4
 step scint_ana  $PY -m ntof_scint_stack.ana --jobs 4
 
 # --- 4. the rest of the downstream on pass 1

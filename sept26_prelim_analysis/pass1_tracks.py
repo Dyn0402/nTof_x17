@@ -70,7 +70,14 @@ def stage3_dir(view: str = 'vt') -> Path:
     """``view='vt'`` the analysis view (default), ``'raw'`` the stage 3 as on EOS."""
     if view == 'raw':
         return _need('stage3', f'a copy of {EOS_STAGE3}')
-    return _need('stage3_vt', 'rerun/ntof/stage3/vt_view.py')
+    return _need(os.environ.get('X17_PASS1_VIEW', 'stage3_vt'), 'rerun/ntof/stage3/vt_view.py (+ map_view.py)')
+
+
+def ana_dir() -> Path:
+    """The pass-1 downstream output root: ``$X17_PASS1_ANA`` if set (a side-by-side rerun, e.g. on another view),
+    else ``<base>/ana``."""
+    env = os.environ.get('X17_PASS1_ANA')
+    return Path(env) if env else base() / 'ana'
 
 
 def reco_dir() -> Path:

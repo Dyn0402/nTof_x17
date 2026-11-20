@@ -40,6 +40,7 @@ The measurements, in the order the report reads them:
 from __future__ import annotations
 
 import argparse
+import os
 import json
 from pathlib import Path
 
@@ -61,7 +62,7 @@ CHAIN_RUN = CHAIN       # the chain main() runs (set there)
 
 def _ana() -> Path:
     from sept26_prelim_analysis import pass1_tracks as P1
-    return P1.base() / 'ana'
+    return P1.ana_dir()
 
 
 def late_dir(chain: str) -> Path:
@@ -80,6 +81,11 @@ ARMS = ('A', 'C')
 TOF_EDGES_MS = np.array([0, 1, 2, 3, 4, 5, 6, 8, 10, 12, 15, 20, 25, 30, 35, 40, 45, 50,
                          55, 60, 67, 75], float)
 LATE_MS = 12.0
+#: the rate fit f = a + b rho starts here, not at LATE_MS (2026-11-20, rerun/ntof/improve/README.md): on pass 1 the pair
+#: fraction is flat from 25 to 75 ms (A chi2 3.6/7) while 12-20 ms carries a second, time-decaying population (pairs that
+#: point at the capsule 0.12 vs 0.30, worst-leg chi2/dof 11.9 vs 2.8) which is not proportional to the tracked rate;
+#: fitting it with b rho drove a down (A 0.38 -> 0.23 %, chi2/ndf 67).  Pairs, shapes and vertices keep LATE_MS.
+FIT_MS = float(os.environ.get('X17_SC_FIT_MS', 25.0))
 #: per-track efficiency bracket: (wall-confirmed singles per trigger, data / G4;
 #: scintillator-tagged map centre) -- filled at run time from the inputs
 #: overlay-bench recovery of both tracks of a pair >= 24 mm apart (production
@@ -160,7 +166,7 @@ def tof_fraction(E: pd.DataFrame):
                              frac=n2 / max(n1, 1), err=np.sqrt(max(n2, 1)) / max(n1, 1),
                              rho=n1 / w))
         R = pd.DataFrame([r for r in rows if r['arm'] == arm])
-        L = R[R.lo >= LATE_MS]
+        L = R[R.lo >= FIT_MS]
         w = 1 / L.err ** 2
         X = np.c_[np.ones(len(L)), L.rho]
         cov = np.linalg.inv(X.T @ (X * w.to_numpy()[:, None]))
@@ -168,7 +174,7 @@ def tof_fraction(E: pd.DataFrame):
         chi = float(((L.frac - X @ b) ** 2 * w).sum())
         n1, n2 = L.n1.sum(), L.n2.sum()
         acc_share = float(b[1] * np.average(L.rho, weights=L.n1) / (n2 / n1))
-        fits.append(dict(arm=arm, late_ms=LATE_MS, events=int(n1), pairs=int(n2),
+        fits.append(dict(arm=arm, late_ms=FIT_MS, events=int(n1), pairs=int(n2),
                          frac=n2 / n1, a=float(b[0]), a_err=float(np.sqrt(cov[0, 0])),
                          b=float(b[1]), b_err=float(np.sqrt(cov[1, 1])), chi2=chi,
                          ndf=len(L) - 2, accidental_share=acc_share,
@@ -281,9 +287,17 @@ def late_pairs(chain: str, arm: str) -> pd.DataFrame:
     f = Path(f'{late_dir(chain)}_{arm}') / 'pairs.parquet'
     if 'y_up' not in pq.read_schema(f).names:
         raise ValueError(f'{f} predates the 2026-10-13 y fix (vy_mm mirrored); rebuild it')
-    return pd.read_parquet(f,
-                           columns=['mixed', 'vertex', 'open_deg', 'vy_mm', 'n_legs_wall',
-                                    'wall', 'wall2', 'onwall', 'prompt', 'sep_plane_mm'])
+    D = pd.read_parquet(f, columns=['run', 'subrun', 'event_id', 'mixed', 'vertex', 'open_deg', 'vy_mm',
+                                    'n_legs_wall', 'wall', 'wall2', 'onwall', 'prompt', 'sep_plane_mm'])
+    if chain not in LEGACY and FIT_MS > LATE_MS:
+        # real pairs in the rate fit's window, so the accidental share subtracted from them is the one fitted there
+        # (mixed pairs are the accidental shape and stay as they are)
+        E = pd.read_parquet(events_path(chain), columns=['arm', 'run', 'subrun', 'event_id', 'tof'])
+        E = E[E.arm == arm].drop(columns='arm').drop_duplicates(['run', 'subrun', 'event_id'])
+        D = D.merge(E, on=['run', 'subrun', 'event_id'], how='left')
+        keep = D.mixed | (D.tof.to_numpy(float) / 1e6 >= FIT_MS)
+        D = D[keep].drop(columns='tof')
+    return D.drop(columns=['run', 'subrun', 'event_id'])
 
 
 def opening(P: pd.DataFrame, F: pd.DataFrame, chain: str = CHAIN) -> pd.DataFrame:
@@ -417,7 +431,7 @@ def main() -> int:
                      ('cmp_vertex_y', Y)):
         df.to_csv(od / f'{name}.csv', index=False)
     json.dump(dict(chain=ch, chains=chains, n_trig_g4=n_trig, data_all=DH_all, data_late=DH_late,
-                   f_two=F_TWO, digi={arm: digi(arm, ch) for arm in ARMS}, late_ms=LATE_MS,
+                   f_two=F_TWO, digi={arm: digi(arm, ch) for arm in ARMS}, late_ms=LATE_MS, fit_ms=FIT_MS,
                    stale=('F_TWO is the 09-14 overlay bench on the production chain' +
                           ('' if all('pass1' in digi(a_, ch)['source'] for a_ in ARMS) else
                            '; DIGI is the is2 g4_digi response (pass-1 library not found)'))

@@ -296,7 +296,7 @@ def main() -> int:
         out = Path(a.out)
     elif 'pass1' in chains:
         from sept26_prelim_analysis import pass1_tracks as P1
-        out = P1.base() / 'ana' / 'capsule_tof'
+        out = P1.ana_dir() / 'capsule_tof'
     else:
         out = paths.out('capsule_tof')
     out.mkdir(parents=True, exist_ok=True)
