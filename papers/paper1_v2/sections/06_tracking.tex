@@ -5,7 +5,8 @@ budget \texttt{rerun/paper1\_floor/README.md}; position \texttt{rerun/paper1\_fl
 \texttt{figs/make\_gain\_scan.py}, \texttt{out/gain\_scan.json}, \texttt{rerun/paper1\_timing}. v2 2026-11-10: this is the old
 section 7.1--7.4 with the timing section and the gain paragraphs of the old section 5.3 joined to it; the angle subsection is
 written out (it was 50 words).}
-\intent{What one chamber delivers on a single track: the angle, which is the figure of merit, then position and time,
+\intent{What one chamber delivers on a single track: the angle, the first of the two requirements of Sec.~2 (the
+efficiency is Sec.~7), then position and time,
 and how little of it depends on the gain.}
 
 \subsection{Angular resolution}\label{sec:angle}
@@ -75,16 +76,20 @@ correction: 1.04/1.01\textdegree), which is why it is not drawn in \cref{fig:ang
   \label{fig:angle}
 \end{figure}
 
-\subsection{What the resolution means at the target}\label{sec:pointing}
-With \cref{eq:pointing}, a track measured to 0.99\textdegree{} (0.90\textdegree) points back to the target, 230\,mm
-away, to 4.0\,mm (3.6\,mm), and the position resolution of the next subsection contributes 0.1\,\% of that variance.
-For the leptons the chambers were built for, the multiple scattering in the air and in the entrance foils of the
-chamber is larger than this at every energy: 4.5\,mm at 16\,MeV, 8.8\,mm at 8\,MeV and 17\,mm at 4\,MeV
-(\cref{tab:material}). The chamber therefore meets the requirement of \cref{sec:requirement}:
-its own resolution is not what limits the pointing. Nor does it limit the opening angle of a pair, which the two
-chambers alone would give to 1.3\textdegree{} and the air alone brings to 2.4\textdegree{} for two 10\,MeV leptons
-(\cref{sec:requirement}). The foils are worth attention for the same reason. The copper of
-the cathode alone, if it is the 9\,\textmu m assumed here, scatters as much as the 20\,cm of air.
+\subsection{What the resolution means for a pair}\label{sec:pointing}
+\Cref{sec:requirement} asked for an angle to about a degree, the scale set by the scattering of the leptons before
+they are measured. Chamber~A meets it. For the symmetric pair at the $^4$He edge, two leptons of 9.8\,MeV, the two
+chambers alone would give the opening angle to 1.3\textdegree; the scattering in 20\,cm of air alone gives
+2.0\textdegree, and the two together 2.4\textdegree{} (\cref{sec:requirement}). The chamber is therefore not what
+limits the opening angle, and a better one would gain little.
+
+The same track, extrapolated back, tests whether a particle came from the target. With \cref{eq:pointing}, a track
+measured to 0.99\textdegree{} (0.90\textdegree) points back to the target, 230\,mm away, to 4.0\,mm (3.6\,mm), and
+the position resolution of the next subsection contributes 0.1\,\% of that variance. For the leptons the chambers
+were built for, the multiple scattering in the air and in the entrance foils of the chamber is larger than this at
+every energy: 4.5\,mm at 16\,MeV, 8.8\,mm at 8\,MeV and 17\,mm at 4\,MeV (\cref{tab:material}). Here too the
+chamber's own resolution is not the limit. The foils are worth attention for the same reason. The copper of the
+cathode alone, if it is the 9\,\textmu m assumed here, scatters as much as the 20\,cm of air.
 
 \subsection{Position resolution}\label{sec:position}
 The residual of the reconstructed position to the reference ray at the mesh has a Gaussian core of 0.55\,mm in X and
