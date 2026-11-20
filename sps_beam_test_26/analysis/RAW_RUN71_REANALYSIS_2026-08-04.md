@@ -126,7 +126,9 @@ The measured 13–15 µm/ns at 233 V/cm sits between the 1 % (20.1) and 2 %
 (`drift_velocity_beamtest_cf4_wet{1,2}_CERN.json`). That is exactly the June det3 story — a freshly-plumbed chamber
 carrying percent-level water and drying over days. The dry CO₂-mixture curve
 (`drift_velocity_beamtest_co2_CERN.json`: 39.4 µm/ns at 233 V/cm, 0.76 µs)
-says even the *first-night* gas was never the problem. Consequences:
+says even the *first-night* gas was never the problem. *[Correction 2026-11-20: that table was for Ar/CO₂/iso 95/3/2,
+a wrong label; the gas was the ATLAS NSW mixture 93/5/2 (`docs/GAS_MIXTURES.md`). Regenerated on 93/5/2 (condor 4696666):
+dry **31.6 µm/ns at 233 V/cm, 0.95 µs** over 30 mm. Still 2.5× the measured CO₂-epoch velocity, so the conclusion stands.]* Consequences:
 run-by-run v is unusable from tables for this campaign (the water content
 was drying with time); any depth-resolved analysis must take v from the data
 itself (end-lobe or µTPC per run). Candidates, with the evidence in hand:

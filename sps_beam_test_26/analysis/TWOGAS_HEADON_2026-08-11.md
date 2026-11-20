@@ -122,6 +122,31 @@ drift-ladder ⊗ shaper picture predicts.
 
 ## 5. The wet-CO₂ bracket — LANDED, and the single-water-fraction test PASSES
 
+> **Correction 2026-11-20 (GAS9352).** The bracket below was computed for Ar/CO₂/iso **95/3/2**, a wrong label: the gas was
+> the ATLAS NSW mixture **93/5/2** (`docs/GAS_MIXTURES.md`). The label in this section was relabelled to 93/5/2 earlier that
+> day, but the numbers were still the 95/3/2 ones. Rerun on 93/5/2 (same generator, water replacing argon, CERN 720.8 Torr,
+> ncoll 5; condor 4696666, 5/5 jobs exit 0; tables overwritten in `garfield_sim/results/drift_wetco2_*.json`):
+>
+> | water | 0 | 0.5 % | 1 % | 1.5 % | 2 % |
+> |---|---|---|---|---|---|
+> | v(243 V/cm), 95/3/2 (as below) | 40.10 | 28.66 | 18.41 | 12.73 | 9.71 |
+> | v(243 V/cm), **93/5/2** | **32.88** | **21.42** | **14.42** | **10.69** | **8.50** |
+>
+> - The measured 12.33 µm/ns now implies **1.27 % water** (was 1.57 %), and at one water fraction of 1.5 % the predicted
+>   CF₄/CO₂ ratio is **1.35–1.42** (was 1.13–1.20) against the 1.14–1.17 of the table. **So the test as posed here no
+>   longer passes.** Its CO₂ input, 12.33 µm/ns from the run_57 hits ladder, is a `combined_hits` velocity, which the
+>   reconstruction basis has since retired for geometry (`RECONSTRUCTION_BASIS.md`). The pass's own run_57 d700 velocity
+>   (the waveform-fit slope at the 25.4° stage, `papers/paper2/hits_daq/results/sps_resim.json`: 10.07 µm/ns) implies
+>   1.63 % on this bracket.
+> - The statement that one water floor (~1.6–1.8 %) describes both gases now rests on the SPS gas fit on the final pass,
+>   which fits water and O₂ to the drift columns at each row's own field (`rerun/sps_gasfit/README.md`, on 93/5/2):
+>   CO₂ epoch 1.56–1.75 %, CF₄ epoch 1.68–1.85 %.
+> - §4's "dry-equivalent v ratio 1.9" is **2.4** on 93/5/2 (74.7 / 31.6 µm/ns at 233 V/cm): the A/B spans an even larger
+>   gas change, so its conclusion is unchanged.
+> - η is still 0 on the whole grid at ncoll 5, as noted below.
+>
+> The original text is kept as it was written.
+
 Condor 11988752 (5 mixtures, Ar/CO₂/iso 93/5/2 + 0/0.5/1/1.5/2 % H₂O, water
 displacing argon, CERN 720.8 Torr, ncoll 5, generator
 `garfield_sim/wetco2_one_mixture.py`, tables in
