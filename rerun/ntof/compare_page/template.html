@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>n_TOF pass 1: before and after</title>
+<meta name="description" content="Every n_TOF downstream metric on the pass-1 reconstruction against the chain it replaced: capsule focus and pointing, 3D pair-vertex image with a rotatable track view, same-chamber pairs against Geant4, angle resolution, scintillator wall, pose fits. Better, worse, and by how much.">
+<style>
+:root{
+  --surface:#fcfcfb; --surface-2:#f3f2ee; --border:#dedcd5; --text:#0b0b0b; --text-2:#52514e; --muted:#7a7873;
+  --grid:#e6e4de; --before:#eb6834; --after:#2a78d6; --good:#0ca30c; --bad:#d03b3b; --same:#7a7873;
+  --heat0:#f3f2ee; --heat1:#cde2fb; --heat2:#86b6ef; --heat3:#3987e5; --heat4:#1c5cab; --heat5:#0d366b;
+  --neg:#e9b3b0; --capsule:#0b0b0b; color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:where(:not([data-theme="light"])){
+    --surface:#1a1a19; --surface-2:#232321; --border:#3a3936; --text:#f0efec; --text-2:#c3c2b7; --muted:#8f8d86;
+    --grid:#2e2d2a; --before:#d95926; --after:#3987e5; --good:#0ca30c; --bad:#e66767; --same:#8f8d86;
+    --heat0:#232321; --heat1:#104281; --heat2:#1c5cab; --heat3:#3987e5; --heat4:#86b6ef; --heat5:#cde2fb;
+    --neg:#6b2b2a; --capsule:#f0efec; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --surface:#1a1a19; --surface-2:#232321; --border:#3a3936; --text:#f0efec; --text-2:#c3c2b7; --muted:#8f8d86;
+  --grid:#2e2d2a; --before:#d95926; --after:#3987e5; --good:#0ca30c; --bad:#e66767; --same:#8f8d86;
+  --heat0:#232321; --heat1:#104281; --heat2:#1c5cab; --heat3:#3987e5; --heat4:#86b6ef; --heat5:#cde2fb;
+  --neg:#6b2b2a; --capsule:#f0efec; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--surface);color:var(--text);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:1120px;margin:0 auto;padding:24px 16px 80px}
+h1{font-size:26px;margin:0 0 4px} h2{font-size:20px;margin:40px 0 6px;padding-top:8px;border-top:1px solid var(--border)}
+h3{font-size:15px;margin:18px 0 4px;color:var(--text-2)}
+p{margin:6px 0 10px;max-width:880px} .sub{color:var(--text-2)} .small{font-size:13px;color:var(--text-2)}
+.key{display:inline-flex;gap:16px;align-items:center;font-size:13px;color:var(--text-2);margin:4px 0}
+.sw{display:inline-block;width:18px;height:3px;border-radius:2px;vertical-align:middle;margin-right:5px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,460px),1fr));gap:14px}
+.grid4{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px}
+.card{background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:10px 10px 6px}
+.card h4{margin:0 0 4px;font-size:13px;font-weight:600;color:var(--text-2)}
+svg text{fill:var(--text-2);font-size:11px} svg .ax{stroke:var(--border)} svg .gl{stroke:var(--grid)}
+table{border-collapse:collapse;width:100%;font-size:13px} th,td{padding:5px 8px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{color:var(--text-2);font-weight:600;position:sticky;top:0;background:var(--surface)}
+td.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.badge{display:inline-flex;align-items:center;gap:4px;font-weight:600;white-space:nowrap}
+.badge.better{color:var(--good)} .badge.worse{color:var(--bad)} .badge.same{color:var(--same)}
+.filters{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.filters button{background:var(--surface-2);border:1px solid var(--border);color:var(--text);border-radius:14px;padding:3px 10px;font-size:12px;cursor:pointer}
+.filters button.on{background:var(--after);border-color:var(--after);color:#fff}
+.tip{position:fixed;pointer-events:none;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:6px 8px;font-size:12px;box-shadow:0 2px 8px rgba(0,0,0,.15);display:none;z-index:9;max-width:320px}
+.score{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0}
+.score div{background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:8px 14px}
+.score b{font-size:22px;display:block}
+canvas{width:100%;height:600px;border-radius:8px;background:var(--surface-2);border:1px solid var(--border);touch-action:none;cursor:grab}
+.ctl{display:flex;flex-wrap:wrap;gap:12px;align-items:center;font-size:13px;color:var(--text-2);margin:6px 0}
+.ctl label{display:inline-flex;gap:4px;align-items:center}
+details{margin:8px 0} summary{cursor:pointer;color:var(--text-2)}
+.note{border-left:3px solid var(--border);padding:2px 10px;color:var(--text-2);font-size:13px}
+</style>
+</head>
+<body>
+<main>
+<h1>n_TOF pass 1: before and after</h1>
+<p class="sub">Every downstream n_TOF metric on the pass-1 reconstruction, next to the chain it replaced. <b style="color:var(--before)">Before</b> is the chain the study last ran on (named in each section); <b style="color:var(--after)">after</b> is pass 1 with the v(t) angles (true |tan| &lt; 0.5, no k). Generated from the stored tables by <code>rerun/ntof/compare_page/make_page.py</code>; the numbers and caveats are in <code>rerun/ntof/PASS1_DOWNSTREAM.md</code>. 20 November 2026.</p>
+<div class="key"><span><span class="sw" style="background:var(--before)"></span>before</span><span><span class="sw" style="background:var(--after)"></span>after (pass 1)</span></div>
+<div class="score" id="score"></div>
+
+<h2 id="table">Every metric: better or worse, and by how much</h2>
+<p class="small">"Change" is relative for counts and rates, absolute for numbers already in % or mm. The verdict is the direction that helps the physics, not the sign of the change.</p>
+<div class="filters" id="vfilt"></div>
+<div style="max-height:520px;overflow:auto"><table id="vtab"></table></div>
+
+<h2 id="focus">1. Capsule focus: does the angle scale point the tracks at the capsule?</h2>
+<p>Each gated A/C track's x-view line is extended to the beam axis with its tan multiplied by a trial scale <i>s</i>; the median distance by which the lines miss the axis is plotted against <i>s</i>. If the angles are right, the curve is sharpest at <i>s</i> = 1. Before = the is2_v2 re-pass (in-situ bundles, two-track off, cut 0.6). The nominal axis is used here, so the minimum also carries the source's 9 mm offset; the population split below is what separates scale from geometry.</p>
+<div class="grid4" id="focusCurves"></div>
+<h3>The focus scale split by population (|tan x| 0.1–0.5)</h3>
+<p class="small">A scale error common to A and C cannot be geometry (distance errors and axis offsets are antisymmetric between the two). Before: both chambers wanted ~+10 %. After: the common part is gone and an antisymmetric A − C difference is left.</p>
+<div class="grid2"><div class="card"><h4>sharpest scale s by population, A</h4><div id="splitA"></div></div><div class="card"><h4>sharpest scale s by population, C</h4><div id="splitC"></div></div></div>
+
+<h2 id="tof">2. Where the tracks come from in time, and how many point at the capsule</h2>
+<p>Per time-of-flight bin: tracks per ms, and the capsule-pointing excess (the fraction of lines passing within 15 mm of the source, minus a shuffled-angle null). Their product is the number of capsule tracks per ms. Before = is2_v2 at the capsule-focus k (<code>stage3_is2_v2_cf</code>).</p>
+<div class="grid2"><div class="card"><h4>A: tracks per ms</h4><div id="tofRateA"></div></div><div class="card"><h4>C: tracks per ms</h4><div id="tofRateC"></div></div>
+<div class="card"><h4>A: capsule-pointing excess</h4><div id="tofExA"></div></div><div class="card"><h4>C: capsule-pointing excess</h4><div id="tofExC"></div></div>
+<div class="card"><h4>A: capsule tracks per ms (rate × excess)</h4><div id="tofSigA"></div></div><div class="card"><h4>C: capsule tracks per ms (rate × excess)</h4><div id="tofSigC"></div></div>
+<div class="card"><h4>source height (y band crossing) by ToF, A</h4><div id="tofYA"></div></div><div class="card"><h4>source height (y band crossing) by ToF, C</h4><div id="tofYC"></div></div></div>
+<h3>Source x per run (scale-free pointing crossing, A and C mean; and D's z)</h3>
+<div class="grid2"><div class="card"><h4>source x per run</h4><div id="runX"></div></div><div class="card"><h4>D z crossing per run</h4><div id="runZ"></div></div></div>
+
+<h2 id="vertex">3. The 3D pair-vertex image</h2>
+<p>Two tracks of one trigger in different chambers are intersected; the vertices are histogrammed in 3D and the no-source null (each track's direction swapped with another track of the same chamber, keeping every marginal) is subtracted. A real source makes a compact blob at the capsule; the chambers and the selection alone make the null. Before = the production full pass (<code>stage3_fullpass</code>, the Athens images); after = pass 1. Maps are data − null, summed over the third coordinate, each normalised to its own maximum. Cross = the capsule from single-track pointing.</p>
+<div class="filters" id="clsfilt"></div>
+<div class="grid2"><div class="card"><h4>before: x–z (looking along the beam)</h4><div id="hzB"></div></div><div class="card"><h4>after: x–z (looking along the beam)</h4><div id="hzA"></div></div>
+<div class="card"><h4>before: x–y (side view, beam up)</h4><div id="hyB"></div></div><div class="card"><h4>after: x–y (side view, beam up)</h4><div id="hyA"></div></div></div>
+<h3>Profiles through the image (data − null, normalised)</h3>
+<div class="grid2"><div class="card"><h4>x profile</h4><div id="profX"></div></div><div class="card"><h4>z profile</h4><div id="profZ"></div></div></div>
+<div class="card" style="margin-top:12px"><h4>peak, width and significance per pair class</h4><table id="v3dtab"></table></div>
+
+<h3>The tracks in 3D</h3>
+<p class="small">A random sample of opposing-arm pairs (A–D and C–D) whose two lines meet within 20 mm, both legs drawn from the chamber plane to their vertex, with the vertex cloud behind them. The view opens centred on the capsule and zoomed in (the legs run off-screen to the chambers); drag to rotate, wheel to zoom out to the chambers. Untick one chain to see the other alone. Grey: the four chamber planes; the cylinder is the ³He capsule (r 10 mm) at the single-track source position. Toggle the chains to compare how tightly the lines converge.</p>
+<div class="ctl"><label><input type="checkbox" id="c3B" checked> before</label><label><input type="checkbox" id="c3A" checked> after</label><label><input type="checkbox" id="c3L" checked> track legs</label><label><input type="checkbox" id="c3P" checked> vertex cloud</label><label><input type="checkbox" id="c3C" checked> chambers</label><button id="c3R">reset view</button><span id="c3info"></span></div>
+<canvas id="v3" height="560"></canvas>
+
+<h2 id="pairs">4. Same-chamber pairs</h2>
+<p>Two tracks in one chamber in one trigger, ≥ 12 ms after the flash. Real pairs against the event-mixed expectation by separation on the strip plane: the excess of real over mixed is what one capture produced. Before = is2_v2 at the capsule-focus k (two-track off); after = pass 1 (two-track on).</p>
+<div class="grid2"><div class="card"><h4>A: pairs by separation, before</h4><div id="sepAB"></div></div><div class="card"><h4>A: pairs by separation, after</h4><div id="sepAA"></div></div>
+<div class="card"><h4>C: pairs by separation, before</h4><div id="sepCB"></div></div><div class="card"><h4>C: pairs by separation, after</h4><div id="sepCA"></div></div></div>
+<h3>Opening angle of the correlated pairs (real − accidental share × mixed), normalised</h3>
+<div class="grid2"><div class="card"><h4>A</h4><div id="openA"></div></div><div class="card"><h4>C</h4><div id="openC"></div></div></div>
+<h3>What Geant4 through each reconstruction says</h3>
+<table id="resptab"></table>
+<p class="note">The data's close-pair excess (real − mixed under 40 mm: 0.047 % of tracked events on A, 0.028 % on C) matches the rate at which pass 1 splits a single Geant4 lepton into two close tracks (0.053 % / 0.042 %): it is expected splitting, not physics. The correlated pair fraction is ~10× below Geant4 on both chambers (before: ~8×); with the pass-1 response the reconstruction is not what loses them.</p>
+
+<h2 id="res">5. Single-track angle resolution against the A–C cosmic line</h2>
+<p>run_149 beam-off cosmics with one track in A and one in C; the line joining their mesh crossings (469 mm lever arm) is the truth. σ = 1.4826 × MAD of (track tan − line tan), tail = |residual| &gt; 0.15. Before = the is2-era table (<code>ntof_cosmics/results/tracking/pooled/resolution.csv</code>, ~2,000 lines); after = pass 1 (11,974 lines).</p>
+<div class="grid4" id="resPlots"></div>
+
+<h2 id="wall">6. Scintillator wall, chamber B, coincidences</h2>
+<div class="grid2"><div class="card"><h4>track points at the fired wall segment (run_145; grey = chance, shuffled)</h4><div id="wallU"></div></div><div class="card"><h4>along-bar correlation with the wall's two-end timing</h4><div id="wallV"></div></div></div>
+<div class="grid2" style="margin-top:14px"><div class="card"><h4>slope factor λ the wall edges prefer (1 = the chamber's slope as measured)</h4><div id="lam"></div></div><div class="card"><h4>counts</h4><table id="counts"></table></div></div>
+<p class="small">Before = the September production pass for the wall/B/coincidence studies and the is2-era k-calibrated scint stack. λ ≈ 0.85 on all three chambers is the beam-electron scattering between the gap and the wall (Geant4), not an angle error; the old chamber-to-chamber spread was calibration.</p>
+
+<h2 id="worse">What is worse, or not settled</h2>
+<ul>
+<li><b>The capsule focus is less sharp</b> (median miss up 1–4 mm at fixed |tan|): pass 1 keeps ~40 % more tracks and the added ones point at the capsule less often. The early (&lt; 10 ms) window gains 2.5–5× tracks with almost no capsule content.</li>
+<li><b>An antisymmetric A − C focus difference of 4.6 %</b> is now the largest scale effect: a distance or axis effect between the two chambers, not an angle-scale one.</li>
+<li><b>The same-chamber correlated fraction is 10× below Geant4</b> (was 8×), and the pair-fraction-vs-rate fit is poor (χ²/ndf 67 on A). The open item is the Geant4 capsule / source model.</li>
+<li><b>The capsule pose fits got worse</b> (best x χ² 12 → 25 over 10 dof, z 1 → 19 over 5): with more tracks and smaller errors the toy no longer fits well, and x and z still prefer different poses.</li>
+<li><b>B has no angle on pass 1</b>, so the B–D through-goer and B pointing studies lose B; D's z crossing moved by 2 mm with its new latency pin.</li>
+</ul>
+<div class="tip" id="tip"></div>
+</main>
+<script>
+const D = /*__DATA__*/null;
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const tip = document.getElementById('tip');
+function showTip(e, html){tip.innerHTML=html;tip.style.display='block';const x=e.clientX+14,y=e.clientY+14;tip.style.left=Math.min(x,innerWidth-330)+'px';tip.style.top=Math.min(y,innerHeight-120)+'px'}
+function hideTip(){tip.style.display='none'}
+const NS='http://www.w3.org/2000/svg';
+function el(tag, attrs, parent){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e}
+function fmt(v,d=3){if(v==null||!isFinite(v))return '—';const a=Math.abs(v);if(a>=1000)return v.toLocaleString(undefined,{maximumFractionDigits:0});return (+v.toPrecision(d)).toString()}
+function nice(lo,hi,n=5){const s=(hi-lo)/n,p=Math.pow(10,Math.floor(Math.log10(s))),m=s/p,st=(m<1.5?1:m<3?2:m<7?5:10)*p;const t=[];for(let v=Math.ceil(lo/st)*st;v<=hi+1e-9;v+=st)t.push(+v.toPrecision(10));return t}
+
+// ---------------------------------------------------------------- line / step / scatter chart
+function chart(host, series, o={}){
+  const W=o.w||480,H=o.h||240,m={l:52,r:12,t:10,b:36};
+  host.innerHTML='';const s=el('svg',{viewBox:`0 0 ${W} ${H}`,width:'100%'},host);
+  const all=series.flatMap(q=>q.pts);if(!all.length)return;
+  let xs=all.map(p=>p[0]),ys=all.map(p=>p[1]).filter(v=>v!=null&&isFinite(v)).concat(o.yextra||[]);
+  let x0=o.xr?o.xr[0]:Math.min(...xs),x1=o.xr?o.xr[1]:Math.max(...xs);
+  let y0=o.yr?o.yr[0]:Math.min(...ys),y1=o.yr?o.yr[1]:Math.max(...ys);
+  if(o.logy){y0=Math.max(y0,1e-9)}else if(!o.yr){const pad=(y1-y0)*.08||1;y0-=pad;y1+=pad;if(o.zero&&y0>0)y0=0}
+  const X=v=>m.l+(v-x0)/(x1-x0)*(W-m.l-m.r);
+  const Y=o.logy?v=>H-m.b-(Math.log10(v)-Math.log10(y0))/(Math.log10(y1)-Math.log10(y0))*(H-m.t-m.b):v=>H-m.b-(v-y0)/(y1-y0)*(H-m.t-m.b);
+  const yt=o.logy?[...Array(12).keys()].flatMap(i=>{const b=Math.pow(10,Math.floor(Math.log10(y0))+i);return (Math.log10(y1/y0)<2.5?[b,2*b,5*b]:[b])}).filter(v=>v>=y0*0.999&&v<=y1*1.001):nice(y0,y1,5);
+  yt.forEach(v=>{el('line',{x1:m.l,x2:W-m.r,y1:Y(v),y2:Y(v),class:'gl'},s);el('text',{x:m.l-6,y:Y(v)+4,'text-anchor':'end'},s).textContent=fmt(v,3)});
+  nice(x0,x1,6).forEach(v=>{el('text',{x:X(v),y:H-m.b+15,'text-anchor':'middle'},s).textContent=fmt(v,3)});
+  el('line',{x1:m.l,x2:W-m.r,y1:H-m.b,y2:H-m.b,class:'ax'},s);
+  if(o.xlab)el('text',{x:(m.l+W-m.r)/2,y:H-4,'text-anchor':'middle'},s).textContent=o.xlab;
+  if(o.ylab){const t=el('text',{x:12,y:(m.t+H-m.b)/2,'text-anchor':'middle',transform:`rotate(-90 12 ${(m.t+H-m.b)/2})`},s);t.textContent=o.ylab}
+  (o.hlines||[]).forEach(v=>el('line',{x1:m.l,x2:W-m.r,y1:Y(v),y2:Y(v),stroke:css('--muted'),'stroke-dasharray':'3 3'},s));
+  (o.vlines||[]).forEach(v=>el('line',{y1:m.t,y2:H-m.b,x1:X(v),x2:X(v),stroke:css('--muted'),'stroke-dasharray':'3 3'},s));
+  series.forEach(q=>{
+    const col=css(q.color),p=q.pts.filter(v=>v[1]!=null&&isFinite(v[1])&&(!o.logy||v[1]>0));
+    if(q.err)p.forEach(v=>{if(v[2]!=null)el('line',{x1:X(v[0]),x2:X(v[0]),y1:Y(v[1]-v[2]),y2:Y(v[1]+v[2]),stroke:col,'stroke-width':1.2},s)});
+    if(q.step){let d='';p.forEach((v,i)=>{const xa=X(v[3]),xb=X(v[4]);d+=(i?'L':'M')+xa+','+Y(v[1])+'L'+xb+','+Y(v[1])});el('path',{d,fill:'none',stroke:col,'stroke-width':2,'stroke-dasharray':q.dash||''},s)}
+    else if(!q.dots){const d=p.map((v,i)=>(i?'L':'M')+X(v[0])+','+Y(v[1])).join('');el('path',{d,fill:'none',stroke:col,'stroke-width':2,'stroke-dasharray':q.dash||'','stroke-linejoin':'round'},s)}
+    p.forEach(v=>{const c=el('circle',{cx:X(v[0]),cy:Y(v[1]),r:q.dots?3.5:2.6,fill:col,stroke:css('--surface'),'stroke-width':1},s);
+      const hit=el('circle',{cx:X(v[0]),cy:Y(v[1]),r:9,fill:'transparent'},s);
+      hit.addEventListener('mousemove',e=>showTip(e,`<b style="color:${col}">${q.name}</b><br>${o.xlab||'x'}: ${fmt(v[0],4)}<br>${o.ylab||'y'}: ${fmt(v[1],4)}${v[2]!=null&&q.err?' ± '+fmt(v[2],2):''}${q.extra?'<br>'+q.extra(v):''}`));
+      hit.addEventListener('mouseleave',hideTip)});
+    if(q.mark){const v=q.mark;el('circle',{cx:X(v[0]),cy:Y(v[1]),r:6,fill:'none',stroke:col,'stroke-width':2},s)}
+  });
+  if(o.legend!==false&&series.length>1){let lx=m.l+8;series.forEach(q=>{el('line',{x1:lx,x2:lx+16,y1:m.t+8,y2:m.t+8,stroke:css(q.color),'stroke-width':2.5,'stroke-dasharray':q.dash||''},s);const t=el('text',{x:lx+20,y:m.t+12},s);t.textContent=q.name;lx+=26+q.name.length*6.2})}
+}
+// ---------------------------------------------------------------- grouped horizontal bars
+function bars(host, cats, groups, o={}){
+  const W=o.w||480,rowH=o.row||(groups.length>2?40:32),m={l:o.left||140,r:40,t:8,b:28},H=m.t+m.b+cats.length*rowH;
+  host.innerHTML='';const s=el('svg',{viewBox:`0 0 ${W} ${H}`,width:'100%'},host);
+  const vals=groups.flatMap(g=>g.vals).filter(v=>v!=null);
+  const x0=o.xr?o.xr[0]:Math.min(0,...vals),x1=o.xr?o.xr[1]:Math.max(...vals)*1.08;
+  const X=v=>m.l+(v-x0)/(x1-x0)*(W-m.l-m.r);
+  nice(x0,x1,5).forEach(v=>{el('line',{x1:X(v),x2:X(v),y1:m.t,y2:H-m.b,class:'gl'},s);el('text',{x:X(v),y:H-m.b+14,'text-anchor':'middle'},s).textContent=fmt(v,3)});
+  (o.vlines||[]).forEach(v=>el('line',{x1:X(v),x2:X(v),y1:m.t,y2:H-m.b,stroke:css('--muted'),'stroke-dasharray':'3 3'},s));
+  const bh=(rowH-8)/groups.length;
+  cats.forEach((c,i)=>{const y=m.t+i*rowH;el('text',{x:m.l-6,y:y+rowH/2+4,'text-anchor':'end'},s).textContent=c;
+    groups.forEach((g,j)=>{const v=g.vals[i];if(v==null)return;const base=o.base!=null?o.base:Math.max(x0,0);const xa=X(Math.min(base,v)),xb=X(Math.max(base,v));
+      const r=el('rect',{x:xa,y:y+4+j*bh,width:Math.max(xb-xa,1),height:bh-2,rx:2,fill:css(g.color)},s);
+      const t=el('text',{x:xb+4,y:y+4+j*bh+bh-4},s);t.textContent=fmt(v,3);
+      r.addEventListener('mousemove',e=>showTip(e,`<b>${c}</b><br>${g.name}: ${fmt(v,4)}${g.err&&g.err[i]!=null?' ± '+fmt(g.err[i],2):''}`));r.addEventListener('mouseleave',hideTip)})});
+  if(o.xlab)el('text',{x:(m.l+W-m.r)/2,y:H-2,'text-anchor':'middle'},s).textContent=o.xlab;
+}
+// ---------------------------------------------------------------- heat map
+function heat(host, M, ex, ey, cap, o={}){
+  const nx=M.length,ny=M[0].length,W=o.w||420,H=o.h||(o.sq?420:360),m={l:48,r:10,t:8,b:36};
+  host.innerHTML='';const s=el('svg',{viewBox:`0 0 ${W} ${H}`,width:'100%'},host);
+  const mx=Math.max(...M.flat());const X=v=>m.l+(v-ex[0])/(ex[nx]-ex[0])*(W-m.l-m.r),Y=v=>H-m.b-(v-ey[0])/(ey[ny]-ey[0])*(H-m.t-m.b);
+  const ramp=['--heat0','--heat1','--heat2','--heat3','--heat4','--heat5'].map(css);
+  for(let i=0;i<nx;i++)for(let j=0;j<ny;j++){const v=M[i][j]/mx;let col=v<=0?(v<-0.15?css('--neg'):ramp[0]):ramp[Math.min(5,1+Math.floor(v*5))];
+    const r=el('rect',{x:X(ex[i]),y:Y(ey[j+1]),width:X(ex[i+1])-X(ex[i])+.3,height:Y(ey[j])-Y(ey[j+1])+.3,fill:col},s);
+    r.addEventListener('mousemove',e=>showTip(e,`${o.xl||'x'} ${ex[i]}…${ex[i+1]} mm, ${o.yl||'y'} ${ey[j]}…${ey[j+1]} mm<br>excess ${fmt(M[i][j],3)} (${(v*100).toFixed(0)} % of max)`));r.addEventListener('mouseleave',hideTip)}
+  nice(ex[0],ex[nx],6).forEach(v=>el('text',{x:X(v),y:H-m.b+14,'text-anchor':'middle'},s).textContent=v);
+  nice(ey[0],ey[ny],6).forEach(v=>el('text',{x:m.l-5,y:Y(v)+4,'text-anchor':'end'},s).textContent=v);
+  el('text',{x:(m.l+W-m.r)/2,y:H-4,'text-anchor':'middle'},s).textContent=(o.xl||'x')+' (mm)';
+  const t=el('text',{x:12,y:(m.t+H-m.b)/2,'text-anchor':'middle',transform:`rotate(-90 12 ${(m.t+H-m.b)/2})`},s);t.textContent=(o.yl||'y')+' (mm)';
+  if(cap){const cx=X(cap[0]),cy=Y(cap[1]);el('path',{d:`M${cx-7},${cy}L${cx+7},${cy}M${cx},${cy-7}L${cx},${cy+7}`,stroke:css('--capsule'),'stroke-width':2},s)}
+  if(o.capY){const xa=X(o.capY[0]-10),xb=X(o.capY[0]+10);el('rect',{x:xa,y:Y(o.capY[2]),width:xb-xa,height:Y(o.capY[1])-Y(o.capY[2]),fill:'none',stroke:css('--capsule'),'stroke-width':1.5,'stroke-dasharray':'4 3'},s)}
+}
+// ---------------------------------------------------------------- score + verdict table
+(function(){
+  const V=D.verdicts,c={better:0,worse:0,same:0};V.forEach(v=>c[v.verdict]++);
+  document.getElementById('score').innerHTML=`<div><b style="color:var(--good)">✓ ${c.better}</b>better</div><div><b style="color:var(--bad)">✗ ${c.worse}</b>worse</div><div><b style="color:var(--same)">= ${c.same}</b>unchanged</div><div><b>${V.length}</b>metrics compared</div>`;
+  const groups=['all',...new Set(V.map(v=>v.group))],f=document.getElementById('vfilt');let cur='all';
+  const draw=()=>{const rows=V.filter(v=>cur==='all'||v.group===cur);
+    document.getElementById('vtab').innerHTML='<tr><th>area</th><th>metric</th><th class="num">before</th><th class="num">after</th><th class="num">change</th><th>verdict</th><th>why</th></tr>'+rows.map(v=>`<tr><td>${v.group}</td><td>${v.metric}</td><td class="num">${v.before}</td><td class="num">${v.after}</td><td class="num">${v.change}</td><td><span class="badge ${v.verdict}">${v.verdict==='better'?'✓ better':v.verdict==='worse'?'✗ worse':'= same'}</span></td><td class="small">${v.why||''}</td></tr>`).join('')};
+  groups.forEach(g=>{const b=document.createElement('button');b.textContent=g;b.className=g==='all'?'on':'';b.onclick=()=>{cur=g;[...f.children].forEach(x=>x.className=x===b?'on':'');draw()};f.appendChild(b)});draw();
+})();
+// ---------------------------------------------------------------- 1. focus
+(function(){
+  const host=document.getElementById('focusCurves');
+  ['A','C'].forEach(arm=>[0.1,0.2,0.3,0.4].forEach(lo=>{
+    const d=document.createElement('div');d.className='card';d.innerHTML=`<h4>${arm}, |tan| ${lo.toFixed(1)}–${(lo+.1).toFixed(1)}</h4><div></div>`;host.appendChild(d);
+    const ser=[['before','--before'],['after','--after']].map(([lab,col])=>{const r=D.focus[lab].filter(x=>x.arm===arm&&Math.abs(x.tan_lo-lo)<1e-6).sort((a,b)=>a.scale-b.scale);
+      const best=r.reduce((a,b)=>b.med_miss<a.med_miss?b:a,r[0]);return {name:lab+(best?` (s ${best.scale})`:''),color:col,pts:r.map(x=>[x.scale,x.med_miss]),mark:best?[best.scale,best.med_miss]:null}});
+    chart(d.lastChild,ser,{w:320,h:210,xlab:'trial scale s',ylab:'median miss (mm)',xr:[0.75,1.3],vlines:[1]})}));
+  const S=D.focus.split,cats=['all','ms 20-80','wall fired','chi2 < median','q/len > median','tanx > 0','tanx < 0'];
+  ['A','C'].forEach(arm=>{const g=lab=>cats.map(c=>{const x=S[lab].find(y=>y.split===c&&y.arm===arm);return x?x.s_best:null});
+    bars(document.getElementById('split'+arm),cats,[{name:'before',color:'--before',vals:g('before')},{name:'after',color:'--after',vals:g('after')}],{xr:[0.8,1.3],base:1,vlines:[1],xlab:'sharpest scale s (1 = angles focus as measured)',left:110})});
+})();
+// ---------------------------------------------------------------- 2. ToF
+(function(){
+  const T=D.capsule_tof;
+  ['A','C'].forEach(arm=>{
+    const ser=(key,err)=>[['before','--before'],['after','--after']].map(([lab,col])=>({name:lab,color:col,err:!!err,pts:T.filter(x=>x.arm===arm&&x.chain===lab).map(x=>[0.5*(x.lo+x.hi),x[key],err?x[err]:null])}));
+    chart(document.getElementById('tofRate'+arm),ser('per_ms'),{logy:true,xlab:'time after the flash (ms)',ylab:'tracks / ms',vlines:[12]});
+    chart(document.getElementById('tofEx'+arm),ser('excess'),{xlab:'time after the flash (ms)',ylab:'pointing excess',vlines:[12],zero:true});
+    chart(document.getElementById('tofSig'+arm),ser('signal_per_ms'),{xlab:'time after the flash (ms)',ylab:'capsule tracks / ms',vlines:[12],zero:true});
+    chart(document.getElementById('tofY'+arm),ser('y_cross','y_err'),{xlab:'time after the flash (ms)',ylab:'source height y (mm)',yr:[-60,-20],vlines:[12]});
+  });
+  const I=D.imaging,s=(k,lab,col)=>({name:lab,color:col,dots:true,err:k==='x_source',pts:I.filter(x=>x.chain===lab).map(x=>[x.run,x[k],k==='x_source'?x.x_err:null])});
+  chart(document.getElementById('runX'),[s('x_source','before','--before'),s('x_source','after','--after')],{xlab:'run',ylab:'source x (mm)',yr:[-12,-6]});
+  chart(document.getElementById('runZ'),[s('z_D','before','--before'),s('z_D','after','--after')],{xlab:'run',ylab:'D z crossing (mm)'});
+})();
+// ---------------------------------------------------------------- 3. vertex maps
+(function(){
+  const V=D.v3d,classes=['A–D, C–D','D–D','A–A, C–C','A–C','all'],f=document.getElementById('clsfilt');let cur='A–D, C–D';
+  const draw=()=>{['before','after'].forEach(lab=>{const v=V[lab],mp=v.maps[cur],cap=V.capsule[lab],k=lab==='before'?'B':'A';
+      heat(document.getElementById('hz'+k),mp.xz,v.ex,v.ex,cap,{xl:'x',yl:'z',sq:true});
+      heat(document.getElementById('hy'+k),mp.xy,v.ex,v.ey,null,{xl:'x',yl:'y',capY:[cap[0],-33,47]});});
+    const ctr=e=>e.slice(0,-1).map((v,i)=>0.5*(v+e[i+1]));
+    const pr=(key,e)=>[['before','--before'],['after','--after']].map(([lab,col])=>{const p=V[lab].maps[cur][key],mx=Math.max(...p);return {name:lab,color:col,pts:ctr(V[lab][e]).map((x,i)=>[x,p[i]/mx])}});
+    chart(document.getElementById('profX'),pr('px','ex'),{xlab:'x (mm)',ylab:'excess / max',vlines:[V.capsule.after[0]]});
+    chart(document.getElementById('profZ'),pr('pz','ex'),{xlab:'z (mm)',ylab:'excess / max',vlines:[V.capsule.after[1]]});};
+  classes.forEach(c=>{const b=document.createElement('button');b.textContent=c;b.className=c===cur?'on':'';b.onclick=()=>{cur=c;[...f.children].forEach(x=>x.className=x===b?'on':'');draw()};f.appendChild(b)});draw();
+  const t=document.getElementById('v3dtab');let h='<tr><th>pairs</th><th class="num">peak distance from capsule (mm) before → after</th><th class="num">significance before → after</th><th class="num">excess in peak box before → after</th><th class="num">x FWHM (mm)</th><th class="num">z FWHM (mm)</th></tr>';
+  classes.forEach(c=>{const b=V.before.measure.find(x=>x.cls===c),a=V.after.measure.find(x=>x.cls===c);if(!b||!a)return;
+    h+=`<tr><td>${c}</td><td class="num">${fmt(b.peak_dist_from_capsule,3)} → <b>${fmt(a.peak_dist_from_capsule,3)}</b></td><td class="num">${fmt(b.box_sigma,3)} σ → <b>${fmt(a.box_sigma,3)} σ</b></td><td class="num">${fmt(b.box_excess,4)} → ${fmt(a.box_excess,4)}</td><td class="num">${fmt(b.xprof_fwhm,3)} → ${fmt(a.xprof_fwhm,3)}</td><td class="num">${fmt(b.zprof_fwhm,3)} → ${fmt(a.zprof_fwhm,3)}</td></tr>`});t.innerHTML=h;
+})();
+// ---------------------------------------------------------------- 3b. 3D viewer
+(function(){
+  const cv=document.getElementById('v3'),ctx=cv.getContext('2d');let yaw=-0.6,pitch=0.35,zoom=3,drag=null;
+  const T=D.tracks3d,info=document.getElementById('c3info');
+  info.textContent=`vertexed A–D/C–D pairs: before ${T.before.n.toLocaleString()} (${(T.before.frac_within_20mm*100).toFixed(1)} % within 20 mm of the capsule), after ${T.after.n.toLocaleString()} (${(T.after.frac_within_20mm*100).toFixed(1)} %)`;
+  const on=id=>document.getElementById(id).checked;
+  function proj(p,w,h){const c0=D.v3d.capsule.after;const x=p[0]-c0[0],y=p[1]-7,z=p[2]-c0[1];const cy=Math.cos(yaw),sy=Math.sin(yaw),cp=Math.cos(pitch),sp=Math.sin(pitch);
+    const x1=cy*x+sy*z,z1=-sy*x+cy*z;const y2=cp*y-sp*z1,z2=sp*y+cp*z1;const f=900/(900+z2);const k=Math.min(w,h)/560*zoom;return [w/2+x1*k*f,h/2-y2*k*f,z2]}
+  function line(a,b,col,wd,al,w,h){const p=proj(a,w,h),q=proj(b,w,h);ctx.globalAlpha=al;ctx.strokeStyle=col;ctx.lineWidth=wd;ctx.beginPath();ctx.moveTo(p[0],p[1]);ctx.lineTo(q[0],q[1]);ctx.stroke()}
+  function draw(){const dpr=devicePixelRatio||1,w=cv.clientWidth,h=cv.clientHeight;cv.width=w*dpr;cv.height=h*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);
+    const mut=css('--muted'),cap=css('--capsule');
+    if(on('c3C')){const P=234.6,S=200,Y=170;[[0,0,1],[0,0,-1],[1,0,0],[-1,0,0]].forEach(([nx,,nz])=>{const c=[];for(const [a,b] of [[-1,-1],[1,-1],[1,1],[-1,1]]){c.push(nx?[nx*P,b*Y,a*S]:[a*S,b*Y,nz*P])}
+      for(let i=0;i<4;i++)line(c[i],c[(i+1)%4],mut,1,0.6,w,h)});
+      [['A',[0,190,234.6]],['C',[0,190,-234.6]],['B / D',[234.6,190,0]]].forEach(([n,p])=>{const q=proj(p,w,h);ctx.globalAlpha=.8;ctx.fillStyle=mut;ctx.font='12px system-ui';ctx.fillText(n,q[0],q[1])});
+      line([0,-200,0],[0,200,0],mut,1,0.5,w,h);const q=proj([0,215,0],w,h);ctx.fillText('beam',q[0]-12,q[1])}
+    const c0=D.v3d.capsule.after;for(let k=0;k<24;k++){const a=k/24*2*Math.PI,b=(k+1)/24*2*Math.PI;[-33,47].forEach(yy=>line([c0[0]+10*Math.cos(a),yy,c0[1]+10*Math.sin(a)],[c0[0]+10*Math.cos(b),yy,c0[1]+10*Math.sin(b)],cap,1.5,0.9,w,h));if(k%6==0)line([c0[0]+10*Math.cos(a),-33,c0[1]+10*Math.sin(a)],[c0[0]+10*Math.cos(a),47,c0[1]+10*Math.sin(a)],cap,1.5,0.9,w,h)}
+    [['before','--before','c3B'],['after','--after','c3A']].forEach(([lab,col,id])=>{if(!on(id))return;const c=css(col),S=T[lab];
+      if(on('c3P')){ctx.fillStyle=c;S.pts.forEach(p=>{const q=proj(p,w,h);ctx.globalAlpha=.45;ctx.fillRect(q[0]-1.6,q[1]-1.6,3.2,3.2)})}
+      if(on('c3L'))S.legs.forEach(L=>{const v=[L[6],L[7],L[8]];line([L[0],L[1],L[2]],v,c,1.1,0.5,w,h);line([L[3],L[4],L[5]],v,c,1.1,0.5,w,h)})});
+    ctx.globalAlpha=1}
+  cv.addEventListener('pointerdown',e=>{drag=[e.clientX,e.clientY,yaw,pitch];cv.setPointerCapture(e.pointerId)});
+  cv.addEventListener('pointermove',e=>{if(!drag)return;yaw=drag[2]+(e.clientX-drag[0])*0.01;pitch=Math.max(-1.5,Math.min(1.5,drag[3]+(e.clientY-drag[1])*0.01));draw()});
+  cv.addEventListener('pointerup',()=>drag=null);
+  cv.addEventListener('wheel',e=>{e.preventDefault();zoom*=Math.exp(-e.deltaY*0.001);zoom=Math.max(0.4,Math.min(20,zoom));draw()},{passive:false});
+  ['c3B','c3A','c3L','c3P','c3C'].forEach(id=>document.getElementById(id).onchange=draw);
+  document.getElementById('c3R').onclick=()=>{yaw=-0.6;pitch=0.35;zoom=3;draw()};
+  addEventListener('resize',draw);matchMedia('(prefers-color-scheme: dark)').addEventListener('change',draw);draw();
+})();
+// ---------------------------------------------------------------- 4. pairs
+(function(){
+  const S=D.same_chamber;
+  ['A','C'].forEach(arm=>['before','after'].forEach(lab=>{const h=S[`${lab}_${arm}`],e=h.edges,col=lab==='before'?'--before':'--after';
+    const st=(k,name,c,dash)=>({name,color:c,step:true,dash,pts:h[k].map((v,i)=>[0.5*(e[i]+e[i+1]),v/(e[i+1]-e[i]),null,e[i],e[i+1]]),extra:v=>`${fmt(v[1]*(v[4]-v[3]),4)} pairs in ${v[3]}–${v[4]} mm`});
+    chart(document.getElementById('sep'+arm+(lab==='before'?'B':'A')),[st('real','real pairs',col),st('mixed','event-mixed expectation','--muted','4 3')],{logy:true,xlab:'separation on the strip plane (mm)',ylab:'pairs / mm',xr:[0,400],vlines:[40]})}));
+  const O=D.same_chamber.opening;
+  ['A','C'].forEach(arm=>{const ser=[['before','--before'],['after','--after']].map(([lab,col])=>{const r=O.filter(x=>x.arm===arm&&x.chain===lab);const t=r.reduce((a,b)=>a+Math.max(b.correlated,0),0)||1;return {name:lab,color:col,err:true,pts:r.map(x=>[x.mid,x.correlated/t,x.err/t])}});
+    const g=O.filter(x=>x.arm===arm&&x.chain==='after'),tg=g.reduce((a,b)=>a+b.g4_ee,0)||1;ser.push({name:'Geant4 e+e−',color:'--muted',dash:'4 3',pts:g.map(x=>[x.mid,x.g4_ee/tg])});
+    chart(document.getElementById('open'+arm),ser,{xlab:'opening angle (deg)',ylab:'fraction',zero:true})});
+  const R=D.pair_response,old={A:[0.537,0.163],C:[0.451,0.142]};let h='<tr><th>chamber</th><th>library</th><th class="num">P(≥ 1 track | 1 lepton)</th><th class="num">P(≥ 2 tracks | 2 leptons)</th><th class="num">p2 / p1</th><th class="num">single lepton split into a close pair (&lt; 40 mm)</th></tr>';
+  ['A','C'].forEach(arm=>{h+=`<tr><td>${arm}</td><td>before: is2 digitiser (nose)</td><td class="num">${old[arm][0]}</td><td class="num">${old[arm][1]}</td><td class="num">${(old[arm][1]/old[arm][0]).toFixed(2)}</td><td class="num">— (two-track off)</td></tr>`;
+    R.filter(x=>x.arm===arm).forEach(x=>{h+=`<tr><td>${arm}</td><td>after: pass 1 (${x.lib})</td><td class="num"><b>${x.p1}</b></td><td class="num"><b>${x.p2}</b></td><td class="num"><b>${(x.p2/x.p1).toFixed(2)}</b></td><td class="num">${(x.split*100).toFixed(3)} %</td></tr>`})});
+  document.getElementById('resptab').innerHTML=h;
+})();
+// ---------------------------------------------------------------- 5. resolution
+(function(){
+  const R=D.resolution,host=document.getElementById('resPlots');
+  [['A','x'],['A','y'],['C','x'],['C','y']].forEach(([arm,ax])=>{
+    const d=document.createElement('div');d.className='card';d.innerHTML=`<h4>${arm}, ${ax} view: σ(tan) by true |tan|</h4><div></div><h4>tail fraction (|res| &gt; 0.15)</h4><div></div>`;host.appendChild(d);
+    const ser=k=>[['before','--before'],['after','--after']].map(([lab,col])=>({name:lab,color:col,pts:R.filter(x=>x.arm===arm&&x.axis===ax&&x.chain===lab).map(x=>[x.mid,x[k]]),extra:v=>`n lines in bin: ${(R.find(x=>x.arm===arm&&x.axis===ax&&x.chain===lab&&Math.abs(x.mid-v[0])<1e-6)||{}).n}`}));
+    chart(d.children[1],ser('sigma'),{w:320,h:200,logy:true,xlab:'|tan| of the A–C line',ylab:'σ(tan)',yr:[0.01,0.5]});
+    chart(d.children[3],ser('tail_frac'),{w:320,h:170,xlab:'|tan| of the A–C line',ylab:'tail fraction',zero:true})});
+})();
+// ---------------------------------------------------------------- 6. wall etc.
+(function(){
+  const W=D.wall,arms=['A','B','C','D'],g=(lab,k)=>arms.map(a=>{const x=W.find(y=>y.chain===lab&&y.arm===a);return x?x[k]:null});
+  bars(document.getElementById('wallU'),arms,[{name:'before',color:'--before',vals:g('before','u_match')},{name:'after',color:'--after',vals:g('after','u_match')},{name:'chance (shuffled)',color:'--muted',vals:g('after','u_match_shuffled')}],{xr:[0,1],xlab:'fraction of tracks pointing at the fired segment',left:40});
+  bars(document.getElementById('wallV'),arms,[{name:'before',color:'--before',vals:g('before','v_corr')},{name:'after',color:'--after',vals:g('after','v_corr')}],{xr:[0,0.7],xlab:'correlation',left:40});
+  const L=D.lambda;bars(document.getElementById('lam'),L.map(x=>x.arm),[{name:'before',color:'--before',vals:L.map(x=>x.before)},{name:'after',color:'--after',vals:L.map(x=>x.after)}],{xr:[0,1.1],vlines:[1],xlab:'λ',left:40});
+  const C=[['two-arm tight coincident pairs (campaign)',1452,4775],['  … back-to-back (> 170°, through-goers)',378,2258],['  … not back-to-back',1074,2517],['A–C through-goer pairs (calorimetry)',20583,41289],['A: corr(track tan x, line slope)',0.30,0.59],['C: corr(track tan x, line slope)',0.21,0.54],['wall-matched tracks, run_145',14412,28938]];
+  document.getElementById('counts').innerHTML='<tr><th></th><th class="num">before</th><th class="num">after</th></tr>'+C.map(c=>`<tr><td>${c[0]}</td><td class="num">${fmt(c[1],4)}</td><td class="num"><b>${fmt(c[2],4)}</b></td></tr>`).join('');
+})();
+</script>
+</body>
+</html>
