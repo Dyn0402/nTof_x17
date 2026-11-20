@@ -19,7 +19,7 @@ sys.path.insert(0, os.path.join(REPO, 'papers'))
 import paper_style as ps  # noqa: E402
 
 GASNAME = {'co2': 'CO2', 'beam': 'CF4'}
-GASLABEL = {'CO2': 'Ar/CO$_2$ (run 55–59)', 'CF4': 'Ar/CF$_4$/iC$_4$H$_{10}$ 88/10/2'}
+GASLABEL = {'CO2': 'Ar/CO$_2$/iC$_4$H$_{10}$ 93/5/2 (run 55–59)', 'CF4': 'Ar/CF$_4$/iC$_4$H$_{10}$ 88/10/2'}
 
 
 #: registry key prefix of each gas-fit group (rerun/sps_gasfit/gasfit.py GROUPS) and the date of its clock: the registry's
