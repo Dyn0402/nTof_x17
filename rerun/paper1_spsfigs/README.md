@@ -21,7 +21,7 @@
 | `kernel_forms` | II §2 | `kernel_job.py` on run71 raw700/450/275 (condor 4605384) | ±1/lead X 0.377, Y 0.390; ±2/±1 X 0.19, Y 0.26 (243 V/cm), the same within 0.01 at 156 and 96 V/cm; X ±1 asymmetry −0.07…−0.085 (low side larger), Y ≤ 0.01; n ≈ 2100–2200 per view |
 | `angled_kernel` | II §2 | `kernel_job.py` on run63 flat700, run63_rot25 d425, d325 | X ±1 0.427/0.360 flat vs 0.430/0.353 (d425) vs 0.429/0.336 (d325); Y ±2 0.09–0.10 flat vs 0.12–0.13 at d425 (the geometry) |
 | `known_angle` | II §8 | `tan_known.py` on the pass tables + `vbox.py` (19 new rows) → `results/known_angle.json` | 25.4°: column v 0.981 ± 0.03 (13 rows ≥ 180 V/cm), registry v 0.927 ± 0.04 (6 rows ≥ 190 V/cm); 15.465°: registry v 0.80 (3 rows), no column v |
-| `attachment` | I §6 | `rerun/sps_gasfit/results/verdict.json` (4127f9ea) + `rerun/paper1_gas/results/summary.json` | SPS CF₄ water 1.68–1.85 %, O₂ 129–258 ppm; CO₂ water 1.9–2.1 %, O₂ 322–443 ppm (gap 27.9 mm); bench 0.42–1.00 % water, attachment-free at steady state |
+| `attachment` | I §6 | `rerun/sps_gasfit/results/verdict.json` (4127f9ea) + `rerun/paper1_gas/results/summary.json` | SPS CF₄ water 1.68–1.85 %, O₂ 129–258 ppm; CO₂ water 1.56–1.75 %, O₂ 282–403 ppm (gap 27.9 mm; on the 93/5/2 grid since 2026-11-20, was 1.9–2.1 % / 322–443 ppm on a grid for 95/3/2, a wrong mixture label, `docs/GAS_MIXTURES.md`); bench 0.42–1.00 % water, attachment-free at steady state |
 
 `results/figs_summary.json` holds every number above, written by `make_figs.py`.
 

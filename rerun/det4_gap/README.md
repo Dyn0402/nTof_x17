@@ -92,7 +92,10 @@ with the Y view: by 1.9 mm (3σ). det4's X view crosses its dead amplification s
 - **The SPS gas fit's water stands.** At the nearest profiled gap to 28.6 (28.8 mm) the water is 0.10–0.19 % lower and the
   O₂ about 30 ppm lower:
   - CF₄ 1.57–1.70 % instead of 1.68–1.85 %;
-  - CO₂ 1.75–1.94 % instead of 1.94–2.12 %.
+  - CO₂ 1.50–1.63 % instead of 1.56–1.75 % (O₂ unchanged at 282–403 ppm). *2026-11-20: this line read "1.75–1.94 %
+    instead of 1.94–2.12 %", from the gas fit on a Magboltz grid for Ar/CO₂/iso 95/3/2, a wrong mixture label; the gas was
+    93/5/2 (`docs/GAS_MIXTURES.md`, `rerun/sps_gasfit/README.md`). The geometric gap above uses no gas physics and is
+    unchanged.*
 
   That is inside the gap term the gas fit already carries (±0.16 %). The ordering of the O₂ is unchanged.
 - **det4's bench input gap (`physics_inputs.json` 30.48 ± 0.44) should be 28.6 ± 0.5.** It's not changed here.
