@@ -83,6 +83,10 @@ FLUX4 = Path(__file__).resolve().parents[1] / 'ear2_beam' / 'data' / 'Final_eval
 LIB_TAG = os.environ.get('POSE2_LIB', '')
 LIB_TAGS = [t if t != 'nose' else '' for t in LIB_TAG.split(',')]
 G4ANGLE = Path('/media/dylan/data/x17/ntof_cosmics/g4_angle')
+#: which reconstruction the Geant4 track library went through.  'pass1' (default since 2026-11-20): n_TOF pass 1
+#: (ntof_cosmics/g4_digi/run_pass1.sh -> $WORK_DATA/ntof_pass1/g4_digi/g4_<arm>_<tag>_pass1.parquet), the same
+#: reconstruction as the data (load_data = 'pass1'); 'is2': the retired is2 libraries (g4_<arm>_is2_full, _<tag>/).
+LIB_CHAIN = os.environ.get('POSE2_LIB_CHAIN', 'pass1')
 G4DIGI = CT.G4DIGI
 FLIGHT_M = CT.FLIGHT_M
 HALF = CT.HALF
@@ -378,7 +382,13 @@ def library(arm: str) -> pd.DataFrame:
 def _library_one(arm: str, tag: str) -> pd.DataFrame:
     """One digitised Geant4 run (tag '' = the July nose-first run)."""
     NOSE = G4ANGLE / (f'neutrons_{tag}' if tag else 'neutrons_nose')
-    parts = sorted(glob.glob(str(G4DIGI / f'g4_{arm}_{tag or "is2_full"}' / '*.parquet')))
+    if LIB_CHAIN == 'pass1':
+        from sept26_prelim_analysis import pass1_tracks as P1
+        parts = [str(P1.base() / 'g4_digi' / f'g4_{arm}_{tag or "nose"}_pass1.parquet')]
+        if not Path(parts[0]).exists():
+            raise FileNotFoundError(f'{parts[0]}: run ntof_cosmics/g4_digi/run_pass1.sh {tag or "nose"}')
+    else:
+        parts = sorted(glob.glob(str(G4DIGI / f'g4_{arm}_{tag or "is2_full"}' / '*.parquet')))
     R = pd.concat([pd.read_parquet(p) for p in parts], ignore_index=True)
     for c in ('x_quality_ok', 'y_quality_ok'):
         R[c] = R[c].astype('boolean').fillna(False).astype(bool)
@@ -390,7 +400,8 @@ def _library_one(arm: str, tag: str) -> pd.DataFrame:
         T.append(t)
     T = pd.concat(T).drop_duplicates(['file', 'eventID'])
     R = R.merge(T, on=['file', 'eventID'], how='left', validate='many_to_one')
-    q = R.x_quality_ok & R.y_quality_ok & (R.x_tan_theta.abs() < 0.6) & (R.y_tan_theta.abs() < 0.6)
+    tmax = 0.5 if LIB_CHAIN == 'pass1' else 0.6      # the data's acceptance on that chain (pass 1: gated = |tan| < 0.5)
+    q = R.x_quality_ok & R.y_quality_ok & (R.x_tan_theta.abs() < tmax) & (R.y_tan_theta.abs() < tmax)
     R = R[q].copy()
     ur = -(R.x_p0.to_numpy(float) - HALF)
     from ntof_cosmics.g4_digi.digitise import y_view

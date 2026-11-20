@@ -582,6 +582,27 @@ redeployed (dylan-cern-site 91d4386). Inputs on the desktop: $WORK_DATA/claude-j
 - Deck: `WORK_DATA=~/work_data .venv/bin/python papers/paper1/make_figures_deck.py --out <html>` then
   `dylan-cern-site/scripts/add-note.py <html> --slug mx17-paper1-figures --force --deploy`.
 
+## n_TOF pass 1 downstream (P7): the analysis moved onto pass 1 — updated 2026-11-20 (dylan-MS-7C84)
+
+**Resume:** read `rerun/ntof/PASS1_DOWNSTREAM.md` (every study, its command and its numbers against the retired chain);
+`rerun/ntof/PASS1_DOWNSTREAM.sh` reruns it all. Retired sets: `rerun/ntof/RETIRE_PRE_PASS1_2026-11-20.md`.
+
+- Everything downstream reads `paths.STAGE3` / `paths.RECO` = `stage3_pass1` / `reco_pass1` (links to
+  `$WORK_DATA/ntof_pass1/stage3_vt` = v(t) angles under the plain names, and `reco_tree`); pass-1 outputs under
+  `$WORK_DATA/ntof_pass1/ana` (`X17_SEPT26_OUT`). Both derived dirs are regenerable from EOS (`vt_view.py`, `reco_tree.py`).
+- Done on pass 1: capsule imaging / focus / focus split / capsule_tof / pose data side; same-chamber pairs (all, late,
+  physics, compare); scint stack (λ 0.85 on A, C, D); wall calibration + chamber B; tight coincidences; calorimetry beam
+  through-goers; pair-vertex imaging (3D peak 1 mm from the capsule, 28σ); qa-tracks shards (built, NOT deployed);
+  pass-1 resolution table (`rerun/ntof/stage3/resolution_line.py`).
+- Geant4 through pass 1 (test 8): digitiser on the RC model (`digitise.plane_waveform_rc`, pinned t0, dead bridging),
+  `run_pass1.sh`, `pair_response.py`. Nose: p1 0.88 / 0.80, p2 0.48 / 0.42 (A / C); close splits 0.05 % = the data's
+  close-pair excess; same-chamber data/G4 0.10 on A and C.
+- Not done: capsule pose fits on the pass-1 library (code ready: `POSE2_LIB_CHAIN=pass1`, default; EAR2 library
+  `run_pass1.sh ear2_L19p5` was running); calorimetry cosmic sample and the rest of that chain; scint-stack and
+  same-chamber reports/decks; Athens figures/notes (data steps only, figures moved to `ana/pair_vertex/figures_pass1`).
+- Dylan's calls: deploy the pass-1 qa-tracks shards (`ana/trackqa_web`, 8.3 GB) to the site; delete the retired sets
+  (~140 GB); delete `$WORK_DATA/claude-jobs/fe02fe1d/` (19 GB) and `$WORK_DATA/ntof_pass1/run104/` (2.4 GB).
+
 ## n_TOF pass 1: reprocess the n_TOF tracks on the final chain — updated 2026-11-20 (dylan-MS-7C84)
 
 **Resume (11-20):** stage 3 is FINAL on EOS (543/543, D L2-era on L1); ledger clean. N-G1 rescored. Next: delete the backups, then analysis.
