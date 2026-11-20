@@ -50,9 +50,31 @@ from sept26_prelim_analysis import paths
 
 LOCAL = Path.home() / 'x17_local'
 G4 = LOCAL / 'g4_same_arm' / 'out'
-LATE = LOCAL / 'same_chamber_late'
-EVENTS = LOCAL / 'same_chamber' / 'events_tof.parquet'
 CF_STAGE3 = LOCAL / 'stage3_is2_v2_cf' / 'tracks_campaign.parquet'
+#: the chain the data side reads.  'pass1' (default since 2026-11-20): n_TOF pass 1, v(t) angles, acceptance
+#: true |tan| < 0.5 (pass1_tracks.py), products under $WORK_DATA/ntof_pass1/ana/.  'cf' / 'is2': the retired
+#: is2_v2 re-pass at the capsule-focus k / at is2 k, products under ~/x17_local (kept for comparison).
+CHAIN = 'pass1'
+LEGACY = ('cf', 'is2')
+
+
+def _ana() -> Path:
+    from sept26_prelim_analysis import pass1_tracks as P1
+    return P1.base() / 'ana'
+
+
+def late_dir(chain: str) -> Path:
+    return (LOCAL if chain in LEGACY else _ana()) / 'same_chamber_late' / f'{chain}'
+
+
+def all_dir(chain: str) -> Path:
+    return (LOCAL if chain in LEGACY else _ana()) / 'same_chamber' / f'{chain}'
+
+
+def events_path(chain: str) -> Path:
+    if chain in LEGACY:
+        return LOCAL / 'same_chamber' / 'events_tof.parquet'
+    return _ana() / 'same_chamber' / f'events_tof_{chain}.parquet'
 ARMS = ('A', 'C')
 TOF_EDGES_MS = np.array([0, 1, 2, 3, 4, 5, 6, 8, 10, 12, 15, 20, 25, 30, 35, 40, 45, 50,
                          55, 60, 67, 75], float)
@@ -76,21 +98,34 @@ HALF_MIP_EV = 0.5 * 0.4751e6
 DIGI = {'A': dict(p1=0.537, p2=0.163, n2=420), 'C': dict(p1=0.451, p2=0.142, n2=466)}
 
 
-def events(src: Path = CF_STAGE3) -> pd.DataFrame:
-    """Per (arm, event): tracks after the analysis cuts, and time since the flash."""
-    import pyarrow.parquet as pq
-    from sept26_prelim_analysis.campaign_imaging import PRE_ACCESS_RUNS
-    d = pq.read_table(src, columns=['run', 'subrun', 'event_id', 'arm', 'gated_reco', 'tanx',
-                                    'tany', 'x_t0', 'y_t0', 'angle_calibrated',
-                                    't_since_flash_ns']).to_pandas()
+def events(chain: str = CHAIN) -> pd.DataFrame:
+    """Per (arm, event): tracks after the analysis cuts, and time since the flash.
+
+    Cuts: gated (pass 1: gated_vt, which includes true |tan_vt| < 0.5; legacy: gated_reco and |tan| < 0.6),
+    t0 <= 300 ns in both views, angle calibrated, post-access runs only.
+    """
+    cols = ['run', 'subrun', 'event_id', 'arm', 'tanx', 'tany', 'x_t0', 'y_t0', 'angle_calibrated',
+            't_since_flash_ns']
+    if chain in LEGACY:
+        import pyarrow.parquet as pq
+        from sept26_prelim_analysis.campaign_imaging import PRE_ACCESS_RUNS
+        d = pq.read_table(CF_STAGE3, columns=cols + ['gated_reco']).to_pandas()
+        g = d.gated_reco.fillna(False).astype(bool) & (d.tanx.abs() < 0.6) & (d.tany.abs() < 0.6)
+    else:
+        from sept26_prelim_analysis import pass1_tracks as P1
+        PRE_ACCESS_RUNS = P1.PRE_ACCESS_RUNS
+        d = P1.read(cols + ['gated'], arms=ARMS)
+        d = d[d.t_since_flash_ns.notna()]          # production rows only (beam-off cosmics have no flash)
+        g = d.gated.fillna(False).astype(bool)
     d = d[~d.run.isin(PRE_ACCESS_RUNS)]
-    ok = (d.gated_reco.fillna(False).astype(bool) & (d.tanx.abs() < 0.6) & (d.tany.abs() < 0.6)
-          & (d.x_t0 <= 300) & (d.y_t0 <= 300) & d.angle_calibrated.fillna(False).astype(bool))
+    g = g.loc[d.index]
+    ok = g & (d.x_t0 <= 300) & (d.y_t0 <= 300) & d.angle_calibrated.fillna(False).astype(bool)
     d = d[ok & d.arm.isin(ARMS)]
     E = (d.groupby(['arm', 'run', 'subrun', 'event_id'])
          .agg(n=('arm', 'size'), tof=('t_since_flash_ns', 'first')).reset_index())
-    EVENTS.parent.mkdir(parents=True, exist_ok=True)
-    E.to_parquet(EVENTS, index=False)
+    ep = events_path(chain)
+    ep.parent.mkdir(parents=True, exist_ok=True)
+    E.to_parquet(ep, index=False)
     return E
 
 
@@ -147,15 +182,15 @@ def g4_tables():
     return P, S, T, n_trig
 
 
-def data_headline(chain: str = 'cf', late: bool = True) -> dict:
+def data_headline(chain: str = CHAIN, late: bool = True) -> dict:
     out = {}
-    base = LATE if late else LOCAL / 'same_chamber'
+    base = late_dir(chain) if late else all_dir(chain)
     for arm in ARMS:
-        H = pd.read_csv(base / f'{chain}_{arm}' / 'headline_per_run.csv')
+        H = pd.read_csv(Path(f'{base}_{arm}') / 'headline_per_run.csv')
         out[arm] = dict(triggers=int(H.n_triggers.sum()), tracks=int(H.n_tracks.sum()),
                         wall=int(H.n_trk_wall.sum()), wallctrl=int(H.n_trk_wallctrl.sum()),
                         onwall=int(H.n_trk_onwall.sum()), map_eff=float(np.nan))
-        M = pd.read_csv(base / f'{chain}_{arm}' / 'eff_map_2d.csv')
+        M = pd.read_csv(Path(f'{base}_{arm}') / 'eff_map_2d.csv')
         c = M[(M.u_mid.abs() < 120) & (M.v_mid.abs() < 100)]
         out[arm]['map_eff'] = float(c.eff_track.median())
         out[arm]['tag_eff'] = float(np.average(H.efficiency, weights=H.n_tagged))
@@ -209,10 +244,10 @@ def expectation(T: pd.DataFrame, F: pd.DataFrame, n_trig: int, DH_all: dict,
     return pd.DataFrame(rows)
 
 
-def late_vertex(chain: str = 'cf') -> pd.DataFrame:
+def late_vertex(chain: str = CHAIN) -> pd.DataFrame:
     rows = []
     for arm in ARMS:
-        V = pd.read_csv(LATE / f'{chain}_{arm}' / 'vertex_excess.csv').set_index('selection')
+        V = pd.read_csv(Path(f'{late_dir(chain)}_{arm}') / 'vertex_excess.csv').set_index('selection')
         r = V.loc['all']
         rows.append(dict(arm=arm, chain=chain, k_real=int(r.k_real), n_real=int(r.n_real),
                          expected=float(r.rate_mixed * r.n_real),
@@ -224,7 +259,7 @@ def late_vertex(chain: str = 'cf') -> pd.DataFrame:
 
 def late_pairs(chain: str, arm: str) -> pd.DataFrame:
     import pyarrow.parquet as pq
-    f = LATE / f'{chain}_{arm}' / 'pairs.parquet'
+    f = Path(f'{late_dir(chain)}_{arm}') / 'pairs.parquet'
     if 'y_up' not in pq.read_schema(f).names:
         raise ValueError(f'{f} predates the 2026-10-13 y fix (vy_mm mirrored); rebuild it')
     return pd.read_parquet(f,
@@ -232,7 +267,7 @@ def late_pairs(chain: str, arm: str) -> pd.DataFrame:
                                     'wall', 'wall2', 'onwall', 'prompt', 'sep_plane_mm'])
 
 
-def opening(P: pd.DataFrame, F: pd.DataFrame, chain: str = 'cf') -> pd.DataFrame:
+def opening(P: pd.DataFrame, F: pd.DataFrame, chain: str = CHAIN) -> pd.DataFrame:
     """Correlated-pair opening angle: late real minus accidental share x mixed."""
     rows = []
     mid = 0.5 * (OPEN_BINS[:-1] + OPEN_BINS[1:])
@@ -288,7 +323,7 @@ def shape_chi2(O: pd.DataFrame) -> pd.DataFrame:
 
 
 def wall_double_ratio(P: pd.DataFrame, T: pd.DataFrame, F: pd.DataFrame, DH: dict,
-                      chain: str = 'cf') -> pd.DataFrame:
+                      chain: str = CHAIN) -> pd.DataFrame:
     """P(both legs confirmed | correlated pair) / P(confirmed | single)^2."""
     rows = []
     for arm in ARMS:
@@ -311,7 +346,7 @@ def wall_double_ratio(P: pd.DataFrame, T: pd.DataFrame, F: pd.DataFrame, DH: dic
     return pd.DataFrame(rows)
 
 
-def vertex_y(P: pd.DataFrame, chain: str = 'cf') -> pd.DataFrame:
+def vertex_y(P: pd.DataFrame, chain: str = CHAIN) -> pd.DataFrame:
     edges = np.arange(-150.0, 151.0, 25.0)
     mid = 0.5 * (edges[:-1] + edges[1:])
     rows = []
@@ -332,36 +367,45 @@ def vertex_y(P: pd.DataFrame, chain: str = 'cf') -> pd.DataFrame:
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split('\n')[1])
     ap.add_argument('step', nargs='?', default='all', choices=['events', 'all'])
-    ap.add_argument('--out', default=str(paths.out('same_chamber')))
+    ap.add_argument('--chain', default=CHAIN, help="pass1 (default) or the retired 'cf' / 'is2'")
+    ap.add_argument('--compare', default='', help="extra chains for the opening-angle / wall / vertex tables, e.g. cf")
+    ap.add_argument('--out', default=None, help='default <ana>/same_chamber/cmp_<chain> (pass 1), <out>/same_chamber (legacy)')
     a = ap.parse_args()
+    ch = a.chain
     if a.step == 'events':
-        E = events()
+        E = events(ch)
         print(E.groupby('arm').n.value_counts().unstack().iloc[:, :4])
         return 0
-    od = Path(a.out)
-    E = pd.read_parquet(EVENTS)
+    od = Path(a.out) if a.out else (paths.out('same_chamber') if ch in LEGACY else _ana() / 'same_chamber' / f'cmp_{ch}')
+    od.mkdir(parents=True, exist_ok=True)
+    chains = [ch] + [c for c in a.compare.split(',') if c and c != ch]
+    E = pd.read_parquet(events_path(ch))
     R, F = tof_fraction(E)
     P, S, T, n_trig = g4_tables()
-    DH_all = data_headline('cf', late=False)
-    DH_late = data_headline('cf', late=True)
-    V = pd.concat([late_vertex('cf'), late_vertex('is2')], ignore_index=True)
-    X = expectation(T, F, n_trig, DH_all, V[V.chain == 'cf'])
-    O = pd.concat([opening(P, F, 'cf'), opening(P, F, 'is2')], ignore_index=True)
+    DH_all = data_headline(ch, late=False)
+    DH_late = data_headline(ch, late=True)
+    V = pd.concat([late_vertex(c) for c in chains], ignore_index=True)
+    X = expectation(T, F, n_trig, DH_all, V[V.chain == ch])
+    O = pd.concat([opening(P, F, c) for c in chains], ignore_index=True)
     C = shape_chi2(O)
-    W = pd.concat([wall_double_ratio(P, T, F, DH_late, c) for c in ('cf', 'is2')],
-                  ignore_index=True)
-    Y = vertex_y(P, 'cf')
+    W = pd.concat([wall_double_ratio(P, T, F, DH_late, c) for c in chains], ignore_index=True)
+    Y = vertex_y(P, ch)
     for name, df in (('cmp_tof_fraction', R), ('cmp_tof_fit', F), ('cmp_g4_classes', T),
                      ('cmp_expectation', X), ('cmp_late_vertex', V), ('cmp_opening', O),
                      ('cmp_opening_chi2', C), ('cmp_wall_double_ratio', W),
                      ('cmp_vertex_y', Y)):
         df.to_csv(od / f'{name}.csv', index=False)
-    json.dump(dict(n_trig_g4=n_trig, data_all=DH_all, data_late=DH_late, f_two=F_TWO,
-                   late_ms=LATE_MS), open(od / 'cmp.meta.json', 'w'), indent=1)
+    json.dump(dict(chain=ch, chains=chains, n_trig_g4=n_trig, data_all=DH_all, data_late=DH_late,
+                   f_two=F_TWO, digi=DIGI, late_ms=LATE_MS,
+                   stale=('DIGI (p1, p2) and F_TWO are the reconstruction response measured on the is2 bundles / '
+                          'production chain (g4_digi 2026-10-13, overlay bench 2026-09-14); not yet re-measured on '
+                          'pass 1 (NTOF_PASS_PLAN P5 test 8)') if ch not in LEGACY else ''),
+              open(od / 'cmp.meta.json', 'w'), indent=1)
     pd.set_option('display.width', 220)
     for name, df in (('ToF fit', F), ('G4 classes', T), ('expectation', X), ('late vertex', V),
                      ('opening chi2', C), ('wall double ratio', W)):
         print(f'\n== {name}\n{df.round(4).to_string(index=False)}')
+    print(f'\nwrote -> {od}')
     return 0
 
 

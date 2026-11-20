@@ -37,12 +37,19 @@ COLS = ['run', 'arm', 'gated', 'angle_calibrated', 'p0_x', 'p0_y', 'p0_z', 'd_x'
         'n_coinc_arms', 'x_n_strips', 'wall_A', 'wall_C']
 
 
-def load(src: Path, tan_max: float) -> pd.DataFrame:
-    f = src / 'tracks_campaign.parquet'
-    d = ds.dataset(f).to_table(columns=COLS, filter=(ds.field('arm').isin(['A', 'C'])
-                                                    & ds.field('gated'))).to_pandas()
-    from sept26_prelim_analysis.build_tracks import y_up
-    d = y_up(d, f)                      # CAPSULE_Y is in true y (COORDINATES.md)
+def load(src, tan_max: float) -> pd.DataFrame:
+    """``src`` = a stage-3 dir with tracks_campaign.parquet, or 'pass1' (n_TOF pass 1, v(t) angles; its `gated`
+    already holds true |tan| < 0.5, pass1_tracks.py)."""
+    if str(src) == 'pass1':
+        from sept26_prelim_analysis import pass1_tracks as P1
+        d = P1.read(COLS, arms=('A', 'C'), filter=ds.field('gated'))
+        d = d[d.t_since_flash_ns.notna()]        # production rows only
+    else:
+        f = src / 'tracks_campaign.parquet'
+        d = ds.dataset(f).to_table(columns=COLS, filter=(ds.field('arm').isin(['A', 'C'])
+                                                        & ds.field('gated'))).to_pandas()
+        from sept26_prelim_analysis.build_tracks import y_up
+        d = y_up(d, f)                  # CAPSULE_Y is in true y (COORDINATES.md)
     d = d[d.angle_calibrated.astype('boolean').fillna(False).astype(bool)]
     d = d[~d.run.astype(str).isin(PRE_ACCESS)]
     d = d[(d.tanx.abs() < tan_max) & (d.tany.abs() < tan_max)].reset_index(drop=True)
@@ -113,11 +120,11 @@ def splits(d: pd.DataFrame) -> dict:
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument('--src', type=Path, default=SRC)
-    ap.add_argument('--label', default='is2_v2')
+    ap.add_argument('--src', default='pass1', help="'pass1' (default) or a retired stage-3 dir")
+    ap.add_argument('--label', default='pass1')
     ap.add_argument('--tan-max', type=float, default=0.6)
     a = ap.parse_args()
-    d = load(a.src, a.tan_max)
+    d = load(a.src if a.src == 'pass1' else Path(a.src), a.tan_max)
     print(f'{a.label}: {len(d):,} gated A/C tracks (post-access, |tan| < {a.tan_max})')
     S = splits(d)
     rows = []

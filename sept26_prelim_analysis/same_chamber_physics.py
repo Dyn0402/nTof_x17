@@ -54,7 +54,19 @@ import pandas as pd
 
 from sept26_prelim_analysis import paths
 
-SRC = Path.home() / 'x17_local' / 'same_chamber'
+SRC = Path.home() / 'x17_local' / 'same_chamber'     # the retired is2_v2 chains ('cf', 'is2')
+#: the data chain (default 'pass1' since 2026-11-20: det_a_intra on n_TOF pass 1, under <pass-1 ana>/same_chamber)
+CHAIN = 'pass1'
+LEGACY = ('cf', 'is2')
+
+
+def src_dir(chain: str) -> Path:
+    if chain in LEGACY:
+        return SRC
+    from sept26_prelim_analysis import pass1_tracks as P1
+    return P1.base() / 'ana' / 'same_chamber'
+
+
 G4_CONV = Path.home() / 'CLionProjects/MX17_Full_Geant/analysis/al_pair/convpair_reco.npz'
 IPC_SHAPE = paths.out('ipc') / 'al_shape_comparison.csv'
 RESOLUTION = (Path(__file__).resolve().parent.parent / 'ntof_cosmics' / 'results'
@@ -72,7 +84,8 @@ U_AXIS = {'A': 16.35, 'C': 17.3}
 CAPSULE_SHIFT_MM = -4.0
 CAPSULE_V = (-29.5 + CAPSULE_SHIFT_MM, 50.7 + CAPSULE_SHIFT_MM)
 CAPSULE_R = 10.0
-TAN_MAX = 0.6
+#: true |tan| acceptance of the data the toy is compared with: 0.5 on pass 1 (v(t) angles), 0.6 on is2_v2
+TAN_MAX = 0.5
 VERTEX_R_MM, VERTEX_DCA_MM = 20.0, 30.0
 OPEN_BINS = np.arange(0.0, 90.1, 10.0)
 Y_BINS = np.arange(-150.0, 151.0, 25.0)
@@ -83,7 +96,7 @@ Y_BINS = np.arange(-150.0, 151.0, 25.0)
 # --------------------------------------------------------------------------- #
 def _pairs(chain: str, arm: str) -> pd.DataFrame:
     import pyarrow.parquet as pq
-    f = SRC / f'{chain}_{arm}' / 'pairs.parquet'
+    f = src_dir(chain) / f'{chain}_{arm}' / 'pairs.parquet'
     if 'y_up' not in pq.read_schema(f).names:
         raise ValueError(f'{f} predates the 2026-10-13 y fix (vy_mm mirrored); rebuild it '
                          'with det_a_intra on the regenerated stage 3 (Y_FLIP_AUDIT.md)')
@@ -144,7 +157,7 @@ def _smear(t, view, res, rng):
 
 
 def _sep_eff(arm: str):
-    E = pd.read_csv(SRC / f'cf_{arm}' / 'two_track_efficiency_axis.csv')
+    E = pd.read_csv(src_dir(CHAIN) / f'{CHAIN}_{arm}' / 'two_track_efficiency_axis.csv')
     f = {}
     for ax in ('u', 'v'):
         g = E[E.axis == ax]
@@ -280,15 +293,22 @@ def compare(E: pd.DataFrame, F: pd.DataFrame) -> pd.DataFrame:
 
 
 def main() -> int:
+    global CHAIN, TAN_MAX
     ap = argparse.ArgumentParser(description=__doc__.split('\n')[1])
     ap.add_argument('--n', type=int, default=4_000_000)
-    ap.add_argument('--out', default=str(paths.out('same_chamber')))
+    ap.add_argument('--chain', default=CHAIN, help="pass1 (default) or the retired 'cf'")
+    ap.add_argument('--compare', default='', help='extra chains for the excess / vertex tables, e.g. cf,is2')
+    ap.add_argument('--out', default=None, help='default <pass-1 ana>/same_chamber (pass 1), <out>/same_chamber (legacy)')
     a = ap.parse_args()
-    od = Path(a.out)
+    CHAIN = a.chain
+    if CHAIN in LEGACY:
+        TAN_MAX = 0.6
+    chains = [CHAIN] + [c for c in a.compare.split(',') if c and c != CHAIN]
+    od = Path(a.out) if a.out else (paths.out('same_chamber') if CHAIN in LEGACY else src_dir(CHAIN))
     od.mkdir(parents=True, exist_ok=True)
-    E = pd.concat([excess_spectrum(c, arm) for arm in ('A', 'C') for c in ('cf', 'is2')],
+    E = pd.concat([excess_spectrum(c, arm) for arm in ('A', 'C') for c in chains],
                   ignore_index=True)
-    Y = pd.concat([vertex_y(c, arm) for arm in ('A', 'C') for c in ('cf', 'is2')],
+    Y = pd.concat([vertex_y(c, arm) for arm in ('A', 'C') for c in chains],
                   ignore_index=True)
     S = samplers()
     F = pd.concat([fold(arm, m, a.n, theta_sampler=S.get(m))
@@ -301,13 +321,13 @@ def main() -> int:
     F.to_csv(od / 'physics_folded_models.csv', index=False)
     C.to_csv(od / 'physics_compare.csv', index=False)
     json.dump(dict(capsule_v=CAPSULE_V, capsule_r=CAPSULE_R, d_plane=D_PLANE,
-                   tan_max=TAN_MAX, n_throw=a.n, g4_conv=str(G4_CONV),
+                   chain=CHAIN, chains=chains, tan_max=TAN_MAX, n_throw=a.n, g4_conv=str(G4_CONV),
                    ipc_shape=str(IPC_SHAPE), resolution=str(RESOLUTION)),
               open(od / 'physics.meta.json', 'w'), indent=1)
     pd.set_option('display.width', 200)
     print(C.to_string(index=False))
     for arm in ('A', 'C'):
-        e = E[(E.arm == arm) & (E.chain == 'cf')]
+        e = E[(E.arm == arm) & (E.chain == CHAIN)]
         print(f'\n{arm} excess by angle:', ' '.join(f'{m:.0f}:{x:+.0f}±{s:.0f}'
                                                  for m, x, s in zip(e.mid, e.excess, e.err)))
         for model, f in F[F.arm == arm].groupby('model'):

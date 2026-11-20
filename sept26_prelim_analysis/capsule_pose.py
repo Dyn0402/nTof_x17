@@ -532,8 +532,8 @@ def estimators(T: pd.DataFrame, per_height=True) -> dict:
 WINDOWS = {'late': (20.0, 75.0), 'mid': (12.0, 20.0), 'beam': (4.0, 12.0)}
 
 
-def load_data(src=CT.CF, arms=('A', 'C')) -> pd.DataFrame:
-    """capsule_tof.load: true y whatever the table's vintage (it reads the
+def load_data(src='pass1', arms=('A', 'C')) -> pd.DataFrame:
+    """capsule_tof.load ('pass1' since 2026-11-20; was CT.CF): true y whatever the table's vintage (it reads the
     stage-3 ``y_convention`` flag and undoes the 2026-09-07 mirror if absent)."""
     return CT.load(src, arms)
 
@@ -992,7 +992,7 @@ Z_WINDOW = (25.0, 75.0)
 def data_z_step(out: Path) -> pd.DataFrame:
     """z crossing per height bin for B and D (late, wall-coincident), the z
     analogue of data_shear.csv.  B has ~3 k tracks and is reported only."""
-    d = CT.load(CT.FULLPASS, ('B', 'D'))
+    d = CT.load('pass1', ('B', 'D'))   # was CT.FULLPASS (prod) before 2026-11-20
     d = d[(d.ms >= Z_WINDOW[0]) & (d.ms < Z_WINDOW[1]) & d.wall]
     rows = []
     for arm, g in d.groupby('arm'):

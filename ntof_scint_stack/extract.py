@@ -128,6 +128,7 @@ def hit_columns(win: str) -> list:
 
 def read_tracks(src: Path, run: str, sub: str) -> pd.DataFrame:
     p = src / f'tracks_{run}_{sub}.parquet'
+    # n_TOF pass 1 (analysis view, pass1_tracks.py): k_arm = 1 and tan_raw_* already hold the v(t) angle
     t = pd.read_parquet(p, columns=TRACK_COLS)
     # true y whatever the stage-3 vintage (COORDINATES.md); tan_v_raw is the
     # y tan in the local frame before k, the partner of y_local

@@ -65,21 +65,37 @@ COLS = ['run', 'subrun', 'event_id', 'arm', 'gated_reco', 'gated', 'tanx', 'tany
 VIEW = {'A': ('x', 'z'), 'C': ('x', 'z'), 'B': ('z', 'x'), 'D': ('z', 'x')}
 
 
-def load(src: Path, arms) -> pd.DataFrame:
-    f = ds.dataset(src)
-    have = set(f.schema.names)
-    d = f.to_table(columns=[c for c in COLS if c in have],
-                   filter=ds.field('arm').isin(list(arms))).to_pandas()
-    d = d[~d.run.astype(str).isin(PRE_ACCESS)]
-    gate = d.gated_reco if 'gated_reco' in d else d.gated
-    ok = (gate.astype('boolean').fillna(False).astype(bool)
-          & d.angle_calibrated.astype('boolean').fillna(False).astype(bool)
-          & (d.tanx.abs() < 0.6) & (d.tany.abs() < 0.6) & (d.x_t0 <= 300) & (d.y_t0 <= 300))
-    d = d[ok].copy()
-    # true y whatever the table's vintage (COORDINATES.md): tables built before
-    # the 2026-10-13 fix store y mirrored and carry no y_convention flag
-    from sept26_prelim_analysis.build_tracks import y_up
-    d = y_up(d, src)
+#: the data chains: 'pass1' = n_TOF pass 1 (default since 2026-11-20; v(t) angles, gated includes true
+#: |tan| < 0.5; pass1_tracks.py), all four arms.  The retired chains are kept for comparison.
+CHAINS = {'pass1': ('pass1', ('A', 'C', 'B', 'D')), 'is2_v2_cf': (CF, ('A', 'C')),
+          'fullpass': (FULLPASS, ('A', 'C', 'B', 'D'))}
+
+
+def load(src, arms) -> pd.DataFrame:
+    if src == 'pass1':
+        from sept26_prelim_analysis import pass1_tracks as P1
+        d = P1.read([c for c in COLS if c != 'gated_reco'], arms=arms)
+        d = d[d.t_since_flash_ns.notna()]              # production rows (beam-off cosmics: no flash)
+        d = d[~d.run.astype(str).isin(PRE_ACCESS)]
+        ok = (d.gated.astype('boolean').fillna(False).astype(bool)
+              & d.angle_calibrated.astype('boolean').fillna(False).astype(bool)
+              & (d.x_t0 <= 300) & (d.y_t0 <= 300))
+        d = d[ok].copy()                               # stage 3 of pass 1 is y up by construction
+    else:
+        f = ds.dataset(src)
+        have = set(f.schema.names)
+        d = f.to_table(columns=[c for c in COLS if c in have],
+                       filter=ds.field('arm').isin(list(arms))).to_pandas()
+        d = d[~d.run.astype(str).isin(PRE_ACCESS)]
+        gate = d.gated_reco if 'gated_reco' in d else d.gated
+        ok = (gate.astype('boolean').fillna(False).astype(bool)
+              & d.angle_calibrated.astype('boolean').fillna(False).astype(bool)
+              & (d.tanx.abs() < 0.6) & (d.tany.abs() < 0.6) & (d.x_t0 <= 300) & (d.y_t0 <= 300))
+        d = d[ok].copy()
+        # true y whatever the table's vintage (COORDINATES.md): tables built before
+        # the 2026-10-13 fix store y mirrored and carry no y_convention flag
+        from sept26_prelim_analysis.build_tracks import y_up
+        d = y_up(d, src)
     d['ms'] = d.t_since_flash_ns / 1e6
     # crossing quantities in global coordinates
     pos = np.empty(len(d))
@@ -137,8 +153,18 @@ def focus_excess(pos, disp, x_s, rng):
     return float(f), float(f0)
 
 
-def tof(out: Path) -> pd.DataFrame:
-    d = load(CF, ('A', 'C'))
+def tof(out: Path, chains=('pass1',)) -> pd.DataFrame:
+    rows = []
+    for tag in chains:
+        rows += _tof_rows(tag)
+    R = pd.DataFrame(rows)
+    R.to_csv(out / 'tof.csv', index=False)
+    return R
+
+
+def _tof_rows(tag: str) -> list:
+    src, _ = CHAINS[tag]
+    d = load(src, ('A', 'C'))
     rng = np.random.default_rng(1)
     rows = []
     for arm, g in d.groupby('arm'):
@@ -156,20 +182,19 @@ def tof(out: Path) -> pd.DataFrame:
             vy = sy.p0_y.to_numpy()
             dy = (sy.hgt - sy.p0_y).to_numpy()
             y0, ye, _ = crossing(vy, dy)
-            rows.append(dict(arm=arm, lo=TOF_EDGES_MS[k], hi=TOF_EDGES_MS[k + 1], n=len(s),
+            rows.append(dict(chain=tag, arm=arm, lo=TOF_EDGES_MS[k], hi=TOF_EDGES_MS[k + 1], n=len(s),
                              per_ms=len(s) / w, x_cross=x0, x_err=xe, x_late=xs,
                              f_focus=f, f_null=f0, excess=f - f0,
                              focus_per_ms=(f - f0) * len(s) / w,
                              wall_frac=float(s.wall.mean()) if len(s) else np.nan,
                              y_cross=y0, y_err=ye, n_y=len(sy)))
-    R = pd.DataFrame(rows)
-    R.to_csv(out / 'tof.csv', index=False)
-    return R
+    return rows
 
 
-def tilt(out: Path) -> pd.DataFrame:
+def tilt(out: Path, chains=('pass1',)) -> pd.DataFrame:
     rows = []
-    for src, arms, tag in ((CF, ('A', 'C'), 'is2_v2_cf'), (FULLPASS, ('A', 'C', 'B', 'D'), 'fullpass')):
+    for tag in chains:
+        src, arms = CHAINS[tag]
         d = load(src, arms)
         d = d[d.ms >= 12]
         for arm, g in d.groupby('arm'):
@@ -261,11 +286,23 @@ def beam(out: Path) -> pd.DataFrame:
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split('\n')[1])
     ap.add_argument('step', nargs='?', default='all', choices=['tof', 'tilt', 'g4', 'beam', 'all'])
+    ap.add_argument('--chains', default='pass1',
+                    help=f'data chains for tof/tilt, comma-separated, from {",".join(CHAINS)}')
+    ap.add_argument('--out', default=None,
+                    help='default <pass-1 ana>/capsule_tof when pass1 is among the chains, else <out>/capsule_tof')
     a = ap.parse_args()
-    out = paths.out('capsule_tof')
+    chains = tuple(c for c in a.chains.split(',') if c)
+    if a.out:
+        out = Path(a.out)
+    elif 'pass1' in chains:
+        from sept26_prelim_analysis import pass1_tracks as P1
+        out = P1.base() / 'ana' / 'capsule_tof'
+    else:
+        out = paths.out('capsule_tof')
     out.mkdir(parents=True, exist_ok=True)
     pd.set_option('display.width', 220)
-    for name, fn in (('beam', beam), ('g4', g4), ('tof', tof), ('tilt', tilt)):
+    steps = (('beam', beam), ('g4', g4), ('tof', lambda o: tof(o, chains)), ('tilt', lambda o: tilt(o, chains)))
+    for name, fn in steps:
         if a.step in (name, 'all'):
             print(f'\n== {name}\n{fn(out).round(3).to_string(index=False)}', flush=True)
     return 0

@@ -208,6 +208,11 @@ def tracks(run: str, subruns, src: Path) -> pd.DataFrame:  # noqa: C901
                           f'stage-3 tracks for {run}/{sub}')
         cols = _own_flags(TRACK_COLS)
         if np.isfinite(TOF_MIN_MS):
+            import pyarrow.parquet as pq
+            if 't_since_flash_ns' not in pq.read_schema(p).names:
+                # pass 1: run_104 stat090_0016 has no trigger-time product (no flash), so no ToF
+                print(f'  {run}/{sub}: no t_since_flash_ns -- skipped under the ToF cut', flush=True)
+                continue
             cols = cols + ['t_since_flash_ns']
         if np.isfinite(TAN_MAX_TRUE):
             cols = cols + ['gated_reco']
