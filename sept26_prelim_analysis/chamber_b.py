@@ -86,7 +86,7 @@ def clusters(run: str, subruns) -> pd.DataFrame:
     """Every gated cluster's in-plane position -- no angle columns touched."""
     from ntof_tracking import run145_target_imaging as TI
     from sept26_prelim_analysis.build_tracks import IN_PLANE_SIGN_Y
-    src = paths.out('stage3_fullpass')
+    src = paths.out(paths.STAGE3)
     out = []
     for sub in subruns:
         p = paths.require(src / f'tracks_{run}_{sub}.parquet',

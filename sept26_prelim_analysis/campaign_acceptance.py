@@ -590,7 +590,7 @@ def borrow_test(C: pd.DataFrame, weights: pd.Series,
 # --------------------------------------------------------------------------- #
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split('\n')[1])
-    ap.add_argument('--reco', default=str(paths.out('reco_fullpass')))
+    ap.add_argument('--reco', default=str(paths.out(paths.RECO)))
     ap.add_argument('--eff', default=str(paths.out('efficiency_campaign',
                                                    'per_run')))
     ap.add_argument('--imaging', default=str(paths.out('imaging_campaign')

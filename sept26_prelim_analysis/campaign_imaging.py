@@ -357,7 +357,7 @@ def main() -> int:
                          'crossing alone)')
     a = ap.parse_args()
 
-    reco = Path(a.reco) if a.reco else paths.out('reco_fullpass')
+    reco = Path(a.reco) if a.reco else paths.out(paths.RECO)
     paths.require(reco, 'the merged reco tree')
     runs = ([r for r in a.runs.split(',') if r] if a.runs else
             sorted((p.name for p in reco.iterdir()

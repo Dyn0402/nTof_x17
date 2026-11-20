@@ -1187,8 +1187,8 @@ def _sum_maps(MP: pd.DataFrame) -> pd.DataFrame:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split('\n')[1])
-    ap.add_argument('--src', default=str(paths.out('stage3_fullpass')))
-    ap.add_argument('--reco', default=str(paths.out('reco_fullpass')))
+    ap.add_argument('--src', default=str(paths.out(paths.STAGE3)))
+    ap.add_argument('--reco', default=str(paths.out(paths.RECO)))
     ap.add_argument('--slim', default=None)
     ap.add_argument('--runs', default='')
     ap.add_argument('--jobs', type=int, default=6)

@@ -436,7 +436,7 @@ def y_forward_model(run: str, arm: str, n: int = 400_000,
 
 def y_measured(run: str, subruns, dca_max: float = 30.0) -> pd.DataFrame:
     """``target_y_mm`` for gated, target-pointing, angle-calibrated tracks."""
-    src = paths.out('stage3_fullpass')
+    src = paths.out(paths.STAGE3)
     out = []
     for sub in subruns:
         p = paths.require(src / f'tracks_{run}_{sub}.parquet',
@@ -521,7 +521,7 @@ def _track_table(run: str, subruns, dca_max: float, src=None,
     ``k_arm_<run>.json`` contributes NOTHING here, silently. That is why
     `k_arm` has to run before `build_tracks` in the campaign chain, not after.
     """
-    src = paths.out('stage3_fullpass') if src is None else src
+    src = paths.out(paths.STAGE3) if src is None else src
     cols = ['event_id', 'arm', 'gated', 'bunch', 'angle_calibrated',
             'p0_x', 'p0_y', 'p0_z', 'd_x', 'd_y', 'd_z', 'dca_axis_mm']
     cols += [c for c in extra_cols if c not in cols]
@@ -693,7 +693,7 @@ def main() -> int:
                          '<out>/fullpass/<run> (the ALLOWLIST pass)')
     a = ap.parse_args()
     subs = [s for s in a.subruns.split(',') if s]
-    merged = a.merged or str(paths.out('fullpass') / a.run)
+    merged = a.merged or str(paths.out(paths.RECO) / a.run)
 
     T = transverse(a.run, subs, merged)
     C = combine_axis(T, 'baseline')

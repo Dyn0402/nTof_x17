@@ -173,7 +173,7 @@ def measured_rates(run: str, subruns, tan_min: float = None) -> pd.DataFrame:
     tan_min = WR.TAN_MIN_SLOPE if tan_min is None else tan_min
     from sept26_prelim_analysis import k_robustness as KR
     from ntof_tracking import run145_target_imaging as TI
-    src = paths.out('stage3_fullpass')
+    src = paths.out(paths.STAGE3)
     out = []
     for sub in subruns:
         p = paths.require(src / f'tracks_{run}_{sub}.parquet',
@@ -184,7 +184,7 @@ def measured_rates(run: str, subruns, tan_min: float = None) -> pd.DataFrame:
             'x_tan_theta', 'y_tan_theta']))
     t = pd.concat(out, ignore_index=True)
     t = t[t.gated]
-    merged = str(paths.out('fullpass') / run)
+    merged = str(paths.out(paths.RECO) / run)
     rows = []
     for arm, g in t.groupby('arm'):
         pt = g[g.dca_axis_mm < 30]
@@ -245,7 +245,7 @@ def efficiency_vs_incidence(run: str, subruns) -> pd.DataFrame:
     from ntof_tracking import run145_target_imaging as TI
 
     gu = CB.wall_group_u(run)
-    fullpass = str(paths.out('fullpass') / run)
+    fullpass = str(paths.out(paths.RECO) / run)
     rows = []
     for arm in AC.ARMS:
         tag = EF.tagged_events(run, subruns, arm)
@@ -321,7 +321,7 @@ def main() -> int:
     ap.add_argument('--n', type=int, default=2_000_000)
     a = ap.parse_args()
     subs = [s for s in a.subruns.split(',') if s]
-    merged = str(paths.out('fullpass') / a.run)
+    merged = str(paths.out(paths.RECO) / a.run)
 
     im = paths.out('imaging')
     meta = json.load(open(paths.require(im / f'imaging_{a.run}.meta.json',

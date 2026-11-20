@@ -1137,7 +1137,7 @@ def main() -> int:
     a = ap.parse_args()
 
     if a.sensitivity:
-        reco = Path(a.reco) if a.reco else paths.root('out') / 'reco_fullpass'
+        reco = Path(a.reco) if a.reco else paths.root('out') / paths.RECO
         runs = ([p.name for p in sorted(reco.iterdir())
                  if p.name.startswith('run_')] if a.campaign else [a.run])
         rows, bad = [], {}
@@ -1178,7 +1178,7 @@ def main() -> int:
                   indent=1, default=float)
         return 0
 
-    reco = Path(a.reco) if a.reco else paths.root('out') / 'reco_fullpass'
+    reco = Path(a.reco) if a.reco else paths.root('out') / paths.RECO
     od = paths.out('capsule_y')
     shapes = tuple(a.shapes.split(','))
     dead_edges = tuple(float(x) for x in a.dead_edges.split(','))

@@ -145,10 +145,79 @@ def electrons(steps: pd.DataFrame, rng, v_um_ns: float, hyper: dict):
     return dict(u=u, v=v, t=ta + (tp - np.min(tp) if np.ndim(tp) else 0.0), g=g)
 
 
+#: point width [mm] of an electron's prompt landing in the RC generator: the prompt footprint (sigma_p0) and drift
+#: diffusion are already in the electron's own position (``electrons``), so the landing itself is a point
+RC_POINT_SIGMA = 0.05
+
+
+def plane_waveform_rc(plane: str, coord: np.ndarray, t: np.ndarray, q: np.ndarray,
+                      pos_map: np.ndarray, t0: float, hyper: dict) -> np.ndarray:
+    """(512, NSAMP) for the physical RC kernel (``wft.model.build_matrix_rc``; n_TOF pass 1 and every pass-1 bundle),
+    electron by electron instead of per depth bin of a straight line.
+
+    Each electron lands at ``coord`` (already smeared by sigma_p0 and drift diffusion) at time t after t0.  Its
+    charge is integrated over each strip's pitch; on a view with ``rc_D_<plane>`` > 0 (Y) it then spreads as a 1-D
+    RC line, sigma^2 = 2 D s, and every increment over the RC_EDGES intervals is seen at its midpoint delay, as in the
+    fit.  The electronics response is the X template on both views (``rc_tmpl`` = x/1) or each view's own.
+    Not modelled (refused if the bundle sets them): lor_frac, core_frac, rc_asym, rc_drain."""
+    from scipy.special import erf
+    from wft import model as wm
+    for k in (f'lor_frac_{plane}', f'core_frac_{plane}', f'rc_asym_{plane}', 'rc_drain'):
+        if float(hyper.get(k, 0.0) or 0.0) != 0.0:
+            raise NotImplementedError(f'RC generator: bundle sets {k}')
+    order = np.argsort(pos_map)
+    order = order[np.isfinite(pos_map[order])]
+    ps = pos_map[order]
+    out = np.zeros((512, wm.NSAMP))
+    inside = (coord > ps[0] - 0.39) & (coord < ps[-1] + 0.39)
+    coord, t, q = coord[inside], t[inside], q[inside]
+    if not len(coord):
+        return out
+    j = np.clip(np.searchsorted(ps, coord), 0, len(ps) - 1)
+    D = float(hyper.get(f'rc_D_{plane}', 0.0))
+    # strips the charge can reach: +-3 strips plus the RC spread at the longest delay
+    reach = 3 + int(np.ceil(4 * np.sqrt(2 * D * wm.RC_EDGES[-1]) / wm.PITCH)) if D > 0 else 3
+    lo, hi = max(int(j.min()) - reach, 0), min(int(j.max()) + reach, len(ps) - 1)
+    pw = ps[lo:hi + 1]
+    tb = np.round(t / T_BIN).astype(int)
+    tbu, inv = np.unique(tb, return_inverse=True)
+    tp = 'x' if hyper.get('rc_tmpl', 'x') in ('x', 1, 1.0) else plane
+    tmpl = wm.TMPL[tp]
+
+    def fr(var):
+        """(n_strip, n_tbin) charge on each strip, summed over the electrons of each time bin."""
+        z = 1.0 / (np.sqrt(2.0 * var))
+        F = 0.5 * (erf((pw[:, None] + wm.PITCH / 2 - coord[None, :]) * z)
+                   - erf((pw[:, None] - wm.PITCH / 2 - coord[None, :]) * z)) * q[None, :]
+        S = np.zeros((len(pw), len(tbu)))
+        np.add.at(S.T, inv, F.T)
+        return S
+
+    def resp(shift):
+        """(NSAMP, n_tbin) response to a unit charge seen ``shift`` ns after landing."""
+        base = wm.TS[:, None] - (t0 + tbu[None, :] * T_BIN + shift)
+        return np.interp(base, wm.TGRID, tmpl, left=0, right=0)
+
+    var0 = RC_POINT_SIGMA ** 2
+    F0 = fr(var0)
+    W = F0 @ resp(0.0).T
+    if D > 0:
+        Fprev = F0
+        edges = wm.RC_EDGES
+        for a_, b_ in zip(edges[:-1], edges[1:]):
+            Fj = fr(var0 + 2.0 * D * b_)
+            W += (Fj - Fprev) @ resp(0.5 * (a_ + b_)).T
+            Fprev = Fj
+    out[order[lo:hi + 1]] = W
+    return out
+
+
 def plane_waveform(plane: str, coord: np.ndarray, t: np.ndarray, q: np.ndarray,
                    pos_map: np.ndarray, t0: float, hyper: dict) -> np.ndarray:
     """(512, NSAMP) pedestal-subtracted ADC for one plane, before gain."""
     from wft import model as wm
+    if 'rc_D_y' in hyper or 'rc_D_x' in hyper:
+        return plane_waveform_rc(plane, coord, t, q, pos_map, t0, hyper)
     order = np.argsort(pos_map)
     order = order[np.isfinite(pos_map[order])]
     ps = pos_map[order]
@@ -320,8 +389,12 @@ def reco_event(eid: int, W: dict, ftst: dict):
     from wft import reco as wreco
     H = pd.concat([emulate_hits(W[p], _ST['hf_noise'][p], _ST['feu'][p], eid) for p in 'xy'])
     pm = {_ST['feu'][p]: _ST['pos_maps'][p] for p in 'xy'}
+    from wft import seed as wseed
+    # as ntof_tracking.wft_beam.reconstruct_subrun: the bundle's dead channels bridged in seeding and padded across in
+    # the windows (wft.seed.DEAD_SEED, the pass-1 default; added 2026-11-20 -- before, the digitiser did neither)
+    dead = (wreco._CAL.dead or {}) if wseed.DEAD_SEED else {}
     seeds = WB.seeds_from_hits_beam(H, pm, _ST['feu']['x'], _ST['feu']['y'],
-                                    hot=wreco._CAL.hot, min_strips=_ST['min_strips'])
+                                    hot=wreco._CAL.hot, min_strips=_ST['min_strips'], dead=wreco._CAL.dead)
     if eid not in seeds:
         return None
     wins, used = {}, {}
@@ -329,7 +402,8 @@ def reco_event(eid: int, W: dict, ftst: dict):
         cl = seeds[eid][p]
         ws, us = [], []
         for s in cl:
-            win = wio.extract_window(W[p], _ST['noise'][p], _ST['pos_maps'][p], s.channels, 3)
+            win = wio.extract_window(W[p], _ST['noise'][p], _ST['pos_maps'][p], s.channels, 3,
+                                     dead=dead.get(p))
             if win is None:
                 continue
             ws.append(dict(W=win.W, pos=win.pos, noise=win.noise, ch=win.ch))
@@ -338,7 +412,7 @@ def reco_event(eid: int, W: dict, ftst: dict):
             wins[p], used[p] = ws, us
     if not wins:
         return None
-    r = wreco._worker_fit((eid, wins, used, seeds[eid]['n_hits'], False, ftst))
+    r = wreco._worker_fit((eid, wins, used, seeds[eid]['n_hits'], seeds[eid].get('spark', False), ftst))
     r.pop('_cand', None)
     return r
 

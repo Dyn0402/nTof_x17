@@ -215,7 +215,7 @@ def track_crossings(run: str, subruns, dca_max: float = 30.0) -> pd.DataFrame:
     cosmetic: without it the sample is dominated by tracks that have no reason
     to be the particle that lit the bar, and the correlation halves.
     """
-    src = paths.out('stage3_fullpass')
+    src = paths.out(paths.STAGE3)
     cols = ['event_id', 'arm', 'gated', 'p0_y', 'd_y', 'pred_sipm_bar',
             'pred_sipm_s_mm', 'dca_axis_mm', 'angle_calibrated']
     out = []

@@ -296,7 +296,7 @@ def verify(d: pd.DataFrame, angle_pairs: Path) -> pd.DataFrame:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split('\n')[1])
-    ap.add_argument('--src', default=str(paths.spell('out', 'stage3_fullpass')),
+    ap.add_argument('--src', default=str(paths.spell('out', paths.STAGE3)),
                     help='stage-3 track tables (default: the full pass)')
     ap.add_argument('--dca', type=float, default=30.0)
     ap.add_argument('--jobs', type=int, default=8)

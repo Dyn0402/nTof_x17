@@ -43,6 +43,16 @@ def t0_sampler(arm: str):
     return x
 
 
+def t0_pin_residuals(arm: str, t0_abs_x: dict, tracks: Path) -> np.ndarray:
+    """For a bundle that pins t0 (n_TOF pass 1: t0 = t0_abs[ftst], sigma 15 ns): the data's x t0 minus the pin, on
+    gated coincident tracks of ``tracks`` (a pass-1 stage-3 table).  The signal t0 is then the overlay trigger's own
+    pin plus a residual drawn from this, so the simulated time keeps its per-trigger clock-phase correlation."""
+    t = pd.read_parquet(tracks, columns=['arm', 'gated', 'coinc_this_arm', 'x_t0', 'x_ftst'])
+    g = t[(t.arm == arm) & t.gated.astype(bool) & t.coinc_this_arm.astype(bool)]
+    r = g.x_t0 - g.x_ftst.astype(int).astype(str).map({str(k): float(v) for k, v in t0_abs_x.items()})
+    return r.dropna().to_numpy()
+
+
 def _line(w, x, q):
     """edep-weighted line x(w): (slope, x at the mesh) -- reduce_gap_wall._fit."""
     W = q.sum()
@@ -79,6 +89,13 @@ def parser() -> argparse.ArgumentParser:
                     help='bundle the signal is generated with (default: --bundle); e.g. is2 physics, prod reco')
     ap.add_argument('--v-true', type=float, default=None, help='default: the sim bundle v')
     ap.add_argument('--min-strips', type=int, default=3)
+    ap.add_argument('--q-x-median', type=float, default=None,
+                    help='data median x q_sum the charge scale is set to (default: is2 run_145, Q_X_MEDIAN)')
+    ap.add_argument('--yx', type=float, default=None,
+                    help='data median y/x q_sum ratio that sets the x/y electron split (default: is2 run_145, YX)')
+    ap.add_argument('--t0-tracks', default=None,
+                    help='pass-1 stage-3 table (e.g. stage3_vt/tracks_run_145_stat090_0000.parquet): with a pinned '
+                         'bundle, draw t0 as the overlay trigger\'s pin + a residual from this table')
     ap.add_argument('--jobs', type=int, default=14)
     ap.add_argument('--label', default=None)
     ap.add_argument('--seed', type=int, default=1)
@@ -112,8 +129,23 @@ def setup(a):
     ov = DG.Overlay(a.arm, a.run, a.sub, tag)
     print(f'  {len(ov.events)} quiet overlay triggers, {ov.n_sample} samples')
     state = ov.state()
-    t0s = t0_sampler(a.arm)
-    XY_SPLIT = 1.0 / (1.0 + YX[a.arm])
+    pin = getattr(cal, 't0_abs', None)
+    if pin and a.t0_tracks:
+        # pinned bundle: t0 = pin[ftst_x of the overlay trigger] + data residual
+        res = t0_pin_residuals(a.arm, pin['x'], Path(a.t0_tracks))
+        print(f'  t0 from the pin + {len(res)} pass-1 residuals (median {np.median(res):+.1f} ns)')
+        _pin_x = {int(k): float(v) for k, v in pin['x'].items()}
+
+        def draw_t0(o, rng):
+            return _pin_x[int(o['ftst_x'])] + float(rng.choice(res))
+    else:
+        t0s = t0_sampler(a.arm)
+
+        def draw_t0(o, rng):
+            return float(rng.choice(t0s))
+    if a.q_x_median:
+        Q_X_MEDIAN[a.arm] = a.q_x_median
+    XY_SPLIT = 1.0 / (1.0 + (a.yx or YX[a.arm]))
     rng = np.random.default_rng(a.seed)
 
     jobs = []
@@ -132,7 +164,7 @@ def setup(a):
             v0 = rng.uniform(-60, 60)
             st = DG.straight_steps(rng, u0, v0, tu, tv)
             o = ov.events[i % len(ov.events)]
-            jobs.append(dict(eid=int(o['eid']), steps=st, ov=o, t0=float(rng.choice(t0s)),
+            jobs.append(dict(eid=int(o['eid']), steps=st, ov=o, t0=draw_t0(o, rng),
                              adc_per_e=adc, xy_split=XY_SPLIT, v_true=v_true, seed=int(rng.integers(1 << 31)),
                              truth=dict(arm=a.arm, i=i, tan_u=tu, tan_v=tv, u_mesh=u0, v_mesh=v0, kind='mu')))
     else:
@@ -180,7 +212,7 @@ def setup(a):
                          u_mesh=um, v_mesh=vm, w_lo=float(st.w.min()), w_hi=float(st.w.max()),
                          edep_gap=float(q.sum()), dom_ke_gap=float(ke), dom_share=float(dom.max() / q.sum()))
             jobs.append(dict(eid=int(o['eid']), steps=st[['u', 'v', 'w', 'edep', 'time']], ov=o,
-                             t0=float(rng.choice(t0s)), adc_per_e=adc, xy_split=XY_SPLIT, v_true=v_true,
+                             t0=draw_t0(o, rng), adc_per_e=adc, xy_split=XY_SPLIT, v_true=v_true,
                              seed=int(rng.integers(1 << 31)), truth=truth))
     print(f'{len(jobs)} events, adc/e {adc:.2f}, v_true {v_true}')
     return jobs, bpath, spath, state

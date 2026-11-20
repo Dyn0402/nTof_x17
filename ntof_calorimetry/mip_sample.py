@@ -54,7 +54,9 @@ from sept26_prelim_analysis import paths  # noqa: E402
 from sept26_prelim_analysis.source_imaging import _dca_two_lines  # noqa: E402
 
 OUT = paths.spell('calo')
-CAMPAIGN = paths.spell('out', 'stage3_fullpass', 'tracks_campaign.parquet')
+#: one campaign table (retired chains), or the per-sub-run tables of paths.STAGE3 (n_TOF pass 1, read through
+#: pass1_tracks when no tracks_campaign.parquet is there)
+CAMPAIGN = paths.spell('out', paths.STAGE3, 'tracks_campaign.parquet')
 STACK = paths.spell('scint', 'tracks')
 COSMIC_TRACKS = REPO / 'ntof_cosmics' / 'results' / 'tracking' / 'k_run_147'
 PAIRS = (('A', 'C'), ('B', 'D'))
@@ -110,11 +112,18 @@ def build_beam() -> pd.DataFrame:
     from sept26_prelim_analysis.build_tracks import stored_y_sign
     em = STACK.parent / 'extract.meta.json'
     stack_up = em.is_file() and json.loads(em.read_text()).get('y_convention') == 'up'
-    if (stored_y_sign(CAMPAIGN) > 0) != stack_up:
+    camp = CAMPAIGN if CAMPAIGN.exists() else CAMPAIGN.parent
+    if (stored_y_sign(camp) > 0) != stack_up:
         raise ValueError('stage-3 campaign and scint-stack extract are on different y '
                          'conventions: regenerate the older one (Y_FLIP_AUDIT.md)')
-    T = pq.read_table(CAMPAIGN, columns=CAMP_COLS,
-                      filters=[('gated', '==', True)]).to_pandas()
+    if CAMPAIGN.exists():
+        T = pq.read_table(CAMPAIGN, columns=CAMP_COLS,
+                          filters=[('gated', '==', True)]).to_pandas()
+    else:
+        import pyarrow.dataset as ds
+        from sept26_prelim_analysis import pass1_tracks as P1
+        T = P1.read(CAMP_COLS + ['t_since_flash_ns'], filter=ds.field('gated'))
+        T = T[T.t_since_flash_ns.notna()].drop(columns='t_since_flash_ns')   # production rows (beam)
     for c in ('run', 'subrun', 'arm'):
         T[c] = T[c].astype(str)
     P = pd.concat([_pairs(T, a, b) for a, b in PAIRS], ignore_index=True)

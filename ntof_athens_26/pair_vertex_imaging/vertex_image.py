@@ -568,7 +568,7 @@ def fits(d: pd.DataFrame, cap) -> tuple[pd.DataFrame, pd.DataFrame]:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split('\n')[1])
-    ap.add_argument('--src', default=str(paths.spell('out', 'stage3_fullpass')))
+    ap.add_argument('--src', default=str(paths.spell('out', paths.STAGE3)))
     ap.add_argument('--jobs', type=int, default=8)
     ap.add_argument('--seed', type=int, default=17)
     ap.add_argument('--include-pre-access', action='store_true')

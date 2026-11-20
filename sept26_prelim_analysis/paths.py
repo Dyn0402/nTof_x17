@@ -65,6 +65,15 @@ _ROOTS = {
 }
 
 
+#: The track products the analysis reads, by directory name under the ``out`` root.  Since 2026-11-20 (NTOF_PASS_PLAN
+#: P7) these are n_TOF pass 1: ``stage3_pass1`` = the analysis view of pass-1 stage 3 (v(t) angles under the plain
+#: names; rerun/ntof/stage3/vt_view.py) and ``reco_pass1`` = its canonical stage 2 merged per sub-run and arm
+#: (reco_tree.py), both links into $WORK_DATA/ntof_pass1/.  The retired chains: X17_STAGE3=stage3_fullpass
+#: X17_RECO=reco_fullpass (production) or stage3_is2_v2 / fullpass_is2_v2.
+STAGE3 = os.environ.get('X17_STAGE3', 'stage3_pass1')
+RECO = os.environ.get('X17_RECO', 'reco_pass1')
+
+
 def spell(name: str = 'x17', *parts: str) -> Path:
     """Where a root resolves to, joined with ``parts`` -- created nor checked.
 

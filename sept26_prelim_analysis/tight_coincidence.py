@@ -314,7 +314,7 @@ def main() -> int:
     src = paths.out('stage3_campaign') if a.campaign else None
     if a.all_runs:
         import re as _re
-        base = src or paths.out('stage3_fullpass')
+        base = src or paths.out(paths.STAGE3)
         rs = {}
         for p in sorted(base.glob('tracks_run_*_stat090_*.parquet')):
             mm = _re.match(r'tracks_(run_\d+)_(stat090_\d+)\.parquet$', p.name)

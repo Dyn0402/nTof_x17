@@ -380,7 +380,7 @@ def verdict(K: pd.DataFrame, C: pd.DataFrame) -> dict:
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split('\n')[1])
     ap.add_argument('--src', default=None,
-                    help='stage-3 tracks; default <out>/stage3_fullpass')
+                    help='stage-3 tracks; default <out>/<paths.STAGE3> (n_TOF pass 1)')
     ap.add_argument('--tight', default=None,
                     help='the tight-coincidence pair table; default '
                          '<out>/tight_coincidence/pairs_tight_campaign.parquet')
@@ -395,7 +395,7 @@ def main() -> int:
                          'condition, ~2x the INTER fraction')
     a = ap.parse_args()
 
-    src = Path(a.src) if a.src else paths.out('stage3_fullpass')
+    src = Path(a.src) if a.src else paths.out(paths.STAGE3)
     tight = Path(a.tight) if a.tight else (
         paths.out('tight_coincidence') / 'pairs_tight_campaign.parquet')
     accp = Path(a.acceptance) if a.acceptance else (

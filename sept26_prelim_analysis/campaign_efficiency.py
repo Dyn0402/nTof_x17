@@ -409,7 +409,7 @@ def campaign(reco: Path, runs, jobs: int, slim_dir: Path | None = None
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split('\n')[1])
-    ap.add_argument('--reco', default=str(paths.out('reco_fullpass')),
+    ap.add_argument('--reco', default=str(paths.out(paths.RECO)),
                     help='the CONDOR FULL PASS reco tree; <out>/fullpass is '
                          'the allowlist pass despite its name')
     ap.add_argument('--runs', default='', help='comma-separated; default all')

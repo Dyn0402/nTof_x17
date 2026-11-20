@@ -757,9 +757,9 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split('\n')[1])
     ap.add_argument('--runs', nargs='*', default=None,
                     help='runs to process (default: every run on disk)')
-    ap.add_argument('--src', default=str(paths.spell('out', 'stage3_fullpass')),
+    ap.add_argument('--src', default=str(paths.spell('out', paths.STAGE3)),
                     help='stage-3 track tables')
-    ap.add_argument('--reco', default=str(paths.spell('out', 'reco_fullpass')),
+    ap.add_argument('--reco', default=str(paths.spell('out', paths.RECO)),
                     help='the full reconstruction pass (for the sub-run list)')
     ap.add_argument('--slim', default=None, help='exported n_TOF slim')
     ap.add_argument('--out', default=str(paths.spell('out', 'athens_insitu')))
