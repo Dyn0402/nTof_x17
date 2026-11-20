@@ -304,7 +304,7 @@ resim/depth/phase scripts pad by 4 strips, chambers_C.py does not. The det3 temp
 
 ## Paper I text from the feedback note — updated 2026-11-20 (dylan-MS-7C84)
 
-**Resume:** Paper I v2: Sec. 2 rewritten ("a track", not "the angle"); the 5 suggestions are closed (11-20); next Fig. 8/11.
+**Resume:** Paper I v2: Sec. 2 is ready (11-20), Sec. 6.2 and 7.4 updated but unread by Dylan; next Fig. 8/11.
 
 **2026-11-19/20 (Sec. 2 + Fig. 2, asked in chat, pushed to origin + Overleaf v2):**
 - **Sec. 2 rebuilt twice.** Final argument (Dylan's): (1) a point source needs only one hit per lepton, (2) sources are
