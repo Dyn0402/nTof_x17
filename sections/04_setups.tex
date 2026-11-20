@@ -94,7 +94,7 @@ Performing an independent waveform analysis on each strip to produce hits per st
 
 %We therefore use precomputed hits only to find candidate tracks, and from there fit the cluster's full strip $\times$ time data. We model a straight track, with its position at the mesh, transverse drift rate $w$ and start time $t_0$ as free parameters.
 
-We therefore use precomputed hits only to find candidate tracks, and from there fit the cluster's full strip $\times$ time data. The model is a straight track, with its position at the mesh, its transverse drift rate $w$ and its start time $t_0$ as free parameters. These three parameters are enough to define a line through the  The charge arriving in each 60\,ns slice of drift is shared onto the strips, spread onto their
+We therefore use precomputed hits only to find candidate tracks, and from there fit the cluster's full strip $\times$ time data. The model is a straight track whose position at the mesh and transverse drift rate $w$ are free. Its start time $t_0$ is set by the trigger: on the bench the scintillator coincidence fixes it, up to the recorded phase of the 10\,ns DREAM clock, to a value measured for each chamber and view; in the beam, where that calibration does not apply, $t_0$ is free as well. These three parameters are enough to define a line through the  The charge arriving in each 60\,ns slice of drift is shared onto the strips, spread onto their
 neighbors by the resistive layer (an RC kernel), and folded with the measured pulse shape of the electronics
 (\cref{fig:reco}, right). The charge profile along the track is solved inside the fit, and the angle follows from the
 transverse rate and the drift velocity, $\tan\theta=w/\vd$. The two views are fitted separately and paired by their
