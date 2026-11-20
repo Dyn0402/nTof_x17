@@ -1,9 +1,19 @@
 # Handoff
 
-## SPS CO2-epoch gas = NSW 93/5/2: everything downstream redone (GAS9352 + follow-up) — updated 2026-11-20 (dylan-MS-7C84)
+## SPS CO2-epoch gas = NSW 93/5/2: redone everywhere; FIRST: Paper IIa consistency review — updated 2026-11-20 (dylan-MS-7C84)
 
-**Resume:** done. One thing waits for Dylan: the Paper IIa Overleaf pull conflicts (below), so IIa's repo changes are not on
-Overleaf yet.
+**Resume:** FIRST THING: review the Dp 0.006 -> 0.005 change for consistency across Paper IIa/IIb, then the IIa Overleaf conflict.
+
+**Next steps (Dylan, 2026-11-20: "should be the first thing we do"):**
+1. Paper IIa: go through the Dp change carefully and make sure everything is still consistent: `papers/paper2/sections/
+   04_forward_model.tex` ~l.108 (Dp 0.005 (0.0049-0.0054), 74 % of X planes, slope move 1.6 %), `hits_daq/sps_dp_scan.py`,
+   `hits_daq/sps_{resim,outliers}.py` + `results/sps_{resim,outliers}.json`, `hits_daq/SPS_EXCESS_2026-11-18.md`; and IIb
+   (`papers/tpc_mixing_review/sections/05_measurements.tex`: D_T 169-179, model ratios 1.038...1.022, data-model
+   0.009-0.013, RC-off 1.023-1.014, "about a fifteenth"). Check every place that quotes these numbers agrees, and that the
+   conclusions (IIb "1.02 to 1.04") still read right.
+2. Then resolve the IIa Overleaf pull conflict (below) with Dylan: he decides; the repo version of the note is the newer rerun.
+- Paper I v2 checked 2026-11-20: unaffected (its 0.98 +- 0.03 is the column-v data ratio, `known_angle.json` unchanged; it
+  quotes no Dp or model ratio; the footprint quote is run71 CF4).
 
 **Done (all on main):**
 - Gas verified as 93/5/2 (`docs/GAS_MIXTURES.md`); labels relabelled (007fee02); Magboltz grid, gas fit + arms, Paper I v2
@@ -327,6 +337,25 @@ resim/depth/phase scripts pad by 4 strips, chambers_C.py does not. The det3 temp
 - Laptop working data: `~/work_data/paper2_hits`.
 
 **Key files:** `hits_daq/coupling/` (`observables.py`, `fit_kernel.py`, `run_fits.sh`, `profile.py`, `boundary.py`, `extra.py`, `make_report.py`, `physics/`), `hits_daq/coupling_scan.py`, `hits_daq/condor/make_ana_dag.py` (stages `spsrow`, `estim`), `papers/paper2/HITS_DAQ_PLAN_2026-11-05.md`.
+
+## Paper I v2 Sec. 4 (setups): gas bookkeeping, bench sizes, reference-plane citations, t0 — updated 2026-11-20 (dylan-MS-7C84)
+
+**Resume:** done and on Overleaf; Dylan is editing Sec. 4.3 from here (his sentence "These three parameters are enough to
+define a line through the ..." is unfinished, and on the bench only two are fitted).
+
+**Done (all pushed to origin + Overleaf v2):**
+- 4.1/4.2 written from run configs: bench Ar/iso 95/5, 32 x 60 ns, no ZS (EOS `cosmic_bench/june_tests/*/run_config.json`);
+  SPS gases + Table 3 of runs from `sps_beam_test_26/analysis/datasets.py`. Run 60 enters only via the Paper II angle scale;
+  Dylan chose to keep its row.
+- Fig. 4(a): thin gray dimension lines 60/50/40 cm (`figs/make_setups.py` patches the v1 bench script in memory), panel
+  widened in x only, so the caption's z compression is 0.24 (printed at run time).
+- Reference planes = MultiGen (1037 strips/view, genetic multiplexing to 61 ch, `cosmic_bench_m3_tracking/include/
+  detector.h`). Cited: Bouteille 2016, Radics 2019 (published title "Double hit reconstruction..."), Procureur 2013, sPHENIX
+  TPOT 2024 (§4.1 describes this bench), Flouzat 2014 (DREAM), Acker 2020. No paper documents the bench geometry itself.
+  CLAS12 MVT and WatTo full texts were not read (HAL/ScienceDirect block scripts; only abstracts).
+- "Angle scale" defined in 4.4; "drift-time ladder" replaced by plain wording in 4.3.
+- t0: pinned to the trigger on the bench (t0_prior_sigma 0.05 ns in every pass-1 bench bundle, `wft/reco.py` t0_prior_for),
+  free in the beam (SPS bundle drops t0_abs); 4.3 says so.
 
 ## Paper I text from the feedback note — updated 2026-11-20 (dylan-MS-7C84)
 
