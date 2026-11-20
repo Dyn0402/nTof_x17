@@ -67,7 +67,7 @@ The readout the same DREAM DAQ as on the bench with 60\,ns samples, but with 64 
 
 The beam data are a cross-check in this paper. Every headline number comes from the cosmic bench. The beam confirms
 the position resolution (\cref{sec:position}) and, at an angle the bench does not reach, the angle scale
-(\cref{sec:angle}), and it shows consistency of the analysis in other gas mixtures (\cref{sec:attachment}).
+(\cref{sec:definitions,sec:angle}), and it shows consistency of the analysis in other gas mixtures (\cref{sec:attachment}).
 % NOTE (Dylan, 2026-11-09): mount angle 25.4 deg = measured yaw from the run-57 alignment (25.52 = midpoint of the measured
 % yaw and the configuration value; 25.64 = run-configuration value det_orientation.y, the old "25.6").
 
@@ -92,7 +92,7 @@ A full waveform is recorded for each readout strip: the DREAM electronics sample
 
 Performing an independent waveform analysis on each strip to produce hits per strip can lead to bias: each waveform is an aggregate of charge from several different drift depths, mixed onto the strip by drift diffusion as well as the prompt charge footprint and, in the orientation parallel to the resistive strips, by the RC spreading along those strips. 
 %
-This compresses the drift-time ladder by 20--30\,\% and reads tracks too
+This compresses the spread of the hit times across an inclined track by 20--30\,\% and reads tracks too
 steep~\cite{paperIIb}, whatever estimator defines the hit time. We therefore use the hits only to
 find candidate tracks, and take the geometry from a fit of the whole strip $\times$ time picture. The model is a
 straight track, with its position at the mesh, its transverse drift rate $w$ and its start time $t_0$ as free
@@ -125,6 +125,9 @@ sides. Angles and positions are quoted in the interior, because the drift field 
 The interior is defined on the footprint of the track through the whole drift gap, in both views.
 \textbf{Matched.} A reconstructed track is matched to the reference when it lies within $R=5$\,mm of the reference ray
 at the mesh (\cref{sec:effdef,app:effdef}).
+\textbf{Angle scale.} The slope of the fitted $\tan\theta$ of a view against the true one: on the bench, the
+$\tan\theta$ of the reference track; in the beam, the tangent of the known yaw of the chamber. A scale of 1 means the
+fitted angles are neither compressed nor stretched. Since $\tan\theta=w/\vd$, it tests the drift velocity used.
 \textbf{$s_{68}$.} Resolutions are quoted as $s_{68}$, the 68th percentile of the absolute residual after its median
 is subtracted. It equals $\sigma$ for a Gaussian and, unlike a fitted width, includes the tails.
 \textbf{Voltages.} The mesh is at ground. $HV_\mathrm{resist}$, on the resistive strips, sets the gain;
