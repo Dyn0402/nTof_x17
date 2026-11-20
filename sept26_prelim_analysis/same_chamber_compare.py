@@ -56,6 +56,7 @@ CF_STAGE3 = LOCAL / 'stage3_is2_v2_cf' / 'tracks_campaign.parquet'
 #: is2_v2 re-pass at the capsule-focus k / at is2 k, products under ~/x17_local (kept for comparison).
 CHAIN = 'pass1'
 LEGACY = ('cf', 'is2')
+CHAIN_RUN = CHAIN       # the chain main() runs (set there)
 
 
 def _ana() -> Path:
@@ -96,6 +97,22 @@ HALF_MIP_EV = 0.5 * 0.4751e6
 #: P(2 tracks | 2 such leptons).  Measured 2026-10-13 on 15.4k (A) / 15.3k (C)
 #: events, 420 / 466 of them with two leptons.
 DIGI = {'A': dict(p1=0.537, p2=0.163, n2=420), 'C': dict(p1=0.451, p2=0.142, n2=466)}
+#: the same response through n_TOF PASS 1 (ntof_cosmics/g4_digi/run_pass1.sh + pair_response.py), used when the chain
+#: is pass1 and the file exists; f12 = P(>= 2 tracks | 1 lepton), the fake-pair rate, which the is2 chain did not have
+DIGI_PASS1 = '{base}/g4_digi/response/g4_{arm}_nose_pass1_response.json'
+
+
+def digi(arm: str, chain: str) -> dict:
+    if chain not in LEGACY:
+        from sept26_prelim_analysis import pass1_tracks as P1
+        f = Path(DIGI_PASS1.format(base=P1.base(), arm=arm))
+        if f.exists():
+            j = json.load(open(f))
+            # only CLOSE fakes (a split single lepton, < 40 mm): far second tracks are the overlay trigger's own
+            # content, i.e. accidentals, which the rate fit's correlated fraction `a` already excludes
+            return dict(p1=j['p_ge1_given_1'], p2=j['p_ge2_given_2'], f12=j['p_ge2_given_1_lt40'], n2=j['n_lep2'],
+                        source=str(f))
+    return dict(DIGI[arm], f12=0.0, source='is2 g4_digi 2026-10-13 (stale on pass 1)')
 
 
 def events(chain: str = CHAIN) -> pd.DataFrame:
@@ -222,10 +239,12 @@ def expectation(T: pd.DataFrame, F: pd.DataFrame, n_trig: int, DH_all: dict,
         Sg = pd.read_parquet(G4 / 'g4_singles.parquet')
         sa = Sg[(Sg.arm == arm) & Sg.trig & Sg.acc].groupby(['file', 'event']).size()
         r2 = float((sa >= 2).sum() / len(sa))
-        dg = DIGI[arm]
-        pred = r2 * dg['p2'] / dg['p1']
+        dg = digi(arm, CHAIN_RUN)
+        # genuine pairs (two leptons, both found) plus fake ones (one lepton reconstructed as two tracks)
+        pred = (r2 * dg['p2'] + (1.0 - r2) * dg['f12']) / dg['p1']
         rows.append(dict(arm=arm, eps_source='digitised Geant4 through the reconstruction',
                          eps=dg['p1'], two_track='measured (digitised)', f_two=dg['p2'] / dg['p1'] ** 2,
+                         fake_frac=(1.0 - r2) * dg['f12'] / dg['p1'], digi_source=dg['source'],
                          g4_pairs_per_single=r2, g4_ee_share=ratio_ee / ratio,
                          predicted_frac=pred, data_frac=f.a, data_err=f.a_err,
                          data_over_g4=f.a / pred, predicted_vertexed=np.nan,
@@ -372,6 +391,8 @@ def main() -> int:
     ap.add_argument('--out', default=None, help='default <ana>/same_chamber/cmp_<chain> (pass 1), <out>/same_chamber (legacy)')
     a = ap.parse_args()
     ch = a.chain
+    global CHAIN_RUN
+    CHAIN_RUN = ch
     if a.step == 'events':
         E = events(ch)
         print(E.groupby('arm').n.value_counts().unstack().iloc[:, :4])
@@ -396,10 +417,11 @@ def main() -> int:
                      ('cmp_vertex_y', Y)):
         df.to_csv(od / f'{name}.csv', index=False)
     json.dump(dict(chain=ch, chains=chains, n_trig_g4=n_trig, data_all=DH_all, data_late=DH_late,
-                   f_two=F_TWO, digi=DIGI, late_ms=LATE_MS,
-                   stale=('DIGI (p1, p2) and F_TWO are the reconstruction response measured on the is2 bundles / '
-                          'production chain (g4_digi 2026-10-13, overlay bench 2026-09-14); not yet re-measured on '
-                          'pass 1 (NTOF_PASS_PLAN P5 test 8)') if ch not in LEGACY else ''),
+                   f_two=F_TWO, digi={arm: digi(arm, ch) for arm in ARMS}, late_ms=LATE_MS,
+                   stale=('F_TWO is the 09-14 overlay bench on the production chain' +
+                          ('' if all('pass1' in digi(a_, ch)['source'] for a_ in ARMS) else
+                           '; DIGI is the is2 g4_digi response (pass-1 library not found)'))
+                   if ch not in LEGACY else ''),
               open(od / 'cmp.meta.json', 'w'), indent=1)
     pd.set_option('display.width', 220)
     for name, df in (('ToF fit', F), ('G4 classes', T), ('expectation', X), ('late vertex', V),

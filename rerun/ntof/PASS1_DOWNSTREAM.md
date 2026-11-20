@@ -233,3 +233,53 @@ were needed before the digitiser could stand in for pass 1:
 Closure on 240 synthetic muons (A, frozen `A_E2_beam`): fitted/true tan 1.001 (x), 1.031 (y); res68 0.017 / 0.010;
 x charge 1693 against 1626; y/x 1.049 against 1.041; ≥ 1 track 94 % (the same digitiser on is2: 70 %); 2 tracks 5 %
 (is2: 5 %, the overlay's own content, not the splitter). The nose and EAR2 libraries are running (A, C).
+
+### Pair-vertex imaging (Athens `pair_vertex_imaging`: vertex_lab, diagnostics, vertex_image, z_image, vertex3d, y_image, intra_vertex) — migrated 11-20
+Data steps only, `X17_SEPT26_OUT=ana` → `ana/pair_vertex/` (logs `ana/logs/pv_*.log`). The scripts also write figures into
+the repo's tracked `ntof_athens_26/pair_vertex_imaging/figures/` (the Athens record): the pass-1 versions were moved to
+`ana/pair_vertex/figures_pass1/` and the committed ones restored; the make_*_figures / make_*_note scripts were not run.
+`vertex3d`'s interactive 3D page needs plotly (not in the venv); its tables were written.
+
+3D vertex density against the no-source null (`v3d_measure.csv`), is2-era → pass 1:
+
+| pairs | peak distance from the capsule | excess in the box | significance |
+|---|---|---|---|
+| opposing-arm A–D, C–D | 17.8 → **1.0 mm** | 603 → 1,391 | 20 → **28 σ** |
+| same-chamber A–A, C–C | 65 → **12 mm** | 57 → 105 | 3.2 → **7.7 σ** |
+| A–C | 60 → 12 mm | 57 → 63 | 3.8 → 4.5 σ |
+| D–D | 9 → 17 mm | 63 → 69 | 6.4 → 6.0 σ |
+| all | 13.5 → 5.4 mm | 677 → 1,614 | 18 → 30 σ |
+
+x image (`image_fit.csv`, 150 mm cut, centre free): A–D centre −10.2 → −9.3 mm, band excess 0.086 → 0.109; C–D
+centre −5.7 → **−10.5** (now agrees with A); **the z image through D appears**: D's band excess 0.007 → 0.040
+(fraction f 0.02 → 0.41), and D–D pairs give z = −6.0 ± 0.8 (sin ≥ 0.3) / −5.2 ± 0.6 mm (≥ 0.5) against the
+single-track −5.55. Still from the is2 era here: `z_image --align-ac` reads the is2 Geant4 library; `y_image` reports a
+D focus scale of 1.10.
+
+### Same-chamber pairs against Geant4 through pass 1 (P5 test 8 result, nose library) — 11-20
+`run_pass1.sh nose` (15,426 A / 15,325 C events) → `ntof_cosmics/g4_digi/pair_response.py` →
+`$WORK_DATA/ntof_pass1/g4_digi/response/g4_<arm>_nose_pass1_{response.json,pairsep.csv,pairs.parquet}`. A "lepton" is
+a Geant4 track crossing ≥ 20 mm of the gap with true |tan| < 0.5; a reco track has both views gated and |tan| < 0.5.
+`same_chamber_compare` now takes p1, p2 and the close-fake rate from these files on pass 1.
+
+| | A is2 | A pass 1 | C is2 | C pass 1 |
+|---|---|---|---|---|
+| p1 = P(≥ 1 track \| 1 lepton) | 0.537 | **0.875** | 0.451 | **0.799** |
+| p2 = P(≥ 2 tracks \| 2 leptons) | 0.163 | **0.476** | 0.142 | **0.425** |
+| P(≥ 2 tracks \| 1 lepton), all | — | 4.3 % | — | 0.38 % |
+| … within 40 mm (a split) | — | **0.053 %** (5 / 9,403) | — | **0.042 %** (4 / 9,439) |
+| same events, raw n_tracks: P(≥1\|1) / P(≥2\|2) | 0.68 / 0.29 | 0.93 / 0.53 | | |
+
+- The far "fake" pairs are the overlay trigger's own content (A's overlay events carry a track 11.6 % of the time, C's
+  4 %): accidentals, which the data's correlated fraction `a` already removes, so only the close ones enter.
+- **The data's close-pair excess is the expected splitting.** Real − mixed under 40 mm is 0.047 % of tracked events
+  (A) / 0.028 % (C), against Geant4's split rate 0.053 % / 0.042 % through the same reconstruction. It is not physics,
+  and at 2 % of the correlated fraction it does not move it. True pairs closer than 24 mm are still not resolved
+  (Geant4: 1 of 28 (A), 0 of 35 (C) found as two tracks); 24–80 mm: 50–70 %.
+- **data / Geant4 for the correlated fraction: 0.10 (A), 0.10 (C)** (is2-era 0.13 / 0.12). Prediction = (r2·p2 +
+  (1 − r2)·f12<40) / p1 = 2.19 % / 2.18 % per tracked event, data 0.23 % / 0.22 %. With the pass-1 response the
+  reconstruction loses fewer pairs than the is2 one (p2/p1 0.30 → 0.54), so the deficit grows from ~8 to ~10, and it
+  is now the same in both chambers. The open item is unchanged in kind: the Geant4 capsule / source model, not the
+  reconstruction (`SAME_CHAMBER_PAIRS.md` "Next for the factor ~8").
+- Still caveated: the data's rate fit is poor (χ²/ndf 67 A, 18 C), and r2 (Geant4 pairs per single) comes from the
+  `g4_same_arm` truth tables, unchanged.

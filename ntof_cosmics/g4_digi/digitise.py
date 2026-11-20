@@ -413,7 +413,14 @@ def reco_event(eid: int, W: dict, ftst: dict):
     if not wins:
         return None
     r = wreco._worker_fit((eid, wins, used, seeds[eid]['n_hits'], seeds[eid].get('spark', False), ftst))
-    r.pop('_cand', None)
+    # the selected tracks (track_id >= 0), compact: what a pair study needs from an event with two tracks, e.g. the
+    # separation of a split single lepton.  JSON: [[plane, track_id, p0, tan, gated, split_child], ...]
+    cands = r.pop('_cand', None) or []
+    import json
+    sel = [[c.get('plane'), int(c.get('track_id', -1)), float(c.get('p0', float('nan'))),
+            float(c.get('tan_theta', float('nan'))), bool(c.get('track_gated', False)), bool(c.get('split_child', False))]
+           for c in cands if int(c.get('track_id', -1) if c.get('track_id') is not None else -1) >= 0]
+    r['tracks_json'] = json.dumps(sel)
     return r
 
 
