@@ -11,6 +11,9 @@
   of his own Overleaf edits to Sec. 1-4. Guide: `papers/WRITING_STYLE.md`; pointers in `CLAUDE.md`, `papers/README.md`, memory.
 - `papers/paper1_v2/sections/05_gas.tex` to `11_conclusions.tex` and `A1`-`A5`: prose rewritten, nothing else changed
   (`papers/check_rewrite.py` passes on all; builds, 64 pages with notes). Pushed to origin main and Overleaf, pulled back.
+- Fig. 11 (`angle_resolution_v2`, Dylan 11-20): (b) box without '% of tracks', y to 2.6; height 4.6 -> 3.7 in; [°] on
+  every axis. Dylan: "much better". On Overleaf (3b3a2613). Not checked: the page layout after the shorter figure.
+  Inputs fetched from EOS to `$WORK_DATA/claude-jobs/{twotrack,v2_angres}`; the producer needs no `WORK_DATA=` override now.
 
 **In progress / where it stopped:**
 - Nothing half-done. Dylan has not read the rewrite yet.
