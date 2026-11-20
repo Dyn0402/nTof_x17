@@ -1016,7 +1016,7 @@
     },
     "hits_daq_W": {
      "runs": "57, 59",
-     "gas": "Ar/CO2/iso 95/3/2",
+     "gas": "Ar/CO2/iso 93/5/2",
      "view": "Y (inclined)",
      "s68_clip5": [
       1.02,

@@ -266,7 +266,7 @@ def main():
                                 gb_sps_compare=dict(run='63', gas='Ar/CF4/iso', view='Y (inclined)', s68=[0.96, 0.99],
                                                     s68_mount_scale=[1.04, 1.04], far10=0.20, clip='|d|<=5',
                                                     reco='pre-pass-1 (fe_unify2), angle scale 8 % low, ZS'),
-                                hits_daq_W=dict(runs='57, 59', gas='Ar/CO2/iso 95/3/2', view='Y (inclined)',
+                                hits_daq_W=dict(runs='57, 59', gas='Ar/CO2/iso 93/5/2', view='Y (inclined)',
                                                 s68_clip5=[1.02, 1.10], s68_noclip=[1.83, 2.05], frac_in5=[0.77, 0.79],
                                                 reco='pass 1; v set from the stage angle (W is the calibration)')),
                             why='clipped at 5 deg with 20 % beyond 10 deg vs 3.4 % on the bench; no single-track '
