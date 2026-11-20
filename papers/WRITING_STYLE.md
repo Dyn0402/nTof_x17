@@ -63,3 +63,20 @@ the data. It does, in two ways that share nothing, and the comparison of the two
 After: "The drift velocity depends strongly on the gas, and the only record of the gas on the bench is its nominal
 mixture. For this reason we measure the drift velocity from the data themselves. We do this with two independent
 methods, and comparing the two also gives a measurement of the drift gap."
+
+## Status and scope (Dylan, 2026-11-21)
+
+After the Section 4 review of Paper I v2 Dylan said he is "very happy" with the writing since this guide was made, and
+asked that this style and voice be used always: in papers, in notes for his CERN site, and when explaining things to him
+in a session. The global instructions (`~/.claude/CLAUDE.md`, "Writing: Dylan's style") carry the short version for
+every repo. This file stays the full guide.
+
+What the Section 4 review added:
+
+- **One name per thing, across the whole paper.** He chose "broken resistive strips" (not "non-amplifying stripes") and
+  "poorly mounted readout card" (not "fault of the X readout") and wanted each used everywhere.
+- **A term of art is worth introducing only if it is used several times.** If it is, define it in a full sentence at
+  its first use ("A forward model is a calculation that predicts ...") and then use that term consistently.
+- **Give the reason for a number or a choice** when it is one clause away (why the interior margin is 8 mm at the y sides).
+- **How he likes a review:** fix plain typos directly, then give numbered suggestions, each with the proposed wording.
+  He answers by number. Check a factual claim against the data or code before proposing wording that depends on it.

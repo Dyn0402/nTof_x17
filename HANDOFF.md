@@ -1,8 +1,8 @@
 # Handoff
 
-## Paper I v2 prose in Dylan's writing style — updated 2026-11-20 (dylan-MS-7C84)
+## Paper I v2 prose in Dylan's writing style — updated 2026-11-21 (dylan-MS-7C84)
 
-**Resume:** Sec. 5-11 + app. A-E rewritten in Dylan's style and on Overleaf; next: his reaction, then titles/cuts he picks.
+**Resume:** Sec. 4 reviewed with Dylan and closed (11-21), he likes the style; next: review the next section he names the same way.
 
 **Goal:** Dylan finds Claude's paper prose too complicated. Learn his simpler, pedagogical style and write the papers in it.
 
@@ -16,7 +16,10 @@
   Inputs fetched from EOS to `$WORK_DATA/claude-jobs/{twotrack,v2_angres}`; the producer needs no `WORK_DATA=` override now.
 
 **In progress / where it stopped:**
-- Nothing half-done. Dylan has not read the rewrite yet.
+- Nothing half-done. Dylan (11-21): "very happy" with the writing; the style now applies everywhere (global `~/.claude/CLAUDE.md`).
+- Open, his call: "forward model" in the abstract (`main.tex` ~l.62-64, 118) and in Appendix F (`A6_moved.tex`, parked text).
+- Review format he likes: `overleaf.sh status` + `pull`, fix typos directly, numbered suggestions with proposed wording, apply
+  what he accepts, commit, `push paper1_v2 --now`, `pull`. Rename a title -> `papers/note_outline.py paper1_v2 --write`.
 - **Sec. 4 reviewed with Dylan 2026-11-21** (`04_setups.tex`; 4.3 and 4.4 now `ready`). "Forward model" is defined in 4.3
   and used in 3.1, 6.1, 9.1 and the 9.3 title. Chamber E: "broken resistive strips" everywhere (E.1 title too). Chamber D:
   "poorly mounted readout card". Beam: 150 GeV/c muons (Dylan). Feedback note headings regenerated.
