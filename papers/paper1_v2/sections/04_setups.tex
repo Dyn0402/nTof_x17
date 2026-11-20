@@ -6,20 +6,71 @@ sentence here and a figure in \cref{app:gain}; the terms used by every later sec
 uses, and the five chambers: which are good, which are not, and their runs.}
 
 \subsection{Cosmic bench}
-\tbw{Scintillator trigger, four reference tracking planes, two test slots. DREAM readout, sampling, window. Gas and flow.}
-\askDylan{Gas per setup: bench Ar/iC$_4$H$_{10}$ 95/5? SPS runs with Ar/CF$_4$/iC$_4$H$_{10}$ 88/10/2? Which runs enter the paper?}
+% Checked 2026-11-20 against run_config.json of every June bench run on EOS (cosmic_bench/june_tests): gas
+% "Ar/Iso 95/5" in all of them; the five long runs: n_samples_per_waveform 32, sample_period 60 ns, zero_suppress false.
 The bench (\crefp{fig:setups}{a}) triggers on the coincidence of two scintillators and carries four reference tracking
-planes, two above and two below the chamber under test, over a lever arm of 1278\,mm. A track reconstructed in them
-with one cluster per plane and $\chi^2<1.0$ is called the \emph{reference track}, and its extrapolation to the chamber
-under test the \emph{reference ray}. At the chamber the reference ray points to 0.21--0.28\,mm per coordinate, and its
-angle is known to better than 0.14\textdegree{} (\cref{sec:angle}).
+planes, two above and two below the two slots for chambers under test, over a lever arm of 1278\,mm. A track
+reconstructed in them with one cluster per plane and $\chi^2<1.0$ is called the \emph{reference track}, and its
+extrapolation to the chamber under test the \emph{reference ray}. At the chamber the reference ray points to
+0.21--0.28\,mm per coordinate, and its angle is known to better than 0.14\textdegree{} (\cref{sec:angle}).
+
+The chambers under test and the reference planes are read by the same DREAM electronics. On each trigger every strip
+is sampled 32 times at 60\,ns intervals, a window of 1.92\,\textmu s that holds the whole drift column at the
+drift fields of the long runs, and is recorded without zero suppression, so that the reconstruction sees the full
+waveform of every strip. All bench data were taken in Ar/iC$_4$H$_{10}$ 95/5, the mixture recorded in the
+configuration of every bench run. No other record of the gas exists, so its water content is measured from the data
+(\cref{sec:gas}).
 
 \subsection{SPS H4 beam}
-Only chamber~E went to the SPS: the test (late July -- early August 2026; exact dates to fill from the run log) ran while
+Only chamber~E went to the SPS: the test (chamber~E installed on 31 July 2026, data taken from 1 to 3 August) ran while
 chambers A--D were installed at n\_TOF, so the one chamber not needed there, with its known non-amplifying stripes
 (\cref{app:beam}), was the one available. The beam crosses two uRWELL reference trackers and chamber~E, which could be
 yawed by 25.4\textdegree{} (\crefp{fig:setups}{b}).
-\tbw{Beam, runs used (HV, drift field, gas, rotation).}
+
+Chamber~E had its own gas line and ran in two mixtures: Ar/CO$_2$/iC$_4$H$_{10}$ 95/3/2 until the evening of 1 August,
+and Ar/CF$_4$/iC$_4$H$_{10}$ 88/10/2 after it. The flow was about 2\,l/h through a gas volume of about 4.6\,l, so a
+change of mixture took most of a night to complete. The run taken during the change (run 60) is used only for the
+angle scale, where the drift velocity comes from the run itself. The readout was the same as on the bench, with
+60\,ns samples, but with 64 samples (3.84\,\textmu s), since the drift in these mixtures is slower (\cref{sec:attachment}), and
+with zero suppression at 3--5 standard deviations of the pedestal noise in all runs but one. \Cref{tab:spsruns} lists
+the runs used.
+\askDylan{Gas bookkeeping (2026-11-20). The Ar/CF$_4$/iC$_4$H$_{10}$ 88/10/2 is confirmed everywhere. The CO$_2$ mixture
+is not: our SPS analysis (\texttt{sps\_beam\_test\_26/analysis/RUN\_TIMELINE.md}, ``confirmed 2026-08-02'') and the
+Magboltz grid of the gas fit (\texttt{cloud\_basics/magboltz\_drift.py}) use \textbf{95/3/2}, but the corrected
+\texttt{run\_config.json} of runs 1--58 on EOS (\texttt{gas\_note} dated 2026-08-16, no source given) say \textbf{93/5/2}.
+Which bottle was it? If 93/5/2, the CO$_2$-epoch water and oxygen (\cref{app:beamgas}, \cref{fig:attach} red points, the
+443\,ppm of \cref{sec:attachment}) were fitted in the wrong base gas and need a new Magboltz grid; nothing else in the
+paper depends on it. Also: EOS labels run 59 Ar/CF$_4$ (note of 2026-10-14), but its beam data (20:02--20:24 on
+1 August) precede the 20:24 gas-change access, so they are CO$_2$, as the analysis has them. The 2\,l/h is your
+recollection (\texttt{GAS\_FLUSH\_TIMELINE.md}); no flowmeter log exists.}
+\begin{table}[tbp]
+  \centering\small
+  \caption{The beam runs of chamber~E used in this paper. Orientation: normal incidence, or yawed by
+  25.4\textdegree{}. Voltages: $HV_\mathrm{resist}$ / $HV_\mathrm{drift}$ (\cref{sec:definitions}), several values
+  where the run scanned them. All runs read 64 samples of 60\,ns.}
+  \label{tab:spsruns}
+  \setlength{\tabcolsep}{4.5pt}
+  \begin{tabular}{llllll}
+    \hline
+    run & orientation & gas & resist / drift HV & zero supp. & used for \\
+    \hline
+    55 & normal & Ar/CO$_2$/iC$_4$H$_{10}$ & 550 / 400--700\,V & 5$\sigma$ & gas \\
+    56 & normal & Ar/CO$_2$/iC$_4$H$_{10}$ & 590, 625 / 700\,V & 5$\sigma$ & gas \\
+    57 & 25.4\textdegree & Ar/CO$_2$/iC$_4$H$_{10}$ & 670 / 550--700\,V & 3$\sigma$ & gas \\
+    59 & 25.4\textdegree & Ar/CO$_2$/iC$_4$H$_{10}$ & 650 / 700\,V & 3$\sigma$ & gas \\
+    60 & 25.4\textdegree & changing to Ar/CF$_4$ & 650 / 700\,V & 5$\sigma$ & angle scale \\
+    62 & 25.4\textdegree & Ar/CF$_4$/iC$_4$H$_{10}$ & 770 / 200--700\,V & 4$\sigma$ & gas, angle scale \\
+    63 & 25.4\textdegree, then normal & Ar/CF$_4$/iC$_4$H$_{10}$ & 770 / 325--676, then 700\,V & 4$\sigma$ & gas, angle
+    scale, position \\
+    71 & normal & Ar/CF$_4$/iC$_4$H$_{10}$ & 770 / 275, 450, 700\,V & none & gas, charge footprint \\
+    \hline
+  \end{tabular}
+\end{table}
+% Sources (2026-11-20): conditions from sps_beam_test_26/analysis/datasets.py (HV from hv_monitor.csv, ZS from the
+% *_thr.prg headers, mount from the TAX-dated accesses; run_config.json is wrong about gas, mount and start time for
+% this campaign, README there). Uses: rerun/sps_gasfit (gas groups co2_run55/56/57/59, cf4_run62/63 ladder, run63 flat,
+% run71 raw), rerun/paper1_spsfigs known_angle (column-v rows: run60, run62 d600/d700, run63_rot25), rerun/sps_region
+% (position: run63 flat700, region R), kernel_forms (run71 raw). Resist voltages rounded (769.8 -> 770, 649.75 -> 650).
 The beam data are a cross-check in this paper. Every headline number comes from the cosmic bench. The beam confirms
 the position resolution (\cref{sec:position}) and, at an angle the bench does not reach, the angle scale
 (\cref{sec:angle}), and it shows the same gas analysis at work in other mixtures (\cref{sec:attachment}).
