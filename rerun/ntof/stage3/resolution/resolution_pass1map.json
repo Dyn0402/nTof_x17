@@ -1,0 +1,8 @@
+{
+ "run": "run_149",
+ "n_ac_pairs": 12874,
+ "n_line": 12112,
+ "sep_mm": 60.0,
+ "source": "pass-1 analysis view (pass1_tracks, v(t) angles)",
+ "tail": 0.15
+}

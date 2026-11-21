@@ -86,7 +86,7 @@ step sc_cmp     $PY -m sept26_prelim_analysis.same_chamber_compare --chain pass1
 # --- 3. scintillator stack mapped by the tracks (k = 1: m = tan, the v(t) angle)
 export X17_SCINT_OUT=$ANA/scint_stack
 step scint_x    $PY -m ntof_scint_stack.extract --src $P/$VIEW --runs $PROD --jobs 4
-step scint_ana  $PY -m ntof_scint_stack.ana --jobs 4
+step scint_ana  $PY -m ntof_scint_stack.ana --arms ACD --jobs 4   # pass 1: B has no angles
 
 # --- 4. the rest of the downstream on pass 1
 step scintillators $PY -m sept26_prelim_analysis.scintillators
