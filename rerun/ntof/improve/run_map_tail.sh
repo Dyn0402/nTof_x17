@@ -8,8 +8,8 @@ P=${WORK_DATA:-/media/ucla/work}/ntof_pass1
 LOG=$P/map_chains.log
 say() { echo "[$(date +%H:%M:%S)] $*" | tee -a "$LOG"; }
 R=rerun/ntof/stage3/resolution
-TAIL="scint_ana scintillators chamber_b tight calo_beam
-  pv_vertex_lab pv_diagnostics pv_vertex_image pv_z_image pv_vertex3d pv_y_image pv_intra_vertex"
+TAIL=${TAIL:-"scint_ana scintillators chamber_b tight calo_beam
+  pv_vertex_lab pv_diagnostics pv_vertex_image pv_z_image pv_vertex3d pv_y_image pv_intra_vertex"}
 say "chain view (tail from scint_ana)"
 X17_PASS1_VIEW=stage3_vt X17_PASS1_ANA=$P/ana LABEL=pass1 RESOLUTION_OUT=$R/resolution_pass1.csv \
   X17_RESOLUTION=$R/resolution_pass1.csv bash rerun/ntof/PASS1_DOWNSTREAM.sh $TAIL \

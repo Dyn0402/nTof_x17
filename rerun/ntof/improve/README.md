@@ -45,6 +45,25 @@ Everything reads the pass-1 analysis view (v(t) angles, gated = true |tan| < 0.5
    data/G4 0.10 -> 0.18 (A) / 0.14 (C); the shape tables use real pairs >= 25 ms too.  The correlated opening-angle
    shape is close to the event-mixed one, not Geant4's one-photon e+e-: two independent particles from one capture
    (e.g. a gamma cascade) rather than conversions.  That is the source-model question, not tracking.
+10. **The three views side by side** (2026-11-21, `compare_chains.py` -> `ana/track_quality/chains.csv`, all 106 rows
+   filled).  The views are no map (`ana_nomap`), map only (`ana_map`), and map + censored-window cut (`ana`, the
+   analysis view).  The map + cut view is better than the no-map view on almost every metric:
+   - The run_149 resolution is 20-30 % better (A x 0.028 -> 0.020).  Run_149 was in the map's training data, so the
+     held-out gains of finding 4 are the honest number.
+   - The A-C focus asymmetry falls from 0.046 to 0.008.  The common angle scale moves from 0.997 to 0.977.
+   - C's source height moves from -32.9 to -30.0 mm, next to A's -30.7 mm.
+   - The scintillator wall confirms the cut.  D's along-bar correlation rises from 0.21 to 0.37, and the fraction of
+     D tracks pointing at the fired segment rises from 0.51 to 0.59.  A's along-bar correlation rises from 0.55 to 0.64.
+   - The capsule pose fit improves in z (chi2 -40 to -50 %).  However, it worsens in x by 5-20 % (e.g. 34 -> 41 for
+     xb-5).  We have not explained the x-view rise yet.
+   - The same-chamber pairs barely change (data/G4 0.17 for A and 0.14 for C).
+   - The z band excess seen through D halves with the cut (A-D 0.040 -> 0.021).  The data band fraction hardly moves
+     (0.089 -> 0.084).  Instead, the band fraction of the null rises from 0.049 to 0.063, and the fitted width narrows
+     from 44 to 32 mm.  So the earlier D z excess appears to have been inflated by D's fake tracks, which pulled the
+     null down.
+   The chain first stopped at `scint_ana`, because `PASS1_DOWNSTREAM.sh` ran it on arms ABCD and pass 1 gives B no
+   angles.  It now passes `--arms ACD`.  `pv_vertex3d` also needed `plotly` in the venv.  `run_map_tail.sh` reruns
+   the steps from `scint_ana` on (or the steps in `$TAIL`) on both views, one after the other.
 
 ## Not decided (Dylan)
 
