@@ -3,57 +3,57 @@
 
 In 2016 the ATOMKI group reported an excess of $e^+e^-$ pairs at large opening angles in the decay of an excited
 state of $^8$Be~\cite{Krasznahorkay2016}, and later in $^4$He~\cite{Krasznahorkay2021} and
-$^{12}$C~\cite{Krasznahorkay2022}. All three are consistent with the emission of a light neutral boson of mass
-${\approx}17$\,MeV that decays to $e^+e^-$, now called X17~\cite{Feng2016}. Independent tests have not settled the question:
-a two-arm spectrometer in Hanoi reports the $^8$Be anomaly~\cite{Anh2024}; NA64 excludes part of the couplings
-favored by it~\cite{NA64_2018,NA64_2020}; MEG~II, repeating the $^8$Be measurement, sees no significant signal yet
-remains compatible with ATOMKI at the 1.5$\sigma$ level~\cite{MEGII2024}; and PADME, searching for X17 produced
-resonantly in $e^+e^-$ annihilation, sees an excess of about 2$\sigma$ at $\sqrt{s}\approx16.9$\,MeV~\cite{PADME2025}.
+$^{12}$C~\cite{Krasznahorkay2022}. All three excesses are consistent with the emission of a light neutral boson of mass
+${\approx}17$\,MeV that decays to $e^+e^-$, now called X17~\cite{Feng2016}. Independent tests have not settled the question.
+A two-arm spectrometer in Hanoi also observes the $^8$Be anomaly~\cite{Anh2024}. NA64 excludes part of the couplings
+favored by the anomaly~\cite{NA64_2018,NA64_2020}. MEG~II repeated the $^8$Be measurement and sees no significant signal, but
+remains compatible with ATOMKI at the 1.5$\sigma$ level~\cite{MEGII2024}. PADME searched for X17 produced
+resonantly in $e^+e^-$ annihilation and sees an excess of about 2$\sigma$ at $\sqrt{s}\approx16.9$\,MeV~\cite{PADME2025}.
 An experiment proposed at the CERN n\_TOF facility~\cite{nTOFX17proposal,Gustavino2025} produces the $^4$He state with
-neutrons instead of protons: capture on $^3$He forms $^4$He 20.58\,MeV above its ground state, which decays by
+neutrons instead of protons. Neutron capture on $^3$He forms $^4$He 20.58\,MeV above its ground state. This state decays by
 $\gamma$ emission, by internal pair creation (IPC) or, possibly, by emitting an X17~\cite{Viviani2022}. This paper
 describes the compact resistive Micromegas TPCs built to track the final-state leptons from that reaction.
 
 \paragraph{What the measurement needs.}
-The experiment must detect the $e^+e^-$ pairs from the hypothetical rare decay of the X17 and reconstruct each
+The experiment must detect the $e^+e^-$ pairs from the decay of a hypothetical X17 and reconstruct each
 lepton's trajectory from the target. From the kinematics, each lepton carries between about 3 and 16\,MeV. The
 opening angle of the pair is related to its invariant mass, which provides the separating power against the smooth
 IPC background. The figures of merit of the tracking are therefore the accuracy of each reconstructed track angle and the efficiency with which tracks are reconstructed.
-At these distances a position resolution of the order of a millimeter is enough (\cref{sec:requirement}), and the time
-resolution serves only to confirm coincident lepton pairs and reject combinatorial background. After the tracking, scintillators trigger the event readout and measure the energy, which adds the energy split
-of the pair to the mass and rejects events whose total energy is not that of the capture. The tracker must therefore
+With the trackers about 20\,cm from the target, a position resolution of the order of a millimeter is enough (\cref{sec:requirement}), and the time
+resolution serves only to confirm coincident lepton pairs and reject combinatorial background. Behind the trackers, scintillators trigger the event readout and measure the energy of each lepton. The energy asymmetry
+of the pair enters the invariant mass together with the opening angle. The total energy allows us to reject events whose energy is not that of the transition. Leptons of these energies scatter in any material they cross. The tracker must therefore
 put as little material as possible in front of its own measurement, and then measure the track well.
 
 \paragraph{Why a compact TPC.}
 A Micromegas~\cite{Giomataris1996} time projection chamber was chosen to fill the role of a low-material-budget
 tracker. Leptons cross a thin window into a gas volume, and the drift times of the primary ionization electrons along each track give
 a three-dimensional segment, hence a direction, from a single chamber (\crefp{fig:layout}{b}). The trackers must sit
-close to the target, both for acceptance and because the air in between scatters the leptons: over 20\,cm an 8\,MeV electron is deflected by
-1.7\textdegree{} rms in each projection (3.2\textdegree{} at 4\,MeV), already comparable to the chamber's own angular
-resolution. Four chambers therefore form a box around the target, with their entrance windows 20\,cm from it
+close to the target, both for acceptance and because the air in between scatters the leptons. Over 20\,cm an 8\,MeV electron is deflected by
+1.7\textdegree{} rms in each projection (3.2\textdegree{} at 4\,MeV). This deflection is already comparable to the angular
+resolution of the chamber. Four chambers therefore form a box around the target, with their entrance windows 20\,cm from it
 (\crefp{fig:layout}{a}), each with an active area of about $40\times36$\,cm$^2$, giving a large acceptance for these coincident pairs.
 The trigger and calorimetry scintillators should fit close behind each chamber to maintain full geometric acceptance while reducing scintillator size. This is what requires the TPCs to be compact, with a 30\,mm drift gap.
 
 \paragraph{Why resistive strips.}
-n\_TOF operates in pulsed mode with a high instantaneous intensity, so the chambers were built with a resistive layer~\cite{Alexopoulos2011} for survivability and stability. This appears to have been effective
+n\_TOF operates in pulsed mode with a high instantaneous intensity, so the chambers were built with a layer of resistive strips~\cite{Alexopoulos2011} for protection against discharges and stable operation. This appears to have been effective
 (\cref{sec:efficiency}). The resistive strips, however, spread the charge of each avalanche over neighboring strips
-with delay, which poses unique problems for the TPC reconstruction. The reconstruction algorithm used for these resistive
+with a delay, which complicates the TPC reconstruction. The reconstruction algorithm used for these resistive
 Micromegas TPCs is discussed briefly here (\cref{sec:reco}) and described in more detail in a companion paper~\cite{paperII}.
 
 \paragraph{Two tracks in one chamber.}
-A pair with a large opening angle, as expected from an X17, spans two different chambers (\crefp{fig:layout}{a}). The far more
+A pair with a large opening angle, as expected from an X17, is detected in two different chambers, one lepton in each (\crefp{fig:layout}{a}). The far more
 numerous pairs of small opening angle from the IPC continuum often pass through a single chamber together. A chamber must
 therefore also separate two tracks and assign the two segments it sees in each readout view to the correct particle.
 
 \paragraph{This paper.}
-It covers the chambers themselves, characterized on the Saclay cosmic bench and in the CERN SPS H4 beam; the n\_TOF
-campaign and its physics will be reported separately. The main results are these. On cosmic muons a single well-built chamber
-measures the angle of a track to 1.0\textdegree{} or better, with no dependence on
-the angle within the $\pm20$\textdegree{} range the bench provides (\cref{sec:tracking}). The chamber calibrates its own drift velocity and drift gap from the data, in two
-independent ways that agree to 2\,\%, and so monitors the water and oxygen contamination in its gas (\cref{sec:gas}). The best
+This paper covers the chambers themselves, characterized on the Saclay cosmic bench and in the CERN SPS H4 beam. The n\_TOF
+campaign and its physics will be reported separately. The main results are these. With cosmic muons, the angular resolution of a single well-built chamber
+is 1.0\textdegree{} or better, with no dependence on
+the track angle within the $\pm20$\textdegree{} range the bench provides (\cref{sec:tracking}). We measure the drift velocity and the drift gap of the chamber from the data with two
+independent methods, which agree to 2\,\%. The measured drift velocity also monitors the water and oxygen contamination of the gas (\cref{sec:gas}). The best
 chamber detects 94.8\,\% of single tracks over its full active area, and most of the loss is real ionization that a straight-track reconstruction does not describe (\cref{sec:efficiency,sec:straight}). The two
-readout views share charge equally, which pairs the segments in two-particle events correctly 97.7\,\% of the time, and two
-tracks more than 18\,mm apart are both reconstructed in 95\,\% of cases (\cref{sec:twoparticle}). Of five chambers built, two reach this performance and three show production defects
+readout views share charge equally. This allows the segments in two-particle events to be paired correctly 97.7\,\% of the time, and two
+tracks more than 18\,mm apart are both reconstructed in 95\,\% of cases (\cref{sec:twoparticle}). Of the five chambers built, two reach this performance and three show production defects
 (\cref{sec:conclusions}).
 
 \Cref{sec:requirement} sets out what the measurement needs from a track. \Cref{sec:design} describes the design and
