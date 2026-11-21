@@ -127,6 +127,8 @@ def main() -> int:
     print(pooled.pivot_table(index='scale', columns='arm', values=['med_miss', 'f10']).round(3).to_string())
     for arm in ('A', 'C'):
         for (lo, hi), g in R[(R.arm == arm) & ~R.null].groupby(['tan_lo', 'tan_hi']):
+            if g.med_miss.isna().all():          # an empty |tan| bin (outside the acceptance)
+                continue
             j = g.med_miss.idxmin()
             print(f'  {arm} |tan| {lo:.1f}-{hi:.1f}: sharpest at s = {g.scale[j]:.3f} '
                   f'(median miss {g.med_miss[j]:.1f} mm, n {int(g.n.iloc[0]):,})')
