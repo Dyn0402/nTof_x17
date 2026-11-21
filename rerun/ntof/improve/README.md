@@ -61,6 +61,15 @@ Everything reads the pass-1 analysis view (v(t) angles, gated = true |tan| < 0.5
      (0.089 -> 0.084).  Instead, the band fraction of the null rises from 0.049 to 0.063, and the fitted width narrows
      from 44 to 32 mm.  So the earlier D z excess appears to have been inflated by D's fake tracks, which pulled the
      null down.
+   **The pose-fit x chi2 rise is the crossings term, not the shape.**  The x-view chi2 is a crossings part (A and C
+   late x crossings vs the toy, 1 mm each) plus a shape part (x crossing vs height).  The shape part improves (best over
+   poses 19.5 -> 17.9 for xb-10).  In the toy, x_A - x_C is +2.3..2.7 mm for all 287 poses, so no pose can change it;
+   in the data it was +0.67 mm without the map and is +0.11 mm with it (A's late and mid windows also agree now:
+   -10.87 / -10.96 mm, were 0.8 mm apart).  So the data became more consistent and the gap to the toy grew.  Which side
+   carries the 2.3-2.7 mm (A-C relative x alignment, or the toy geometry) is open.  `compare_chains.py` now reports the
+   two parts and the data's A - C difference separately.
+   The before/after page (`rerun/ntof/compare_page/make_page.py`, notes/ntof-pass1-before-after) now shows the
+   analysis view as "after", reads every after number from the products, and has a section 7 with the three views.
    The chain first stopped at `scint_ana`, because `PASS1_DOWNSTREAM.sh` ran it on arms ABCD and pass 1 gives B no
    angles.  It now passes `--arms ACD`.  `pv_vertex3d` also needed `plotly` in the venv.  `run_map_tail.sh` reruns
    the steps from `scint_ana` on (or the steps in `$TAIL`) on both views, one after the other.

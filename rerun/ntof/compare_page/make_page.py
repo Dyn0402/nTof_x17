@@ -140,6 +140,12 @@ def same_chamber():
             hm = np.histogram(M.sep_plane_mm, e)[0] * len(R) / max(len(M), 1)
             out[f'{lab}_{arm}'] = dict(edges=e.tolist(), real=hr.tolist(), mixed=np.round(hm, 1).tolist(),
                                        n_real=int(len(R)))
+    # close-pair excess (real - mixed under 40 mm) per tracked event >= 12 ms; the track counts are those of
+    # PASS1_DOWNSTREAM.md (1.78 M A, 1.41 M C); the censored-window cut removes only 87 late A tracks
+    n_trk = dict(A=1.78e6, C=1.41e6)
+    for arm in 'AC':
+        x = out[f'after_{arm}']
+        out[f'close_{arm}'] = r(100 * (sum(x['real'][:4]) - sum(x['mixed'][:4])) / n_trk[arm], 4)
     O = pd.read_csv(ANA / 'same_chamber/cmp_pass1/cmp_opening.csv')
     O['chain'] = O.chain.map({'pass1': 'after', 'cf': 'before'})
     out['opening'] = recs(O, ['arm', 'chain', 'mid', 'correlated', 'err', 'g4_ee'], 2)
@@ -178,10 +184,91 @@ def pair_response():
     return rows
 
 
+# ---------------------------------------------------------------------------------------------------------- after values
+def after_values():
+    """The 'after' numbers the verdict table used to carry by hand, read from the analysis view's products."""
+    a = {}
+    for arm in 'AC':
+        P = pd.read_parquet(ANA / f'same_chamber_late/pass1_{arm}/pairs.parquet', columns=['mixed'])
+        a[f'pairs_{arm}'] = int((~P.mixed).sum())
+    E = pd.read_csv(ANA / 'same_chamber/cmp_pass1/cmp_expectation.csv').groupby('arm').first()
+    F = pd.read_csv(ANA / 'same_chamber/cmp_pass1/cmp_tof_fit.csv').set_index('arm')
+    for arm in 'AC':
+        a[f'dg4_{arm}'] = float(E.loc[arm, 'data_over_g4'])
+        a[f'rate_chi2_{arm}'] = float(F.loc[arm, 'chi2'] / F.loc[arm, 'ndf'])
+    X = pd.read_csv(ANA / 'capsule_pose/pose2_xb-10_xc-10_-15.csv')
+    b = X.loc[X.chi2.idxmin()]
+    a['pose_x'], a['pose_x_cross'], a['pose_x_shape'] = float(b.chi2), float(b.chi2_x), float(b.chi2_shape)
+    a['pose_z'] = float(pd.read_csv(ANA / 'capsule_pose/pose2z_xb0_xc-16_-18_-20.csv').chi2_z.min())
+    T = pd.read_csv(ANA / 'track_quality/chains.csv')
+    a['tight'] = float(T[T.metric == 'tight pairs (all topologies)'].mapcens.iloc[0])
+    a['tight_b2b'] = float(T[T.metric == 'tight back-to-back (through-goers)'].mapcens.iloc[0])
+    a['tight_nb2b'] = float(T[T.metric == 'tight non-back-to-back pairs'].mapcens.iloc[0])
+    a['calo_pairs'] = len(pd.read_parquet(ANA / 'calorimetry/mip_beam.parquet', columns=['pair'])) // 2
+    import re
+    m = re.search(r'A: corr\(tu, tan_raw_x\) = ([+-][\d.]+)', (ANA / 'logs/calo_beam.log').read_text())
+    a['calo_corr_A'] = float(m.group(1))
+    m = re.search(r'C: corr\(tu, tan_raw_x\) = ([+-][\d.]+)', (ANA / 'logs/calo_beam.log').read_text())
+    a['calo_corr_C'] = float(m.group(1))
+    return a
+
+
+def views():
+    """Section 7: no map / map / map + cut, the headline rows of compare_chains.py."""
+    T = pd.read_csv(ANA / 'track_quality/chains.csv')
+    keep = [
+        ('resolution (run_149 A-C line)', 'A x sigma, |tan| bin from 0.12'),
+        ('resolution (run_149 A-C line)', 'C x sigma, |tan| bin from 0.12'),
+        ('resolution (run_149 A-C line)', 'A y sigma, |tan| bin from 0.12'),
+        ('resolution (run_149 A-C line)', 'C y sigma, |tan| bin from 0.12'),
+        ('capsule focus', 'A - C (antisymmetric: geometry or angle)'),
+        ('capsule focus', '(A + C)/2 (common: angle scale)'),
+        ('capsule pose data', 'A late x crossing [mm]'),
+        ('capsule pose data', 'C late x crossing [mm]'),
+        ('capsule pose data', 'A late y crossing [mm]'),
+        ('capsule pose data', 'C late y crossing [mm]'),
+        ('capsule pose data', 'A - C late x crossing [mm] (every pose: +2.3..2.7)'),
+        ('capsule pointing', 'D source z crossing, late, all heights [mm]'),
+        ('capsule pose fit', 'best x-view chi2 (10 dof), xb-10_xc-10_-15'),
+        ('capsule pose fit', '  of which crossings (A, C x vs data), xb-10_xc-10_-15'),
+        ('capsule pose fit', 'best shape chi2 over all poses, xb-10_xc-10_-15'),
+        ('capsule pose fit', 'best z-view chi2 (5 dof), xb0_xc-16_-18_-20'),
+        ('scintillator wall (run_145)', 'A along-bar correlation'),
+        ('scintillator wall (run_145)', 'D track points at the fired segment'),
+        ('scintillator wall (run_145)', 'D along-bar correlation'),
+        ('scintillator wall (run_145)', 'D wall-matched tracks'),
+        ('same-chamber pairs', 'A data / Geant4'),
+        ('same-chamber pairs', 'C data / Geant4'),
+        ('pair vertex (image)', 'A-D z via D: band excess'),
+        ('pair vertex (3D)', 'all: excess significance [sigma]'),
+        ('two-arm coincidences', 'tight pairs (all topologies)'),
+    ]
+    rows = []
+    for g, m in keep:
+        x = T[(T.group == g) & (T.metric == m)]
+        if len(x):
+            x = x.iloc[0]
+            rows.append(dict(group=g, metric=m.strip(), nomap=r(x.nomap, 4), map=r(x['map'], 4),
+                             mapcens=r(x.mapcens, 4), better=x.better if isinstance(x.better, str) else ''))
+    return rows
+
+
+def vd(b, a, up):
+    """Verdict from the numbers: up = larger is better, False = smaller is better, 'abs' = closer to 0."""
+    if up == 'abs':
+        b, a = -abs(b), -abs(a)
+    elif up is False:
+        b, a = -b, -a
+    if abs(a - b) <= 0.02 * max(abs(b), 1e-9):
+        return 'same'
+    return 'better' if a > b else 'worse'
+
+
 # ---------------------------------------------------------------------------------------------------------- verdicts
 def verdicts(D):
     """(group, metric, before, after, change text, verdict, why) -- the table at the top."""
     v = []
+    AV = D['after_values']
 
     def add(g, m, b, a, unit, better, why, fmt='{:.3g}', rel=True):
         if b is None or a is None:
@@ -198,15 +285,16 @@ def verdicts(D):
     ca = 0.5 * (sp[('all', 'A', 'after')] + sp[('all', 'C', 'after')])
     add('Capsule focus', 'common focus scale (A, C mean): extra scale the angles need', (cb - 1) * 100, (ca - 1) * 100,
         '%', 'better', 'a common scale error is not geometry; it was the angle calibration', fmt='{:+.1f}', rel=False)
-    add('Capsule focus', 'A − C focus difference', (sp[('all', 'A', 'before')] - sp[('all', 'C', 'before')]) * 100,
-        (sp[('all', 'A', 'after')] - sp[('all', 'C', 'after')]) * 100, '%', 'worse',
-        'antisymmetric between A and C, the geometric kind (distance / axis): now the dominant part', fmt='{:+.1f}',
+    db = (sp[('all', 'A', 'before')] - sp[('all', 'C', 'before')]) * 100
+    da = (sp[('all', 'A', 'after')] - sp[('all', 'C', 'after')]) * 100
+    add('Capsule focus', 'A − C focus difference', db, da, '%', vd(db, da, 'abs'),
+        'antisymmetric between A and C; the angle map (A–C cosmic lines) removes most of it', fmt='{:+.1f}',
         rel=False)
     F = {lab: pd.DataFrame(D['focus'][lab]) for lab in ('before', 'after')}
     for arm in 'AC':
         mb = F['before'][(F['before'].arm == arm) & (F['before'].tan_lo == 0.2)].med_miss.min()
         ma = F['after'][(F['after'].arm == arm) & (F['after'].tan_lo == 0.2)].med_miss.min()
-        add('Capsule focus', f'{arm}: sharpest median miss, |tan| 0.2–0.3', mb, ma, 'mm', 'worse',
+        add('Capsule focus', f'{arm}: sharpest median miss, |tan| 0.2–0.3', mb, ma, 'mm', vd(mb, ma, False),
             'the ~40 % more tracks pass 1 keeps point at the capsule less often', fmt='{:.1f}')
     T = pd.DataFrame(D['capsule_tof'])
     for arm in 'AC':
@@ -230,12 +318,16 @@ def verdicts(D):
     for cls, why in (('A–D, C–D', 'the opposing-arm pairs that localise x'), ('A–A, C–C', 'same-chamber pairs'),
                      ('all', 'every class pooled')):
         add('3D pair vertex', f'{cls}: peak distance from the capsule', M['before'][cls]['peak_dist_from_capsule'],
-            M['after'][cls]['peak_dist_from_capsule'], 'mm', 'better', why, fmt='{:.1f}')
+            M['after'][cls]['peak_dist_from_capsule'], 'mm',
+            vd(M['before'][cls]['peak_dist_from_capsule'], M['after'][cls]['peak_dist_from_capsule'], False), why,
+            fmt='{:.1f}')
         add('3D pair vertex', f'{cls}: excess significance in the peak box', M['before'][cls]['box_sigma'],
-            M['after'][cls]['box_sigma'], 'σ', 'better', why, fmt='{:.1f}')
+            M['after'][cls]['box_sigma'], 'σ', vd(M['before'][cls]['box_sigma'], M['after'][cls]['box_sigma'], True),
+            why, fmt='{:.1f}')
     add('3D pair vertex', 'D–D: peak distance from the capsule', M['before']['D–D']['peak_dist_from_capsule'],
-        M['after']['D–D']['peak_dist_from_capsule'], 'mm', 'worse', 'D–D pairs alone; z is now imaged through A–D/C–D',
-        fmt='{:.1f}')
+        M['after']['D–D']['peak_dist_from_capsule'], 'mm',
+        vd(M['before']['D–D']['peak_dist_from_capsule'], M['after']['D–D']['peak_dist_from_capsule'], False),
+        'D–D pairs alone; z is now imaged through A–D/C–D', fmt='{:.1f}')
     R = pd.DataFrame(D['resolution'])
     for arm, ax in (('A', 'x'), ('C', 'x'), ('A', 'y'), ('C', 'y')):
         g = R[(R.arm == arm) & (R.axis == ax)]
@@ -253,24 +345,30 @@ def verdicts(D):
     for x in D['lambda']:
         add('Scintillator wall', f'{x["arm"]}: slope factor λ the wall edges prefer', x['before'], x['after'], '',
             'better', 'the same 0.85 on A, C and D; the spread was calibration', fmt='{:.2f}')
-    add('Same-chamber pairs', 'A: same-chamber pairs (≥ 12 ms)', 3452, 9558, '', 'better',
+    add('Same-chamber pairs', 'A: same-chamber pairs (≥ 12 ms)', 3452, AV['pairs_A'], '', 'better',
         'two-track reconstruction on; close pairs come back', fmt='{:,.0f}')
-    add('Same-chamber pairs', 'C: same-chamber pairs (≥ 12 ms)', 2722, 6114, '', 'better', '', fmt='{:,.0f}')
+    add('Same-chamber pairs', 'C: same-chamber pairs (≥ 12 ms)', 2722, AV['pairs_C'], '', 'better', '', fmt='{:,.0f}')
     add('Same-chamber pairs', 'A: Geant4 P(2 tracks | 2 leptons) / P(≥1 | 1)', 0.163 / 0.537,
         0.476 / 0.875, '', 'better', 'the reconstruction loses fewer pairs', fmt='{:.2f}')
-    add('Same-chamber pairs', 'A: data / Geant4, correlated pair fraction', 0.129, 0.103, '', 'worse',
-        'the deficit grows (G4 now predicts more found pairs); it is in the source model, not the reco', fmt='{:.3f}')
-    add('Same-chamber pairs', 'C: data / Geant4, correlated pair fraction', 0.124, 0.103, '', 'worse', '',
-        fmt='{:.3f}')
-    add('Same-chamber pairs', 'A: rate-fit χ²/ndf (pair fraction vs rate)', 6.4, 66.9, '', 'worse',
-        'the a + b·rate model fails on pass 1', fmt='{:.1f}')
-    add('Capsule pose', 'best x fit χ² (beam on capsule, 10 mm off frame)', 12.1, 25.4, '', 'worse',
-        'more tracks, smaller errors; the toy fits less well; pose ambiguity unresolved', fmt='{:.1f}')
-    add('Capsule pose', 'best z fit χ²_z (centred beam)', 1.0, 19.0, '', 'worse', '', fmt='{:.1f}')
-    add('Coincidences', 'two-arm tight coincident pairs (campaign)', 1452, 4775, '', 'better', '', fmt='{:,.0f}')
-    add('Calorimetry', 'A–C through-goer pairs', 20583, 41289, '', 'better', 'B–D pairs lost (B has no angle)',
+    add('Same-chamber pairs', 'A: data / Geant4, correlated pair fraction', 0.129, AV['dg4_A'], '',
+        vd(0.129, AV['dg4_A'], True),
+        'the rate fit now starts at 25 ms: the 12–20 ms population is not proportional to the rate', fmt='{:.3f}')
+    add('Same-chamber pairs', 'C: data / Geant4, correlated pair fraction', 0.124, AV['dg4_C'], '',
+        vd(0.124, AV['dg4_C'], True), '', fmt='{:.3f}')
+    add('Same-chamber pairs', 'A: rate-fit χ²/ndf (pair fraction vs rate)', 6.4, AV['rate_chi2_A'], '',
+        vd(6.4, AV['rate_chi2_A'], False), 'fitted from 25 ms (was 12 ms; χ²/ndf 67 there)', fmt='{:.1f}')
+    add('Capsule pose', 'best x fit χ² (beam on capsule, 10 mm off frame)', 12.1, AV['pose_x'], '',
+        vd(12.1, AV['pose_x'], False),
+        f"shape part {AV['pose_x_shape']:.1f}; crossings part {AV['pose_x_cross']:.1f}: the toy puts A's x crossing "
+        "2.3–2.7 mm right of C's for every pose, the data 0.1 mm", fmt='{:.1f}')
+    add('Capsule pose', 'best z fit χ²_z (centred beam)', 1.0, AV['pose_z'], '', vd(1.0, AV['pose_z'], False), '',
+        fmt='{:.1f}')
+    add('Coincidences', 'two-arm tight coincident pairs (campaign)', 1452, AV['tight'], '', 'better', '',
         fmt='{:,.0f}')
-    add('Calorimetry', 'A: corr(track tan x, joined-line slope)', 0.30, 0.59, '', 'better', '', fmt='{:.2f}')
+    add('Calorimetry', 'A–C through-goer pairs', 20583, AV['calo_pairs'], '', 'better',
+        'B–D pairs lost (B has no angle)', fmt='{:,.0f}')
+    add('Calorimetry', 'A: corr(track tan x, joined-line slope)', 0.30, AV['calo_corr_A'], '', 'better', '',
+        fmt='{:.2f}')
     return v
 
 
@@ -280,6 +378,8 @@ def build(out):
              tracks3d=tracks3d(), same_chamber=same_chamber(), resolution=resolution(), wall=wall(),
              pair_response=pair_response())
     D['lambda'] = scint_lambda()
+    D['after_values'] = after_values()
+    D['views'] = views()
     D['verdicts'] = verdicts(D)
     html = (HERE / 'template.html').read_text()
     html = html.replace('/*__DATA__*/null', json.dumps(D, separators=(',', ':'), ensure_ascii=False))

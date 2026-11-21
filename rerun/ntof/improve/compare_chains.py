@@ -72,6 +72,8 @@ def metrics(root: Path, flabel: str) -> list:
 
     def pose():
         D = pd.read_csv(root / 'capsule_pose/data.csv')
+        L = D[D.window == 'late'].set_index('arm').x_cross
+        add('capsule pose data', 'A - C late x crossing [mm] (every pose: +2.3..2.7)', L['A'] - L['C'], '')
         for _, r in D[D.window == 'late'].iterrows():
             add('capsule pose data', f'{r.arm} late x crossing [mm]', r.x_cross, '')
             add('capsule pose data', f'{r.arm} late y crossing [mm]', r.y_cross, '')
@@ -79,7 +81,14 @@ def metrics(root: Path, flabel: str) -> list:
         for fam in ('xb0_xc-16_-18_-20', 'xb-5_xc-10_-15', 'xb-10_xc-10_-15'):
             f = root / f'capsule_pose/pose2_{fam}.csv'
             if f.exists():
-                add('capsule pose fit', f'best x-view chi2 (10 dof), {fam}', pd.read_csv(f).chi2.min(), 'down')
+                P = pd.read_csv(f)
+                b = P.loc[P.chi2.idxmin()]
+                add('capsule pose fit', f'best x-view chi2 (10 dof), {fam}', b.chi2, 'down')
+                # the two parts: the crossings term cannot move the model's A-C crossing difference (+2.3..2.7 mm
+                # for every pose), so it measures that gap; the shape term is what the pose fit learns from
+                add('capsule pose fit', f'  of which crossings (A, C x vs data), {fam}', b.chi2_x, 'down')
+                add('capsule pose fit', f'  of which shape (x vs height), {fam}', b.chi2_shape, 'down')
+                add('capsule pose fit', f'best shape chi2 over all poses, {fam}', P.chi2_shape.min(), 'down')
             f = root / f'capsule_pose/pose2z_{fam}.csv'
             if f.exists():
                 add('capsule pose fit', f'best z-view chi2 (5 dof), {fam}', pd.read_csv(f).chi2_z.min(), 'down')

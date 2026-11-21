@@ -61,8 +61,8 @@ details{margin:8px 0} summary{cursor:pointer;color:var(--text-2)}
 <body>
 <main>
 <h1>n_TOF pass 1: before and after</h1>
-<p class="sub">Every downstream n_TOF metric on the pass-1 reconstruction, next to the chain it replaced. <b style="color:var(--before)">Before</b> is the chain the study last ran on (named in each section); <b style="color:var(--after)">after</b> is pass 1 with the v(t) angles (true |tan| &lt; 0.5, no k). Generated from the stored tables by <code>rerun/ntof/compare_page/make_page.py</code>; the numbers and caveats are in <code>rerun/ntof/PASS1_DOWNSTREAM.md</code>. 20 November 2026.</p>
-<div class="key"><span><span class="sw" style="background:var(--before)"></span>before</span><span><span class="sw" style="background:var(--after)"></span>after (pass 1)</span></div>
+<p class="sub">Every downstream n_TOF metric on the pass-1 reconstruction, next to the chain it replaced. <b style="color:var(--before)">Before</b> is the chain the study last ran on (named in each section); <b style="color:var(--after)">after</b> is the pass-1 analysis view. It uses the v(t) angles (true |tan| &lt; 0.5, no k), corrected by the angle map, and it drops the tracks whose fit window lies on dead or hot strips. Section 7 shows what the map and that cut each changed. Generated from the stored tables by <code>rerun/ntof/compare_page/make_page.py</code>. The numbers and caveats are in <code>rerun/ntof/PASS1_DOWNSTREAM.md</code> and <code>rerun/ntof/improve/README.md</code>. Updated 21 November 2026 (first version 20 November, without the map and the cut).</p>
+<div class="key"><span><span class="sw" style="background:var(--before)"></span>before</span><span><span class="sw" style="background:var(--after)"></span>after (pass 1, map + cut)</span></div>
 <div class="score" id="score"></div>
 
 <h2 id="table">Every metric: better or worse, and by how much</h2>
@@ -74,7 +74,7 @@ details{margin:8px 0} summary{cursor:pointer;color:var(--text-2)}
 <p>Each gated A/C track's x-view line is extended to the beam axis with its tan multiplied by a trial scale <i>s</i>; the median distance by which the lines miss the axis is plotted against <i>s</i>. If the angles are right, the curve is sharpest at <i>s</i> = 1. Before = the is2_v2 re-pass (in-situ bundles, two-track off, cut 0.6). The nominal axis is used here, so the minimum also carries the source's 9 mm offset; the population split below is what separates scale from geometry.</p>
 <div class="grid4" id="focusCurves"></div>
 <h3>The focus scale split by population (|tan x| 0.1–0.5)</h3>
-<p class="small">A scale error common to A and C cannot be geometry (distance errors and axis offsets are antisymmetric between the two). Before: both chambers wanted ~+10 %. After: the common part is gone and an antisymmetric A − C difference is left.</p>
+<p class="small">A scale error common to A and C cannot be geometry (distance errors and axis offsets are antisymmetric between the two). Before, both chambers wanted about +10 %. After, the common part is about −2 %, and the A − C difference is under 1 %. Without the angle map, pass 1 had an A − C difference of 4.6 %. The map is fitted to the A–C cosmic lines, and it removes most of that difference.</p>
 <div class="grid2"><div class="card"><h4>sharpest scale s by population, A</h4><div id="splitA"></div></div><div class="card"><h4>sharpest scale s by population, C</h4><div id="splitC"></div></div></div>
 
 <h2 id="tof">2. Where the tracks come from in time, and how many point at the capsule</h2>
@@ -108,10 +108,10 @@ details{margin:8px 0} summary{cursor:pointer;color:var(--text-2)}
 <div class="grid2"><div class="card"><h4>A</h4><div id="openA"></div></div><div class="card"><h4>C</h4><div id="openC"></div></div></div>
 <h3>What Geant4 through each reconstruction says</h3>
 <table id="resptab"></table>
-<p class="note">The data's close-pair excess (real − mixed under 40 mm: 0.047 % of tracked events on A, 0.028 % on C) matches the rate at which pass 1 splits a single Geant4 lepton into two close tracks (0.053 % / 0.042 %): it is expected splitting, not physics. The correlated pair fraction is ~10× below Geant4 on both chambers (before: ~8×); with the pass-1 response the reconstruction is not what loses them.</p>
+<p class="note" id="pairNote"></p>
 
 <h2 id="res">5. Single-track angle resolution against the A–C cosmic line</h2>
-<p>run_149 beam-off cosmics with one track in A and one in C; the line joining their mesh crossings (469 mm lever arm) is the truth. σ = 1.4826 × MAD of (track tan − line tan), tail = |residual| &gt; 0.15. Before = the is2-era table (<code>ntof_cosmics/results/tracking/pooled/resolution.csv</code>, ~2,000 lines); after = pass 1 (11,974 lines).</p>
+<p>run_149 beam-off cosmics with one track in A and one in C; the line joining their mesh crossings (469 mm lever arm) is the truth. σ = 1.4826 × MAD of (track tan − line tan), tail = |residual| &gt; 0.15. Before = the is2-era table (<code>ntof_cosmics/results/tracking/pooled/resolution.csv</code>, ~2,000 lines); after = pass 1 (about 12,100 lines). Run_149 is one of the runs the angle map was fitted on, so the after curves flatter the map somewhat. On held-out cosmic runs the map improves the resolution by 11–19 %.</p>
 <div class="grid4" id="resPlots"></div>
 
 <h2 id="wall">6. Scintillator wall, chamber B, coincidences</h2>
@@ -119,13 +119,20 @@ details{margin:8px 0} summary{cursor:pointer;color:var(--text-2)}
 <div class="grid2" style="margin-top:14px"><div class="card"><h4>slope factor λ the wall edges prefer (1 = the chamber's slope as measured)</h4><div id="lam"></div></div><div class="card"><h4>counts</h4><table id="counts"></table></div></div>
 <p class="small">Before = the September production pass for the wall/B/coincidence studies and the is2-era k-calibrated scint stack. λ ≈ 0.85 on all three chambers is the beam-electron scattering between the gap and the wall (Geant4), not an angle error; the old chamber-to-chamber spread was calibration.</p>
 
+<h2 id="views">7. What the angle map and the dead/hot-strip cut changed</h2>
+<p>Pass 1 was first analysed without two corrections, and this section compares the three versions. The <b>angle map</b> corrects each track's angle as a function of its position and angle. For A and C it is fitted to the A–C cosmic lines, and for D to the B–D lines. The <b>dead/hot-strip cut</b> drops a track when its x fit window lies entirely on dead or hot strips, or when half or more of its y window does. Such a window carries no real charge, but the candidate still won the ranking. These fake tracks were 21 % of D's gated beam tracks and 69 % of its beam-off ones. The cut removes 40 % of D's gated tracks campaign-wide, 8 % of A's (mostly early tracks on A's dead y edge), and 1–2 % of B's and C's.</p>
+<table id="viewtab"></table>
+<p class="small">Run_149 was in the map's training data, so the resolution rows flatter the map. The full table, 106 rows, is <code>ana/track_quality/chains.csv</code>, written by <code>rerun/ntof/improve/compare_chains.py</code>.</p>
+<h3>Why the pose fit's x χ² rises while the data become more consistent</h3>
+<p>The x-view χ² of the pose fit has two parts. The shape part compares the x crossing as a function of height with the toy, and this is what the fit learns the pose from. The shape part improves with the map (its best value over all poses goes from 19.5 to 17.9). The crossings part compares A's and C's x crossings with the toy, with 1 mm per chamber. In the toy, A's x crossing lies 2.3–2.7 mm to the right of C's for every one of the 287 poses tried, so no pose can change that difference. In the data, the difference was 0.67 mm without the map and is 0.11 mm with it. Therefore the crossings part rises, and the total rises with it. With the map, A's late and mid windows also agree on the x crossing (−10.87 and −10.96 mm, where they differed by 0.8 mm before). So the data are more consistent, and the 2.3–2.7 mm gap is between the data and the toy. We have not found which side of the comparison carries it: the relative x alignment of A and C, or the toy's geometry.</p>
+
 <h2 id="worse">What is worse, or not settled</h2>
 <ul>
-<li><b>The capsule focus is less sharp</b> (median miss up 1–4 mm at fixed |tan|): pass 1 keeps ~40 % more tracks and the added ones point at the capsule less often. The early (&lt; 10 ms) window gains 2.5–5× tracks with almost no capsule content.</li>
-<li><b>An antisymmetric A − C focus difference of 4.6 %</b> is now the largest scale effect: a distance or axis effect between the two chambers, not an angle-scale one.</li>
-<li><b>The same-chamber correlated fraction is 10× below Geant4</b> (was 8×), and the pair-fraction-vs-rate fit is poor (χ²/ndf 67 on A). The open item is the Geant4 capsule / source model.</li>
-<li><b>The capsule pose fits got worse</b> (best x χ² 12 → 25 over 10 dof, z 1 → 19 over 5): with more tracks and smaller errors the toy no longer fits well, and x and z still prefer different poses.</li>
-<li><b>B has no angle on pass 1</b>, so the B–D through-goer and B pointing studies lose B; D's z crossing moved by 2 mm with its new latency pin.</li>
+<li><b>The capsule focus is less sharp than before</b> (median miss up 2–3 mm at fixed |tan|). Pass 1 keeps about 30 % more late tracks, and the added ones point at the capsule less often. The early (&lt; 12 ms) window gains many tracks with almost no capsule content, so the &lt; 12 ms veto stays.</li>
+<li><b>The correlated same-chamber pair fraction is still 6–7× below Geant4</b> (data/Geant4 0.17 on A, 0.14 on C). The rate fit is fine from 25 ms (χ²/ndf 0.8 on A). The open item is the Geant4 capsule and source model, not the reconstruction.</li>
+<li><b>The capsule pose fits are still worse than before</b> (best x χ² 12 → 27 over 10 dof, z 1 → 9 over 5). Part of the x χ² is the A − C crossing gap explained in section 7. The x and z views still prefer different poses.</li>
+<li><b>The z band excess seen through D halves with the cut</b> (A–D 0.040 → 0.021). The data's band fraction hardly moves. Instead, the null's band fraction rises, so the earlier D z excess appears to have been inflated by D's fake tracks.</li>
+<li><b>B has no angle on pass 1</b>, so the B–D through-goer and B pointing studies lose B.</li>
 </ul>
 <div class="tip" id="tip"></div>
 </main>
@@ -307,13 +314,22 @@ function heat(host, M, ex, ey, cap, o={}){
     chart(d.children[1],ser('sigma'),{w:320,h:200,logy:true,xlab:'|tan| of the A–C line',ylab:'σ(tan)',yr:[0.01,0.5]});
     chart(d.children[3],ser('tail_frac'),{w:320,h:170,xlab:'|tan| of the A–C line',ylab:'tail fraction',zero:true})});
 })();
+// ---------------------------------------------------------------- 4. pair note, 7. views
+(function(){
+  const S=D.same_chamber,R=D.pair_response.filter(x=>x.lib==='nose'),sp=a=>(100*R.find(x=>x.arm===a).split).toFixed(3);
+  const g=D.after_values,k=a=>(1/g['dg4_'+a]).toFixed(0);
+  document.getElementById('pairNote').innerHTML=`The data's close-pair excess is the number of real pairs under 40 mm minus the event-mixed expectation. It is ${S.close_A.toFixed(3)} % of tracked events on A and ${S.close_C.toFixed(3)} % on C. This matches the rate at which pass 1 splits a single Geant4 lepton into two close tracks (${sp('A')} % on A, ${sp('C')} % on C), so it is expected splitting, not physics. The correlated pair fraction is about ${k('A')}× below Geant4 on A and ${k('C')}× on C (before: about 8×). With the pass-1 response, the reconstruction is not what loses these pairs.`;
+  const V=D.views,f=x=>x===null?'—':Math.abs(x)>=100?fmt(x,4):(+x).toPrecision(3);
+  document.getElementById('viewtab').innerHTML='<tr><th>area</th><th>metric</th><th class="num">no map</th><th class="num">map</th><th class="num">map + cut</th><th>better</th></tr>'+V.map(v=>`<tr><td>${v.group}</td><td>${v.metric}</td><td class="num">${f(v.nomap)}</td><td class="num">${f(v.map)}</td><td class="num"><b>${f(v.mapcens)}</b></td><td class="small">${v.better==='up'?'higher':v.better==='down'?'lower':v.better==='1'?'closer to 1':v.better==='0'?'closer to 0':''}</td></tr>`).join('');
+})();
 // ---------------------------------------------------------------- 6. wall etc.
 (function(){
   const W=D.wall,arms=['A','B','C','D'],g=(lab,k)=>arms.map(a=>{const x=W.find(y=>y.chain===lab&&y.arm===a);return x?x[k]:null});
   bars(document.getElementById('wallU'),arms,[{name:'before',color:'--before',vals:g('before','u_match')},{name:'after',color:'--after',vals:g('after','u_match')},{name:'chance (shuffled)',color:'--muted',vals:g('after','u_match_shuffled')}],{xr:[0,1],xlab:'fraction of tracks pointing at the fired segment',left:40});
   bars(document.getElementById('wallV'),arms,[{name:'before',color:'--before',vals:g('before','v_corr')},{name:'after',color:'--after',vals:g('after','v_corr')}],{xr:[0,0.7],xlab:'correlation',left:40});
   const L=D.lambda;bars(document.getElementById('lam'),L.map(x=>x.arm),[{name:'before',color:'--before',vals:L.map(x=>x.before)},{name:'after',color:'--after',vals:L.map(x=>x.after)}],{xr:[0,1.1],vlines:[1],xlab:'λ',left:40});
-  const C=[['two-arm tight coincident pairs (campaign)',1452,4775],['  … back-to-back (> 170°, through-goers)',378,2258],['  … not back-to-back',1074,2517],['A–C through-goer pairs (calorimetry)',20583,41289],['A: corr(track tan x, line slope)',0.30,0.59],['C: corr(track tan x, line slope)',0.21,0.54],['wall-matched tracks, run_145',14412,28938]];
+  const AV=D.after_values,sw=lab=>W.filter(y=>y.chain===lab).reduce((s,y)=>s+y.n,0);
+  const C=[['two-arm tight coincident pairs (campaign)',1452,AV.tight],['  … back-to-back (> 170°, through-goers)',378,AV.tight_b2b],['  … not back-to-back',1074,AV.tight_nb2b],['A–C through-goer pairs (calorimetry)',20583,AV.calo_pairs],['A: corr(track tan x, line slope)',0.30,AV.calo_corr_A],['C: corr(track tan x, line slope)',0.21,AV.calo_corr_C],['wall-matched tracks, run_145 (A+B+C+D)',sw('before'),sw('after')]];
   document.getElementById('counts').innerHTML='<tr><th></th><th class="num">before</th><th class="num">after</th></tr>'+C.map(c=>`<tr><td>${c[0]}</td><td class="num">${fmt(c[1],4)}</td><td class="num"><b>${fmt(c[2],4)}</b></td></tr>`).join('');
 })();
 </script>
