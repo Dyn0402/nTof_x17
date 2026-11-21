@@ -13,7 +13,7 @@ but a track: a segment that gives the direction when the source is extended, and
 from the target, which is what keeps coincidences of anything else out of the pair sample. Two requirements follow:
 an angle to about a degree and a high and even track efficiency. General: nothing here depends on the target or on the foils of this chamber.}
 
-An X17 search comes down to a measurement of angles. The two leptons share the energy $E$ of the transition. With
+The tracker's role in an X17 search is to measure the opening angle of the pair. The two leptons share the energy $E$ of the transition. With
 $y=(E_+-E_-)/E$, and neglecting the electron mass for simplicity, the invariant mass of the pair is
 \begin{equation}
   m^2=E^2\,(1-y^2)\,\sin^2(\theta/2)\,,\label{eq:mass}
@@ -21,47 +21,47 @@ $y=(E_+-E_-)/E$, and neglecting the electron mass for simplicity, the invariant 
 with $\theta$ the opening angle (inset of \crefp{fig:pointing}{a}). The transition under study constrains $E$ and the calorimetry behind the trackers measures $y$. The
 tracker, then, contributes $\theta$. An X17 of 16.8\,MeV appears as an edge in $\theta$, at 109\textdegree{} for the
 20.6\,MeV transition of $^4$He and at 136\textdegree{} for the 18.15\,MeV transition of $^8$Be, on an IPC background
-that falls smoothly with $\theta$. There, one degree of opening angle is 0.10\,MeV and 0.06\,MeV of mass, respectively. The emission-angle resolution therefore dictates the resolution of this edge and how much of the background lies under it.
+that falls smoothly with $\theta$. At these edges, a change of one degree in the opening angle corresponds to 0.10\,MeV and 0.06\,MeV of invariant mass, respectively. The resolution on the opening angle therefore determines how sharp this edge appears and how much of the background lies under it.
 
 \begin{figure}[tbp]
   \centering
   \figorbox{pointing}{to-scale side view with the pair kinematics inset, and direction error against lepton energy for one hit and for a segment}
   \caption{Reconstructing lepton trajectories. (a) One chamber and an extended target to scale, with one lepton trajectory (black; its
   deflection in the air is drawn about five times too large for an 8\,MeV electron). The chamber measures a segment
-  about 30\,mm long, about 230\,mm from the target (an idealized geometry). One degree on its direction is 0.5\,mm
-  across the drift gap and 4\,mm at the target: the measured angle, extrapolated back (blue, dashed), misses the
-  origin by $b$; the dotted line continues the initial direction, the one that defines the true opening angle. Inset (top left): diagram of the opening angle $\theta$ and the energies $E_+$ and
+  about 30\,mm long, about 230\,mm from the target (an idealized geometry). An error of one degree on its direction corresponds to 0.5\,mm
+  across the drift gap and 4\,mm at the target. The measured angle, extrapolated back (blue, dashed), misses the
+  origin by $b$. The dotted line continues the initial direction, the one that defines the true opening angle. Inset (top left): diagram of the opening angle $\theta$ and the energies $E_+$ and
   $E_-$ of the two leptons. (b) Error on the initial
-  direction of one lepton, in one projection, against its kinetic energy, with 20\,cm of air as the only traversed material.
+  direction of one lepton, in one projection, as a function of its kinetic energy, with 20\,cm of air as the only traversed material.
   Orange: the line from the assumed origin to one point measured with 1\,mm position uncertainty at 230\,mm, for a point source (solid) and for an extended source of
-  10\,mm rms (dashed). Blue: the angle of the segment measured by a chamber of 1\textdegree{} (dashed line). Gray: the
+  10\,mm rms (dashed). Blue: the angle of the segment measured by a chamber with an angular resolution of 1\textdegree{} (dashed line). Gray: the
   same for a perfect chamber, which is the scattering in the air. Lines are analytic and points a toy simulation that
   scatters the leptons through the air.}
   \label{fig:pointing}
 \end{figure}
 
 If the pairs came from a point source, one measured point per lepton at the trackers would be enough. The trajectory of the lepton could then be reconstructed as the line from the source to that point, and at $d=230$\,mm a position error of 1\,mm yields an angular error of only 0.25\textdegree. Scattering along the way limits the validity of this straight-line reconstruction, producing a difference between the opening angle inferred from two reconstructed lines and the true opening angle. In 20\,cm of air alone an 8\,MeV electron scatters by 1.7\textdegree{} rms in each projection
-(gray in \crefp{fig:pointing}{b}). The line from the source is off by less than that, because a deflection moves the measured point only by the distance still to travel, so the deflections late in the path count for little. With the source known exactly and the hit position to 1\,mm, the line is off by 1.1\textdegree{} (solid orange). For a symmetric pair at the $^4$He edge, two leptons of 9.8\,MeV, the opening angle would
-be known to 1.3\textdegree, or 0.13\,MeV of mass, from two planes of millimeter resolution.
+(gray in \crefp{fig:pointing}{b}). The line from the source is off by less than that, because a deflection moves the measured point only by the distance still to travel, so the deflections late in the path have little effect on the line. With the source known exactly and the hit position to 1\,mm, the line is off by 1.1\textdegree{} (solid orange). For a symmetric pair at the $^4$He edge, two leptons of 9.8\,MeV, the uncertainty on the opening angle would
+be 1.3\textdegree, or 0.13\,MeV of mass, from two planes of millimeter resolution.
 
-Sources are not points. A beam spot on a thin target is some millimeters across, and a gas target in a neutron beam can be wider. Each millimeter by which the origin is uncertain adds 0.25\textdegree{} to the line, so a source of 5\,mm
-rms brings the uncertainty on the opening angle of the same symmetric pair to 2.2\textdegree{} and one of 10\,mm to 3.8\textdegree. In this extended-source scenario, a measurement of the angle at the detector can add value. A chamber sees a straight segment about
-30\,mm long (\crefp{fig:pointing}{a}), and with segments measured to $\sigma_{\theta}=1$\textdegree{} the uncertainty on the opening angle of the same symmetric pair is 2.4\textdegree{}, whatever the size of the source. The measured angle overtakes a straight line from the source when the source is larger than about 7\,mm rms at 8\,MeV (5\,mm at 16\,MeV, 11\,mm at 4\,MeV). Near that size the two are comparable and are best used together.
+Real sources, however, are extended. A beam spot on a thin target is some millimeters across, and a gas target in a neutron beam can be wider. Each millimeter of uncertainty on the origin contributes 0.25\textdegree{} to the error on the line, added in quadrature. A source of 5\,mm
+rms therefore brings the uncertainty on the opening angle of the same symmetric pair to 2.2\textdegree{} and one of 10\,mm to 3.8\textdegree. In this extended-source scenario, a measurement of the angle at the detector can add value. A chamber sees a straight segment about
+30\,mm long (\crefp{fig:pointing}{a}), and with segments measured to $\sigma_{\theta}=1$\textdegree{} the uncertainty on the opening angle of the same symmetric pair is 2.4\textdegree{}, whatever the size of the source. The measured angle is more precise than the line from the source when the source is larger than about 7\,mm rms at 8\,MeV (5\,mm at 16\,MeV, 11\,mm at 4\,MeV). Near that size the two are comparable and are best used together.
 
 The angle therefore helps as the source grows, but what makes
-a tracker indispensable is distinguishing a track from a hit. Coincident $e^+e^-$ pairs are rare, and beam environments are often awash with photons and possibly neutrons. A detector measuring only single points would be susceptible to combinatorial background from coincident hits. A track says more. A straight trail of ionization across the whole drift gap is a clear indication of a charged particle that crossed the chamber. Its direction, extrapolated back, says whether it
-came from the target, and two tracks say whether they came from the same point. With the position of the segment known to $\sigma_x$ and its angle to $\sigma_\theta$, the extrapolated track misses its origin by
+a tracker indispensable is distinguishing a track from a hit. Coincident $e^+e^-$ pairs are rare, and beam environments are often awash with photons and possibly neutrons. A detector measuring only single points would be susceptible to combinatorial background from coincident hits. A track carries more information than a hit. A straight trail of ionization across the whole drift gap is a clear indication of a charged particle that crossed the chamber. Its direction, extrapolated back, indicates whether it
+came from the target, and two tracks indicate whether they came from the same point. With the position of the segment known to $\sigma_x$ and its angle to $\sigma_\theta$, the extrapolated track misses its origin by
 \begin{equation}
   \sigma_b=\sqrt{\sigma_x^2+(d\,\sigma_\theta)^2}\,.\label{eq:pointing}
 \end{equation}
-An angle error of 1\textdegree{} translates to 4.0\,mm of uncertainty at the target, significant with respect to the size of a source. A realistic position uncertainty is small beside the angular term: 0.5\,mm is 1.5\,\% of the variance, because the lever arm is eight times the length of the segment. The time resolution of the track serves only to keep non-coincident tracks from being paired, and is typically superseded by the time measured by a matched hit in the triggering scintillators behind.
+An angle error of 1\textdegree{} translates to 4.0\,mm of uncertainty at the target, significant with respect to the size of a source. A realistic position uncertainty is small relative to the angular term. A position uncertainty of 0.5\,mm contributes 1.5\,\% of the variance, because the lever arm is eight times the length of the segment. The time resolution of the track serves only to keep non-coincident tracks from being paired, and is typically superseded by the time measured by a matched hit in the triggering scintillators behind the chamber.
 
-This makes the track itself, more than any one of its parameters, what the chamber is judged on, and it sets two requirements: angular resolution of about one degree and high efficiency. Scattering before the measurement sets the scale of the first: the
+This makes the track itself, more than any one of its parameters, what the chamber is judged on, and it sets two requirements: angular resolution of about one degree and high efficiency. Scattering before the measurement sets the scale of the first requirement. The
 air between the target and the chamber deflects an electron by 3.2\textdegree{} rms in each projection
 at 4\,MeV, by 1.7\textdegree{} at 8\,MeV and by 0.9\textdegree{} at 16\,MeV, before any target wall, window or foil is
-counted (those of the present chambers are in \cref{sec:material}). A chamber much better than 1\textdegree{} would
-gain little and a worse one would cost: the 2.4\textdegree{} above is 2.0\textdegree{} with perfect chambers and
-3.5\textdegree{} with chambers of 2\textdegree. Then, the efficiency must be as high as possible. Both leptons must be detected, so the efficiency for a pair is the square of that for a single track. This efficiency must also be uniform over the active area and over all track angles; otherwise the opening-angle distribution can be distorted. Both requirements call for as little
+counted (those of the present chambers are in \cref{sec:material}). A chamber with a resolution much better than 1\textdegree{} would
+gain little, and a chamber with a worse resolution would lose precision. The 2.4\textdegree{} above becomes 2.0\textdegree{} with perfect chambers and
+3.5\textdegree{} with chambers of 2\textdegree{} resolution. Second, the efficiency must be as high as possible. Both leptons must be detected, so the efficiency for a pair is the square of that for a single track. This efficiency must also be uniform over the active area and over all track angles; otherwise the opening-angle distribution can be distorted. Both requirements call for as little
 material as possible in front of the drift volume.
 
 \Cref{sec:tracking} discusses the angular resolution of the chambers and \cref{sec:efficiency} their efficiency,
