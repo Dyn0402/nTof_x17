@@ -705,6 +705,40 @@ redeployed (dylan-cern-site 91d4386). Inputs on the desktop: $WORK_DATA/claude-j
 - Deck: `WORK_DATA=~/work_data .venv/bin/python papers/paper1/make_figures_deck.py --out <html>` then
   `dylan-cern-site/scripts/add-note.py <html> --slug mx17-paper1-figures --force --deploy`.
 
+## n_TOF tracking audit: findings written, fixes are Dylan's call — updated 2026-11-21 (dylan-MS-7C84)
+
+**Resume:** audit done, nothing in the chain changed; next: Dylan decides which of the fixes below to make (slim files first).
+
+**Goal:** Dylan asked for an audit of the n_TOF tracking and of the capsule-imaging oddities before finalizing.
+
+**Done:** `rerun/ntof/improve/README.md` findings 11-22; report `rerun/ntof/improve/audit_report/report.html`
+(`tracking_audit.py`, `make_audit_report.py --copy`; live copy, cache and the one-off review scripts in
+`$WORK_DATA/ntof_pass1/ana/tracking_audit/`). Three independent code reviews (stage-3 tables, imaging estimators,
+reconstruction and gate) plus data checks on the analysis view and on Geant4 through pass 1.
+
+**What it found, in order of impact:**
+1. Sub-runs with two slim files are read from the first only: 14.7 % of production tracks have no time since flash and
+   no scintillator flags (77 of 293 sub-runs). "Time is null" is therefore not "beam-off".
+2. Before ~12 ms most gated A/C tracks are fits to the ringing baseline (charge < 600 ADC); they make 44 % of A's
+   same-chamber pairs at 12-15 ms. A charge minimum removes them at < 1.5 % cost.
+3. D: 31 % of late tracks do not point (hot-strip windows); clean D gives z = -4.1; quote -4.5 +- 1 and drop the -1.7.
+4. The image width is electron scattering (Geant4 truth is wider than the data); the x offset is not a tracking effect.
+5. Bugs: scint-stack y slope sign (`extract.py` x `tan_raw_y`), bow re-map of pair partners in `wft/reco.py`,
+   `FOOT_SIM['C']` 16.4 vs 17.3, `campaign_imaging` not on the view, focus split about the nominal axis.
+
+**Next steps (none started):**
+1. Read all slim files (`trigger_time.slim_path`, `scintillators.read_slim`, `candidate_filter`, `freeze_sample`);
+   regenerate slim export, trigtime and stage 1 for the 77 sub-runs (`audit_report/slim_files.csv`); re-attach the
+   context columns in stage 3 and rebuild the views. This changes the EOS stage 3, so it needs Dylan's go-ahead.
+2. Add `low_charge` (min view charge < 600 ADC) to the view as `censored_window` was; choose a D rule; rerun
+   `same_chamber_compare` with `FIT_MS` 12.
+3. Fix the scint-stack sign and rerun `ntof_scint_stack ana`; check the other readers of `tan_raw_y`.
+4. `line_residuals` / `bd_map`: select beam-off by registry class.
+
+**Gotchas:** the clean selection is too strict for D (keeps 74 % of reference tracks). The efficiency for real tracks
+before 12 ms was not measured. Geant4 capsule tracks point worse than the data (softer spectrum or missing trigger
+emulation): a source-model question.
+
 ## n_TOF pass 1 downstream (P7): the analysis moved onto pass 1 — updated 2026-11-20 (dylan-MS-7C84)
 
 **Resume:** P7 migrated; open: same-chamber G4 source model (data/G4 0.10), pose ambiguity, Dylan's deploy/delete calls.

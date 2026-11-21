@@ -1,0 +1,216 @@
+<!doctype html><html><head><meta charset="utf-8"><title>n_TOF pass 1: tracking audit</title>
+<style>body{font-family:system-ui,sans-serif;max-width:1000px;margin:2em auto;padding:0 16px;color:#1b2430;line-height:1.5}
+table{border-collapse:collapse;margin:0.6em 0 1.2em;font-size:0.85em}td,th{border:1px solid #c9ced6;padding:3px 7px;text-align:right}
+th{background:#f1f3f6}img{max-width:100%}.verdict{background:#f6f0f7;border-left:4px solid #8a3f8f;padding:0.6em 1em}
+figcaption{font-size:0.9em;color:#4a5563;margin-bottom:1.5em}code{background:#f1f3f6;padding:0 3px}
+.scroll{overflow-x:auto}</style></head><body>
+<h1>n_TOF pass 1: audit of the tracking and of the capsule imaging</h1>
+<p>Written 2026-11-21. Code: <code>rerun/ntof/improve/tracking_audit.py</code> and <code>make_audit_report.py</code>.
+Input: the pass-1 analysis view (v(t) angles, in-situ map, censored-window cut, <code>gated</code> = true |tan| &lt; 0.5),
+production runs after the 27 July access, and Geant4 through the pass-1 reconstruction. Existing data only.</p>
+
+<div class="verdict"><b>Verdict.</b> The width of the capsule image is not a tracking problem. In Geant4, the true
+lines of capsule electrons point at the capsule no better than the data do, so the 45 to 60 % "in focus" fraction is
+multiple scattering of MeV electrons. We also could not explain the 10 mm x offset of the source with a tracking effect.
+However, the audit found three things that do bias the present analysis.
+<ol>
+<li><b>14.7% of the production tracks have no time since the flash and no scintillator flags.</b> Sub-runs that
+span two n_TOF run numbers have two slim files, and the code reads only the first one. Every study that cuts on the
+time since the flash loses these tracks, and some of them were taken for beam-off cosmic events.</li>
+<li><b>Before about 12 ms most gated tracks in chambers A and C are not particles.</b> They are fits to the disturbed
+baseline after the flash. They have a quarter of the charge of a real track. They make 63% (A) and
+62% (C) of the gated tracks before 12 ms, and 44% (A) of the
+same-chamber pairs at 12 to 15 ms. A minimum charge of 600 ADC in each view removes them and keeps
+99.7% (A) and 98.7% (C) of the real tracks.</li>
+<li><b>Chamber D is still heavily contaminated after the censored-window cut.</b> 31% of its
+tracks after 20 ms do not point at the capsule (A: 6%, C: 8%), and they
+sit at a few strip positions. With a clean selection the fraction is 4%, and the z position of
+the source read through D is the same in every time window (-4.0 and
+-4.2 mm). This explains why two estimators gave −5.5 and −1.7 mm.</li>
+</ol>
+Two code errors were also found: the scintillator-stack study extrapolates the tracks along the bars with the wrong sign
+of the y slope, and the reconstruction maps the slope of some paired tracks with the other track's position.</div>
+
+<h2>1. The capsule image width is electron scattering</h2>
+<p>We measure how well a track points with the distance between the track line and the source, in the plane through the
+capsule that is parallel to the chamber. The source position is the band crossing of the late tracks of that chamber.
+We compare three samples in the central 200 mm of chambers A and C: the data after 20 ms, the true lines of Geant4
+capsule electrons in the drift gap, and the same Geant4 events after the digitiser and the pass-1 reconstruction.</p>
+<figure><img src="figures/pointing_vs_g4.png"><figcaption><b>Figure 1.</b> Distribution of the distance between the track line and the
+source for chamber A (left) and chamber C (right). The solid line is the data after 20 ms with the clean selection. The
+dashed line is the Geant4 truth for the nose-first capsule library. The dotted line is the same Geant4 sample through the
+pass-1 reconstruction.</figcaption></figure>
+<div class="scroll"><table><tr><th>sample</th><th>tracks</th><th>within 15 mm</th><th>within 30 mm</th><th>within 90 mm</th><th>half of the tracks within [mm]</th></tr><tr><td>data A, gated</td><td>1,174,340</td><td>0.637</td><td>0.885</td><td>0.984</td><td>10.8</td></tr><tr><td>data A, clean</td><td>1,096,754</td><td>0.646</td><td>0.894</td><td>0.987</td><td>10.7</td></tr><tr><td>data C, gated</td><td>893,323</td><td>0.596</td><td>0.853</td><td>0.977</td><td>11.9</td></tr><tr><td>data C, clean</td><td>771,640</td><td>0.605</td><td>0.862</td><td>0.981</td><td>11.7</td></tr><tr><td>Geant4 nose A, truth</td><td>7,753</td><td>0.517</td><td>0.779</td><td>0.982</td><td>14.3</td></tr><tr><td>Geant4 nose A, truth, 1-2 MeV</td><td>1,714</td><td>0.322</td><td>0.578</td><td>0.957</td><td>24.8</td></tr><tr><td>Geant4 nose A, truth, 2-4 MeV</td><td>3,259</td><td>0.485</td><td>0.781</td><td>0.993</td><td>15.7</td></tr><tr><td>Geant4 nose A, truth, 4-20 MeV</td><td>2,602</td><td>0.706</td><td>0.935</td><td>0.997</td><td>9.8</td></tr><tr><td>Geant4 nose A, pass-1 reconstruction</td><td>7,668</td><td>0.491</td><td>0.761</td><td>0.978</td><td>15.3</td></tr><tr><td>Geant4 nose C, truth</td><td>7,778</td><td>0.507</td><td>0.773</td><td>0.983</td><td>14.7</td></tr><tr><td>Geant4 nose C, truth, 1-2 MeV</td><td>1,618</td><td>0.297</td><td>0.545</td><td>0.952</td><td>27.3</td></tr><tr><td>Geant4 nose C, truth, 2-4 MeV</td><td>3,236</td><td>0.468</td><td>0.772</td><td>0.992</td><td>16.5</td></tr><tr><td>Geant4 nose C, truth, 4-20 MeV</td><td>2,756</td><td>0.695</td><td>0.931</td><td>0.997</td><td>9.8</td></tr><tr><td>Geant4 nose C, pass-1 reconstruction</td><td>6,596</td><td>0.498</td><td>0.770</td><td>0.981</td><td>15.1</td></tr><tr><td>Geant4 ear2_L19p5 A, truth</td><td>4,235</td><td>0.453</td><td>0.716</td><td>0.957</td><td>17.2</td></tr><tr><td>Geant4 ear2_L19p5 A, truth, 1-2 MeV</td><td>909</td><td>0.274</td><td>0.541</td><td>0.914</td><td>27.8</td></tr><tr><td>Geant4 ear2_L19p5 A, truth, 2-4 MeV</td><td>1,770</td><td>0.419</td><td>0.693</td><td>0.970</td><td>18.8</td></tr><tr><td>Geant4 ear2_L19p5 A, truth, 4-20 MeV</td><td>1,459</td><td>0.626</td><td>0.887</td><td>0.981</td><td>11.4</td></tr><tr><td>Geant4 ear2_L19p5 A, pass-1 reconstruction</td><td>3,870</td><td>0.419</td><td>0.683</td><td>0.947</td><td>19.1</td></tr><tr><td>Geant4 ear2_L19p5 C, truth</td><td>4,248</td><td>0.456</td><td>0.710</td><td>0.949</td><td>17.1</td></tr><tr><td>Geant4 ear2_L19p5 C, truth, 1-2 MeV</td><td>937</td><td>0.299</td><td>0.515</td><td>0.925</td><td>28.7</td></tr><tr><td>Geant4 ear2_L19p5 C, truth, 2-4 MeV</td><td>1,824</td><td>0.419</td><td>0.702</td><td>0.955</td><td>18.9</td></tr><tr><td>Geant4 ear2_L19p5 C, truth, 4-20 MeV</td><td>1,411</td><td>0.624</td><td>0.867</td><td>0.968</td><td>11.4</td></tr><tr><td>Geant4 ear2_L19p5 C, pass-1 reconstruction</td><td>3,312</td><td>0.448</td><td>0.704</td><td>0.949</td><td>17.3</td></tr></table></div>
+<p>Half of the data tracks pass within 10.8 mm (A) and 11.9 mm (C) of
+the source. For the Geant4 truth the value is 14.3 mm, and the reconstruction changes it
+to 15.3 mm. The Geant4 width depends strongly on the electron energy:
+25 mm at 1 to 2 MeV and 10 mm above
+4 MeV. This means that the tails of the image are scattered low-energy electrons and not badly measured tracks. The data
+are narrower than Geant4, so the electrons that give tracks in the data appear to be more energetic than in the Geant4
+library. That is a question for the Geant4 source model and the trigger emulation, like the same-chamber pair rate.</p>
+<p>We also looked for a track property that separates pointing from non-pointing tracks after 20 ms. There is none that
+matters: the half-width stays between 10.3 and 10.7 mm (A) across χ², strip count, seed size, t0, the x to y charge
+ratio, the column duration and the candidate rank. The tracks that miss the capsule by more than 60 mm are
+6% (A) and 8% (C) of the late sample. They are spread uniformly over
+the chamber, the scintillator wall fires for 84 % (A) and 93 % (C) of them, and their charge is normal. They are real particles that do
+not come from the capsule.</p>
+
+<h2>2. Tracks without a time since the flash</h2>
+<p>The time since the flash and the scintillator flags of a trigger come from the slim n_TOF file of its sub-run. A
+sub-run whose DREAM acquisitions span two n_TOF run numbers has two slim files. Four readers take only the first file:
+<code>trigger_time.slim_path</code>, <code>scintillators.read_slim</code> (and so the slim export),
+<code>candidate_filter</code> (stage 1) and the slim inventory of <code>freeze_sample</code>. On EOS, 77 of the 293 production sub-runs have more than one slim file, and 14.3% of the slim bytes are in a file that is not the first. For example,
+run_116 stat090_0027 has the files 224639 (events 1 to 7231) and 224640 (events 8027 to 110526), and only the first is
+used.</p>
+<figure><img src="figures/untimed_by_run.png"><figcaption><b>Figure 2.</b> Fraction of the reconstructed tracks of chambers A, C and D
+without a time since the flash, for each production run.</figcaption></figure>
+<p>Over the production runs 14.7% of the tracks have no time. These tracks are dropped by every study that
+selects on the time since the flash, so the capsule imaging, the pair studies and the scintillator maps use about 85 %
+of the data they could use. In addition, <code>improve/line_residuals.py</code> selects beam-off events as "time is
+null". For this reason 14,742 of the 46,171 A-C "cosmic" lines that the angle map was fitted on come from production
+runs. A refit on the true beam-off runs changes the map by about 0.001 in tan, so the map stands, but finding 1 of the
+improve study (13 to 14 % of views off the line) is 6 to 7 % on real cosmic events.</p>
+
+<h2>3. The gated tracks before 12 ms are mostly not particles</h2>
+<figure><img src="figures/charge_spectrum.png"><figcaption><b>Figure 3.</b> Charge of the gated tracks (the smaller of the x-view and
+y-view charge) for chambers A, C and D. Orange bars are 1 to 8 ms after the flash, coloured bars are 20 to 75 ms. The red
+line is the proposed minimum of 600 ADC.</figcaption></figure>
+<p>A track from the capsule after 20 ms leaves a median charge of about 1,600 ADC in each view, and fewer than 1.5 % of
+these tracks have less than 600 ADC. Before 8 ms most gated tracks have 100 to 400 ADC. These low-charge tracks
+are 22 to 30 strips wide, their χ²/dof is 6 to 19, their fitted t0 stays at its starting value, the wall fires for a
+quarter of them, and the fraction that points within 15 mm of the capsule is the chance value. The raw waveforms of such
+events show about 80 strips above +5σ and 80 strips below −5σ, all peaking in the same sample. So these are fits to the
+ringing baseline after the flash. The gate lets them through because it only asks for a column duration, |tan| &lt; 0.5
+and an x to y time coincidence. It has no requirement on charge, χ² or significance.</p>
+<figure><img src="figures/tof_purity.png"><figcaption><b>Figure 4.</b> Top: gated tracks per ms as a function of the time since the
+flash, for the present selection (dashed) and the clean selection (solid). Bottom: fraction of the tracks in the central
+200 mm that pass within 30 mm of the source.</figcaption></figure>
+<div class="scroll"><table><tr><th>arm</th><th>from [ms]</th><th>to [ms]</th><th>selection</th><th>tracks per ms</th><th>within 15 mm</th><th>within 30 mm</th><th>within 90 mm</th><th>more than 60 mm away</th><th>wall fired</th><th>charge below 600</th><th>median charge</th><th>median chi2/dof x</th><th>median strips x</th><th>band crossing [mm]</th><th>error</th></tr><tr><td>A</td><td>1</td><td>4</td><td>gated</td><td>105,945</td><td>0.163</td><td>0.297</td><td>0.762</td><td>0.653</td><td>0.255</td><td>0.839</td><td>285</td><td>8.17</td><td>22</td><td>-13.21</td><td>3.06</td></tr><tr><td>A</td><td>1</td><td>4</td><td>clean</td><td>4,334</td><td>0.429</td><td>0.640</td><td>0.859</td><td>0.384</td><td>0.689</td><td>0.000</td><td>1208</td><td>2.62</td><td>15</td><td>-13.45</td><td>2.64</td></tr><tr><td>A</td><td>4</td><td>8</td><td>gated</td><td>107,793</td><td>0.219</td><td>0.373</td><td>0.785</td><td>0.604</td><td>0.322</td><td>0.660</td><td>339</td><td>17.19</td><td>23</td><td>-46.85</td><td>1.84</td></tr><tr><td>A</td><td>4</td><td>8</td><td>clean</td><td>13,712</td><td>0.428</td><td>0.639</td><td>0.852</td><td>0.364</td><td>0.720</td><td>0.000</td><td>1457</td><td>1.69</td><td>14</td><td>-18.20</td><td>1.25</td></tr><tr><td>A</td><td>8</td><td>12</td><td>gated</td><td>55,252</td><td>0.408</td><td>0.612</td><td>0.876</td><td>0.416</td><td>0.611</td><td>0.293</td><td>1229</td><td>3.96</td><td>16</td><td>-27.70</td><td>0.82</td></tr><tr><td>A</td><td>8</td><td>12</td><td>clean</td><td>27,815</td><td>0.517</td><td>0.742</td><td>0.903</td><td>0.246</td><td>0.837</td><td>0.000</td><td>1494</td><td>1.44</td><td>14</td><td>-14.59</td><td>0.48</td></tr><tr><td>A</td><td>12</td><td>15</td><td>gated</td><td>50,094</td><td>0.562</td><td>0.796</td><td>0.943</td><td>0.234</td><td>0.826</td><td>0.085</td><td>1488</td><td>1.54</td><td>14</td><td>-13.13</td><td>0.42</td></tr><tr><td>A</td><td>12</td><td>15</td><td>clean</td><td>39,420</td><td>0.589</td><td>0.826</td><td>0.952</td><td>0.141</td><td>0.902</td><td>0.000</td><td>1497</td><td>1.32</td><td>14</td><td>-11.14</td><td>0.06</td></tr><tr><td>A</td><td>15</td><td>20</td><td>gated</td><td>47,735</td><td>0.611</td><td>0.853</td><td>0.967</td><td>0.117</td><td>0.911</td><td>0.012</td><td>1544</td><td>1.36</td><td>14</td><td>-10.98</td><td>0.04</td></tr><tr><td>A</td><td>15</td><td>20</td><td>clean</td><td>42,979</td><td>0.623</td><td>0.867</td><td>0.972</td><td>0.088</td><td>0.925</td><td>0.000</td><td>1499</td><td>1.29</td><td>14</td><td>-10.95</td><td>0.04</td></tr><tr><td>A</td><td>20</td><td>30</td><td>gated</td><td>42,087</td><td>0.633</td><td>0.879</td><td>0.981</td><td>0.073</td><td>0.929</td><td>0.005</td><td>1550</td><td>1.33</td><td>14</td><td>-10.87</td><td>0.03</td></tr><tr><td>A</td><td>20</td><td>30</td><td>clean</td><td>38,842</td><td>0.642</td><td>0.889</td><td>0.985</td><td>0.056</td><td>0.935</td><td>0.000</td><td>1505</td><td>1.27</td><td>14</td><td>-10.84</td><td>0.03</td></tr><tr><td>A</td><td>30</td><td>75</td><td>gated</td><td>21,019</td><td>0.639</td><td>0.887</td><td>0.985</td><td>0.059</td><td>0.938</td><td>0.004</td><td>1567</td><td>1.33</td><td>14</td><td>-10.87</td><td>0.02</td></tr><tr><td>A</td><td>30</td><td>75</td><td>clean</td><td>19,474</td><td>0.648</td><td>0.896</td><td>0.988</td><td>0.045</td><td>0.941</td><td>0.000</td><td>1521</td><td>1.28</td><td>14</td><td>-10.85</td><td>0.02</td></tr><tr><td>C</td><td>1</td><td>4</td><td>gated</td><td>130,910</td><td>0.124</td><td>0.258</td><td>0.646</td><td>0.649</td><td>0.359</td><td>0.840</td><td>245</td><td>12.43</td><td>27</td><td>-16.72</td><td>4.02</td></tr><tr><td>C</td><td>1</td><td>4</td><td>clean</td><td>5,156</td><td>0.378</td><td>0.586</td><td>0.826</td><td>0.449</td><td>0.833</td><td>0.000</td><td>1299</td><td>3.08</td><td>15</td><td>20.44</td><td>4.61</td></tr><tr><td>C</td><td>4</td><td>8</td><td>gated</td><td>91,624</td><td>0.192</td><td>0.332</td><td>0.691</td><td>0.598</td><td>0.468</td><td>0.599</td><td>387</td><td>14.66</td><td>21</td><td>-12.93</td><td>2.33</td></tr><tr><td>C</td><td>4</td><td>8</td><td>clean</td><td>17,036</td><td>0.358</td><td>0.554</td><td>0.807</td><td>0.477</td><td>0.803</td><td>0.000</td><td>1366</td><td>2.19</td><td>14</td><td>23.88</td><td>2.79</td></tr><tr><td>C</td><td>8</td><td>12</td><td>gated</td><td>53,999</td><td>0.347</td><td>0.531</td><td>0.786</td><td>0.457</td><td>0.715</td><td>0.278</td><td>1203</td><td>5.01</td><td>16</td><td>-7.37</td><td>1.04</td></tr><tr><td>C</td><td>8</td><td>12</td><td>clean</td><td>26,844</td><td>0.447</td><td>0.662</td><td>0.862</td><td>0.350</td><td>0.895</td><td>0.000</td><td>1414</td><td>1.89</td><td>14</td><td>6.35</td><td>1.04</td></tr><tr><td>C</td><td>12</td><td>15</td><td>gated</td><td>42,261</td><td>0.502</td><td>0.733</td><td>0.904</td><td>0.248</td><td>0.932</td><td>0.044</td><td>1530</td><td>2.14</td><td>15</td><td>-8.89</td><td>0.49</td></tr><tr><td>C</td><td>12</td><td>15</td><td>clean</td><td>32,703</td><td>0.524</td><td>0.761</td><td>0.920</td><td>0.213</td><td>0.956</td><td>0.000</td><td>1451</td><td>1.76</td><td>15</td><td>-7.12</td><td>0.46</td></tr><tr><td>C</td><td>15</td><td>20</td><td>gated</td><td>39,784</td><td>0.560</td><td>0.807</td><td>0.949</td><td>0.147</td><td>0.972</td><td>0.019</td><td>1557</td><td>1.92</td><td>15</td><td>-11.21</td><td>0.05</td></tr><tr><td>C</td><td>15</td><td>20</td><td>clean</td><td>33,268</td><td>0.573</td><td>0.821</td><td>0.956</td><td>0.128</td><td>0.979</td><td>0.000</td><td>1465</td><td>1.71</td><td>15</td><td>-10.98</td><td>0.05</td></tr><tr><td>C</td><td>20</td><td>30</td><td>gated</td><td>33,678</td><td>0.589</td><td>0.843</td><td>0.971</td><td>0.089</td><td>0.986</td><td>0.016</td><td>1564</td><td>1.86</td><td>14</td><td>-11.00</td><td>0.04</td></tr><tr><td>C</td><td>20</td><td>30</td><td>clean</td><td>28,895</td><td>0.599</td><td>0.853</td><td>0.976</td><td>0.077</td><td>0.990</td><td>0.000</td><td>1477</td><td>1.69</td><td>15</td><td>-10.89</td><td>0.04</td></tr><tr><td>C</td><td>30</td><td>75</td><td>gated</td><td>16,545</td><td>0.599</td><td>0.858</td><td>0.979</td><td>0.069</td><td>0.991</td><td>0.015</td><td>1580</td><td>1.87</td><td>14</td><td>-10.97</td><td>0.02</td></tr><tr><td>C</td><td>30</td><td>75</td><td>clean</td><td>14,210</td><td>0.608</td><td>0.867</td><td>0.983</td><td>0.058</td><td>0.993</td><td>0.000</td><td>1487</td><td>1.70</td><td>15</td><td>-10.85</td><td>0.02</td></tr><tr><td>D</td><td>1</td><td>4</td><td>gated</td><td>44,790</td><td>0.063</td><td>0.161</td><td>0.657</td><td>0.555</td><td>0.265</td><td>0.786</td><td>357</td><td>0.63</td><td>93</td><td>72.60</td><td>1.53</td></tr><tr><td>D</td><td>1</td><td>4</td><td>clean</td><td>340</td><td>0.053</td><td>0.167</td><td>0.743</td><td>0.560</td><td>0.264</td><td>0.000</td><td>739</td><td>4.28</td><td>16</td><td>8.89</td><td>8.92</td></tr><tr><td>D</td><td>4</td><td>8</td><td>gated</td><td>101,536</td><td>0.079</td><td>0.182</td><td>0.740</td><td>0.520</td><td>0.263</td><td>0.718</td><td>377</td><td>11.78</td><td>23</td><td>48.63</td><td>0.54</td></tr><tr><td>D</td><td>4</td><td>8</td><td>clean</td><td>1,590</td><td>0.067</td><td>0.151</td><td>0.837</td><td>0.557</td><td>0.304</td><td>0.000</td><td>787</td><td>5.87</td><td>16</td><td>67.02</td><td>1.25</td></tr><tr><td>D</td><td>8</td><td>12</td><td>gated</td><td>121,144</td><td>0.107</td><td>0.203</td><td>0.722</td><td>0.644</td><td>0.267</td><td>0.526</td><td>570</td><td>6.14</td><td>23</td><td>51.35</td><td>0.48</td></tr><tr><td>D</td><td>8</td><td>12</td><td>clean</td><td>1,234</td><td>0.122</td><td>0.211</td><td>0.784</td><td>0.555</td><td>0.426</td><td>0.000</td><td>884</td><td>5.23</td><td>15</td><td>73.88</td><td>1.81</td></tr><tr><td>D</td><td>12</td><td>15</td><td>gated</td><td>109,619</td><td>0.187</td><td>0.318</td><td>0.709</td><td>0.756</td><td>0.284</td><td>0.687</td><td>399</td><td>2.10</td><td>35</td><td>22.50</td><td>0.75</td></tr><tr><td>D</td><td>12</td><td>15</td><td>clean</td><td>1,148</td><td>0.309</td><td>0.498</td><td>0.821</td><td>0.396</td><td>0.694</td><td>0.000</td><td>894</td><td>2.60</td><td>14</td><td>-41.92</td><td>4.10</td></tr><tr><td>D</td><td>15</td><td>20</td><td>gated</td><td>97,306</td><td>0.280</td><td>0.432</td><td>0.687</td><td>0.837</td><td>0.301</td><td>0.348</td><td>832</td><td>9.40</td><td>43</td><td>192.00</td><td>0.37</td></tr><tr><td>D</td><td>15</td><td>20</td><td>clean</td><td>1,107</td><td>0.421</td><td>0.657</td><td>0.876</td><td>0.256</td><td>0.856</td><td>0.000</td><td>1136</td><td>1.85</td><td>14</td><td>-21.69</td><td>1.54</td></tr><tr><td>D</td><td>20</td><td>30</td><td>gated</td><td>54,572</td><td>0.532</td><td>0.790</td><td>0.933</td><td>0.553</td><td>0.608</td><td>0.238</td><td>1172</td><td>10.92</td><td>22</td><td>-1.83</td><td>0.75</td></tr><tr><td>D</td><td>20</td><td>30</td><td>clean</td><td>13,599</td><td>0.581</td><td>0.852</td><td>0.977</td><td>0.052</td><td>0.987</td><td>0.000</td><td>1702</td><td>1.75</td><td>15</td><td>-3.98</td><td>0.05</td></tr><tr><td>D</td><td>30</td><td>75</td><td>gated</td><td>15,611</td><td>0.568</td><td>0.843</td><td>0.977</td><td>0.129</td><td>0.968</td><td>0.089</td><td>2012</td><td>2.26</td><td>17</td><td>-3.82</td><td>0.03</td></tr><tr><td>D</td><td>30</td><td>75</td><td>clean</td><td>9,942</td><td>0.586</td><td>0.861</td><td>0.983</td><td>0.042</td><td>0.991</td><td>0.000</td><td>1747</td><td>1.75</td><td>15</td><td>-4.16</td><td>0.03</td></tr></table></div>
+<p>The clean selection is: at least 600 ADC in each view, a fit window narrower than 30 strips, less than
+50% of a window on censored strips, and a χ²/dof below 5 times the median of late, pointing,
+wall-confirmed tracks of that chamber and view. The table below gives what each part removes. The reference tracks are
+the tracks after 30 ms that point within 15 mm and have the wall fired.</p>
+<table><tr><th>arm</th><th>cut</th><th>keeps of the reference tracks</th><th>removes before 12 ms</th><th>removes at 12-20 ms</th><th>removes after 20 ms</th></tr><tr><td>A</td><td>charge</td><td>0.997</td><td>0.642</td><td>0.040</td><td>0.004</td></tr><tr><td>A</td><td>width</td><td>0.998</td><td>0.420</td><td>0.020</td><td>0.004</td></tr><tr><td>A</td><td>censored</td><td>1.000</td><td>0.000</td><td>0.000</td><td>0.000</td></tr><tr><td>A</td><td>chi2 x</td><td>0.970</td><td>0.651</td><td>0.106</td><td>0.047</td></tr><tr><td>A</td><td>chi2 y</td><td>0.966</td><td>0.581</td><td>0.096</td><td>0.050</td></tr><tr><td>A</td><td>all (clean)</td><td>0.948</td><td>0.821</td><td>0.143</td><td>0.075</td></tr><tr><td>C</td><td>charge</td><td>0.987</td><td>0.631</td><td>0.029</td><td>0.015</td></tr><tr><td>C</td><td>width</td><td>0.997</td><td>0.523</td><td>0.020</td><td>0.006</td></tr><tr><td>C</td><td>censored</td><td>1.000</td><td>0.005</td><td>0.003</td><td>0.001</td></tr><tr><td>C</td><td>chi2 x</td><td>0.937</td><td>0.581</td><td>0.109</td><td>0.074</td></tr><tr><td>C</td><td>chi2 y</td><td>0.916</td><td>0.362</td><td>0.103</td><td>0.094</td></tr><tr><td>C</td><td>all (clean)</td><td>0.875</td><td>0.809</td><td>0.188</td><td>0.141</td></tr><tr><td>D</td><td>charge</td><td>0.966</td><td>0.640</td><td>0.485</td><td>0.154</td></tr><tr><td>D</td><td>width</td><td>0.968</td><td>0.706</td><td>0.737</td><td>0.220</td></tr><tr><td>D</td><td>censored</td><td>0.962</td><td>0.421</td><td>0.613</td><td>0.189</td></tr><tr><td>D</td><td>chi2 x</td><td>0.862</td><td>0.438</td><td>0.423</td><td>0.327</td></tr><tr><td>D</td><td>chi2 y</td><td>0.855</td><td>0.225</td><td>0.476</td><td>0.329</td></tr><tr><td>D</td><td>all (clean)</td><td>0.736</td><td>0.988</td><td>0.989</td><td>0.532</td></tr></table>
+<p>The existing <code>quality_ok</code> flag does not do this job. Its threshold is 5 times the median χ²/dof of the
+sub-run, and the ringing tracks themselves raise that median (to 7.4 on A x, where real tracks have 1.4).</p>
+
+<h3>Effect on the same-chamber pairs</h3>
+<figure><img src="figures/pairs_tof.png"><figcaption><b>Figure 5.</b> Fraction of tracked events with two or more gated tracks in
+one chamber as a function of the time since the flash, for the present selection, with the charge minimum, and with the
+clean selection.</figcaption></figure>
+<div class="scroll"><table><tr><th>arm</th><th>from [ms]</th><th>to [ms]</th><th>charge >= 600 [%]</th><th>clean [%]</th><th>gated [%]</th><th>gated pairs with a low-charge track</th></tr><tr><td>A</td><td>4</td><td>6</td><td>4.060</td><td>0.660</td><td>11.106</td><td>0.89</td></tr><tr><td>A</td><td>6</td><td>8</td><td>2.529</td><td>0.775</td><td>11.373</td><td>0.91</td></tr><tr><td>A</td><td>8</td><td>10</td><td>1.366</td><td>0.693</td><td>5.130</td><td>0.83</td></tr><tr><td>A</td><td>10</td><td>12</td><td>0.846</td><td>0.527</td><td>1.873</td><td>0.63</td></tr><tr><td>A</td><td>12</td><td>15</td><td>0.685</td><td>0.496</td><td>1.124</td><td>0.44</td></tr><tr><td>A</td><td>15</td><td>20</td><td>0.535</td><td>0.409</td><td>0.586</td><td>0.10</td></tr><tr><td>A</td><td>20</td><td>25</td><td>0.458</td><td>0.353</td><td>0.482</td><td>0.06</td></tr><tr><td>A</td><td>25</td><td>30</td><td>0.394</td><td>0.297</td><td>0.404</td><td>0.03</td></tr><tr><td>A</td><td>30</td><td>40</td><td>0.408</td><td>0.318</td><td>0.415</td><td>0.02</td></tr><tr><td>A</td><td>40</td><td>50</td><td>0.380</td><td>0.288</td><td>0.386</td><td>0.02</td></tr><tr><td>A</td><td>50</td><td>75</td><td>0.383</td><td>0.298</td><td>0.390</td><td>0.02</td></tr><tr><td>C</td><td>4</td><td>6</td><td>1.615</td><td>0.715</td><td>5.808</td><td>0.90</td></tr><tr><td>C</td><td>6</td><td>8</td><td>1.759</td><td>0.836</td><td>6.715</td><td>0.88</td></tr><tr><td>C</td><td>8</td><td>10</td><td>1.242</td><td>0.713</td><td>3.177</td><td>0.75</td></tr><tr><td>C</td><td>10</td><td>12</td><td>0.833</td><td>0.567</td><td>1.468</td><td>0.53</td></tr><tr><td>C</td><td>12</td><td>15</td><td>0.649</td><td>0.500</td><td>0.790</td><td>0.21</td></tr><tr><td>C</td><td>15</td><td>20</td><td>0.489</td><td>0.363</td><td>0.526</td><td>0.09</td></tr><tr><td>C</td><td>20</td><td>25</td><td>0.378</td><td>0.283</td><td>0.407</td><td>0.08</td></tr><tr><td>C</td><td>25</td><td>30</td><td>0.392</td><td>0.299</td><td>0.412</td><td>0.06</td></tr><tr><td>C</td><td>30</td><td>40</td><td>0.342</td><td>0.248</td><td>0.359</td><td>0.06</td></tr><tr><td>C</td><td>40</td><td>50</td><td>0.341</td><td>0.259</td><td>0.358</td><td>0.06</td></tr><tr><td>C</td><td>50</td><td>75</td><td>0.335</td><td>0.246</td><td>0.352</td><td>0.06</td></tr></table></div>
+<p>The low-charge tracks often come in groups, so they make pairs. At 12 to 15 ms the pair fraction of chamber A falls
+from 1.12 % to 0.68 % with the charge minimum. The improve study
+(finding 9) moved the start of the rate fit from 12 to 25 ms because 12 to 20 ms "carries a different population" with a
+worst-leg χ²/dof of 11.9. That population is these tracks. With the charge minimum the pair fraction varies smoothly
+from 12 ms on, so the rate fit can be tried again from 12 ms.</p>
+
+<h2>4. Chamber D</h2>
+<figure><img src="figures/positions.png"><figcaption><b>Figure 6.</b> Position of the gated tracks after 20 ms on chamber A (top) and
+chamber D (bottom), in x_local (left) and y_local (right). The coloured line is all gated tracks. The red line is the
+tracks whose line passes more than 60 mm from the source. The dotted line is the same after the clean selection.</figcaption></figure>
+<p>In chamber A the tracks that do not point are spread uniformly. In chamber D they pile up at a few positions
+(x_local near −184, −136, −112 and +124 mm, and y_local near +2 to +30 and −140 mm). These are windows on hot or
+partly censored strips that the present rule (an all-censored x window, or a y window at least half censored) does not
+catch. Before 20 ms nearly all gated D tracks are of this kind: the clean selection keeps
+1.1% of them at 15 to 20 ms.</p>
+<p>The z position of the source seen through D depends on this contamination. With the present selection the band
+crossing is -1.8 mm at 20 to 30 ms and -3.8 mm at 30 to
+75 ms. With the clean selection it is -3.98 ± 0.05 and
+-4.16 ± 0.03 mm. The clean selection keeps only
+74% of D's reference tracks, mostly because of the χ² part, so it is a
+demonstration and not a final cut for D.</p>
+
+<h2>5. The height of the source</h2>
+<figure><img src="figures/height_profile.png"><figcaption><b>Figure 7.</b> Height at which the track line meets the source plane, for the
+late tracks that point within 15 mm of the source in the other coordinate. Coloured lines: data, chambers A, C and D.
+Black dashed: Geant4 truth. Black dotted: Geant4 through the reconstruction. The grey band is the drawn gas volume of the
+capsule (−29.5 to +50.7 mm).</figcaption></figure>
+<table><tr><th>sample</th><th>lower half-maximum [mm]</th><th>upper half-maximum [mm]</th><th>length [mm]</th><th>centre [mm]</th></tr><tr><td>Geant4 ear2_L19p5 reconstructed A</td><td>-52.5</td><td>2.7</td><td>55.2</td><td>-24.9</td></tr><tr><td>Geant4 ear2_L19p5 reconstructed C</td><td>-53.3</td><td>8.7</td><td>62.0</td><td>-22.3</td></tr><tr><td>Geant4 ear2_L19p5 truth A</td><td>-52.4</td><td>3.7</td><td>56.1</td><td>-24.4</td></tr><tr><td>Geant4 ear2_L19p5 truth C</td><td>-52.7</td><td>8.7</td><td>61.4</td><td>-22.0</td></tr><tr><td>Geant4 nose reconstructed A</td><td>-54.2</td><td>-1.0</td><td>53.3</td><td>-27.6</td></tr><tr><td>Geant4 nose reconstructed C</td><td>-52.2</td><td>-3.3</td><td>48.9</td><td>-27.7</td></tr><tr><td>Geant4 nose truth A</td><td>-55.0</td><td>-2.7</td><td>52.3</td><td>-28.8</td></tr><tr><td>Geant4 nose truth C</td><td>-54.8</td><td>-6.1</td><td>48.6</td><td>-30.4</td></tr><tr><td>data A</td><td>-71.6</td><td>14.3</td><td>85.8</td><td>-28.7</td></tr><tr><td>data C</td><td>-71.5</td><td>16.9</td><td>88.3</td><td>-27.3</td></tr><tr><td>data D</td><td>-72.2</td><td>17.1</td><td>89.2</td><td>-27.5</td></tr></table>
+<p>In all three chambers the source is a flat line in height, from -72 mm to about
+14 mm, with a sharp lower edge and a softer upper edge. Its length is 86
+to 89 mm, which is close to the length of the capsule. Geant4 with the centred, untilted capsule
+gives a compact peak near −30 mm, and the reconstruction does not stretch it. So the flat line is not a tracking effect.
+The band crossing (−30 mm) is the centre of this line. It agrees with the Geant4 nose position, but the shapes do not
+agree: in the data the emitting length reaches about 40 mm below the drawn nose. This is a constraint for the capsule
+pose question and it is not used in the pose fits.</p>
+
+<h2>6. The x offset of the source is not a tracking effect</h2>
+<p>The late band crossing is -10.85 mm in A and -10.85 mm in C,
+with or without the clean selection, and the same from 15 ms on. A and C look at the capsule from opposite sides, so
+their local x axes point in opposite global directions. A bias of the reconstruction that is the same in the local frame
+of both chambers (an offset of the slope, of the strip coordinate, of t0, or of the reference depth) therefore moves the
+two images in opposite global directions. It cannot produce a common offset. The A-C cosmic lines cannot see a common
+shift of the chamber pair relative to the capsule either. Note that the in-situ map is fitted on the A-C lines. For this reason the A and C images agree almost by
+construction, and half of any relative x misalignment of A and C goes into the common position. The difference A minus C
+is therefore no longer an independent measurement that a pose fit can use.</p>
+<p>Before 12 ms the crossings of A and C move apart in global x (A to -18 mm, C to
++24 mm at 4 to 8 ms). This is the same direction in the local frame of each chamber, so it
+is contamination of the estimator and not a displacement of the source.</p>
+
+<h2>7. The imaging estimators</h2>
+<p>We also reviewed the estimators themselves, with toy sources and by injecting early tracks into late samples. None
+has a sign or frame error, and the x offset of the source is not produced by an estimator: four estimators give −10.4 to
+−10.7 mm (A) and −10.5 to −11.4 mm (C) on the analysis view. However, several quoted numbers are inflated or are not the
+same quantity.</p>
+<ul>
+<li><b>D's z from <code>capsule_tof tilt</code> (−1.7 mm) is not a measurement.</b> The step uses all D tracks after
+12 ms, and 59 % of that sample are the non-pointing tracks of section 4. The robust line in <code>crossing</code>
+clips at 3 times the MAD of the residuals. On D the MAD is 52 mm, so nothing is clipped and the fitted slope is −0.15
+where a pointing sample gives −1. The value changes from −1.7 to +7.5 to −2.7 mm between the three views. With late,
+wall-confirmed tracks four estimators give −3.8 to −4.8 mm, and the clean selection above gives −4.1 mm. We would quote
+z = −4.5 ± 1 mm.</li>
+<li><b><code>crossing</code> fails abruptly when the background grows.</b> Adding 20 % of early tracks to the late
+samples moves A by −0.9 mm and C by −1.1 mm, and adding 40 % moves A by −7 mm. D's late sample moves by −6.6 mm with
+only 10 %. A fit restricted to 100 mm around the crossing is much more robust (A moves by 0.2 mm at 40 %).</li>
+<li><b><code>campaign_imaging</code> does not read the analysis view.</b> It uses the raw fit tangent of the reco tree
+with no <code>gated</code>, no map, no censored-window cut and no cut on the time since the flash, so its output is
+identical in the map and no-map chains. Its fit window (30 to 130 mm about the surveyed foot) is truncated on one side
+by the plastic acceptance, which moves A by +0.5 and C by −0.4 mm. About half of the "A-C half difference 1.16 mm" is
+this truncation. So the −9.1 mm of the imaging step and the −10.9 mm of the pose step are not the same quantity.</li>
+<li><b>The focus scale split by the sign of tan is the nominal axis.</b> <code>focus_split</code> and
+<code>capsule_focus</code> measure the miss about x = 0, and the source is at −10.9 mm. About the measured source the
+split disappears (A 0.86 / 1.14 becomes 1.00 / 1.00, C 1.14 / 0.85 becomes 0.98 / 1.01). The pooled scale is also about
+0.015 too low for the same reason, so the common scale is 0.994 and not 0.977.</li>
+<li><b>The pose toy has a fixed A minus C offset.</b> <code>capsule_tof.FOOT_SIM['C']</code> is 16.4 mm and the Geant4
+geometry has 17.3 mm (<code>SimConfig.hh</code>, <code>run_digi.FOOT</code>). This makes the toy's x in C 0.9 mm too
+negative. The rest of the +2.3 to 2.7 mm that every pose shows is probably the size of the library (about 2,500 capsule
+tracks per chamber, reused in every pose).</li>
+<li><b>Smaller points.</b> The null of <code>track_quality</code> shuffles inside |tan| bins and keeps part of the
+pointing, so its excess is about one third low. Its cache (<code>tracks_AC.parquet</code>) predates the map and is
+returned whatever the view. <code>capsule_pose.Z_BD</code> is from the retired chain.</li>
+</ul>
+
+<h2>8. Code errors</h2>
+<ul>
+<li><b>Scintillator stack, y slope.</b> The analysis view stores <code>tan_raw_y</code> with the sign of
+<code>tany</code>. <code>ntof_scint_stack/extract.py</code> multiplies it by <code>TAN_SIGN_Y</code> again, so
+<code>tan_v_raw</code> = −<code>tany</code> for every track (checked on run_145, chambers A, C and D). The along-bar
+prediction is therefore extrapolated in the wrong direction, and the fitted along-bar scale is 0. The x direction
+(λ = 0.85) is not affected.</li>
+<li><b>Bow mapping of paired tracks.</b> <code>wft/reco.py</code> (<code>_worker_fit</code>) maps the slopes of each
+pair with the pair's own coordinates and then maps the two plane winners together. When the winners belong to different
+pairs, each takes the coordinate of the other pair. In run_145 this affects 19% to 25% of the tracks in events with two or more tracks in one chamber. The error is small: the median |Δtan| is below 0.0012 and the 90th percentile is 0.020 (chamber C).<table><tr><th>arm</th><th>sample</th><th>n</th><th>tracks with a wrong tangent</th><th>median |Δtan|</th><th>90th percentile</th><th>largest</th></tr><tr><td>A</td><td>one track in the chamber</td><td>8000</td><td>0.007</td><td>0.0008</td><td>0.0060</td><td>0.0083</td></tr><tr><td>A</td><td>two or more tracks in the chamber</td><td>171</td><td>0.187</td><td>0.0005</td><td>0.0041</td><td>0.0077</td></tr><tr><td>C</td><td>one track in the chamber</td><td>8000</td><td>0.006</td><td>0.0018</td><td>0.0159</td><td>0.0204</td></tr><tr><td>C</td><td>two or more tracks in the chamber</td><td>110</td><td>0.245</td><td>0.0012</td><td>0.0203</td><td>0.0706</td></tr></table></li>
+<li><b>Smaller points.</b> Stage 3 places the fitted position at the nominal strip plane and does not apply the bow
+mesh height (|tan·h| up to 0.9 mm for beam tracks). <code>dca_axis_mm</code> and <code>in_bore</code> are distances to
+the nominal axis, 11 mm from the measured source. The stage-1 merge duplicates two rows (run_139). On chamber D in the
+early runs the reconstruction's own slope cut ends at 0.48 to 0.50 for a quarter of the tracks, below the 0.5
+acceptance. <code>map_view.py</code> has no guard against being applied to an already mapped view. Two-track children
+ignore the t0 pin (31 % are more than 180 ns from it). The head-on rescue is not wired into the beam driver, and chamber
+C has half the tracks of chamber A at |tan x| &lt; 0.08.</li>
+</ul>
+
+<h2>What this does not rule out</h2>
+<ul>
+<li>We did not test the efficiency of the reconstruction for real tracks before 12 ms. The clean selection removes the
+ringing fits, but a real track on a ringing baseline may also fail it. Geant4 overlays on early triggers would measure
+this.</li>
+<li>The Geant4 comparison of the image width uses the capsule libraries as they are. The data are narrower than Geant4.
+We did not find out whether this is the electron spectrum, the trigger (wall and plastic) or the source extent.</li>
+<li>The x offset of 10 mm and the height profile are geometry or physics. Neither the tracks nor the cosmic lines can
+tell whether the chambers or the capsule are displaced.</li>
+<li>The clean selection was chosen by hand on the whole campaign. Its thresholds were not optimised, and for chamber D
+it is too strict.</li>
+<li>Chamber B was not audited (it has positions only).</li>
+</ul>
+</body></html>
