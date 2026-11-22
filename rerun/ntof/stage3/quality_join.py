@@ -16,6 +16,15 @@ The last step of the analysis view, after censor_join.py.  It adds to every tabl
                      wall, pointing), the 20-30 ms pointing purity rises 0.51 -> 0.75 of the late value.
     low_charge       the A/C post-flash ringing fits (finding 14).  The rule is not chosen yet (the waveform ringing
                      study, rerun/ntof/ringing/); --low-charge none (default) leaves it all False.
+    dtc_ns           the x-y column-time difference the reco's coincidence test uses (wft.reco.col_dt: t0 + u50 per view,
+                     ftst phase-corrected).
+    xy_time_ok       |dtc_ns| <= the n_TOF p98 of clean late single tracks (TC_TOL_NTOF: A 151, C 296, D 535 ns).  The
+                     reco used the bench tolerance (197, 456, 726 ns), which passes 70-89 % of unrelated late x-y
+                     pairs (reco review 4).  A flag only.
+    xy_balance_ok    A, C: |ln(qx/qy) - run median| <= 4 sigma(t), sigma(t) the x-y charge-balance width of pointing
+                     tracks at that time after the flash (0.40 at 1.5 ms to 0.07 (A) / 0.11 (C) late; the ringing
+                     widens it).  Mis-paired views of two particles fail it.  A flag only (costs 2-3 % of good late
+                     tracks; purity at 12-16 ms 0.82 -> 0.85).  D: True.
     dca_source_mm    closest approach of the track line to the vertical line through the measured source
                      (pass1_tracks.SOURCE_XZ_MM); dca_axis_mm stays, about the nominal axis (finding 22).
     gated_precut     `gated` as censor_join left it
@@ -49,7 +58,18 @@ D_CENS_X = 0.8
 REF_MIN_MS = 30.0
 REF_CENS_MAX = 0.5
 LOW_CHARGE_RULES = ('none',)
-FLAGS = ('amp_norm', 't0_railed', 'd_faint', 'low_charge', 'dca_source_mm', 'gated_precut')
+FLAGS = ('amp_norm', 't0_railed', 'd_faint', 'low_charge', 'dca_source_mm', 'dtc_ns', 'xy_time_ok', 'xy_balance_ok',
+         'gated_precut')
+#: n_TOF x-y column-time tolerance [ns]: p98 of |dtc| on late (>= 30 ms), wall-confirmed, single, pointing tracks of
+#: runs 139-154 (2026-11-22).  The bench values in the bundles: A 197, C 456, D 726.
+TC_TOL_NTOF = {'A': 151.0, 'C': 296.0, 'D': 535.0}
+#: x-y charge-balance width sigma(t) of pointing tracks vs ToF [ms] (low-charge study 2026-11-22, run-median subtracted)
+BAL_T_MS = (1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5, 10.5, 11.5, 13.0, 15.0, 17.0, 19.0, 22.5, 27.5, 35.0, 57.5)
+BAL_SIG = {'A': (0.404, 0.243, 0.158, 0.149, 0.150, 0.126, 0.113, 0.098, 0.090, 0.082, 0.080, 0.076, 0.072, 0.072,
+                 0.072, 0.072, 0.071, 0.071, 0.071),
+           'C': (0.408, 0.239, 0.182, 0.174, 0.175, 0.172, 0.157, 0.144, 0.133, 0.131, 0.121, 0.117, 0.117, 0.114,
+                 0.114, 0.113, 0.113, 0.113, 0.113)}
+BAL_NSIG = 4.0
 
 
 def _amp(t):
@@ -80,13 +100,17 @@ def refs(view: Path) -> dict:
             ax, ay = _amp(a)
             if not len(a):
                 continue
-            acc.setdefault((str(a['run'].iloc[0]), arm), []).append(np.minimum(ax, ay))
+            with np.errstate(divide='ignore', invalid='ignore'):
+                lb = np.log(a['x_q_sum'].to_numpy(float) / a['y_q_sum'].to_numpy(float))
+            acc.setdefault((str(a['run'].iloc[0]), arm), []).append((np.minimum(ax, ay), lb))
     out = {'rule': f'median of min over views of q_sum / n_strips; gated, t >= {REF_MIN_MS} ms, wall fired, '
                    f'censored < {REF_CENS_MAX}', 'runs': {}, 'arm': {}}
     pooled = {}
     for (run, arm), vs in sorted(acc.items()):
-        v = np.concatenate(vs)
-        out['runs'].setdefault(run, {})[arm] = dict(amp=float(np.nanmedian(v)), n=int(len(v)))
+        v = np.concatenate([x for x, _ in vs])
+        lb = np.concatenate([y for _, y in vs])
+        out['runs'].setdefault(run, {})[arm] = dict(amp=float(np.nanmedian(v)), lnbal=float(np.nanmedian(lb)),
+                                                    n=int(len(v)))
         pooled.setdefault(arm, []).append(v)
     for arm, vs in pooled.items():
         out['arm'][arm] = dict(amp=float(np.nanmedian(np.concatenate(vs))))
@@ -161,6 +185,23 @@ def one(path, rows, canon, R, low_rule):
     else:
         raise ValueError(f'unknown --low-charge rule {low_rule!r}')
     t['dca_source_mm'] = dca_source(t).astype('float32')
+    dtc = ((t['x_t0'] + t['x_q_u50'].fillna(0)) - (t['y_t0'] + t['y_q_u50'].fillna(0))
+           + 10.0 * (t['x_ftst'] - t['y_ftst'])).to_numpy(float)
+    t['dtc_ns'] = dtc.astype('float32')
+    tol = np.array([TC_TOL_NTOF.get(a, np.inf) for a in arm])
+    t['xy_time_ok'] = np.abs(dtc) <= tol
+    with np.errstate(divide='ignore', invalid='ignore'):
+        lb = np.log(t['x_q_sum'].to_numpy(float) / t['y_q_sum'].to_numpy(float))
+    ms = t['t_since_flash_ns'].to_numpy(float) / 1e6
+    bal = np.ones(len(t), bool)
+    for a in ('A', 'C'):
+        m = arm == a
+        ref = R['runs'].get(run, {}).get(a, {}).get('lnbal')
+        if not m.any() or ref is None:
+            continue
+        sig = np.interp(np.where(np.isfinite(ms[m]), ms[m], 75.0), BAL_T_MS, BAL_SIG[a])
+        bal[m] = np.abs(lb[m] - ref) <= BAL_NSIG * sig
+    t['xy_balance_ok'] = bal
     cut = t['d_faint'].to_numpy() | t['low_charge'].to_numpy()
     b = arm == 'B'
     cut[b] = False
