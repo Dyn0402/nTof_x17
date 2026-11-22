@@ -122,7 +122,7 @@ def apply(t, maps, trs):
             else:
                 out.loc[m, c] = v
         out.loc[m, 'tan_raw_x'] = gg['tanx'].to_numpy()
-        out.loc[m, 'tan_raw_y'] = gg['tany'].to_numpy()
+        out.loc[m, 'tan_raw_y'] = gg['tan_raw_y'].to_numpy()      # the reco sign (stage-3 contract), not tany
         acc = (np.abs(gg['tanx'].to_numpy(float)) < TAN_MAX) & (np.abs(gg['tany'].to_numpy(float)) < TAN_MAX)
         out.loc[m, 'in_acceptance'] = acc
         out.loc[m, 'gated'] = a['gated_reco'].fillna(False).to_numpy(bool) & acc
@@ -138,6 +138,10 @@ def one(src, out, maps, map_md5, force):
     if dst.exists() and not force:
         return src.name, 'exists'
     t = pd.read_parquet(src)
+    if any(c.endswith('_nomap') for c in t.columns):
+        # re-run hazard (audit 11-22): the default --src is the analysis view, which is already mapped; mapping it again
+        # would apply the map twice and overwrite the _nomap columns
+        raise RuntimeError(f'{src} is already mapped (has *_nomap columns): point --src at the unmapped v(t) view')
     run = str(t['run'].iloc[0]).replace('run_', '')
     cfg = json.loads((Path(str(paths.root('runs'))) / f'run_{run}' / 'run_config.json').read_text())
     v, info = apply(t, maps, G.detector_transforms(cfg))

@@ -25,9 +25,12 @@ from pathlib import Path
 VIEW = 'pass1_vt'
 
 
-#: pass 1 has no k (k_arm = 1, tan_raw_* == tan*), so the "raw" tangent the is2-era code multiplies by its own k is the
-#: analysis angle too: tan_raw_{x,y} take tan{x,y}_vt (frozen kept as tan_raw_*_frozen)
-RAW = {'tan_raw_x': 'tanx_vt', 'tan_raw_y': 'tany_vt'}
+#: pass 1 has no k (k_arm = 1), so the "raw" tangent the is2-era code multiplies by its own k is the analysis angle too:
+#: tan_raw_{x,y} take the v(t) angle (frozen kept as tan_raw_*_frozen).  tan_raw_y keeps the stage-3 contract, the
+#: RECO sign (tany = TAN_SIGN_Y * tan_raw_y, build_tracks.local_and_global), so it is TAN_SIGN_Y * tany_vt.  Until
+#: 2026-11-22 it was tany_vt itself (the local sign) and the scint stack, which applies TAN_SIGN_Y, extrapolated
+#: every y slope the wrong way (tracking audit finding 20).
+RAW = {'tan_raw_x': ('tanx_vt', 1.0), 'tan_raw_y': ('tany_vt', 'TAN_SIGN_Y')}
 
 
 #: Columns a beam-off sub-run (and run_104 stat090_0016, which has no trigger-time product) does not have: the stage-1
@@ -49,6 +52,11 @@ def one(src, out, force):
     if dst.exists() and not force:
         return src.name, 'exists'
     import pandas as pd
+    import pyarrow.parquet as pq
+    if dst.exists() and any(c.endswith('_nomap') for c in pq.read_schema(dst).names):
+        # re-run hazard (audit 11-22): the default --out is the analysis view, which map_view + censor_join have since
+        # turned into the mapped, censored view; --force would silently replace it with the unmapped one
+        raise RuntimeError(f'{dst} is a mapped view (has *_nomap columns): write the v(t) view to another --out')
     t = pd.read_parquet(src)
     names = list(t.columns)
     twins = mapping(names)
@@ -60,7 +68,11 @@ def one(src, out, force):
             cols[c] = t[c + '_vt']
             cols[c + '_frozen'] = t[c]
         elif c in RAW:
-            cols[c] = t[RAW[c]]
+            src_col, sign = RAW[c]
+            if sign == 'TAN_SIGN_Y':
+                sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+                from sept26_prelim_analysis.build_tracks import TAN_SIGN_Y as sign
+            cols[c] = sign * t[src_col]
             cols[c + '_frozen'] = t[c]
         else:
             cols[c] = t[c]
@@ -75,7 +87,7 @@ def one(src, out, force):
     meta = json.load(open(mj)) if mj.exists() else {}
     meta['view'] = dict(name=VIEW, source=str(src), source_md5=hashlib.md5(open(src, 'rb').read()).hexdigest(),
                         rule='<col> = stage-3 <col>_vt; <col>_frozen = stage-3 <col> (frozen bundle v); '
-                             'tan_raw_{x,y} = tan{x,y}_vt (no k in pass 1)',
+                             'tan_raw_x = tanx_vt, tan_raw_y = TAN_SIGN_Y * tany_vt (reco sign; no k in pass 1)',
                         columns=twins + list(RAW), padded_null=padded, built_by='rerun/ntof/stage3/vt_view.py')
     json.dump(meta, open(out / mj.name, 'w'), indent=1)
     return src.name, f'{len(twins)} columns'

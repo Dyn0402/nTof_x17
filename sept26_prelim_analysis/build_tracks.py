@@ -512,9 +512,15 @@ def attach_context(tracks: pd.DataFrame, stage1: Path | None,
                 + [f'coinc_{a}' for a in ARMS] + [f'wall_{a}' for a in ARMS]
                 + [f'plastic_{a}' for a in ARMS])
         keep = [c for c in keep if c in s1.columns]
+        # one stage-1 row per event: the old stage 1 has a few eventIds twice (run_139 stat090_0002/0004: NONE and
+        # SINGLE), which duplicated those tracks (tracking audit 2026-11-22).  Keep the classified row.
+        if s1['eventId'].duplicated().any():
+            s1 = (s1.assign(_none=(s1['cls'] == 'NONE') if 'cls' in s1.columns else False)
+                    .sort_values(['eventId', '_none'], kind='stable')
+                    .drop_duplicates('eventId', keep='first').drop(columns='_none'))
         tracks = tracks.merge(s1[keep].rename(columns={'eventId': 'event_id',
                                                        'cls': 'event_class'}),
-                              on='event_id', how='left')
+                              on='event_id', how='left', validate='many_to_one')
         # the n_TOF coincidence for THIS arm, as one column
         if all(f'coinc_{a}' in tracks.columns for a in ARMS):
             tracks['coinc_this_arm'] = [

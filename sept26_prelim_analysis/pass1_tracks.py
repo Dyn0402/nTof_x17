@@ -124,6 +124,40 @@ def read(columns: Sequence[str], *, view: str = 'vt', arms: Iterable[str] | None
     return dset.to_table(columns=list(columns), filter=flt).to_pandas()
 
 
+def cosmic_tags() -> list[str]:
+    """Acquisition tags of the beam-off (cosmic) sub-runs, from the run registry (rclass ``cosmic``, not excluded).
+
+    Select beam-off events with this, never with ``t_since_flash_ns`` null: until the slim fix (tracking audit
+    2026-11-22, finding 12) 14.7 % of production tracks had no time since flash, and a null time put 14,742 beam
+    events into the 46,171 "cosmic" A-C lines.  Tags are unique over the campaign (date + time stamps)."""
+    import csv
+    reg = Path(__file__).resolve().parents[1] / 'rerun' / 'ntof' / 'ntof_registry.csv'
+    return sorted(r['tag'] for r in csv.DictReader(open(reg)) if r['rclass'] == 'cosmic' and r['excluded'] != 'True')
+
+
+def cosmic_filter():
+    """``pyarrow.dataset`` expression for the beam-off rows (``cosmic_tags``), for ``read(filter=...)``."""
+    import pyarrow.dataset as ds
+    return ds.field('tag').isin(cosmic_tags())
+
+
+def nomap(d: pd.DataFrame) -> pd.DataFrame:
+    """Replace every column that has a ``<col>_nomap`` twin by that twin (the v(t) value before the angle map).
+
+    The angle map is FITTED on cosmic lines (line_residuals, bd_map, angle_map fit), so those must be built on the
+    unmapped slopes; reading the mapped analysis view would fit a residual map that map_view then applies to unmapped
+    input.  ``gated`` becomes ``gated_nomap`` (|tan| < 0.5 on the unmapped angle) AND NOT ``censored_window`` when
+    that column was read: the censored-window cut is not an angle cut and stays.  A table without the twins (an
+    unmapped view) is returned unchanged."""
+    tw = [c[:-6] for c in d.columns if c.endswith('_nomap') and c[:-6] in d.columns]
+    if not tw:
+        return d
+    d = d.drop(columns=tw).rename(columns={c + '_nomap': c for c in tw})
+    if 'gated' in tw and 'censored_window' in d.columns:
+        d['gated'] = d['gated'].fillna(False).astype(bool) & ~d['censored_window'].fillna(False).astype(bool)
+    return d
+
+
 def _main():
     b = base()
     print(f'pass-1 base {b}')

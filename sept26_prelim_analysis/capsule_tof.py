@@ -56,7 +56,7 @@ R_FOCUS = 15.0
 #: the plane's distance from the axis (geometry.MM_DIST_Z + W_STRIP)
 D_PLANE = 234.6
 #: the axis foot in each sim arm's own u (ntof_cosmics/g4_digi/analyse.py)
-FOOT_SIM = {'A': 16.35, 'C': 16.4}
+FOOT_SIM = {'A': 16.35, 'C': 17.3}   # C 17.3 = the Geant4 geometry (g4_digi run_digi.FOOT) (was 16.4 until 2026-11-22, audit finding 17)
 HALF = 199.29
 COLS = ['run', 'subrun', 'event_id', 'arm', 'gated_reco', 'gated', 'tanx', 'tany', 'x_t0', 'y_t0',
         'angle_calibrated', 'p0_x', 'p0_y', 'p0_z', 'd_x', 'd_y', 'd_z', 't_since_flash_ns',
