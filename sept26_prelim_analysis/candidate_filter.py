@@ -102,6 +102,13 @@ BUSY_MIN_ARMS = 3
 # --------------------------------------------------------------------------- #
 # The n_TOF side -- read straight off the slim, no clock fit needed
 # --------------------------------------------------------------------------- #
+#: The n_TOF columns stage 1 carries per trigger, from :func:`arm_flags`.  ``ntof_run``
+#: because ``bunch`` restarts per n_TOF run (tracking audit 2026-11-22, finding 12).
+NTOF_COLS = (['ntof_run', 'bunch', 'is_flash', 'matched', 'n_coinc_arms', 'n_wall_arms']
+             + [f'coinc_{a}' for a in ARMS] + [f'wall_{a}' for a in ARMS]
+             + [f'plastic_{a}' for a in ARMS] + [f'liq_{a}' for a in ARMS])
+
+
 def arm_flags(slim_root: Path, accept_ns: float = ACCEPT_NS) -> pd.DataFrame:
     """Per-trigger n_TOF evidence: one row per ``eventId`` in the slim.
 
@@ -153,9 +160,27 @@ def _arm_flags_cached(ntof_dir: Path):
     """
     key = str(ntof_dir)
     if key not in _ARM_FLAG_CACHE:
-        slim = sorted(Path(ntof_dir).glob('*.root'))
-        _ARM_FLAG_CACHE[key] = arm_flags(slim[0]) if slim else None
+        _ARM_FLAG_CACHE[key] = arm_flags_subrun(slim_files_in(ntof_dir), where=key)
     return _ARM_FLAG_CACHE[key]
+
+
+def slim_files_in(ntof_dir: Path) -> list[Path]:
+    """Every slim in one sub-run's ``ntof_hits`` directory, by n_TOF run."""
+    return sorted(Path(ntof_dir).glob('ntof_hits_*.root'), key=paths.slim_ntof_run)
+
+
+def arm_flags_subrun(slims, where: str = '', accept_ns: float = ACCEPT_NS):
+    """:func:`arm_flags` of EVERY slim of a sub-run, concatenated with ``ntof_run``.
+
+    A sub-run spanning two n_TOF runs has one slim per run; reading the first
+    left the second run's triggers with no n_TOF flags, so they could never be
+    IMPLIED (tracking audit 2026-11-22, finding 12).  None if there is no slim.
+    """
+    slims = list(slims)
+    if not slims:
+        return None
+    return paths.concat_slim([(paths.slim_ntof_run(s), arm_flags(s, accept_ns)) for s in slims],
+                             where=where, unique_within=True)
 
 
 # --------------------------------------------------------------------------- #
@@ -452,11 +477,7 @@ def run_subrun(run: str, subrun: str, tag: str | None = None,
 
     df = pd.DataFrame(rows)
     if flags is not None:
-        keep = (['eventId', 'bunch', 'is_flash', 'matched', 'n_coinc_arms',
-                 'n_wall_arms']
-                + [f'coinc_{a}' for a in ARMS] + [f'wall_{a}' for a in ARMS]
-                + [f'plastic_{a}' for a in ARMS] + [f'liq_{a}' for a in ARMS])
-        df = df.merge(flags[keep], on='eventId', how='left')
+        df = df.merge(flags[['eventId'] + NTOF_COLS], on='eventId', how='left')
 
     df['run'], df['subrun'], df['tag'] = run, subrun, (tag or '')
     bench = dict(run=run, subrun=subrun, tag=tag or '',
@@ -470,6 +491,8 @@ def run_subrun(run: str, subrun: str, tag: str | None = None,
                      1e6 * (t_noise + t_sift) / max(len(df), 1) / 3600.0, 1),
                  strict=strict, sep_mm=SEP_MM, accept_ns=ACCEPT_NS,
                  has_slim=flags is not None,
+                 slim_ntof_runs=(sorted(int(x) for x in flags['ntof_run'].unique())
+                                 if flags is not None else []),
                  hot_channels_masked=int(len(mask)),
                  hot_floor=HOT_FLOOR, hot_k=HOT_K)
     return df, bench, mask
@@ -544,6 +567,18 @@ def census(df: pd.DataFrame) -> pd.DataFrame:
     rows.append(dict(cls='(total)', n=n, frac=1.0,
                      median_clean=int(df.n_clean.median())))
     return pd.DataFrame(rows)
+
+
+def census_per_tag(df: pd.DataFrame) -> pd.DataFrame:
+    """Class fractions per file tag: the only handle stage 1 has on whether the
+    class fractions are stable within a sub-run."""
+    per = []
+    for t, g in df.groupby('tag'):
+        c = census(g).set_index('cls').frac
+        per.append(dict(tag=t, n=len(g), **{k: round(float(c[k]), 5) for k in
+                                            ('INTER', 'INTRA', 'IMPLIED',
+                                             'SINGLE', 'BUSY', 'NONE')}))
+    return pd.DataFrame(per)
 
 
 def arm_rates(df: pd.DataFrame) -> pd.DataFrame:
@@ -865,17 +900,10 @@ def main() -> int:
     stem = f'{args.run}_{args.subrun}' + (f'_{args.tag}' if args.tag else '')
     if benches is not None:
         benches.to_csv(out / f'bench_per_tag_{stem}.csv', index=False)
-        # Per-tag census: the spread across tags is the only handle stage 1 has
-        # on whether the class fractions are stable within a sub-run.
-        per = []
-        for t, g in df.groupby('tag'):
-            c = census(g).set_index('cls').frac
-            per.append(dict(tag=t, n=len(g), **{k: round(float(c[k]), 5) for k in
-                                                ('INTER','INTRA','IMPLIED',
-                                                 'SINGLE','BUSY','NONE')}))
-        pd.DataFrame(per).to_csv(out / f'census_per_tag_{stem}.csv', index=False)
+        per = census_per_tag(df)
+        per.to_csv(out / f'census_per_tag_{stem}.csv', index=False)
         print('\nper-tag census (class fractions)\n')
-        print(pd.DataFrame(per).to_string(index=False))
+        print(per.to_string(index=False))
     df.to_parquet(out / f'candidates_{stem}.parquet', index=False)
     census(df).to_csv(out / f'census_{stem}.csv', index=False)
     arm_rates(df).to_csv(out / f'arm_rates_{stem}.csv', index=False)

@@ -77,15 +77,11 @@ def tagged_events(run: str, subruns, arm: str) -> pd.DataFrame:
     One row per (subrun, event): the tag, plus which wall groups and plastic
     bars fired, so a pointing-tightened version can be built from the same read.
     """
-    import uproot
     rows = []
     for sub in subruns:
-        d = os.path.join(str(paths.root('runs')), run, sub, 'ntof_hits')
-        f = sorted(x for x in os.listdir(d) if x.endswith('.root'))
-        if not f:
-            raise FileNotFoundError(f'no slim n_TOF file under {d}')
-        a = uproot.open(os.path.join(d, f[0]))['hits'].arrays(
-            ['eventId', 'det', 'detn', 'dt_ns', 'is_control'], library='np')
+        # every slim of the sub-run (tracking audit 2026-11-22, finding 12)
+        a = paths.read_slim_tree(run, sub, 'hits',
+                                 ['eventId', 'det', 'detn', 'dt_ns', 'is_control'], library='np')
         it = ((a['is_control'] == 0) & (a['dt_ns'] >= DT_WINDOW[0])
               & (a['dt_ns'] <= DT_WINDOW[1]))
         wal = it & (a['det'] == WAL_CODE[arm])

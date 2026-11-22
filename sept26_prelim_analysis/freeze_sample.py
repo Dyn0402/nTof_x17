@@ -96,7 +96,11 @@ def load_match(site: Path = SITE_DATA) -> dict:
 
 
 def load_slim(inventory: Path | None = None) -> dict:
-    """``{(run number, full sub-run name): (n_TOF run, bytes)}`` from EOS.
+    """``{(run number, full sub-run name): (n_TOF run(s), bytes, n files)}`` from EOS.
+
+    A sub-run spanning several n_TOF runs has one slim per run: its n_TOF runs
+    are ``"a;b"`` (ascending) and its bytes the sum; a one-file sub-run keeps the
+    plain int (tracking audit 2026-11-22, finding 12 -- this used to keep one).
 
     The inventory is a checked-in listing rather than a live walk: it takes two
     minutes over EOS, and stage 0 has to be reproducible on a laptop with no
@@ -110,7 +114,7 @@ def load_slim(inventory: Path | None = None) -> dict:
                 f'no slim inventory in {HERE / "data"} -- see data/README.md '
                 f'for the one-line command that regenerates it')
         inventory = found[-1]
-    out = {}
+    files: dict = {}
     for line in Path(inventory).read_text().splitlines():
         if not line.strip():
             continue
@@ -118,7 +122,13 @@ def load_slim(inventory: Path | None = None) -> dict:
         m = re.fullmatch(r'ntof_hits_run_(\d+)_(.+)_(\d{6})\.root', name)
         if not m:
             raise ValueError(f'unparseable slim filename in {inventory}: {name}')
-        out[(int(m.group(1)), m.group(2))] = (int(m.group(3)), int(size))
+        files.setdefault((int(m.group(1)), m.group(2)), []).append((int(m.group(3)), int(size)))
+    out = {}
+    for key, fs in files.items():
+        fs.sort()
+        runs = [n for n, _ in fs]
+        out[key] = (runs[0] if len(runs) == 1 else ';'.join(map(str, runs)),
+                    sum(b for _, b in fs), len(fs))
     return out
 
 
@@ -207,6 +217,7 @@ def build(site: Path = SITE_DATA, inventory: Path | None = None) -> pd.DataFrame
                 has_match=m is not None,
                 has_slim=sl is not None,
                 slim_bytes=(sl[1] if sl else None),
+                n_slim=(sl[2] if sl else 0),
                 cut=cut,
                 in_sample=cut is None,
                 # Conditions that travel with the row rather than being applied here.

@@ -37,7 +37,7 @@ RAW = {'tan_raw_x': ('tanx_vt', 1.0), 'tan_raw_y': ('tany_vt', 'TAN_SIGN_Y')}
 #: context and the flash.  The view writes them as nulls so every table has one schema (readers that ask for them get
 #: null, not a missing-column error).
 PAD = {'t_since_flash_ns': 'float64', 'e_neutron_keV': 'float64', 'is_flash': 'UInt8', 'event_class': 'object',
-       'arms_lit': 'object', 'bunch': 'Int32', 'n_coinc_arms': 'Int64', 'coinc_this_arm': 'Int64',
+       'arms_lit': 'object', 'ntof_run': 'Int32', 'bunch': 'Int32', 'n_coinc_arms': 'Int64', 'coinc_this_arm': 'Int64',
        'no_stage1_class': 'boolean', **{f'{k}_{a}': 'boolean' for k in ('wall', 'plastic', 'coinc') for a in 'ABCD'}}
 
 

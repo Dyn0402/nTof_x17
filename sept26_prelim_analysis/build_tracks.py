@@ -507,7 +507,7 @@ def attach_context(tracks: pd.DataFrame, stage1: Path | None,
     """
     if stage1 is not None and Path(stage1).is_file():
         s1 = pd.read_parquet(stage1)
-        keep = (['eventId', 'cls', 'arms_lit', 'bunch', 'is_flash',
+        keep = (['eventId', 'cls', 'arms_lit', 'ntof_run', 'bunch', 'is_flash',
                  'n_coinc_arms']
                 + [f'coinc_{a}' for a in ARMS] + [f'wall_{a}' for a in ARMS]
                 + [f'plastic_{a}' for a in ARMS])
@@ -547,7 +547,7 @@ def attach_context(tracks: pd.DataFrame, stage1: Path | None,
 
 ORDER = (
     ['run', 'subrun', 'tag', 'event_id', 'arm', 'track_id', 'event_class',
-     'select_reason', 'bunch']
+     'select_reason', 'ntof_run', 'bunch']
     + ['x_local', 'y_local', 'tanx', 'tany', 'drift_t_end_ns', 'drift_len_mm',
        'path_len_mm', 'drift_railed']
     + [f'p0_{k}' for k in 'xyz'] + [f'd_{k}' for k in 'xyz']

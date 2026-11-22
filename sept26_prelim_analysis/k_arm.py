@@ -188,13 +188,14 @@ def coincident_tracks(run: str, sub: str, arm: str, merged_dir: str,
         from sept26_prelim_analysis.slim_export import read_export
         slim_df = read_export(run, [sub])
     except (ImportError, FileNotFoundError):
-        d = os.path.join(str(paths.root('runs')), run, sub, 'ntof_hits')
-        slim = sorted(f for f in os.listdir(d) if f.endswith('.root'))
-        if not slim:
+        # the ROOT fallback reads every slim of the sub-run (tracking audit 2026-11-22, finding 12)
+        try:
+            slim_df = paths.read_slim_tree(run, sub, 'hits',
+                                           ['eventId', 'det', 'detn', 'dt_ns', 'is_control'])
+        except FileNotFoundError as exc:
             raise FileNotFoundError(
                 f'no slim for {run}/{sub}: neither a parquet export nor a '
-                f'ROOT file under {d}')
-        slim_path = os.path.join(d, slim[0])
+                f'ROOT file ({exc})') from None
     sel = (df['x_ok'].to_numpy() & df['y_ok'].to_numpy()
            & (df['n_tracks'].to_numpy() > 0))
     coin, _ = TI.pointing_coincidence(slim_path, arm, df, sel,

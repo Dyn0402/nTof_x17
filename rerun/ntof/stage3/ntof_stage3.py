@@ -20,6 +20,12 @@ with the n_TOF pass's rules (NTOF_PASS_PLAN §3 G2):
 
     ntof_stage3.py --stage2 $WORK_DATA/ntof_pass1/stage2 [--side $WORK_DATA/ntof_pass1/run104] [--rerun-dbeam DIR] --out DIR
                    [--vt $WORK_DATA/ntof_pass1/vt/vt_smooth.parquet] [--runs 145,149] [--force]
+                   [--subruns run_116/stat090_0027,... | FILE] [--stage1-dir DIR] [--trigtime-dir DIR]
+
+`--subruns` (a comma list or a file of `run_X/sub` or `run_X sub` lines), `--stage1-dir` (default the old stage 1,
+/media/dylan/data/x17/sept26_prelim/stage1) and `--trigtime-dir` (sets $X17_TRIGTIME_DIR for trigger_time; default
+<X17_SEPT26_OUT>/trigtime) are for rebuilding the sub-runs whose context came from one slim of several (tracking audit
+2026-11-22, finding 12).
 
 `--stage2` / `--side` are local copies of EOS Analysis_pass1/stage2 and the canon's other directories (same layout).
 A per-sub-run view directory of symlinks (mx17_<arm>/events_<tag>.*) feeds build_tracks unchanged.
@@ -54,7 +60,7 @@ def canonical(r, arm, canon, roots):
     return d, f"run_{r['run']}_{r['subrun']}_{r['tag']}_{arm}"
 
 
-def one(run, sub, rows, canon, roots, out, force, vt_path, vt_md5):
+def one(run, sub, rows, canon, roots, out, force, vt_path, vt_md5, stage1_dir=None):
     from sept26_prelim_analysis import build_tracks as BT
     dst = Path(out) / f'tracks_run_{run}_{sub}.parquet'
     if dst.exists() and not force:
@@ -75,7 +81,7 @@ def one(run, sub, rows, canon, roots, out, force, vt_path, vt_md5):
                         os.symlink(src, vd / f"events_{r['tag']}{ext}")
             if missing:
                 raise FileNotFoundError(f'{len(missing)} canonical files missing, first {missing[0]}')
-            s1 = OLD / 'stage1' / f'candidates_run_{run}_{sub}.parquet'
+            s1 = Path(stage1_dir or OLD / 'stage1') / f'candidates_run_{run}_{sub}.parquet'
             tracks, meta = BT.build(f'run_{run}', sub, Path(view), stage1=s1 if s1.exists() else None, allow=None,
                                     out_dir=None, k_arm=K_ARM, write=False, tan_max_true=TAN_MAX_TRUE)
         tracks['tan_source'] = 'bundle_v'            # k = 1: tanx/tany are true tans at the frozen bundle v
@@ -114,6 +120,21 @@ def one(run, sub, rows, canon, roots, out, force, vt_path, vt_md5):
         return run, sub, 'FAILED', traceback.format_exc(limit=4)
 
 
+def parse_subruns(arg):
+    """{(run_X, sub)} from a comma list or a file of 'run_X/sub' or 'run_X sub' lines."""
+    text = Path(arg).read_text() if os.path.isfile(arg) else arg.replace(',', '\n')
+    out = set()
+    for line in text.splitlines():
+        line = line.split('#')[0].strip()
+        if not line:
+            continue
+        f = line.replace('/', ' ').split()
+        if len(f) != 2 or not f[0].startswith('run_'):
+            raise SystemExit(f'--subruns: expected run_X/sub, got {line!r}')
+        out.add((f[0], f[1]))
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     wd = os.environ.get('WORK_DATA', '/media/ucla/work')
@@ -127,6 +148,11 @@ def main():
     ap.add_argument('--out', default=f'{wd}/ntof_pass1/stage3')
     ap.add_argument('--canon', default=os.path.join(NT, 'ledger_canon.json'))
     ap.add_argument('--runs', default=None)
+    ap.add_argument('--subruns', default=None,
+                    help='only these sub-runs: comma list or file of run_X/sub (or "run_X sub") lines')
+    ap.add_argument('--stage1-dir', default=str(OLD / 'stage1'), help='stage-1 candidates (default: the old stage 1)')
+    ap.add_argument('--trigtime-dir', default=None,
+                    help='trigger-time products (sets $X17_TRIGTIME_DIR; default <X17_SEPT26_OUT>/trigtime)')
     ap.add_argument('--jobs', type=int, default=8)
     ap.add_argument('--force', action='store_true')
     a = ap.parse_args()
@@ -135,6 +161,17 @@ def main():
     reg = [r for r in csv.DictReader(open(os.path.join(NT, 'ntof_registry.csv'))) if r['excluded'] != 'True']
     if a.runs:
         reg = [r for r in reg if r['run'] in a.runs.split(',')]
+    if a.subruns:
+        want = parse_subruns(a.subruns)
+        known = {(f"run_{r['run']}", r['subrun']) for r in reg}
+        if want - known:
+            raise SystemExit(f'--subruns: {len(want - known)} not in the (filtered) registry, e.g. {sorted(want - known)[0]}')
+        reg = [r for r in reg if (f"run_{r['run']}", r['subrun']) in want]
+    if a.trigtime_dir:
+        # inherited by the worker processes; trigger_time.product reads it
+        os.environ['X17_TRIGTIME_DIR'] = os.path.abspath(a.trigtime_dir)
+    print(f"stage 1: {a.stage1_dir}  trigtime: {os.environ.get('X17_TRIGTIME_DIR', '<X17_SEPT26_OUT>/trigtime')}",
+          flush=True)
     groups = {}
     for r in reg:
         groups.setdefault((r['run'], r['subrun']), []).append(r)
@@ -143,7 +180,8 @@ def main():
     print(f'v(t): {a.vt} md5 {vt_md5}', flush=True)
     bad = []
     with ProcessPoolExecutor(a.jobs) as ex:
-        fs = [ex.submit(one, run, sub, rows, canon, roots, a.out, a.force, a.vt, vt_md5) for (run, sub), rows in sorted(groups.items())]
+        fs = [ex.submit(one, run, sub, rows, canon, roots, a.out, a.force, a.vt, vt_md5, a.stage1_dir)
+              for (run, sub), rows in sorted(groups.items())]
         for i, f in enumerate(as_completed(fs)):
             run, sub, msg, err = f.result()
             print(f'[{i + 1}/{len(fs)}] run_{run} {sub}: {msg}', flush=True)

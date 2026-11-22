@@ -170,14 +170,13 @@ def training_events(run: str, subrun: str, arm: str, merged_dir: str) -> pd.Data
                                    'events_prelim.parquet'),
                       f'reconstruction for {arm}/{subrun}')
     df = pd.read_parquet(p)
-    d = os.path.join(str(paths.root('runs')), run, subrun, 'ntof_hits')
-    slim = sorted(f for f in os.listdir(d) if f.endswith('.root'))
-    if not slim:
-        raise FileNotFoundError(f'no slim n_TOF file under {d}')
+    # every slim of the sub-run, passed as a frame (tracking audit 2026-11-22, finding 12)
+    slim_df = paths.read_slim_tree(run, subrun, 'hits',
+                                   ['eventId', 'det', 'detn', 'dt_ns', 'is_control'])
     sel = (df['x_ok'].to_numpy() & df['y_ok'].to_numpy()
            & (df['n_tracks'].to_numpy() > 0))
-    coin, _ = TI.pointing_coincidence(os.path.join(d, slim[0]), arm, df, sel,
-                                      foot_x=TI.PINWHEEL[arm])
+    coin, _ = TI.pointing_coincidence(None, arm, df, sel,
+                                      foot_x=TI.PINWHEEL[arm], slim_df=slim_df)
     q = df['x_q_sum'].to_numpy()
     m = coin & sel & np.isfinite(q) & (q > 0)
     lo, hi = np.percentile(q[m], KA.CHARGE_WINDOW)
