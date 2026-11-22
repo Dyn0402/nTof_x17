@@ -227,6 +227,11 @@ def pair_rows(cand: pd.DataFrame) -> pd.DataFrame:
                   'slope_reliable', 'quality_ok', 'plausible', 'isochronous',
                   'n_candidates', 'rank', 'dchi2', 'ftst'):
             out[f'{pl}_{c}'] = src[c].to_numpy()
+        # optional: the bow tilt term and mesh height (n_TOF stage 3 recomputes them, ntof_stage3.bow_patch) and the
+        # two-track child flag (tracking audit 2026-11-22: split_child was not carried)
+        for c in ('bow_a', 'bow_h', 'split_child'):
+            if c in src.columns:
+                out[f'{pl}_{c}'] = src[c].to_numpy()
     out['gated'] = x['track_gated'].to_numpy() & y['track_gated'].to_numpy()
     return out.reset_index()
 

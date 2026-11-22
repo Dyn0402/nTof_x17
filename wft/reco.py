@@ -476,6 +476,40 @@ def apply_bow(cal: CalibrationBundle, fx=None, fy=None, skip=()) -> None:
         f._bow_h = float(bow_h(cal, U, W, p))
 
 
+def bow_pairs(cal: CalibrationBundle, wx, p0x, wy, p0y) -> dict:
+    """``apply_bow`` on arrays of x/y pairs (each pair mapped with its own partner), for table-level recomputation.
+
+    Returns ``tan_x, tan_y`` (the bow tangents), ``a_x, a_y`` (the v-independent tilt term of a block with ``a_<p>``,
+    tan = (w - w0) / (kw v S) - a; 0 otherwise) and ``h_x, h_y`` (each view's mesh height).  Equal to the scalar path
+    to rounding (wft/tests/test_bow_partner.py).  Pass 1 used it to undo the winner re-mapping (audit finding 21)."""
+    wx, p0x, wy, p0y = (np.asarray(v, float) for v in (wx, p0x, wy, p0y))
+    b = getattr(cal, 'bow', None) or {}
+    if (getattr(cal, 'v_map', None) or {}).get('xy'):
+        raise NotImplementedError('bow_pairs: v_map bundles are not vectorised')
+    kv = {p: cal.kw.get(p, 1.0) * cal.v_drift for p in 'xy'}
+    tc = {p: (w * 1e3 - cal.w0.get(p, 0.0)) / kv[p] for p, w in (('x', wx), ('y', wy))}
+    U = ((p0x + BOW_MID_MM * tc['x']) - 200.0) / 100.0
+    W = ((p0y + BOW_MID_MM * tc['y']) - 200.0) / 100.0
+    with np.errstate(invalid='ignore'):
+        U = np.where(np.isfinite(U) & (np.abs(U) <= BOW_UW_MAX), U, 0.0)
+        W = np.where(np.isfinite(W) & (np.abs(W) <= BOW_UW_MAX), W, 0.0)
+    out = {}
+    for p, w in (('x', wx), ('y', wy)):
+        A, sb = b.get(f'A_{p}') or {}, b.get(f's_{p}') or {}
+        S = 1.0 + sb.get('su', 0.0) * U + sb.get('sw', 0.0) * W
+        a = b.get(f'a_{p}')
+        if a:
+            av = _bow_poly(a, U, W) * np.ones_like(U)
+            out[f'tan_{p}'] = (w * 1e3 - cal.w0.get(p, 0.0)) / (kv[p] * S) - av
+        else:
+            av = np.zeros_like(U)
+            out[f'tan_{p}'] = (w * 1e3 - cal.w0.get(p, 0.0) - _bow_poly(A, U, W)) / (kv[p] * S)
+        out[f'a_{p}'] = av
+        h = b.get(f'h_{p}') or b.get('h')
+        out[f'h_{p}'] = (_bow_poly(h, U, W, ('gu', 'gw'), ('kuu', 'kww', 'kuw')) * np.ones_like(U)) if h else np.zeros_like(U)
+    return out
+
+
 def tan_of(cal: CalibrationBundle, plane: str, w: float, p0: float) -> float:
     """Track tangent from the fitted transverse speed w [mm/ns] and mesh position p0 [mm].
 

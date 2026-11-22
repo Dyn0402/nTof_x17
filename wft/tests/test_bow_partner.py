@@ -29,3 +29,18 @@ def test_skip_keeps_partner_mapping():
     # without skip the cross-pair coordinates do change them (the bug the skip prevents)
     reco.apply_bow(cal, x1, y2)
     assert x1.tan_theta != t_x1 and y2.tan_theta != t_y2
+
+
+def test_bow_pairs_matches_scalar():
+    import numpy as np
+    cal = _cal()
+    cal.bow.update({'a_x': {'cu': 0.01, 'auw': 0.003}, 'h_x': {'gu': 0.5, 'kww': 0.2}, 's_y': {'su': 0.02}})
+    rng = np.random.default_rng(0)
+    wx, wy = rng.normal(0, 0.01, 50), rng.normal(0, 0.01, 50)
+    px, py = rng.uniform(0, 400, 50), rng.uniform(0, 400, 50)
+    v = reco.bow_pairs(cal, wx, px, wy, py)
+    for i in range(50):
+        fx, fy = _fit(px[i], wx[i]), _fit(py[i], wy[i])
+        reco.apply_bow(cal, fx, fy)
+        assert abs(fx.tan_theta - v['tan_x'][i]) < 1e-12 and abs(fy.tan_theta - v['tan_y'][i]) < 1e-12
+        assert abs(fx._bow_h - v['h_x'][i]) < 1e-12 and abs(fy._bow_h - v['h_y'][i]) < 1e-12

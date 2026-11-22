@@ -60,6 +60,55 @@ def canonical(r, arm, canon, roots):
     return d, f"run_{r['run']}_{r['subrun']}_{r['tag']}_{arm}"
 
 
+#: arms whose candidate tangents are recomputed from (w, p0) with the bundle's bow block, each pair with its own
+#: partner (tracking audit 2026-11-22, finding 21: the reco re-mapped the two plane winners together after the pairs).
+#: B has no angle.  BUNDLES: local copy of Analysis_pass1/bundles (pf/<name>).
+BOW_ARMS = ('A', 'C', 'D')
+BUNDLES = Path(os.environ.get('WORK_DATA', '/media/ucla/work')) / 'ntof_pass1' / 'bundles' / 'pf'
+
+
+def bundle_for(r, arm, canon):
+    u = L.rule_for(canon, r, arm)
+    return (u or {}).get('bundle') or L.expected_bundle(r, arm)
+
+
+def bow_patch(src: Path, meta: Path, bundle_dir: Path, dst: Path) -> dict:
+    """Write `src` candidates to `dst` with every paired row's tan_theta / theta_deg recomputed from its own pair
+    (wft.reco.bow_pairs), plus `bow_a` (the bow tilt term, v-independent) and `bow_h` (mesh height).  Rows with
+    track_id < 0 keep the reco's values (bow_a, bow_h null).  Refuses a bundle whose v differs from the one the reco
+    used, or one that reproduces fewer than half of the stored tangents (a wrong bundle reproduces none)."""
+    import numpy as np
+    from wft.calib import CalibrationBundle
+    from wft import reco as R
+    cal = CalibrationBundle.load(str(bundle_dir))
+    mv = json.loads(meta.read_text()).get('bundle', {}).get('v_drift')
+    if mv is not None and abs(float(mv) - float(cal.v_drift)) > 1e-6:
+        raise ValueError(f'{src.name}: bundle {bundle_dir.name} v {cal.v_drift} != reco v {mv}')
+    c = pd.read_parquet(src)
+    c['bow_a'], c['bow_h'] = np.nan, np.nan
+    t = c[c['track_id'] >= 0]
+    key = ['event_id', 'track_id']
+    x = t[t['plane'] == 'x'].reset_index().set_index(key)
+    y = t[t['plane'] == 'y'].reset_index().set_index(key)
+    common = x.index.intersection(y.index)
+    x, y = x.loc[common], y.loc[common]
+    v = R.bow_pairs(cal, x['w'], x['p0'], y['w'], y['p0'])
+    old = np.r_[x['tan_theta'].to_numpy(float), y['tan_theta'].to_numpy(float)]
+    new = np.r_[v['tan_x'], v['tan_y']]
+    ok = np.isfinite(old) & np.isfinite(new)
+    same = np.abs(old - new)[ok] < 1e-9
+    if ok.sum() > 100 and same.mean() < 0.5:
+        raise ValueError(f'{src.name}: bundle {bundle_dir.name} reproduces only {same.mean():.1%} of the tangents')
+    for p, idx in (('x', x['index'].to_numpy()), ('y', y['index'].to_numpy())):
+        c.loc[idx, 'tan_theta'] = v[f'tan_{p}']
+        c.loc[idx, 'theta_deg'] = np.degrees(np.arctan(v[f'tan_{p}']))
+        c.loc[idx, 'bow_a'] = v[f'a_{p}']
+        c.loc[idx, 'bow_h'] = v[f'h_{p}']
+    c.to_parquet(dst, index=False)
+    return dict(bundle=bundle_dir.name, n_pairs=int(len(common)), frac_changed=float(1 - same.mean()) if ok.any() else 0.0,
+                max_abs_dtan=float(np.abs(old - new)[ok].max()) if ok.any() else 0.0)
+
+
 def one(run, sub, rows, canon, roots, out, force, vt_path, vt_md5, stage1_dir=None):
     from sept26_prelim_analysis import build_tracks as BT
     dst = Path(out) / f'tracks_run_{run}_{sub}.parquet'
@@ -67,7 +116,7 @@ def one(run, sub, rows, canon, roots, out, force, vt_path, vt_md5, stage1_dir=No
         return run, sub, 'exists', None
     try:
         with tempfile.TemporaryDirectory(dir=out, prefix='.view_') as view:
-            missing = []
+            missing, bow_log = [], []
             for r in rows:
                 for arm in L.ARMS:
                     d, stem = canonical(r, arm, canon, roots)
@@ -78,7 +127,12 @@ def one(run, sub, rows, canon, roots, out, force, vt_path, vt_md5, stage1_dir=No
                         if not src.exists():
                             missing.append(str(src))
                             continue
-                        os.symlink(src, vd / f"events_{r['tag']}{ext}")
+                        dst_c = vd / f"events_{r['tag']}{ext}"
+                        if ext == '.candidates.parquet' and arm in BOW_ARMS:
+                            bow_log.append(dict(tag=r['tag'], arm=arm, **bow_patch(
+                                src, d / f'{stem}.meta.json', BUNDLES / bundle_for(r, arm, canon), dst_c)))
+                        else:
+                            os.symlink(src, dst_c)
             if missing:
                 raise FileNotFoundError(f'{len(missing)} canonical files missing, first {missing[0]}')
             s1 = Path(stage1_dir or OLD / 'stage1') / f'candidates_run_{run}_{sub}.parquet'
@@ -94,6 +148,9 @@ def one(run, sub, rows, canon, roots, out, force, vt_path, vt_md5, stage1_dir=No
         tracks.loc[b, 'gated'] = tracks.loc[b, 'gated_reco']
         tracks.loc[b, 'tan_source'] = 'none (B: positions only)'
         meta['n_gated'] = int(tracks['gated'].sum())
+        meta['bow_partner_fix'] = dict(rule='candidate tangents of A, C, D recomputed from (w, p0) with each pair\'s own '
+                                            'partner (wft.reco.bow_pairs; tracking audit 2026-11-22, finding 21)',
+                                       per_tag=bow_log)
         # v(t): beside the frozen-v columns (vt_join.py)
         trig = {VT.TRIGGER_OF_RCLASS[r['rclass']] for r in rows}
         if len(trig) != 1:
