@@ -39,6 +39,9 @@ TAN_BINS = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]
 EDGES = np.arange(0, 400.5, 0.5)          # |miss| histogram, mm
 U_HAT = {'A': np.array([1., 0., 0.]), 'C': np.array([-1., 0., 0.])}
 W_HAT = {'A': np.array([0., 0., 1.]), 'C': np.array([0., 0., -1.])}
+#: miss distances are taken about the measured source (pass1_tracks.SOURCE_XZ_MM), not the nominal axis
+from sept26_prelim_analysis.pass1_tracks import SOURCE_XZ_MM as _SXZ  # noqa: E402
+SOURCE = np.array([_SXZ[0], 0.0, _SXZ[1]])
 PRE_ACCESS = ('run_79', 'run_81')
 COLS = ['arm', 'gated', 'angle_calibrated', 'p0_x', 'p0_y', 'p0_z', 'd_x', 'd_y', 'd_z',
         'tanx', 'tany', 'dca_axis_mm']
@@ -66,6 +69,8 @@ def _one(path: str, tan_max: float, seed: int) -> dict:
         fin = np.isfinite(ref)
         if fin.any() and np.nanmax(np.abs(np.abs(e1[fin]) - ref[fin])) > 1e-6:
             raise AssertionError(f'{path} {arm}: transverse frame disagrees with dca_axis_mm')
+        # then about the measured source, not the nominal axis (tracking audit 2026-11-22, imaging review 4)
+        pu, pw = pu - SOURCE @ U_HAT[arm], pw - SOURCE @ W_HAT[arm]
         b = np.digitize(np.abs(tx), TAN_BINS) - 1
         for s in SCALES:
             e = np.abs((pu - pw * s * tx) / np.hypot(s * tx, 1.0))

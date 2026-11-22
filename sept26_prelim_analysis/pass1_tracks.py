@@ -41,6 +41,12 @@ EOS_STAGE3 = EOS_PASS1 + '/stage3'
 #: the analysis acceptance on the v(t) angle (vt_join.TAN_MAX_VT); `gated` in the view applies it
 TAN_MAX_VT = 0.5
 CHAIN = 'pass1'
+#: the measured capsule source in the global frame [mm] (x from the A/C late band crossings on the analysis view, z from
+#: D: -4.5 +- 1, tracking audit 2026-11-22 findings 16 and 19).  Scans that measure a miss distance (focus scale,
+#: pointing fractions) take it about THIS point, not about the nominal axis (0, 0): about the axis the tan-sign split
+#: of the focus scale was 0.86 / 1.14 on A, and re-centred 1.00 / 1.00 (imaging review 4).  Update when the source
+#: estimate changes; $X17_SOURCE_XZ="x,z" overrides.
+SOURCE_XZ_MM = tuple(float(v) for v in os.environ.get('X17_SOURCE_XZ', '-10.9,-4.5').split(','))
 #: runs before the 27 July access: chamber A x connector 8 dead (CLAUDE.md)
 PRE_ACCESS_RUNS = ('run_79', 'run_81')
 

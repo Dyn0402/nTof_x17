@@ -308,7 +308,12 @@ def transverse(run: str, subruns, merged_dir: str) -> pd.DataFrame:
             # the alignment and the angle scale describing different samples.
             # No try/except: a missing product is a staging problem and must
             # stop the run, not become a silent NaN row.
-            S = K.coincident_tracks(run, sub, arm, merged_dir)
+            # the analysis view by default (tracking audit 2026-11-22, imaging review 3); $X17_IMAGING_SOURCE=reco
+            # keeps the raw reco-tree sample of the retired chain for comparison
+            if os.environ.get('X17_IMAGING_SOURCE', 'view') == 'view':
+                S = K.coincident_tracks_view(run, sub, arm)
+            else:
+                S = K.coincident_tracks(run, sub, arm, merged_dir)
             xl, tx = S['xl'], S['tx']
             foot = S['foot_x']
             raw = TI.IN_PLANE_SIGN * xl + TI.STRIP_MAP_HALF

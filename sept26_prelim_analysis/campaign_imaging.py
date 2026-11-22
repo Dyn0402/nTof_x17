@@ -166,7 +166,7 @@ def _y_rows(SI, run: str, subruns, n_model: int):
 # --------------------------------------------------------------------------- #
 # reductions
 # --------------------------------------------------------------------------- #
-def per_run(T: pd.DataFrame, variant: str = 'baseline') -> pd.DataFrame:
+def per_run(T: pd.DataFrame, variant: str = 'symmetric') -> pd.DataFrame:
     """Per (run, arm): the crossing averaged over sub-runs, with two errors.
 
     ``err_stat`` is the bootstrap propagated over sub-runs; ``err_repro`` is the
@@ -380,7 +380,7 @@ def main() -> int:
             Ts.append(T)
             if Y is not None and len(Y):
                 Ys.append(Y)
-            n = int(T[(T.variant == "baseline") & T.mm.notna()].n.sum())
+            n = int(T[(T.variant == "symmetric") & T.mm.notna()].n.sum())
             print(f'  {run:<10} ok      {n:>7,} coincident tracks', flush=True)
 
     if not Ts:

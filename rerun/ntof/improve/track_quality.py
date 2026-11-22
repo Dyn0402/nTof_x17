@@ -51,10 +51,23 @@ def out_dir() -> Path:
     return d
 
 
+def _view_stamp() -> str:
+    """Identity of the analysis view the cache was built from: directory + the newest table's mtime and size."""
+    from sept26_prelim_analysis import pass1_tracks as P1
+    fs = P1.files()
+    newest = max(fs, key=lambda f: f.stat().st_mtime)
+    st = newest.stat()
+    return f'{P1.stage3_dir().resolve()}|{len(fs)}|{newest.name}|{st.st_mtime_ns}|{st.st_size}'
+
+
 def load_tracks(refresh=False) -> pd.DataFrame:
-    """A/C gated tracks with the pointing quantities (pos, disp) and the quality columns; cached."""
+    """A/C gated tracks with the pointing quantities (pos, disp) and the quality columns; cached.
+
+    The cache is keyed on the view (``_view_stamp``): a rebuilt or switched view rebuilds it.  Until 2026-11-22 the
+    cache was returned whatever the view, and angle_map.py beam read a cache from before the map (imaging review 9)."""
     f = out_dir() / 'tracks_AC.parquet'
-    if f.exists() and not refresh:
+    stamp = f.with_suffix('.view.txt')
+    if f.exists() and not refresh and stamp.exists() and stamp.read_text() == _view_stamp():
         return pd.read_parquet(f)
     from sept26_prelim_analysis import capsule_tof as CT
     CT.COLS = list(dict.fromkeys(CT.COLS + EXTRA))
@@ -63,6 +76,7 @@ def load_tracks(refresh=False) -> pd.DataFrame:
         if c in d:
             d[c] = d[c].astype(str)
     d.to_parquet(f, index=False)
+    stamp.write_text(_view_stamp())
     return d
 
 
@@ -129,13 +143,11 @@ def scan(win='late', nq=8) -> pd.DataFrame:
     rows = []
     for arm, g in d.groupby('arm'):
         miss = (g.pos + g.disp - xs[arm]).to_numpy()
-        # null: shuffle displacements within |tan x| bins so the null keeps the angle distribution
-        miss0 = np.empty_like(miss)
-        tb = np.digitize(g.tanx.abs().to_numpy(), [0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45])
+        # null: a full shuffle of the displacements (no pointing at all).  The old null shuffled within |tan x| bins,
+        # which mostly randomises only the sign and keeps part of the pointing: within 15 mm 0.296 against 0.140,
+        # so exc1/exc2 read a third low and were not comparable with capsule_tof's excess (imaging review 8)
         disp, pos = g.disp.to_numpy(), g.pos.to_numpy()
-        for b in np.unique(tb):
-            i = np.flatnonzero(tb == b)
-            miss0[i] = pos[i] + disp[rng.permutation(i)] - xs[arm]
+        miss0 = pos + disp[rng.permutation(len(disp))] - xs[arm]
         base = pointing(miss, miss0)
         rows.append(dict(arm=arm, var='ALL', bin='all', share=1.0, **base))
         for var, how in SCAN.items():

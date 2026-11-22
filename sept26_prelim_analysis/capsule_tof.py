@@ -120,20 +120,45 @@ def load(src, arms) -> pd.DataFrame:
     return d.reset_index(drop=True)
 
 
-def crossing(pos, disp, n_iter=4, clip=3.0):
+#: half-width [mm] of the window around the first crossing that the final fit uses (tracking audit 2026-11-22, finding
+#: 17 / imaging review 2): with background tracks the MAD clip alone fails abruptly (A -10.7 -> -18.2 mm with 40 %
+#: early tracks added, D -4.0 -> -10.6 at 10 %); fitting within 100 mm of the crossing holds (A -10.71 -> -10.95).
+#: None = the old full-range fit.
+WINDOW_MM = 100.0
+#: D's tilt sample: ToF >= D_MIN_MS and the wall fired (capsule_pose.py data_z uses the same)
+D_MIN_MS = 25.0
+
+
+def crossing(pos, disp, n_iter=4, clip=3.0, window=WINDOW_MM):
     """Zero crossing of the robust line disp = a (pos - x_s): x where disp = 0
-    (the source's coordinate along this axis), with a bootstrap-free error."""
+    (the source's coordinate along this axis), with a bootstrap-free error.
+
+    The fit is done first on every track (MAD clip), then again only on tracks
+    within ``window`` mm of that crossing, twice; ``window=None`` skips that."""
     pos, disp = np.asarray(pos, float), np.asarray(disp, float)
     if len(pos) < 50:
         return np.nan, np.nan, len(pos)
+    x0, err, n = _crossing_fit(pos, disp, np.ones(len(pos), bool), n_iter, clip)
+    if window is not None:
+        for _ in range(2):
+            if not np.isfinite(x0):
+                break
+            near = np.abs(pos - x0) < window
+            if near.sum() < 50:
+                return np.nan, np.nan, int(near.sum())
+            x0, err, n = _crossing_fit(pos, disp, near, n_iter, clip)
+    return x0, err, n
+
+
+def _crossing_fit(pos, disp, sel, n_iter, clip):
     # disp + pos = x at the plane n = 0; a line through the source has
     # pos + disp = x_s exactly (displacement is minus the slope times distance)
-    keep = np.ones(len(pos), bool)
+    keep = sel.copy()
     for _ in range(n_iter):
         a, b = np.polyfit(pos[keep], disp[keep], 1)
         r = disp - (a * pos + b)
         s = 1.4826 * np.median(np.abs(r[keep]))
-        keep = np.abs(r) < clip * s
+        keep = sel & (np.abs(r) < clip * s)
     a, b = np.polyfit(pos[keep], disp[keep], 1)
     x0 = -b / a
     r = disp[keep] - (a * pos[keep] + b)
@@ -196,7 +221,9 @@ def tilt(out: Path, chains=('pass1',)) -> pd.DataFrame:
     for tag in chains:
         src, arms = CHAINS[tag]
         d = load(src, arms)
-        d = d[d.ms >= 12]
+        # D: late and wall-confirmed only (as capsule_pose's data_z).  At >= 12 ms 59 % of D's tracks do not point and
+        # the crossing read -1.7 (tracking audit 2026-11-22, finding 16 / imaging review 1)
+        d = d[(d.ms >= 12) & ((d.arm != 'D') | ((d.ms >= D_MIN_MS) & d.wall))]
         for arm, g in d.groupby('arm'):
             xs, xe, n = crossing(g.pos, g.disp)
             rows.append(dict(chain=tag, arm=arm, axis=VIEW[arm][0], lo=-999, hi=999, n=n,
