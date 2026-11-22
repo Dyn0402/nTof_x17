@@ -705,39 +705,55 @@ redeployed (dylan-cern-site 91d4386). Inputs on the desktop: $WORK_DATA/claude-j
 - Deck: `WORK_DATA=~/work_data .venv/bin/python papers/paper1/make_figures_deck.py --out <html>` then
   `dylan-cern-site/scripts/add-note.py <html> --slug mx17-paper1-figures --force --deploy`.
 
-## n_TOF tracking audit: findings written, fixes are Dylan's call — updated 2026-11-21 (dylan-MS-7C84)
+## n_TOF tracking audit fixes — updated 2026-11-22 (dylan-MS-7C84)
 
-**Resume:** audit done, nothing in the chain changed; next: Dylan decides which of the fixes below to make (slim files first).
+**Resume:** stage 3 rebuilt (stage3_r2); next: `bash rerun/ntof/improve/run_r2_chain.sh`, then Dylan's A/C ringing-cut choice.
 
-**Goal:** Dylan asked for an audit of the n_TOF tracking and of the capsule-imaging oddities before finalizing.
+**Goal:** fix everything the 11-21 tracking audit found (README findings 11-23), on existing data. Plan and status per
+item: `rerun/ntof/improve/AUDIT_FIX_ROADMAP.md` (phases 0-5).
 
-**Done:** `rerun/ntof/improve/README.md` findings 11-22; report `rerun/ntof/improve/audit_report/report.html`
-(`tracking_audit.py`, `make_audit_report.py --copy`; live copy, cache and the one-off review scripts in
-`$WORK_DATA/ntof_pass1/ana/tracking_audit/`). Three independent code reviews (stage-3 tables, imaging estimators,
-reconstruction and gate) plus data checks on the analysis view and on Geant4 through pass 1.
+**Done (branch audit-fixes, merged to main):**
+- Phase 0-1: reviews saved (`rerun/ntof/improve/audit_report/reviews/`), finding 23; scint-stack y sign fixed at the
+  producer (view `tan_raw_y` = reco sign); beam-off by registry class (`pass1_tracks.cosmic_tags`); lines on unmapped
+  slopes; re-run guards in vt_view/map_view; bow-partner fix in `wft/reco.py` (+ test); stage-1 dedup; FOOT_SIM C 17.3.
+- Slim fix: every reader takes every slim file (`paths.slim_files`, `concat_slim`); trigtime, slim export and stage 1
+  regenerated for the 77 sub-runs into `$WORK_DATA/ntof_pass1/context_r2/{trigtime,slim,stage1}` (full 293/297 sets;
+  old rows identical; 3.39 M -> 6.95 M triggers timed in those sub-runs).
+- Stage 3 rebuilt, all 543 sub-runs, 0 failed: `$WORK_DATA/ntof_pass1/stage3_r2/`. Untimed production tracks 14.72 % ->
+  0.68 %. Also carries the bow-partner recompute (`bow_patch`), `x/y_bow_a`, `x/y_bow_h`, `x/y_split_child`, `ntof_run`,
+  and v(t) rescaling only the speed part. Bow mesh height NOT applied (no pointing gain on run_145).
+- Phase 3 estimators: windowed `capsule_tof.crossing`; D tilt on >= 25 ms + wall; `campaign_imaging` on the view;
+  focus scans / capsule_point / pose z about `pass1_tracks.SOURCE_XZ_MM` (-10.9, -4.5); pose chi2_x with library error;
+  track_quality full-shuffle null + view-keyed cache.
+- `rerun/ntof/stage3/quality_join.py`: D faint-window rule IN gated (gated_precut kept); flags only: t0_railed,
+  xy_time_ok (n_TOF tc tolerance), xy_balance_ok (sigma(t)), dca_source_mm; `low_charge` slot empty (`--low-charge none`).
+- Low-charge studies: charge-only variants equivalent on A/C; per-event noise threshold no better
+  (`rerun/ntof/improve/low_charge_study.py`); waveform ringing study `rerun/ntof/ringing/README.md`: ringing = block
+  common mode x stable per-channel coupling, removable (`deflect.py`); waveform flag + 600 ADC gains 0.04-0.08 purity
+  before 8 ms only, nothing from 8 ms; pass 2 not justified.
+- `docs/PARAMETERS.md` rows for all new parameters.
 
-**What it found, in order of impact:**
-1. Sub-runs with two slim files are read from the first only: 14.7 % of production tracks have no time since flash and
-   no scintillator flags (77 of 293 sub-runs). "Time is null" is therefore not "beam-off".
-2. Before ~12 ms most gated A/C tracks are fits to the ringing baseline (charge < 600 ADC); they make 44 % of A's
-   same-chamber pairs at 12-15 ms. A charge minimum removes them at < 1.5 % cost.
-3. D: 31 % of late tracks do not point (hot-strip windows); clean D gives z = -4.1; quote -4.5 +- 1 and drop the -1.7.
-4. The image width is electron scattering (Geant4 truth is wider than the data); the x offset is not a tracking effect.
-5. Bugs: scint-stack y slope sign (`extract.py` x `tan_raw_y`), bow re-map of pair partners in `wft/reco.py`,
-   `FOOT_SIM['C']` 16.4 vs 17.3, `campaign_imaging` not on the view, focus split about the nominal axis.
+**Not started / open:**
+1. `bash rerun/ntof/improve/run_r2_chain.sh` (~2 h): v(t) view, map refit on true cosmics, map_view, censor_join,
+   quality_join -> `stage3_r2_final/`. Check the refitted map against the shipped one (expected ~0.001 in tan).
+2. Dylan's decision on the A/C ringing cut (asked 11-22, not answered): condor waveform-flag pass (~300 jobs, ~2 TB read,
+   needs lxplus) + 600 ADC, or 600 ADC only, or run-MIP-scaled charge. Then fill `quality_join --low-charge`. Also: is
+   `t0_railed` to go into gated (costs 0.9/1.3/4.3 % of good A/C/D tracks)?
+3. Switch (2.11, decided "in place, old kept"): local `stage3_vt` -> `stage3_vt_r1`, `stage3_r2_final` -> `stage3_vt`;
+   `/media/dylan/data/x17/sept26_prelim/{trigtime,slim,stage1}` -> `*_r1_pre_audit` + copy context_r2; EOS
+   `Analysis_pass1/stage3` -> `stage3_r1_pre_audit/`, upload stage3_r2 + MD5SUMS; retire record; CLAUDE.md line.
+4. Downstream on the new view (PASS1_DOWNSTREAM.sh, ~6 h), compare_chains, before/after page, then the same-chamber
+   rate fit from 12 ms (3.9), scint stack + calorimetry rerun (3.10), PASS1_DOWNSTREAM.md (-1.7 mm D z etc.).
+5. Phase 4 (reco code: tc_tol, children t0 pin, seeder ranking, head-on rescue, quality_ok reference, ...): fix, test
+   on a few sub-runs, then Dylan decides on a pass 2.
 
-**Next steps (none started):**
-1. Read all slim files (`trigger_time.slim_path`, `scintillators.read_slim`, `candidate_filter`, `freeze_sample`);
-   regenerate slim export, trigtime and stage 1 for the 77 sub-runs (`audit_report/slim_files.csv`); re-attach the
-   context columns in stage 3 and rebuild the views. This changes the EOS stage 3, so it needs Dylan's go-ahead.
-2. Add `low_charge` (min view charge < 600 ADC) to the view as `censored_window` was; choose a D rule; rerun
-   `same_chamber_compare` with `FIT_MS` 12.
-3. Fix the scint-stack sign and rerun `ntof_scint_stack ana`; check the other readers of `tan_raw_y`.
-4. `line_residuals` / `bd_map`: select beam-off by registry class.
-
-**Gotchas:** the clean selection is too strict for D (keeps 74 % of reference tracks). The efficiency for real tracks
-before 12 ms was not measured. Geant4 capsule tracks point worse than the data (softer spectrum or missing trigger
-emulation): a source-model question.
+**Gotchas:**
+- map_view recomputes `gated` (gated_reco & acceptance): run censor_join and quality_join AFTER it, never before.
+- The map is fitted on `stage3_r2_train` (unmapped + censored cut); bd_map needs the censored cut (D fakes).
+- The windowed crossing moves clean values: C -10.93 -> -11.14, D -3.86 -> -4.86 (D's band is not straight).
+- Estimator code on main now differs from what produced `ana/`: rerun before quoting numbers.
+- Spare waveform copies (16 GB) in `$WORK_DATA/claude-jobs/bcad1a92/wf/` and fetched slims (6 GB) in
+  `.../bcad1a92/runs/` can be deleted; `stage3_r2/` and `context_r2/` are the products (keep).
 
 ## n_TOF pass 1 downstream (P7): the analysis moved onto pass 1 — updated 2026-11-20 (dylan-MS-7C84)
 

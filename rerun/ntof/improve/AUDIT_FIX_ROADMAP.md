@@ -43,14 +43,14 @@ the new quality flags. The old stage 3 stays on EOS beside the new one until the
 | # | item | from | change | status |
 |---|---|---|---|---|
 | 2.1 | Sub-runs with two slim files read from the first only | 12 | every reader takes every file (`paths.slim_files`, `concat_slim`); trigtime, slim export and stage 1 regenerated for the 77 sub-runs into `$WORK_DATA/ntof_pass1/context_r2/` (old rows identical; 3.39 M → 6.95 M triggers with a time) | done |
-| 2.2 | Stage 3 rebuilt with the context columns | 12 | `ntof_stage3.py --stage1-dir/--trigtime-dir context_r2` into `stage3_r2/`; check that untimed production tracks fall from 14.7 % to ~0 | wip (running) |
+| 2.2 | Stage 3 rebuilt with the context columns | 12 | `ntof_stage3.py --stage1-dir/--trigtime-dir context_r2` into `stage3_r2/`: 543/543 built; untimed production tracks 14.72 % → 0.68 % (true gaps between n_TOF segments) | done |
 | 2.3 | Bow-partner tangents in pass 1 | 21 | `ntof_stage3.bow_patch` recomputes every paired candidate's tangent with `wft.reco.bow_pairs`; run_145 0000: 0.6 % (A) / 0.2 % (C) of late gated tracks change | done (in the rebuild) |
-| 2.4 | `dca_axis_mm`, `in_bore` about the nominal axis | 22, reco review 2 | add `dca_source_mm` about the measured source; keep the axis columns, documented as such | todo |
+| 2.4 | `dca_axis_mm`, `in_bore` about the nominal axis | 22, reco review 2 | `quality_join` adds `dca_source_mm` about `SOURCE_XZ_MM`; axis columns kept | done |
 | 2.5 | Bow mesh height not applied to positions | 22, stage-3 review 4 | tested on run_145 late pointing: half-width A 12.44 → 12.48 mm, C 13.46 → 13.46 mm. No gain, so not applied; `x/y_bow_h` are carried in stage 3 | done (not applied) |
 | 2.6 | κ rescale also scales the bow tilt term | stage-3 review 6 | `vt_join` rescales (tan + a)·r − a with the carried `x/y_bow_a`; measured change 0.0001–0.0004 rms (A, C), 0.003 (D y) | done (in the rebuild) |
-| 2.7 | Map refit on real cosmics | 13 | `line_residuals build`, `angle_map fit`, `bd_map` on the registry's cosmic sub-runs, then `map_view` | todo |
-| 2.8 | Post-flash ringing fits pass the gate | 14 | Dylan: fold into `gated`, but look for a smarter rule first. Charge-only variants (flat, run-MIP, amplitude, 3-variable likelihood) are equivalent on A/C; a per-event waveform-noise threshold does not beat them (`low_charge_study.py`). Now: a waveform-level ringing study (`rerun/ntof/ringing/`) | wip |
-| 2.9 | D contamination; C windows partly censored | 15, reco review 9 | a D rule (width, censored fraction, χ² against the late reference) tuned on D's wall-confirmed late tracks, as the censored rule was; the same test on C | todo |
+| 2.7 | Map refit on real cosmics | 13 | `run_r2_chain.sh` (line_residuals, angle_map fit, bd_map on `stage3_r2_train`, `merge_maps`, map_view) | todo (next) |
+| 2.8 | Post-flash ringing fits pass the gate | 14 | Dylan: fold into `gated`, but look for a smarter rule first. Charge-only variants (flat, run-MIP, amplitude, 3-variable likelihood) are equivalent on A/C; a per-event waveform-noise threshold does not beat them (`low_charge_study.py`). Waveform ringing study (`rerun/ntof/ringing/`): removable, but the flag adds 0.04–0.08 purity before 8 ms only. Choice asked 11-22 | decide |
+| 2.9 | D contamination; C windows partly censored | 15, reco review 9 | `quality_join` `d_faint`: amp_norm < 0.25 or x window ≥ 0.8 censored, in `gated` (late D: keeps 98.7 % of reference, 20–30 ms purity 0.51 → 0.75); χ² never helped. C partial censoring: not done | done (D) |
 | 2.10 | Where the new cuts live | — | decided: folded into `gated` (pre-cut value kept as a column), in a `quality_join.py` step after `censor_join` | todo |
 | 2.11 | The new stage 3 on EOS and in the ledger | — | decided: in place at `Analysis_pass1/stage3/`, the old set moved to `stage3_r1_pre_audit/`; MD5SUMS, retire record | todo |
 
