@@ -39,8 +39,16 @@ VIEWS = {'z': 'D_x', 'y': 'D_y'}         # global coordinate -> D's view name (D
 
 
 def lines(view: str) -> pd.DataFrame:
-    t = pd.concat([pd.read_parquet(f, columns=COLS) for f in sorted(glob.glob(f'{view}/tracks_run_*.parquet'))])
-    t = t[t.t_since_flash_ns.isna()]
+    import pyarrow.parquet as pq
+    from sept26_prelim_analysis import pass1_tracks as P1
+    fs = sorted(glob.glob(f'{view}/tracks_run_*.parquet'))
+    names = set(pq.read_schema(fs[0]).names)
+    cols = COLS + [c + '_nomap' for c in COLS if c + '_nomap' in names] + \
+        [c for c in ('censored_window',) if c in names]
+    # beam-off by registry class, not by a null time (tracking audit 2026-11-22, finding 13); unmapped slopes (the
+    # map is fitted on these lines)
+    t = pd.concat([pd.read_parquet(f, columns=cols) for f in fs])
+    t = P1.nomap(t[t.tag.isin(set(P1.cosmic_tags()))])
     B = t[(t.arm == 'B') & t.gated_reco.fillna(False).astype(bool)]
     D = t[(t.arm == 'D') & t.gated.fillna(False).astype(bool)]
     B = B[B.groupby(K).arm.transform('size') == 1]

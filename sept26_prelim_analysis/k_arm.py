@@ -149,6 +149,47 @@ LEVER_WINDOW_MM = (30.0, 130.0)
 D_PERP_MM = 234.6
 
 
+#: the analysis-view sample's ToF floor [ms] (imaging review 3b, 2026-11-22: 5-13 % of the reco-tree sample is < 12 ms,
+#: which moves D's crossing by 0.4-0.8 mm)
+VIEW_MIN_MS = 20.0
+
+
+def coincident_tracks_view(run: str, sub: str, arm: str) -> dict:
+    """The same sample as :func:`coincident_tracks`, from the pass-1 ANALYSIS VIEW instead of the raw reco tree
+    (tracking audit 2026-11-22, finding 17 / imaging review 3).
+
+    Differences, on purpose: the view's `gated` (v(t) angles, the angle map, |tan| < 0.5, the censored-window cut),
+    ToF >= VIEW_MIN_MS, and the stage-1 flags "the arm's wall and plastic fired" instead of the geometric
+    extrapolation onto the fired segment and bar.  That extrapolation required the predicted plastic position within
+    the bar's length, which truncated the band asymmetrically (A: 550 tracks at lever +110..130 against 3,212 at
+    -110..130) and biased the crossing by ~0.3 mm per 10 mm of source offset.  The 25-75 % charge window is kept.
+    No hot-strip drop: its strata exist for run_145 only; the censored-window cut covers D's hot windows."""
+    import pandas as pd
+    from sept26_prelim_analysis import pass1_tracks as P1
+    f = P1.stage3_dir() / f'tracks_{run}_{sub}.parquet'
+    cols = ['arm', 'event_id', 'gated', 't_since_flash_ns', 'x_local', 'y_local', 'tanx', 'tany', 'x_q_sum',
+            f'wall_{arm}', f'plastic_{arm}']
+    t = pd.read_parquet(paths.require(str(f), f'analysis-view table {run}/{sub}'), columns=cols)
+    t = t[(t['arm'] == arm) & t['gated'].fillna(False).astype(bool)
+          & (t['t_since_flash_ns'] >= VIEW_MIN_MS * 1e6)
+          & t[f'wall_{arm}'].astype('boolean').fillna(False).astype(bool)
+          & t[f'plastic_{arm}'].astype('boolean').fillna(False).astype(bool)]
+    q = t['x_q_sum'].to_numpy(float)
+    ok = np.isfinite(q) & (q > 0)
+    t, q = t[ok], q[ok]
+    if len(t) == 0:
+        lo = hi = float('nan')
+        keep = np.zeros(0, bool)
+    else:
+        lo, hi = np.percentile(q, CHARGE_WINDOW)
+        keep = (q >= lo) & (q <= hi)
+    from ntof_tracking import run145_target_imaging as TI
+    return dict(xl=t['x_local'].to_numpy(float)[keep], yl=t['y_local'].to_numpy(float)[keep],
+                tx=t['tanx'].to_numpy(float)[keep], ty=t['tany'].to_numpy(float)[keep], q=q[keep],
+                foot_x=TI.PINWHEEL[arm], event_id=t['event_id'].to_numpy()[keep], n_coincident=int(len(t)),
+                q_lo=float(lo), q_hi=float(hi), n_hotstrip=0, hotstrip_applied=False, source='view')
+
+
 def coincident_tracks(run: str, sub: str, arm: str, merged_dir: str,
                       drop_hotstrip: bool = True):
     """(x_local, y_local, tan_x, tan_y) for the pointing-coincident tracks.
@@ -188,13 +229,14 @@ def coincident_tracks(run: str, sub: str, arm: str, merged_dir: str,
         from sept26_prelim_analysis.slim_export import read_export
         slim_df = read_export(run, [sub])
     except (ImportError, FileNotFoundError):
-        d = os.path.join(str(paths.root('runs')), run, sub, 'ntof_hits')
-        slim = sorted(f for f in os.listdir(d) if f.endswith('.root'))
-        if not slim:
+        # the ROOT fallback reads every slim of the sub-run (tracking audit 2026-11-22, finding 12)
+        try:
+            slim_df = paths.read_slim_tree(run, sub, 'hits',
+                                           ['eventId', 'det', 'detn', 'dt_ns', 'is_control'])
+        except FileNotFoundError as exc:
             raise FileNotFoundError(
                 f'no slim for {run}/{sub}: neither a parquet export nor a '
-                f'ROOT file under {d}')
-        slim_path = os.path.join(d, slim[0])
+                f'ROOT file ({exc})') from None
     sel = (df['x_ok'].to_numpy() & df['y_ok'].to_numpy()
            & (df['n_tracks'].to_numpy() > 0))
     coin, _ = TI.pointing_coincidence(slim_path, arm, df, sel,

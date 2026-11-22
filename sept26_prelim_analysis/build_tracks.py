@@ -227,6 +227,11 @@ def pair_rows(cand: pd.DataFrame) -> pd.DataFrame:
                   'slope_reliable', 'quality_ok', 'plausible', 'isochronous',
                   'n_candidates', 'rank', 'dchi2', 'ftst'):
             out[f'{pl}_{c}'] = src[c].to_numpy()
+        # optional: the bow tilt term and mesh height (n_TOF stage 3 recomputes them, ntof_stage3.bow_patch) and the
+        # two-track child flag (tracking audit 2026-11-22: split_child was not carried)
+        for c in ('bow_a', 'bow_h', 'split_child'):
+            if c in src.columns:
+                out[f'{pl}_{c}'] = src[c].to_numpy()
     out['gated'] = x['track_gated'].to_numpy() & y['track_gated'].to_numpy()
     return out.reset_index()
 
@@ -507,14 +512,20 @@ def attach_context(tracks: pd.DataFrame, stage1: Path | None,
     """
     if stage1 is not None and Path(stage1).is_file():
         s1 = pd.read_parquet(stage1)
-        keep = (['eventId', 'cls', 'arms_lit', 'bunch', 'is_flash',
+        keep = (['eventId', 'cls', 'arms_lit', 'ntof_run', 'bunch', 'is_flash',
                  'n_coinc_arms']
                 + [f'coinc_{a}' for a in ARMS] + [f'wall_{a}' for a in ARMS]
                 + [f'plastic_{a}' for a in ARMS])
         keep = [c for c in keep if c in s1.columns]
+        # one stage-1 row per event: the old stage 1 has a few eventIds twice (run_139 stat090_0002/0004: NONE and
+        # SINGLE), which duplicated those tracks (tracking audit 2026-11-22).  Keep the classified row.
+        if s1['eventId'].duplicated().any():
+            s1 = (s1.assign(_none=(s1['cls'] == 'NONE') if 'cls' in s1.columns else False)
+                    .sort_values(['eventId', '_none'], kind='stable')
+                    .drop_duplicates('eventId', keep='first').drop(columns='_none'))
         tracks = tracks.merge(s1[keep].rename(columns={'eventId': 'event_id',
                                                        'cls': 'event_class'}),
-                              on='event_id', how='left')
+                              on='event_id', how='left', validate='many_to_one')
         # the n_TOF coincidence for THIS arm, as one column
         if all(f'coinc_{a}' in tracks.columns for a in ARMS):
             tracks['coinc_this_arm'] = [
@@ -541,7 +552,7 @@ def attach_context(tracks: pd.DataFrame, stage1: Path | None,
 
 ORDER = (
     ['run', 'subrun', 'tag', 'event_id', 'arm', 'track_id', 'event_class',
-     'select_reason', 'bunch']
+     'select_reason', 'ntof_run', 'bunch']
     + ['x_local', 'y_local', 'tanx', 'tany', 'drift_t_end_ns', 'drift_len_mm',
        'path_len_mm', 'drift_railed']
     + [f'p0_{k}' for k in 'xyz'] + [f'd_{k}' for k in 'xyz']

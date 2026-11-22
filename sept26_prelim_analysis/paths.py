@@ -42,6 +42,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -150,6 +151,91 @@ def out(*parts: str) -> Path:
 def figures(stage: str) -> Path:
     """``<out>/<stage>/figures`` -- where a stage's PNG+CSV pairs go."""
     return out(stage, 'figures')
+
+
+# --------------------------------------------------------------------------- #
+# The n_TOF slims of one sub-run -- ALL of them
+# --------------------------------------------------------------------------- #
+#: ``slim.py::write`` names one file per (DREAM sub-run x n_TOF run) segment.
+_SLIM_RE = re.compile(r'^ntof_hits_(run_\d+)_(.+)_(\d+)\.root$')
+
+
+def slim_ntof_run(path) -> int:
+    """The n_TOF run number of one slim file, from its name."""
+    m = _SLIM_RE.match(Path(path).name)
+    if not m:
+        raise ValueError(f'not a slim file name (ntof_hits_<run>_<subrun>_<ntof run>.root): {path}')
+    return int(m.group(3))
+
+
+def slim_files(run: str, subrun: str, runs_root=None) -> list[Path]:
+    """Every n_TOF slim ROOT file of one DREAM sub-run, sorted by n_TOF run.
+
+    A sub-run that spans two (or three) n_TOF runs has one slim per n_TOF run, and
+    readers must take them all: 77 of the 293 production sub-runs do, and reading
+    only the first left 14.7 % of the pass-1 tracks with no time since the flash
+    (tracking audit 2026-11-22, finding 12).  An empty list if there is none; the
+    caller decides whether that is an error.  ``runs_root`` defaults to the
+    ``runs`` root (``$X17_RUNS``).
+    """
+    base = Path(runs_root) if runs_root else root('runs')
+    d = base / run / subrun / 'ntof_hits'
+    return sorted(d.glob('ntof_hits_*.root'), key=slim_ntof_run)
+
+
+def concat_slim(parts, where: str = '', id_col: str = 'eventId',
+                unique_within: bool = False):
+    """Concatenate per-file slim frames ``[(ntof_run, DataFrame), ...]``.
+
+    Adds an ``ntof_run`` column (int32): ``bunch`` restarts at 1 in every n_TOF
+    run, so a per-bunch key is (ntof_run, bunch).  No time needs offsetting: each
+    segment's ``t_pred_ns``, ``tof`` and ``dt_ns`` are flash-referenced on its own
+    fitted clock.  Raises if an event id is in two files (each DREAM burst joins
+    at most one n_TOF run, so they must be disjoint; verified on all 77 two-file
+    sub-runs), and with ``unique_within`` also if one file repeats an id (one row
+    per trigger, as in the ``events`` tree).  Tracking audit 2026-11-22, finding 12.
+    """
+    import numpy as np
+    import pandas as pd
+    parts = list(parts)
+    if not parts:
+        raise ValueError(f'no slim frames to concatenate{" for " + where if where else ""}')
+    ids = []
+    for n, d in parts:
+        u = np.unique(d[id_col].to_numpy())
+        if unique_within and len(u) != len(d):
+            raise ValueError(f'{where}: n_TOF run {n} repeats {len(d) - len(u)} {id_col}(s) in one slim')
+        ids.append(u)
+    allid = np.concatenate(ids)
+    n_dup = len(allid) - len(np.unique(allid))
+    if n_dup:
+        raise ValueError(f'{where}: {n_dup} {id_col}(s) appear in two slim files '
+                         f'(n_TOF runs {[n for n, _ in parts]}) -- the segments overlap')
+    out = pd.concat([d.assign(ntof_run=np.int32(n)) for n, d in parts], ignore_index=True)
+    out['ntof_run'] = out['ntof_run'].astype('int32')
+    return out
+
+
+def read_slim_tree(run: str, subrun: str, tree: str, columns, runs_root=None,
+                   library: str = 'pd', unique_within: bool = False):
+    """One tree of every slim of a sub-run, concatenated (:func:`concat_slim`).
+
+    ``library='np'`` returns a dict of numpy arrays, like uproot's, with
+    ``ntof_run`` added.  Raises FileNotFoundError if the sub-run has no slim.
+    """
+    import uproot
+    files = slim_files(run, subrun, runs_root)
+    if not files:
+        base = Path(runs_root) if runs_root else spell('runs')
+        raise FileNotFoundError(f'no slim n_TOF file under {base / run / subrun / "ntof_hits"}')
+    parts = []
+    for f in files:
+        with uproot.open(f) as fh:
+            parts.append((slim_ntof_run(f), fh[tree].arrays(list(columns), library='pd')))
+    d = concat_slim(parts, where=f'{run}/{subrun} {tree}', unique_within=unique_within)
+    if library == 'np':
+        return {c: d[c].to_numpy() for c in d.columns}
+    return d
 
 
 # --------------------------------------------------------------------------- #

@@ -84,18 +84,14 @@ BARS_PER_GROUP = 4
 
 def read_slim(run: str, subruns) -> pd.DataFrame:
     """Every n_TOF hit in the selected sub-runs, with family and arm attached."""
-    import uproot
     cols = ['eventId', 'det', 'detn', 'tof', 'dt_ns', 'amp', 'area_0',
             'satuflag', 'pileup1', 'is_control']
     out = []
     for sub in subruns:
         d = os.path.join(str(paths.root('runs')), run, sub, 'ntof_hits')
-        f = sorted(x for x in os.listdir(paths.require(d, 'slim directory'))
-                   if x.endswith('.root'))
-        if not f:
-            raise FileNotFoundError(f'no slim n_TOF file under {d}')
-        a = uproot.open(os.path.join(d, f[0]))['hits'].arrays(cols, library='np')
-        out.append(pd.DataFrame(a).assign(subrun=sub))
+        paths.require(d, 'slim directory')
+        # every slim of the sub-run, + ntof_run (tracking audit 2026-11-22, finding 12)
+        out.append(paths.read_slim_tree(run, sub, 'hits', cols).assign(subrun=sub))
     d = pd.concat(out, ignore_index=True)
     d['family'] = d.det.map(FAMILY)
     d['arm'] = d.det.map(DET_ARM)

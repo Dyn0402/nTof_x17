@@ -686,7 +686,10 @@ def scan_step(out: Path) -> pd.DataFrame:
 #: z crossings of B and D (campaign medians, imaging_campaign/per_arm.csv; D
 #: on its hot-channel-cleaned sample).  No B/D Geant4 reco exists to correct
 #: them by, so they are used as the beam's z directly.
-Z_BD = {'B': (-4.12, 1.6), 'D': (-3.45, 0.8)}
+#: 2026-11-22: pass 1 has no B angle; D's z from the late, wall-confirmed band crossing on the analysis view,
+#: -4.5 +- 1 mm (tracking audit findings 15-16; the is2-era values were B -4.12, D -3.45, mean -3.79 in every pose).
+from sept26_prelim_analysis.pass1_tracks import SOURCE_XZ_MM as _SXZ  # noqa: E402
+Z_BD = {'D': (_SXZ[1], 1.0)}
 
 
 def fit_step(out: Path) -> pd.DataFrame:
@@ -935,8 +938,16 @@ def tof_step(out: Path) -> pd.DataFrame:
 POSE2_XC = (-6.0, -8.0, -10.0, -12.0, -14.0, -16.0)
 POSE2_THETA = (0.0, 2.0, 4.0, 7.0, 10.0, 15.0)
 POSE2_PHI = tuple(range(0, 360, 45))
-#: systematic on a chamber's x crossing (chain-to-chain, imaging_campaign vs is2_v2)
+#: systematic on a chamber's x crossing (chain-to-chain, imaging_campaign vs is2_v2).  The toy's own statistical
+#: error is added in quadrature per pose (lib_sd: the Geant4 library has ~2,200-2,700 capsule tracks per arm, reused
+#: in every pose, so each toy crossing carries +-0.6-0.9 mm that SIG_X_SYS did not cover; imaging review 7)
 SIG_X_SYS = 1.0
+
+
+def lib_size(arm: str) -> int:
+    """Number of distinct Geant4 capsule tracks toy_tracks draws from (its own selection)."""
+    L = library(arm)
+    return int((L.capsule & (np.hypot(L.vx, L.vz) < 8.0) & np.isfinite(L.cy)).sum())
 
 
 def pose2_step(out: Path) -> pd.DataFrame:
@@ -966,6 +977,8 @@ def pose2_step(out: Path) -> pd.DataFrame:
             d = D.loc[(arm, 'late')]
             e = estimators(toy_tracks(arm, C, n=50_000))
             r[f'x_{arm}'], r[f'y_{arm}'], r[f'w68_{arm}'] = e['x_cross'], e['y_cross'], e['h_w68']
+            # the crossing error of a sample as large as the library (the toy resamples it n times)
+            r[f'xlib_{arm}'] = float(e['x_err'] * np.sqrt(e['n'] / max(lib_size(arm), 1)))
             H = e['shear']
             ds = DS[(DS.arm == arm) & (DS.window == 'late')].set_index('h')
             sd = SH[SH.arm == arm].set_index('h').toy_sd if SH is not None else None
@@ -980,7 +993,8 @@ def pose2_step(out: Path) -> pd.DataFrame:
                 r['chi2_shape'] += (xt - xd) ** 2 / s2
                 r['n_shape'] += 1
             r[f'shear_{arm}'] = ' '.join(f'{v:+.2f}' for v in xb)
-        r['chi2_x'] = sum(((r[f'x_{a}'] - D.loc[(a, 'late')].x_cross) / SIG_X_SYS) ** 2 for a in 'AC')
+        r['chi2_x'] = sum((r[f'x_{a}'] - D.loc[(a, 'late')].x_cross) ** 2 / (SIG_X_SYS ** 2 + r[f'xlib_{a}'] ** 2)
+                          for a in 'AC')
         r['dy_c'] = float(np.mean([D.loc[(a, 'late')].y_cross - r[f'y_{a}'] for a in 'AC']))
         rows.append(r)
         print(xc, th, ph, round(r['x_A'], 2), round(r['y_A'], 2), round(r['chi2_x'], 1),

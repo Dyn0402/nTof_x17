@@ -45,7 +45,7 @@ if REPO not in sys.path:
 from sept26_prelim_analysis import paths                      # noqa: E402
 from sept26_prelim_analysis.scintillators import read_slim    # noqa: E402
 
-SCHEMA = 'sept26_prelim/slim_export/1'
+SCHEMA = 'sept26_prelim/slim_export/2'   # 2: every slim of the sub-run + ntof_run (finding 12)
 
 #: Downcast targets. The slim is mostly small integers and one float time;
 #: float64 everywhere would roughly double the product for no precision that
@@ -54,7 +54,7 @@ DTYPES = {
     'eventId': 'int64', 'det': 'int8', 'detn': 'int16',
     'tof': 'float32', 'dt_ns': 'float32', 'amp': 'float32',
     'area_0': 'float32', 'satuflag': 'int8', 'pileup1': 'int8',
-    'is_control': 'int8',
+    'is_control': 'int8', 'ntof_run': 'int32',
 }
 
 
@@ -81,6 +81,8 @@ def export(run: str, subrun: str, out_dir: Path) -> dict:
                 n_hits=int(len(d)),
                 n_events=int(d.eventId.nunique()),
                 n_control=int((d.is_control == 1).sum()),
+                # every slim of the sub-run (tracking audit 2026-11-22, finding 12)
+                ntof_runs=sorted(int(x) for x in d.ntof_run.unique()),
                 dt_ns_min=float(d.dt_ns.min()), dt_ns_max=float(d.dt_ns.max()),
                 families={k: int(v) for k, v in
                           d.family.value_counts().items()},

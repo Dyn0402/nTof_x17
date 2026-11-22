@@ -60,7 +60,6 @@ clipping.  About 1 % of triggers.
 from __future__ import annotations
 
 import argparse
-import glob
 import json
 import os
 import sys
@@ -77,7 +76,7 @@ if REPO not in sys.path:
 from sept26_prelim_analysis import neutron_energy as ne          # noqa: E402
 from sept26_prelim_analysis import paths                         # noqa: E402
 
-SCHEMA = 'sept26_prelim/trigtime/1'
+SCHEMA = 'sept26_prelim/trigtime/2'   # 2: every slim of the sub-run + ntof_run (audit 11-22, finding 12)
 
 #: Columns lifted out of the slim's ``events`` tree.  ``bunch`` and ``matched``
 #: are already in stage 1, but a product that cannot be checked against its
@@ -110,16 +109,31 @@ def extract(slim_root: str | Path) -> pd.DataFrame:
     return d
 
 
-def slim_path(run: str, subrun: str, runs_root: str | Path | None = None) -> str:
-    root = str(runs_root) if runs_root else str(paths.root('runs'))
-    f = sorted(glob.glob(f'{root}/{run}/{subrun}/ntof_hits/*.root'))
+def slim_paths(run: str, subrun: str, runs_root: str | Path | None = None) -> list[Path]:
+    """Every slim of the sub-run, not the first (tracking audit 2026-11-22, finding 12)."""
+    f = paths.slim_files(run, subrun, runs_root)
     if not f:
+        root = str(runs_root) if runs_root else str(paths.spell('runs'))
         raise FileNotFoundError(f'no slim ROOT under {root}/{run}/{subrun}/ntof_hits')
-    return f[0]
+    return f
+
+
+def extract_subrun(files, where: str = '') -> pd.DataFrame:
+    """:func:`extract` of every slim of a sub-run, concatenated with ``ntof_run``.
+
+    Event ids must be disjoint between the files and unique within each
+    (``paths.concat_slim`` raises otherwise); times need no offset, each file is
+    on its own segment's fitted clock (tracking audit 2026-11-22, finding 12).
+    """
+    return paths.concat_slim([(paths.slim_ntof_run(f), extract(f)) for f in files],
+                             where=where, unique_within=True)
 
 
 def product(run: str, subrun: str, out_dir: Path | None = None) -> Path:
-    d = Path(out_dir) if out_dir else paths.out('trigtime')
+    # $X17_TRIGTIME_DIR: read/write another trigtime set without moving the whole
+    # output root (the finding-12 regeneration; ntof_stage3.py --trigtime-dir)
+    env = os.environ.get('X17_TRIGTIME_DIR')
+    d = Path(out_dir) if out_dir else (Path(env) if env else paths.out('trigtime'))
     return d / f'trigtime_{run}_{subrun}.parquet'
 
 
@@ -129,10 +143,13 @@ def write_subrun(run: str, subrun: str, runs_root=None,
     if dst.exists() and not force:
         return dict(run=run, subrun=subrun, skipped=True)
     dst.parent.mkdir(parents=True, exist_ok=True)
-    d = extract(slim_path(run, subrun, runs_root))
+    files = slim_paths(run, subrun, runs_root)
+    d = extract_subrun(files, where=f'{run}/{subrun}')
     d.to_parquet(dst, index=False, compression='snappy')
     phys = d.loc[d.is_flash == 0, 't_pred_ns']
     return dict(run=run, subrun=subrun, skipped=False, n=len(d),
+                n_slim=len(files),
+                ntof_runs=';'.join(str(paths.slim_ntof_run(f)) for f in files),
                 n_flash=int((d.is_flash == 1).sum()),
                 t_min_ms=float(phys.min()) / 1e6 if len(phys) else np.nan,
                 t_max_ms=float(phys.max()) / 1e6 if len(phys) else np.nan)
@@ -339,7 +356,8 @@ def main() -> int:
             rows.append(r)
             if not r.get('skipped'):
                 print(f'[{i}/{len(pairs)}] {run}/{s}  {r["n"]:,} triggers  '
-                      f'{r["t_min_ms"]:.3f}-{r["t_max_ms"]:.3f} ms', flush=True)
+                      f'{r["t_min_ms"]:.3f}-{r["t_max_ms"]:.3f} ms  '
+                      f'{r["n_slim"]} slim(s) {r["ntof_runs"]}', flush=True)
         print(f'\n{sum(1 for r in rows if not r.get("skipped"))} written, '
               f'{sum(1 for r in rows if r.get("skipped"))} already present')
         return 0

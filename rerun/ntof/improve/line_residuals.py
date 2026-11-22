@@ -6,7 +6,9 @@ sub-run of n_TOF pass 1 (not just run_149), mapped over the chamber and against 
 
 The truth is external to each chamber: a muon that crosses A and C defines the joined line (469 mm lever arm) from
 the two positions; each chamber's own angle is compared with it.  This is the resolution_line.py sample (one
-gated track in A and one in C, lines within SEP_MM), on all beam-off sub-runs (t_since_flash null).
+gated track in A and one in C, lines within SEP_MM), on all beam-off sub-runs (registry class cosmic; until 2026-11-22
+this was "t_since_flash null", which took in 14,742 production events, tracking audit finding 13).  The lines are
+built on the UNMAPPED slopes (the `_nomap` twins of the analysis view): the angle map is fitted on them.
 
     python -m rerun.ntof.improve.line_residuals build     -> <out>/lines.parquet
     python -m rerun.ntof.improve.line_residuals maps      -> <out>/line_bias_*.csv  (bias vs true tan, vs position)
@@ -44,8 +46,10 @@ def dca(pa, da, pc, dc):
 
 
 def build() -> pd.DataFrame:
-    import pyarrow.dataset as ds
-    d = P1.read(COLS, arms=('A', 'C'), filter=ds.field('t_since_flash_ns').is_null())
+    names = P1.campaign_schema().names
+    cols = COLS + [c + '_nomap' for c in COLS if c + '_nomap' in names] + \
+        [c for c in ('censored_window',) if c in names]
+    d = P1.nomap(P1.read(cols, arms=('A', 'C'), filter=P1.cosmic_filter()))
     d = d[d.gated.fillna(False).astype(bool)]
     one = d.groupby(KEY + ['arm']).p0_x.transform('size') == 1
     d = d[one]

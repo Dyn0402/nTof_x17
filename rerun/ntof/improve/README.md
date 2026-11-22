@@ -136,6 +136,41 @@ imaging a tracking effect or poor track selection? Nothing in the chain or the p
     children ignore the t0 pin; the head-on rescue is not wired into the beam driver (C has half of A's tracks at
     |tan x| < 0.08).
 
+23. **Items from the three code reviews that findings 11-22 left out** (added 2026-11-22; the reviews are kept
+    verbatim in `audit_report/reviews/`, and the fixes are planned in `AUDIT_FIX_ROADMAP.md`).
+    - The x-y coincidence test rejects little. `tc_tol` is the bench value, 197 ns (A) and 456 ns (C). Unrelated late
+      x and y candidates from different events pass it 70 % (A) and 89 % (C) of the time, so two in-time particles in
+      one chamber are not separated by it. The upper column bound (1.6 T) is beyond the 1200 ns profile grid and never
+      rejects (reco review 4).
+    - An out-of-time track is biased, not rejected. For an early arrival, t0 sits at the -180 ns box edge and the slope
+      reads 14-33 % too steep. For a late arrival, p0 moves by up to 9.5 mm. About 1 % of late tracks sit at the box
+      edge (reco review 6).
+    - The seeder keeps the five widest clusters, not the five most significant. 12-15 % of early planes reach the cap
+      (reco review 10). `split_child` is not carried into stage 3, `tan_err` sits at its floor, and the events table
+      pairs the plane winners, which are not track 0 in 24 % (A) and 31 % (C) of paired events (reco review 8, 12).
+    - C x windows that are 10-30 % censored point at 0.50, against 0.58 with no censored strip. The censored rule only
+      removes x windows that are fully censored (reco review 9).
+    - The v(t)/κ rescale also scales the bow tilt term, which does not depend on v: about 0.002 rms on C and D. D's fitted
+      column starts about 55 ns late, which is either 1.8 mm of depth or a 6 % error in D's v_t (stage-3 review 3, 6).
+    - Two more re-run hazards: `vt_view.py --force` with its default output would overwrite the analysis view with the
+      unmapped one, and `line_residuals build` reads the mapped view, so a re-run of `angle_map fit` would fit a
+      residual map (stage-3 review 7).
+    - The scint-stack sign error also reaches `ntof_scint_stack/ana.py` and `ntof_calorimetry/wall_plastic.py`, which
+      use `tan_v_raw` directly. At the wall (97 mm lever arm) the error is about 17 mm rms and 40 mm at |tan| = 0.5; at
+      the plastic and the liquid it is about twice that (stage-3 review 1).
+    - D's z has caveats beyond finding 16. D's band is not straight (the 30-70 mm window gives -7.8 mm, 30-130 gives
+      -5.35 mm). D's source foot lies in its dead region (x_local 5-65). Tracks inside the coincident sample give
+      -5.2 mm and those outside give -2.2 mm. z changes by about 5 mm with height. The -1.7 mm is still copied into
+      `chains.csv` by `compare_chains.py` and quoted in `PASS1_DOWNSTREAM.md` (imaging review 1, 6).
+    - `capsule_pose.Z_BD` is from the is2 era (B -4.12, D -3.45). Their mean, -3.79 mm, is the capsule z in every pose.
+      The effect was not measured (imaging review 9).
+    - The pose toy's fixed A-C offset of 2.3-2.7 mm: `FOOT_SIM` explains 0.9 mm. The rest is plausibly the finite
+      Geant4 library (about 2,200-2,700 capsule tracks per arm, so ±0.6-0.9 mm per crossing, reused in every pose).
+      `SIG_X_SYS = 1.0` does not cover it (imaging review 7).
+    - `campaign_imaging` drops hot strips on run_145 only (the other runs log "cut NOT applied"); the effect on D is
+      0.14 mm. The trigger plastic clip may bias the y crossing by -0.5 to -1.3 mm (plausible, toy only). The depth from
+      band slopes is diluted by background differently per arm and height bin (not measured) (imaging review 3, 9).
+
 Not done (Dylan's call, all on existing data): fix 12 and rebuild the context columns; add a charge minimum (and a
 D rule) to the analysis view as a flag like `censored_window`; rerun the same-chamber rate fit from 12 ms; fix 20 and
 rerun the scint-stack maps; point `campaign_imaging` at the view and re-centre `focus_split`.

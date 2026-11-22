@@ -110,8 +110,12 @@ def attach_vt(tracks: pd.DataFrame, vt: pd.DataFrame, trigger: str, trs: dict,
         rx, ry = r / kappa[(arm, 'x')], r / kappa[(arm, 'y')]
         # build_tracks' own geometry on the corrected tans: k = 1 on the rescaled raw tans
         g = a[['x_p0', 'y_p0', 'x_tan_theta', 'y_tan_theta', 'x_q_uend', 'y_q_uend', 'x_q_sum', 'y_q_sum']].copy()
-        g['x_tan_theta'] *= rx
-        g['y_tan_theta'] *= ry
+        # only the speed part of the tangent scales with v: tan = (w - w0) / (kw v S) - a(U, W), and the bow tilt a is
+        # v-independent (wft.reco.tan_bow).  Stage 3 carries a per view as x/y_bow_a (ntof_stage3.bow_patch); without
+        # it the whole tan is scaled, as before 2026-11-22 (an error a (r - 1), ~0.002 rms on C and D; audit review)
+        for p_, rr in (('x', rx), ('y', ry)):
+            av = a[f'{p_}_bow_a'].fillna(0.0).to_numpy(float) if f'{p_}_bow_a' in a.columns else 0.0
+            g[f'{p_}_tan_theta'] = (g[f'{p_}_tan_theta'].to_numpy(float) + av) * rr - av
         g = BT.local_and_global(g, trs[G.DET_NAME[arm]], k=1.0)
         vt_mm = a['v_t'].to_numpy(float) / 1000.0
         g['drift_t_end_ns'] = a['drift_t_end_ns'].to_numpy(float)
@@ -149,7 +153,8 @@ def attach_vt(tracks: pd.DataFrame, vt: pd.DataFrame, trigger: str, trs: dict,
 def meta_block(info: dict, vt_path, vt_md5: str) -> dict:
     return dict(
         source=str(vt_path), md5=vt_md5, column='v_fit (smooth model: spline + water + mixer T, vt_smooth.py)',
-        formula='tan{x,y}_vt = tan{x,y} * v_drift_um_ns / (kappa_{x,y} * v_t); every ANGLE_DERIVED column has a _vt '
+        formula='tan{x,y}_vt = (tan{x,y} + a) * v_drift_um_ns / (kappa_{x,y} * v_t) - a, a = the bow tilt term '
+                '(x/y_bow_a; 0 when absent); every ANGLE_DERIVED column has a _vt '
                 'twin from build_tracks. v_t is the timing v; kappa = v_angle / v_t from the A-C cosmic line '
                 '(vt_line_campaign.py), D kappa = 1',
         kappa_file=KAPPA_FILE, kappa_json=json.load(open(KAPPA_FILE)),

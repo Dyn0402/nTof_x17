@@ -68,16 +68,12 @@ def trigger_arms(run: str, subruns) -> pd.DataFrame:
     Restricting to single-arm triggers keeps the partition clean: an event with
     two arms triggering cannot serve as a control for either.
     """
-    import uproot
     arm_of = {i: ARMS[i % 4] for i in range(12)}
     rows = []
     for sub in subruns:
-        d = os.path.join(str(paths.root('runs')), run, sub, 'ntof_hits')
-        f = sorted(x for x in os.listdir(d) if x.endswith('.root'))
-        if not f:
-            raise FileNotFoundError(f'no slim n_TOF file under {d}')
-        a = uproot.open(os.path.join(d, f[0]))['hits'].arrays(
-            ['eventId', 'det', 'dt_ns', 'is_control'], library='np')
+        # every slim of the sub-run (tracking audit 2026-11-22, finding 12)
+        a = paths.read_slim_tree(run, sub, 'hits',
+                                 ['eventId', 'det', 'dt_ns', 'is_control'], library='np')
         m = ((a['is_control'] == 0) & (a['dt_ns'] >= DT_WINDOW[0])
              & (a['dt_ns'] <= DT_WINDOW[1]))
         t = pd.DataFrame({'event_id': a['eventId'][m], 'det': a['det'][m]})

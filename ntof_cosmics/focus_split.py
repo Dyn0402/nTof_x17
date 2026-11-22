@@ -30,6 +30,9 @@ SCALES = np.round(np.arange(0.80, 1.3001, 0.005), 3)
 TAN_BINS = [(0.1, 0.2), (0.2, 0.3), (0.3, 0.4), (0.4, 0.5)]
 U_HAT = {'A': np.array([1., 0., 0.]), 'C': np.array([-1., 0., 0.])}
 W_HAT = {'A': np.array([0., 0., 1.]), 'C': np.array([0., 0., -1.])}
+#: miss distances are taken about the measured source (pass1_tracks.SOURCE_XZ_MM), not the nominal axis
+from sept26_prelim_analysis.pass1_tracks import SOURCE_XZ_MM as _SXZ  # noqa: E402
+SOURCE = np.array([_SXZ[0], 0.0, _SXZ[1]])
 PRE_ACCESS = ('run_79', 'run_81')
 CAPSULE_Y = (-29.5, 50.7)          # He-3 gas extent along the beam, geometry.HE3_GAS_Y
 COLS = ['run', 'arm', 'gated', 'angle_calibrated', 'p0_x', 'p0_y', 'p0_z', 'd_x', 'd_y', 'd_z',
@@ -58,7 +61,7 @@ def load(src, tan_max: float) -> pd.DataFrame:
     tx = np.empty(len(d))
     for arm in ('A', 'C'):
         m = (d.arm == arm).to_numpy()
-        P0 = d.loc[m, ['p0_x', 'p0_y', 'p0_z']].to_numpy(float)
+        P0 = d.loc[m, ['p0_x', 'p0_y', 'p0_z']].to_numpy(float) - SOURCE
         D = d.loc[m, ['d_x', 'd_y', 'd_z']].to_numpy(float)
         pu[m], pw[m] = P0 @ U_HAT[arm], P0 @ W_HAT[arm]
         with np.errstate(divide='ignore', invalid='ignore'):

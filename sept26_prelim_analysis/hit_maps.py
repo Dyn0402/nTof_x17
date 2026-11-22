@@ -117,7 +117,6 @@ DCA_MAX_MM = 30.0
 
 def selection_tiers(run: str, subruns, arm: str, fullpass: str) -> pd.DataFrame:
     """Per fitted cluster: local position, and the tier masks."""
-    import uproot
     from collections import defaultdict
     from ntof_tracking import run145_target_imaging as TI
     from ntof_tracking.reco import geometry as G
@@ -130,10 +129,9 @@ def selection_tiers(run: str, subruns, arm: str, fullpass: str) -> pd.DataFrame:
 
     out = []
     for sub in subruns:
-        d = os.path.join(str(paths.root('runs')), run, sub, 'ntof_hits')
-        sl = sorted(f for f in os.listdir(d) if f.endswith('.root'))
-        a = uproot.open(os.path.join(d, sl[0]))['hits'].arrays(
-            ['eventId', 'det', 'detn', 'dt_ns', 'is_control'], library='np')
+        # every slim of the sub-run (tracking audit 2026-11-22, finding 12)
+        a = paths.read_slim_tree(run, sub, 'hits',
+                                 ['eventId', 'det', 'detn', 'dt_ns', 'is_control'], library='np')
         it = ((a['is_control'] == 0) & (a['dt_ns'] >= -100.0)
               & (a['dt_ns'] <= 60.0))
         code = {'A': 0, 'B': 1, 'C': 2, 'D': 3}[arm]

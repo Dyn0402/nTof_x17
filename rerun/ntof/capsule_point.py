@@ -26,7 +26,9 @@ REPO = os.path.abspath(os.path.join(HERE, '..', '..'))
 sys.path.insert(0, REPO)
 sys.path.insert(0, HERE)
 
-AXIS_X, AXIS_Z = -9.5, -3.7          # mm; capsule axis (focus / imaging fits, 10-13/14)
+# mm; the measured capsule source (pass1_tracks.SOURCE_XZ_MM; was the is2-era (-9.5, -3.7) until 2026-11-22)
+from sept26_prelim_analysis.pass1_tracks import SOURCE_XZ_MM  # noqa: E402
+AXIS_X, AXIS_Z = SOURCE_XZ_MM
 R_CUTS = (10.0, 15.0, 25.0)
 TAN_BINS = (0, 0.2, 0.4, 0.6, 0.8, 1.0, 5.0)
 

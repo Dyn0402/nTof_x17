@@ -455,20 +455,59 @@ def bow_UW(cal: CalibrationBundle, fx=None, fy=None) -> tuple:
     return (U if ok(U) else 0.0), (W if ok(W) else 0.0)
 
 
-def apply_bow(cal: CalibrationBundle, fx=None, fy=None) -> None:
+def apply_bow(cal: CalibrationBundle, fx=None, fy=None, skip=()) -> None:
     """Re-map both views' tangents through the bundle's bow block with BOTH views' coordinates (one iteration, from the
     constant mapping; idempotent: computed from w, not from the stored tangent).  Stores the mesh height on each fit
-    (``_bow_h``: the track point at the nominal plane is p0 - tan * h).  No-op without a block."""
+    (``_bow_h``: the track point at the nominal plane is p0 - tan * h).  No-op without a block.
+
+    ``skip``: fits (by identity) that keep their mapping.  The coordinates still come from both views; a fit already
+    mapped with its own pair partner is not overwritten with another view's coordinate (tracking audit 2026-11-22,
+    finding 21: the event winners were re-mapped together after the pairs, so a pair with exactly one rank-0 member
+    took the other pair's coordinate in its bow term)."""
     if not (getattr(cal, 'bow', None) or (getattr(cal, 'v_map', None) or {}).get('xy')):
         return
     U, W = bow_UW(cal, fx, fy)
     for p, f in (('x', fx), ('y', fy)):
-        if f is None:
+        if f is None or any(f is g for g in skip):
             continue
         t = tan_bow(cal, p, f.w, U, W)
         f.tan_theta, f.theta_deg = float(t), float(np.degrees(np.arctan(t)))
         f.slope_reliable = bool(abs(t) >= TAN_MIN_SLOPE)
         f._bow_h = float(bow_h(cal, U, W, p))
+
+
+def bow_pairs(cal: CalibrationBundle, wx, p0x, wy, p0y) -> dict:
+    """``apply_bow`` on arrays of x/y pairs (each pair mapped with its own partner), for table-level recomputation.
+
+    Returns ``tan_x, tan_y`` (the bow tangents), ``a_x, a_y`` (the v-independent tilt term of a block with ``a_<p>``,
+    tan = (w - w0) / (kw v S) - a; 0 otherwise) and ``h_x, h_y`` (each view's mesh height).  Equal to the scalar path
+    to rounding (wft/tests/test_bow_partner.py).  Pass 1 used it to undo the winner re-mapping (audit finding 21)."""
+    wx, p0x, wy, p0y = (np.asarray(v, float) for v in (wx, p0x, wy, p0y))
+    b = getattr(cal, 'bow', None) or {}
+    if (getattr(cal, 'v_map', None) or {}).get('xy'):
+        raise NotImplementedError('bow_pairs: v_map bundles are not vectorised')
+    kv = {p: cal.kw.get(p, 1.0) * cal.v_drift for p in 'xy'}
+    tc = {p: (w * 1e3 - cal.w0.get(p, 0.0)) / kv[p] for p, w in (('x', wx), ('y', wy))}
+    U = ((p0x + BOW_MID_MM * tc['x']) - 200.0) / 100.0
+    W = ((p0y + BOW_MID_MM * tc['y']) - 200.0) / 100.0
+    with np.errstate(invalid='ignore'):
+        U = np.where(np.isfinite(U) & (np.abs(U) <= BOW_UW_MAX), U, 0.0)
+        W = np.where(np.isfinite(W) & (np.abs(W) <= BOW_UW_MAX), W, 0.0)
+    out = {}
+    for p, w in (('x', wx), ('y', wy)):
+        A, sb = b.get(f'A_{p}') or {}, b.get(f's_{p}') or {}
+        S = 1.0 + sb.get('su', 0.0) * U + sb.get('sw', 0.0) * W
+        a = b.get(f'a_{p}')
+        if a:
+            av = _bow_poly(a, U, W) * np.ones_like(U)
+            out[f'tan_{p}'] = (w * 1e3 - cal.w0.get(p, 0.0)) / (kv[p] * S) - av
+        else:
+            av = np.zeros_like(U)
+            out[f'tan_{p}'] = (w * 1e3 - cal.w0.get(p, 0.0) - _bow_poly(A, U, W)) / (kv[p] * S)
+        out[f'a_{p}'] = av
+        h = b.get(f'h_{p}') or b.get('h')
+        out[f'h_{p}'] = (_bow_poly(h, U, W, ('gu', 'gw'), ('kuu', 'kww', 'kuw')) * np.ones_like(U)) if h else np.zeros_like(U)
+    return out
 
 
 def tan_of(cal: CalibrationBundle, plane: str, w: float, p0: float) -> float:
@@ -2153,13 +2192,18 @@ def _worker_fit(payload):
         pairs = []
     # the bow block maps each track's tangents with both views' coordinates (pairs first, then the event's winners)
     if getattr(_CAL, 'bow', None) or (getattr(_CAL, 'v_map', None) or {}).get('xy'):
+        paired = []
         for ix, iy, _g in pairs:
             try:
                 apply_bow(_CAL, all_fits['x'][ix], all_fits['y'][iy])
+                paired += [all_fits['x'][ix], all_fits['y'][iy]]
             except Exception:
                 pass
         if fits.get('x') is not None or fits.get('y') is not None:
-            apply_bow(_CAL, fits.get('x'), fits.get('y'))
+            # winners that are not in a pair (or are each other's pair) only; a paired winner keeps its partner's map
+            fx, fy = fits.get('x'), fits.get('y')
+            together = any(all_fits['x'][ix] is fx and all_fits['y'][iy] is fy for ix, iy, _g in pairs)
+            apply_bow(_CAL, fx, fy, skip=() if together else paired)
     row = row_from_fits(eid, fits, n_hits, spark)
     row['n_tracks'] = int(sum(1 for _i, _j, g in pairs if g))
     hb = [getattr(fits.get(p), '_bow_h', None) for p in ('x', 'y')]

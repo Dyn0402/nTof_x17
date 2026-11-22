@@ -20,6 +20,12 @@ with the n_TOF pass's rules (NTOF_PASS_PLAN §3 G2):
 
     ntof_stage3.py --stage2 $WORK_DATA/ntof_pass1/stage2 [--side $WORK_DATA/ntof_pass1/run104] [--rerun-dbeam DIR] --out DIR
                    [--vt $WORK_DATA/ntof_pass1/vt/vt_smooth.parquet] [--runs 145,149] [--force]
+                   [--subruns run_116/stat090_0027,... | FILE] [--stage1-dir DIR] [--trigtime-dir DIR]
+
+`--subruns` (a comma list or a file of `run_X/sub` or `run_X sub` lines), `--stage1-dir` (default the old stage 1,
+/media/dylan/data/x17/sept26_prelim/stage1) and `--trigtime-dir` (sets $X17_TRIGTIME_DIR for trigger_time; default
+<X17_SEPT26_OUT>/trigtime) are for rebuilding the sub-runs whose context came from one slim of several (tracking audit
+2026-11-22, finding 12).
 
 `--stage2` / `--side` are local copies of EOS Analysis_pass1/stage2 and the canon's other directories (same layout).
 A per-sub-run view directory of symlinks (mx17_<arm>/events_<tag>.*) feeds build_tracks unchanged.
@@ -54,14 +60,63 @@ def canonical(r, arm, canon, roots):
     return d, f"run_{r['run']}_{r['subrun']}_{r['tag']}_{arm}"
 
 
-def one(run, sub, rows, canon, roots, out, force, vt_path, vt_md5):
+#: arms whose candidate tangents are recomputed from (w, p0) with the bundle's bow block, each pair with its own
+#: partner (tracking audit 2026-11-22, finding 21: the reco re-mapped the two plane winners together after the pairs).
+#: B has no angle.  BUNDLES: local copy of Analysis_pass1/bundles (pf/<name>).
+BOW_ARMS = ('A', 'C', 'D')
+BUNDLES = Path(os.environ.get('WORK_DATA', '/media/ucla/work')) / 'ntof_pass1' / 'bundles' / 'pf'
+
+
+def bundle_for(r, arm, canon):
+    u = L.rule_for(canon, r, arm)
+    return (u or {}).get('bundle') or L.expected_bundle(r, arm)
+
+
+def bow_patch(src: Path, meta: Path, bundle_dir: Path, dst: Path) -> dict:
+    """Write `src` candidates to `dst` with every paired row's tan_theta / theta_deg recomputed from its own pair
+    (wft.reco.bow_pairs), plus `bow_a` (the bow tilt term, v-independent) and `bow_h` (mesh height).  Rows with
+    track_id < 0 keep the reco's values (bow_a, bow_h null).  Refuses a bundle whose v differs from the one the reco
+    used, or one that reproduces fewer than half of the stored tangents (a wrong bundle reproduces none)."""
+    import numpy as np
+    from wft.calib import CalibrationBundle
+    from wft import reco as R
+    cal = CalibrationBundle.load(str(bundle_dir))
+    mv = json.loads(meta.read_text()).get('bundle', {}).get('v_drift')
+    if mv is not None and abs(float(mv) - float(cal.v_drift)) > 1e-6:
+        raise ValueError(f'{src.name}: bundle {bundle_dir.name} v {cal.v_drift} != reco v {mv}')
+    c = pd.read_parquet(src)
+    c['bow_a'], c['bow_h'] = np.nan, np.nan
+    t = c[c['track_id'] >= 0]
+    key = ['event_id', 'track_id']
+    x = t[t['plane'] == 'x'].reset_index().set_index(key)
+    y = t[t['plane'] == 'y'].reset_index().set_index(key)
+    common = x.index.intersection(y.index)
+    x, y = x.loc[common], y.loc[common]
+    v = R.bow_pairs(cal, x['w'], x['p0'], y['w'], y['p0'])
+    old = np.r_[x['tan_theta'].to_numpy(float), y['tan_theta'].to_numpy(float)]
+    new = np.r_[v['tan_x'], v['tan_y']]
+    ok = np.isfinite(old) & np.isfinite(new)
+    same = np.abs(old - new)[ok] < 1e-9
+    if ok.sum() > 100 and same.mean() < 0.5:
+        raise ValueError(f'{src.name}: bundle {bundle_dir.name} reproduces only {same.mean():.1%} of the tangents')
+    for p, idx in (('x', x['index'].to_numpy()), ('y', y['index'].to_numpy())):
+        c.loc[idx, 'tan_theta'] = v[f'tan_{p}']
+        c.loc[idx, 'theta_deg'] = np.degrees(np.arctan(v[f'tan_{p}']))
+        c.loc[idx, 'bow_a'] = v[f'a_{p}']
+        c.loc[idx, 'bow_h'] = v[f'h_{p}']
+    c.to_parquet(dst, index=False)
+    return dict(bundle=bundle_dir.name, n_pairs=int(len(common)), frac_changed=float(1 - same.mean()) if ok.any() else 0.0,
+                max_abs_dtan=float(np.abs(old - new)[ok].max()) if ok.any() else 0.0)
+
+
+def one(run, sub, rows, canon, roots, out, force, vt_path, vt_md5, stage1_dir=None):
     from sept26_prelim_analysis import build_tracks as BT
     dst = Path(out) / f'tracks_run_{run}_{sub}.parquet'
     if dst.exists() and not force:
         return run, sub, 'exists', None
     try:
         with tempfile.TemporaryDirectory(dir=out, prefix='.view_') as view:
-            missing = []
+            missing, bow_log = [], []
             for r in rows:
                 for arm in L.ARMS:
                     d, stem = canonical(r, arm, canon, roots)
@@ -72,10 +127,15 @@ def one(run, sub, rows, canon, roots, out, force, vt_path, vt_md5):
                         if not src.exists():
                             missing.append(str(src))
                             continue
-                        os.symlink(src, vd / f"events_{r['tag']}{ext}")
+                        dst_c = vd / f"events_{r['tag']}{ext}"
+                        if ext == '.candidates.parquet' and arm in BOW_ARMS:
+                            bow_log.append(dict(tag=r['tag'], arm=arm, **bow_patch(
+                                src, d / f'{stem}.meta.json', BUNDLES / bundle_for(r, arm, canon), dst_c)))
+                        else:
+                            os.symlink(src, dst_c)
             if missing:
                 raise FileNotFoundError(f'{len(missing)} canonical files missing, first {missing[0]}')
-            s1 = OLD / 'stage1' / f'candidates_run_{run}_{sub}.parquet'
+            s1 = Path(stage1_dir or OLD / 'stage1') / f'candidates_run_{run}_{sub}.parquet'
             tracks, meta = BT.build(f'run_{run}', sub, Path(view), stage1=s1 if s1.exists() else None, allow=None,
                                     out_dir=None, k_arm=K_ARM, write=False, tan_max_true=TAN_MAX_TRUE)
         tracks['tan_source'] = 'bundle_v'            # k = 1: tanx/tany are true tans at the frozen bundle v
@@ -88,6 +148,9 @@ def one(run, sub, rows, canon, roots, out, force, vt_path, vt_md5):
         tracks.loc[b, 'gated'] = tracks.loc[b, 'gated_reco']
         tracks.loc[b, 'tan_source'] = 'none (B: positions only)'
         meta['n_gated'] = int(tracks['gated'].sum())
+        meta['bow_partner_fix'] = dict(rule='candidate tangents of A, C, D recomputed from (w, p0) with each pair\'s own '
+                                            'partner (wft.reco.bow_pairs; tracking audit 2026-11-22, finding 21)',
+                                       per_tag=bow_log)
         # v(t): beside the frozen-v columns (vt_join.py)
         trig = {VT.TRIGGER_OF_RCLASS[r['rclass']] for r in rows}
         if len(trig) != 1:
@@ -114,6 +177,21 @@ def one(run, sub, rows, canon, roots, out, force, vt_path, vt_md5):
         return run, sub, 'FAILED', traceback.format_exc(limit=4)
 
 
+def parse_subruns(arg):
+    """{(run_X, sub)} from a comma list or a file of 'run_X/sub' or 'run_X sub' lines."""
+    text = Path(arg).read_text() if os.path.isfile(arg) else arg.replace(',', '\n')
+    out = set()
+    for line in text.splitlines():
+        line = line.split('#')[0].strip()
+        if not line:
+            continue
+        f = line.replace('/', ' ').split()
+        if len(f) != 2 or not f[0].startswith('run_'):
+            raise SystemExit(f'--subruns: expected run_X/sub, got {line!r}')
+        out.add((f[0], f[1]))
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     wd = os.environ.get('WORK_DATA', '/media/ucla/work')
@@ -127,6 +205,11 @@ def main():
     ap.add_argument('--out', default=f'{wd}/ntof_pass1/stage3')
     ap.add_argument('--canon', default=os.path.join(NT, 'ledger_canon.json'))
     ap.add_argument('--runs', default=None)
+    ap.add_argument('--subruns', default=None,
+                    help='only these sub-runs: comma list or file of run_X/sub (or "run_X sub") lines')
+    ap.add_argument('--stage1-dir', default=str(OLD / 'stage1'), help='stage-1 candidates (default: the old stage 1)')
+    ap.add_argument('--trigtime-dir', default=None,
+                    help='trigger-time products (sets $X17_TRIGTIME_DIR; default <X17_SEPT26_OUT>/trigtime)')
     ap.add_argument('--jobs', type=int, default=8)
     ap.add_argument('--force', action='store_true')
     a = ap.parse_args()
@@ -135,6 +218,17 @@ def main():
     reg = [r for r in csv.DictReader(open(os.path.join(NT, 'ntof_registry.csv'))) if r['excluded'] != 'True']
     if a.runs:
         reg = [r for r in reg if r['run'] in a.runs.split(',')]
+    if a.subruns:
+        want = parse_subruns(a.subruns)
+        known = {(f"run_{r['run']}", r['subrun']) for r in reg}
+        if want - known:
+            raise SystemExit(f'--subruns: {len(want - known)} not in the (filtered) registry, e.g. {sorted(want - known)[0]}')
+        reg = [r for r in reg if (f"run_{r['run']}", r['subrun']) in want]
+    if a.trigtime_dir:
+        # inherited by the worker processes; trigger_time.product reads it
+        os.environ['X17_TRIGTIME_DIR'] = os.path.abspath(a.trigtime_dir)
+    print(f"stage 1: {a.stage1_dir}  trigtime: {os.environ.get('X17_TRIGTIME_DIR', '<X17_SEPT26_OUT>/trigtime')}",
+          flush=True)
     groups = {}
     for r in reg:
         groups.setdefault((r['run'], r['subrun']), []).append(r)
@@ -143,7 +237,8 @@ def main():
     print(f'v(t): {a.vt} md5 {vt_md5}', flush=True)
     bad = []
     with ProcessPoolExecutor(a.jobs) as ex:
-        fs = [ex.submit(one, run, sub, rows, canon, roots, a.out, a.force, a.vt, vt_md5) for (run, sub), rows in sorted(groups.items())]
+        fs = [ex.submit(one, run, sub, rows, canon, roots, a.out, a.force, a.vt, vt_md5, a.stage1_dir)
+              for (run, sub), rows in sorted(groups.items())]
         for i, f in enumerate(as_completed(fs)):
             run, sub, msg, err = f.result()
             print(f'[{i + 1}/{len(fs)}] run_{run} {sub}: {msg}', flush=True)
