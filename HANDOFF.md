@@ -34,6 +34,13 @@ see whether it improves tracking. Dylan wants another model to review it before 
   lines, field maps, measured maps). Generator: `make_site_note.py <cellobs.json> <out.html>`.
 
 **Where it stopped:** complete and committed. Nothing is running.
+- **One Overleaf push is pending (both projects).** The last repo edit to `sections/A4b_surfaces.tex` takes the table
+  from unrounded fit values and sets the telescope dish to −0.25 ± 0.16 / −0.05 ± 0.20. It is not on Overleaf: `pull`
+  stops on an add/add conflict in that file.
+- Overleaf's copy is identical to the version this session pushed (checked by diff), so no one edited it there. The
+  conflict is a bridge-history artifact.
+- With Dylan's OK: pull, resolve by keeping the repo version (`git checkout --ours` on that file), commit, then `push`
+  paper1_v2 and paper1.
 
 **Next steps:**
 1. Independent review (another model). Weakest points first:
