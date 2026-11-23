@@ -130,6 +130,57 @@ def signature():
     fig.savefig(os.path.join(OUT, 'gap_signature.png'), dpi=200)
 
 
+def surfaces():
+    """Paper I appendix figure: the gap along x and y with the joint two-surface model, and the angle resolution
+    against the cell size of a cross-validated drift-tilt + velocity map (track_grid.py)."""
+    ps.use()
+    J = json.load(open(f'{HERE}/results/joint.json'))['arms']['all']['params']
+    TG = json.load(open(f'{HERE}/results/track_grid.json'))
+    sys.path.insert(0, HERE)
+    import joint as JT
+    qh = [J['h_' + s] for s in JT.SURF]; qc = [J['c_' + s] for s in JT.SURF]
+    gU, gW = np.meshgrid(np.linspace(-1.7, 1.7, 69), np.linspace(-1.51, 1.51, 61), indexing='ij')
+    G = J['g0'] + JT.q(qc, gU, gW) - JT.q(qh, gU, gW)
+    fig, axs = plt.subplots(1, 3, figsize=(6.1, 2.5), gridspec_kw=dict(width_ratios=[1, 1, 1.05]))
+    rows = []
+    for ax, grid, axis, lab in ((axs[0], 'x5', 0, r'$x$ at mid-gap [mm]'), (axs[1], 'y5', 1, r'$y$ at mid-gap [mm]')):
+        Gd = C['grids'][grid]
+        off = {'G': -5, 'GY': 0, 'VT': 5}
+        for m in ('G', 'GY', 'VT'):
+            t = np.array(Gd[m]['comb']); ok = np.isfinite(t[:, 2])
+            st = dict(STY[m]); st['label'] = st['label'] if axis == 0 else None
+            ax.errorbar(t[ok, axis] + off[m], GAP0 + t[ok, 2], yerr=t[ok, 3], ls='none', ms=3.5, lw=0.8, capsize=1.2, **st)
+            rows += [dict(axis=grid, method=m, pos=float(r[axis]), gap=float(GAP0 + r[2]), err=float(r[3])) for r in t[ok]]
+        prof = G.mean(axis=1 - axis)
+        coord = (np.linspace(-1.7, 1.7, 69) if axis == 0 else np.linspace(-1.51, 1.51, 61)) * 100 + 200
+        ax.plot(coord, GAP0 + prof - G.mean(), color=ps.MODEL, lw=1.0, label='mesh + cathode model' if axis == 0 else None)
+        ax.axhline(GAP0, color=ps.GRID, lw=0.8, zorder=0)
+        ax.set_xlabel(lab); ax.set_xlim(30, 370)
+    axs[0].set_ylabel('drift gap [mm]'); axs[1].set_yticklabels([])
+    axs[1].set_ylim(axs[0].get_ylim())
+    ax = axs[2]
+    sizes = {4: 85, 6: 57, 8: 42, 10: 34}
+    for p, ls in (('x', '-'), ('y', '--')):
+        for run, mk in (('run1', 'o'), ('run2', 's')):
+            R = TG[run][p]
+            xs = [0] + [sizes[n] for n in (4, 6, 8, 10)]
+            ys = [R['pass1']['s68']] + [R[f'{n}x{n} w0+v']['s68'] for n in (4, 6, 8, 10)]
+            ax.plot(xs[1:], ys[1:], ls=ls, marker=mk, ms=3, lw=0.9, color=A, mfc=A if run == 'run1' else 'white',
+                    label=f'{p.upper()}, Run {run[-1]}')
+            ax.plot([120], [ys[0]], marker=mk, ms=3, color=ps.ACCENT, mfc=ps.ACCENT if run == 'run1' else 'white')
+    ax.set_xlim(130, 28); ax.set_xticks([120, 85, 57, 42, 34])
+    ax.set_xticklabels(['pass 1', '85', '57', '42', '34'])
+    ax.set_xlabel('map cell size [mm]'); ax.set_ylabel(r'$\sigma_\theta$ (s68) [$^\circ$]')
+    ax.legend(fontsize=5.5, frameon=False, ncol=2, loc='lower left')
+    for a, t in zip(axs, '(a) (b) (c)'.split()):
+        a.text(0.04, 0.95, t, transform=a.transAxes, va='top')
+    h, l = axs[0].get_legend_handles_labels()
+    fig.legend(h, l, loc='upper center', ncol=4, frameon=False, fontsize=6.5, bbox_to_anchor=(0.38, 1.03))
+    fig.tight_layout(rect=(0, 0, 1, 0.9))
+    import pandas as pd
+    ps.save(fig, os.path.join(OUT, 'gap_surfaces'), data=pd.DataFrame(rows))
+
+
 if __name__ == '__main__':
-    profiles(); maps(); runs(); signature()
+    profiles(); maps(); runs(); signature(); surfaces()
     print('figures in', OUT)
