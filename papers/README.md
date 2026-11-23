@@ -162,8 +162,10 @@ A reorganised copy of Paper I, made after the audit in `paper1_audit/`. `paper1/
 - **Overleaf:** linked 2026-11-11 to its own project "MX17 Paper I v2 (reorganised)"
   (`https://git.overleaf.com/6af3a464cb8d4f7336894eac`); `papers/overleaf.sh status|pull|push paper1_v2` as for paper1.
   Not shared with Stephan. Since 2026-11-23 the v1 project "MX17 Paper I", which Stephan edits, mirrors this folder too:
-  `overleaf.sh status|pull|push paper1` works on `papers/paper1_v2/`. Pull **both** projects before editing v2 text, and
-  push to both after (`push paper1_v2`, then `push paper1`), so the two stay identical.
+  `overleaf.sh status|pull|push paper1` works on `papers/paper1_v2/`. Day to day, work goes to v2 only
+  (`pull`/`push paper1_v2`). Copy to v1 only when Dylan asks (Dylan, 2026-11-23): then `status paper1`, `pull paper1`
+  (this brings any edits by Stephan into `paper1_v2/`; if they conflict, stop and report), and `push paper1`. Never
+  `push paper1 --now` unless Dylan says so, since Stephan edits that project.
 
 ## The feedback note and drafting from it (Paper I, from 2026-11-04)
 
