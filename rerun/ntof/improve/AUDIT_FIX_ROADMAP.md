@@ -49,10 +49,10 @@ the new quality flags. The old stage 3 stays on EOS beside the new one until the
 | 2.5 | Bow mesh height not applied to positions | 22, stage-3 review 4 | tested on run_145 late pointing: half-width A 12.44 → 12.48 mm, C 13.46 → 13.46 mm. No gain, so not applied; `x/y_bow_h` are carried in stage 3 | done (not applied) |
 | 2.6 | κ rescale also scales the bow tilt term | stage-3 review 6 | `vt_join` rescales (tan + a)·r − a with the carried `x/y_bow_a`; measured change 0.0001–0.0004 rms (A, C), 0.003 (D y) | done (in the rebuild) |
 | 2.7 | Map refit on real cosmics | 13 | `run_r2_chain.sh` (line_residuals, angle_map fit, bd_map on `stage3_r2_train`, `merge_maps`, map_view) | todo (next) |
-| 2.8 | Post-flash ringing fits pass the gate | 14 | Dylan: fold into `gated`, but look for a smarter rule first. Charge-only variants (flat, run-MIP, amplitude, 3-variable likelihood) are equivalent on A/C; a per-event waveform-noise threshold does not beat them (`low_charge_study.py`). Waveform ringing study (`rerun/ntof/ringing/`): removable, but the flag adds 0.04–0.08 purity before 8 ms only. Choice asked 11-22 | decide |
+| 2.8 | Post-flash ringing fits pass the gate | 14 | Dylan: fold into `gated`, but look for a smarter rule first. Charge-only variants (flat, run-MIP, amplitude, 3-variable likelihood) are equivalent on A/C; a per-event waveform-noise threshold does not beat them (`low_charge_study.py`). Waveform ringing study (`rerun/ntof/ringing/`): removable, but the flag adds 0.04–0.08 purity before 8 ms only. Choice asked 11-22 | decided 11-23 (Dylan): before 8 ms the charge cut (q >= 600 ADC) AND the own-window waveform flag; from 8 ms the waveform flag alone. Needs the flag: from a pass 2, or a ~300-job waveform pass |
 | 2.9 | D contamination; C windows partly censored | 15, reco review 9 | `quality_join` `d_faint`: amp_norm < 0.25 or x window ≥ 0.8 censored, in `gated` (late D: keeps 98.7 % of reference, 20–30 ms purity 0.51 → 0.75); χ² never helped. C partial censoring: not done | done (D) |
 | 2.10 | Where the new cuts live | — | decided: folded into `gated` (pre-cut value kept as a column), in a `quality_join.py` step after `censor_join` | todo |
-| 2.11 | The new stage 3 on EOS and in the ledger | — | decided: in place at `Analysis_pass1/stage3/`, the old set moved to `stage3_r1_pre_audit/`; MD5SUMS, retire record | todo |
+| 2.11 | The new stage 3 on EOS and in the ledger (HELD by Dylan 11-23 until the pass-2 decision; downstream rerun held too) | — | decided: in place at `Analysis_pass1/stage3/`, the old set moved to `stage3_r1_pre_audit/`; MD5SUMS, retire record | todo |
 
 ## Phase 3. Estimators and analysis scripts
 
@@ -78,7 +78,7 @@ the code, test each change on a few sub-runs against pass 1, and then decide whe
 | # | item | from | change | status |
 |---|---|---|---|---|
 | 4.1 | x–y coincidence uses the bench `tc_tol` | reco review 4 | studied 11-23 (`xy_match/README.md`): the matching is replayable from the candidates table; an n_TOF likelihood is 1–4 points better on overlays but not better where it disagrees with pass 1 (junk events); two-track swaps move the opening angle by 0.1–0.2°. Keep pass-1 matching; n_TOF `tc_tol` + matching-score column; pass 2 stores candidate depth profiles | done (study); score column todo |
-| 4.2 | Out-of-time tracks are biased, not rejected | reco review 6 | flag tracks with t0 at the ±180 ns box edge | todo |
+| 4.2 | Out-of-time tracks are biased, not rejected | reco review 6 | `t0_railed` stays a flag (Dylan 11-23) until study (c) is done: `t0_study/` (pile-up, accidental pairs, railed tracks), then re-reco of the test sub-runs with a wider t0 box and pinned children, and a waveform-overlay injection of time-shifted tracks for the accidental template | wip |
 | 4.3 | Two-track children ignore the t0 pin; `split_child` not in stage 3 | 22, reco review 8 | pin the children (reco); `split_child` is carried into stage 3 from the rebuild on (`x/y_split_child`) | todo (pin) |
 | 4.4 | Seeder keeps the five widest clusters | reco review 10 | rank by significance | todo |
 | 4.5 | Head-on rescue not wired into the beam driver | 22, reco review 11 | wire `headon_seeds` / `_rescue_` windows into `wft_beam` | todo |
