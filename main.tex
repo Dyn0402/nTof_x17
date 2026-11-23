@@ -15,15 +15,16 @@
 \usepackage{authblk}
 \usepackage[hidelinks]{hyperref}
 \usepackage[nameinlink]{cleveref}% the whole "Figure 1" is the link
-% JINST/IOP house style is "figure 1", "section 2" in lower case. Dylan's choice (2026-11-23): Figure and Section are
-% capitalised everywhere; "table 1", "appendix A", "equation (1)" stay lower case except at the start of a sentence
-% (\Cref). Never abbreviated.
+% JINST/IOP house style is "figure 1", "section 2" in lower case. Dylan's choice (2026-11-23): every linked reference is
+% capitalised ("Figure 1", "Table 1", "Section 2", "Appendix A", "Equation (1)"), never abbreviated. A word that is not
+% a linked reference ("this section", "the figure") stays lower case.
 \crefname{figure}{Figure}{Figures}\Crefname{figure}{Figure}{Figures}
-\crefname{table}{table}{tables}\Crefname{table}{Table}{Tables}
+\crefname{table}{Table}{Tables}\Crefname{table}{Table}{Tables}
 \crefname{section}{Section}{Sections}\Crefname{section}{Section}{Sections}
 \crefname{subsection}{Section}{Sections}\Crefname{subsection}{Section}{Sections}
-\crefname{appendix}{appendix}{appendices}\Crefname{appendix}{Appendix}{Appendices}
-\crefname{equation}{equation}{equations}\Crefname{equation}{Equation}{Equations}
+\crefname{appendix}{Appendix}{Appendices}\Crefname{appendix}{Appendix}{Appendices}
+\crefname{subappendix}{Appendix}{Appendices}\Crefname{subappendix}{Appendix}{Appendices}
+\crefname{equation}{Equation}{Equations}\Crefname{equation}{Equation}{Equations}
 % a figure panel, linked as a whole ("Figure 1a"): \crefp{fig:x}{a}, \Crefp at the start of a sentence
 \newcommand{\crefp}[2]{\hyperref[#1]{\cref*{#1}#2}}
 \newcommand{\Crefp}[2]{\hyperref[#1]{\Cref*{#1}#2}}
