@@ -739,55 +739,52 @@ redeployed (dylan-cern-site 91d4386). Inputs on the desktop: $WORK_DATA/claude-j
 - Deck: `WORK_DATA=~/work_data .venv/bin/python papers/paper1/make_figures_deck.py --out <html>` then
   `dylan-cern-site/scripts/add-note.py <html> --slug mx17-paper1-figures --force --deploy`.
 
-## n_TOF tracking audit fixes — updated 2026-11-22 (dylan-MS-7C84)
+## n_TOF tracking audit fixes, x/y matching, ringing, pile-up timing — updated 2026-11-23 (dylan-MS-7C84)
 
-**Resume:** stage 3 rebuilt (stage3_r2); next: `bash rerun/ntof/improve/run_r2_chain.sh`, then Dylan's A/C ringing-cut choice.
+**Resume:** pile-up/t0 study (t0_study/) next: injection test, accidental opening-angle shape, wide-t0 re-reco; then phase 4.
 
-**Goal:** fix everything the 11-21 tracking audit found (README findings 11-23), on existing data. Plan and status per
-item: `rerun/ntof/improve/AUDIT_FIX_ROADMAP.md` (phases 0-5).
+**Goal:** close every loose end of the 11-21 tracking audit on existing data, so that a possible pass 2 (week-long
+re-reco) is the last one. Plan and status per item: `rerun/ntof/improve/AUDIT_FIX_ROADMAP.md`.
 
-**Done (branch audit-fixes, merged to main):**
-- Phase 0-1: reviews saved (`rerun/ntof/improve/audit_report/reviews/`), finding 23; scint-stack y sign fixed at the
-  producer (view `tan_raw_y` = reco sign); beam-off by registry class (`pass1_tracks.cosmic_tags`); lines on unmapped
-  slopes; re-run guards in vt_view/map_view; bow-partner fix in `wft/reco.py` (+ test); stage-1 dedup; FOOT_SIM C 17.3.
-- Slim fix: every reader takes every slim file (`paths.slim_files`, `concat_slim`); trigtime, slim export and stage 1
-  regenerated for the 77 sub-runs into `$WORK_DATA/ntof_pass1/context_r2/{trigtime,slim,stage1}` (full 293/297 sets;
-  old rows identical; 3.39 M -> 6.95 M triggers timed in those sub-runs).
-- Stage 3 rebuilt, all 543 sub-runs, 0 failed: `$WORK_DATA/ntof_pass1/stage3_r2/`. Untimed production tracks 14.72 % ->
-  0.68 %. Also carries the bow-partner recompute (`bow_patch`), `x/y_bow_a`, `x/y_bow_h`, `x/y_split_child`, `ntof_run`,
-  and v(t) rescaling only the speed part. Bow mesh height NOT applied (no pointing gain on run_145).
-- Phase 3 estimators: windowed `capsule_tof.crossing`; D tilt on >= 25 ms + wall; `campaign_imaging` on the view;
-  focus scans / capsule_point / pose z about `pass1_tracks.SOURCE_XZ_MM` (-10.9, -4.5); pose chi2_x with library error;
-  track_quality full-shuffle null + view-keyed cache.
-- `rerun/ntof/stage3/quality_join.py`: D faint-window rule IN gated (gated_precut kept); flags only: t0_railed,
-  xy_time_ok (n_TOF tc tolerance), xy_balance_ok (sigma(t)), dca_source_mm; `low_charge` slot empty (`--low-charge none`).
-- Low-charge studies: charge-only variants equivalent on A/C; per-event noise threshold no better
-  (`rerun/ntof/improve/low_charge_study.py`); waveform ringing study `rerun/ntof/ringing/README.md`: ringing = block
-  common mode x stable per-channel coupling, removable (`deflect.py`); waveform flag + 600 ADC gains 0.04-0.08 purity
-  before 8 ms only, nothing from 8 ms; pass 2 not justified.
-- `docs/PARAMETERS.md` rows for all new parameters.
+**Done (all on main, pushed):**
+- 11-22: phases 0-3 (code fixes, slim fix, stage 3 rebuilt as `$WORK_DATA/ntof_pass1/stage3_r2/`, estimator fixes).
+- 11-23: `run_r2_chain.sh` ran -> `$WORK_DATA/ntof_pass1/stage3_r2_final/` (543/543), the new baseline view; refitted
+  map `rerun/ntof/stage3/angle_map/angle_map_r2.json`: offsets change rms 0.001-0.0015 (x, within stats), 0.0034-0.0037
+  (y, ~2x the ~0.0016 statistical error, not explained); cells hold ~340 not ~400 cosmics (registry beam-off).
+- x/y matching study `rerun/ntof/improve/xy_match/README.md`: matching replayable from the candidates table; n_TOF
+  likelihood 1-4 points better on overlays, but where it disagrees with pass 1 neither choice points (junk events);
+  two-track swaps move the opening angle 0.1-0.2 deg (dot product invariant). Keep pass-1 matching (roadmap 4.1).
+- Ringing open items `rerun/ntof/ringing/README.md` (3ccfaa7d): D's problem = ~50 always-oscillating channels per view
+  (19 x / 42 y unmasked, `d_osc_channels.json`); <2 ms excursions not correctable; own-window test = symmetric one.
+- Pile-up / t0 study `rerun/ntof/improve/t0_study/README.md`: t0 does not follow late arrivals (absorbed by the
+  profile); tc = (t0-pin)+u50 does (slope ~1, +-110/155 ns A/C); wall hits over +-1000 ns from the slim files (no
+  re-export needed); timing-based accidental fraction of late (25-75 ms) non-child pairs A 19+-1 %, C 18+-2 % (falls
+  with ToF); over all pairs ~13 % A / 12 % C vs rate fit 7 % / 13 %; 30 % of late pairs hold a split child (27 % railed).
 
-**Not started / open:**
-1. `bash rerun/ntof/improve/run_r2_chain.sh` (~2 h): v(t) view, map refit on true cosmics, map_view, censor_join,
-   quality_join -> `stage3_r2_final/`. Check the refitted map against the shipped one (expected ~0.001 in tan).
-2. Dylan's decision on the A/C ringing cut (asked 11-22, not answered): condor waveform-flag pass (~300 jobs, ~2 TB read,
-   needs lxplus) + 600 ADC, or 600 ADC only, or run-MIP-scaled charge. Then fill `quality_join --low-charge`. Also: is
-   `t0_railed` to go into gated (costs 0.9/1.3/4.3 % of good A/C/D tracks)?
-3. Switch (2.11, decided "in place, old kept"): local `stage3_vt` -> `stage3_vt_r1`, `stage3_r2_final` -> `stage3_vt`;
-   `/media/dylan/data/x17/sept26_prelim/{trigtime,slim,stage1}` -> `*_r1_pre_audit` + copy context_r2; EOS
-   `Analysis_pass1/stage3` -> `stage3_r1_pre_audit/`, upload stage3_r2 + MD5SUMS; retire record; CLAUDE.md line.
-4. Downstream on the new view (PASS1_DOWNSTREAM.sh, ~6 h), compare_chains, before/after page, then the same-chamber
-   rate fit from 12 ms (3.9), scint stack + calorimetry rerun (3.10), PASS1_DOWNSTREAM.md (-1.7 mm D z etc.).
-5. Phase 4 (reco code: tc_tol, children t0 pin, seeder ranking, head-on rescue, quality_ok reference, ...): fix, test
-   on a few sub-runs, then Dylan decides on a pass 2.
+**Decisions (Dylan, 11-23):**
+- A/C ringing cut: before 8 ms charge cut (q >= 600) AND waveform flag; from 8 ms the waveform flag alone (roadmap 2.8).
+- HOLD the switch (2.11) and the 6 h downstream rerun until the pass-2 decision.
+- `t0_railed` stays a flag until the t0 study is done; Dylan wants pile-up/timing biases understood and mitigated.
+- Phase 4 approved (code fixes behind flags, test on the 5 sub-runs, then Dylan decides pass 2), after the t0 study.
+
+**Next steps:**
+1. t0 study: injection test (real late tracks shifted by known delta, added to empty events, re-reco: exact t0/tc/angle
+   response and acceptance, unbiased accidental template); infra to reuse: `rerun/ntof/ringing/reco_test.py`.
+2. Opening-angle shape of accidental pairs vs the event-mixed shape `same_chamber_compare` subtracts; redo the rate fit
+   with a |dtc| < 300 ns cut and compare a; settle A's 7 % vs ~13 %.
+3. Re-reco test sub-runs with a wider t0 box (`wft.model.LM_T0_RANGE`, `T0_RESID_SCAN_FREE`; mind the t0<->profile
+   degeneracy the box guards) and pinned split children (4.3).
+4. Per-track wall time column in the analysis view (full +-1000 ns); chamber D in the t0 study.
+5. Phase 4 items 4.2-4.11 behind flags, test on run_145 stat090_0000-0002, run_104/run_139 stat090_0003, decide pass 2.
 
 **Gotchas:**
-- map_view recomputes `gated` (gated_reco & acceptance): run censor_join and quality_join AFTER it, never before.
-- The map is fitted on `stage3_r2_train` (unmapped + censored cut); bd_map needs the censored cut (D fakes).
-- The windowed crossing moves clean values: C -10.93 -> -11.14, D -3.86 -> -4.86 (D's band is not straight).
-- Estimator code on main now differs from what produced `ana/`: rerun before quoting numbers.
-- Spare waveform copies (16 GB) in `$WORK_DATA/claude-jobs/bcad1a92/wf/` and fetched slims (6 GB) in
-  `.../bcad1a92/runs/` can be deleted; `stage3_r2/` and `context_r2/` are the products (keep).
+- `tracks_t0.parquet` / `wall_hits.parquet` in `$WORK_DATA/ntof_pass1/ana/t0_study/` are regenerable (collect.py 22 s,
+  wall_time.py 50 s). xy_match outputs in `.../ana/xy_match/` (build_combos.py 12 s).
+- Wall group time resolution under beam ~6 ns (not the 0.5 ns cosmic value); off-time wall hits are asymmetric (more
+  after the trigger, since an earlier particle would have triggered).
+- The accidental template is built from wall-selected off-time tracks: possible bias, hence the injection test.
+- Study scripts in xy_match/ and t0_study/ use fixed paths (exploratory).
+- Spare copies deletable: `$WORK_DATA/claude-jobs/bcad1a92/{wf,runs}` (22 GB).
 
 ## n_TOF pass 1 downstream (P7): the analysis moved onto pass 1 — updated 2026-11-20 (dylan-MS-7C84)
 
