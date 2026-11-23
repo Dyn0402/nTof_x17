@@ -168,12 +168,12 @@ def surfaces():
             ax.plot(xs[1:], ys[1:], ls=ls, marker=mk, ms=3, lw=0.9, color=A, mfc=A if run == 'run1' else 'white',
                     label=f'{p.upper()}, Run {run[-1]}')
             ax.plot([120], [ys[0]], marker=mk, ms=3, color=ps.ACCENT, mfc=ps.ACCENT if run == 'run1' else 'white')
-    ax.set_xlim(130, 28); ax.set_xticks([120, 85, 57, 42, 34])
-    ax.set_xticklabels(['pass 1', '85', '57', '42', '34'])
+    ax.set_xlim(132, 24); ax.set_xticks([120, 85, 57, 42, 30])
+    ax.set_xticklabels(['pass 1', '85', '57', '42', ''])
     ax.set_xlabel('map cell size [mm]'); ax.set_ylabel(r'$\sigma_\theta$ (s68) [$^\circ$]')
     ax.legend(fontsize=5.5, frameon=False, ncol=2, loc='lower left')
-    for a, t in zip(axs, '(a) (b) (c)'.split()):
-        a.text(0.04, 0.95, t, transform=a.transAxes, va='top')
+    for a, t, xx in zip(axs, '(a) (b) (c)'.split(), (0.04, 0.04, 0.45)):
+        a.text(xx, 0.95, t, transform=a.transAxes, va='top')
     h, l = axs[0].get_legend_handles_labels()
     fig.legend(h, l, loc='upper center', ncol=4, frameon=False, fontsize=6.5, bbox_to_anchor=(0.38, 1.03))
     fig.tight_layout(rect=(0, 0, 1, 0.9))

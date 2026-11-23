@@ -1,0 +1,158 @@
+\section{The mesh and the cathode of chamber A}\label{app:gapmap}
+\sectionstate{partial}{new 2026-11-23: \texttt{rerun/paper1\_gap/} (\texttt{cellobs.py}, \texttt{joint.py},
+\texttt{track\_test.py}, \texttt{track\_grid.py}; \texttt{report.html}); pass 1, the two golden runs of chamber~A.}
+\intent{The bow of the board (\cref{sec:bow,app:bow}) and the variation of the gap (\cref{sec:gap}) are two views of
+the same two surfaces. One model of the mesh and the cathode describes every observable, the dish of the board is
+measured a second time without the reference positions, and a finer map of the drift direction improves the angle
+resolution by 16 to 21\,\%.}
+
+\Cref{sec:gap} showed that the drift gap of chamber~A is not uniform, and \cref{sec:bow} showed that its readout board
+is dished. These two results are related, because the gap is the distance between two surfaces: the mesh, which sits
+on the readout board, and the cathode. In this appendix we describe both surfaces with one model and fit the model to
+every observable we have. The fit answers two questions. The first is whether the measurements of the bow and the
+measurements of the gap are consistent with each other. The second is whether a better description of the drift
+field improves the reconstructed angles.
+
+\subsection{One model for both surfaces}
+We describe the height of the mesh by $h(x,y)$ and the height of the cathode by $c(x,y)$, both measured upward along
+the reference $z$ axis. Each surface is a quadratic function of the position: a constant, two slopes and three
+curvature terms. The gap is the difference of the two surfaces, $g=c-h$.
+
+Every observable of \cref{sec:gap,app:bow} follows from these two surfaces. The position route of \cref{app:bow}
+measures the mesh height $h$. The geometric gap and the product of the angle-scale velocity and the drift time measure
+the gap $g$. The drift time and the angle-scale velocity also depend on the gap separately, through the local drift
+field $V/g$: the drift time is proportional to $g^{1+\beta}$ and the velocity to $g^{-\beta}$, where
+$\beta=\mathrm{d}\ln\vd/\mathrm{d}\ln E$.
+
+The drift direction gives a third kind of observable. A drift line leaves the mesh normal to the mesh and ends normal
+to the cathode. Averaged over the drift column, its tilt is therefore the mean of the two slopes, $(\partial h/\partial
+x+\partial c/\partial x)/2$ in the X view. This tilt shifts the arriving charge sideways in proportion to its drift
+time, so it adds an offset to the fitted transverse rate, $w_0=\vd\,(\partial h/\partial x+\partial c/\partial x)/2$.
+The same tilt can be measured without any timing. It makes the geometric gap of \cref{sec:gap} read long for tracks of
+one sign of $\tan\theta$ and short for the other, by a relative amount equal to the tilt divided by $\tan\theta$. In
+the notation of \cref{app:bow}, the ratio $r_f$ is $(1+c''/h'')/2$: it is $1/2$ for a flat cathode and 1 for a cathode
+that bows with the board.
+
+We measure seven observables in $4\times4$ cells of the interior (cells of about $85\times75$\,mm), separately in
+Run~1 and Run~2. They are the mesh height from the positions (X and Y strips), the transverse-rate offset $w_0$ (X and
+Y), the tilt from the sign asymmetry of the geometric gap (X and Y), the geometric gap (X and Y strips), the drift time,
+and the angle-scale velocity (X and Y). The fit has 13 shared parameters: the two quadratic surfaces, the mean gap and
+$\beta$. The remaining parameters are normalizations, such as the drift velocity of each run and the offset of each
+view, which carry no information on the shape. A quadratic surface does not describe the chamber exactly. For this
+reason we add to each observable an error in quadrature, chosen so that each class of observables has a reduced
+$\chi^2$ of 1. This added error is the size of what the quadratic model does not describe: 0.18\,mm in the mesh height,
+0.18\,\textmu m/ns in $w_0$, 0.1\,mm in the geometric gap, 1.9\,\% in the drift time and 1.4\,\% in the velocity.
+
+\subsection{The bow and the gap agree}
+The test of consistency is to fit the model to subsets of the observables and to compare the surfaces they give.
+\Cref{tab:surfaces} shows the result.
+
+\begin{table}[tbp]
+  \centering
+  \caption{The mesh and the cathode of chamber~A from subsets of the observables. Curvatures are given as the
+  depth of the surface at 150\,mm from the center relative to the center (mm; positive means the center is lower).
+  The gap tilt is the slope of the gap along $x$ (mm per 100\,mm). Both runs are fitted together. Subsets: positions
+  and the drift tilt ($w_0$ and the sign asymmetry); positions and the gap (geometric gap, drift time, velocity); no
+  timing (positions, geometric gap, sign asymmetry); no positions (everything else).}
+  \label{tab:surfaces}
+  \small
+  \begin{tabular}{lccccc}
+    \hline
+    observables & mesh, $x$ & mesh, $y$ & cathode, $x$ & cathode, $y$ & gap tilt, $x$ \\
+    \hline
+    all                                     & $0.88\pm0.08$ & $1.47\pm0.10$ & $1.19\pm0.11$ & $0.25\pm0.15$ & $0.38\pm0.08$ \\
+    positions, drift tilt & $0.77\pm0.10$ & $1.44\pm0.12$ & $1.52\pm0.23$ & $0.39\pm0.26$ & $0.44\pm0.33$ \\
+    positions, gap & $0.77\pm0.10$ & $1.44\pm0.12$ & $1.01\pm0.16$ & $0.18\pm0.25$ & $0.39\pm0.09$ \\
+    no timing & $0.78\pm0.10$ & $1.38\pm0.12$ & $0.01\pm0.46$ & $-0.21\pm0.33$ & $0.58\pm0.16$ \\
+    no positions                            & $1.01\pm0.12$ & $1.55\pm0.16$ & $1.26\pm0.12$ & $0.28\pm0.16$ & $0.39\pm0.24$ \\
+    \hline
+  \end{tabular}
+\end{table}
+
+Three results follow from \cref{tab:surfaces}. First, the dish of the board is measured twice. The position route sees
+it through the reference tracks. Without any position information, the drift tilt measures $h+c$ and the gap measures
+$c-h$, so together they also determine the mesh. The two measurements agree: the mesh lies 0.8--1.0\,mm (along $x$)
+and 1.4--1.6\,mm (along $y$) lower at the center than 150\,mm out. When we let the position route carry a separate dish
+of the reference telescope, the fit gives $-0.26\pm0.16$ and $-0.05\pm0.19$\,mm, which is consistent with zero.
+
+Second, along $y$ every subset finds a nearly flat cathode. Its depth at 150\,mm is between $-0.2$ and $0.4$\,mm,
+against 1.4--1.6\,mm for the mesh. The gap along $y$ is therefore longest at the center, by about 1.2\,mm relative to a
+point 150\,mm out. This is the dome of \cref{sec:gap}, and the drift tilt alone predicts it as well as the gap
+measurements do.
+
+Third, along $x$ the cathode follows the board. The gap then has little curvature along $x$, and it increases steadily
+with $x$ by about 0.4\,mm per 100\,mm. The only subset that disagrees is the one without timing, which finds a flat
+cathode along $x$ ($2.5\sigma$ from the full fit). The geometric gap with the X strips reaches only the central 220\,mm
+in $x$, so this subset constrains the curvature along $x$ weakly. In addition, the drift tilt along $x$ rises faster
+toward the edges than a quadratic dish allows: its gradient is 0.39\,\textmu m/ns per 100\,mm over the interior and
+0.31 in the central 200\,mm. With the full interior, $r_f$ along $x$ is therefore larger than 1 (1.2). We do not
+interpret this as a cathode that bows more than the board. It indicates that the board is not a pure paraboloid, which
+\cref{app:bow} also notes.
+
+The fit gives $\beta=1.0\pm0.2$. Magboltz gives 0.68 at this field and water content, and the drift-time scan alone
+gives 0.87 (\cref{sec:vE}). Fixing $\beta$ at 0.68 raises the $\chi^2$ by 5, and fixing it at 0.87 raises it by 0.7. The
+shape of the surfaces does not depend on this choice (the cathode depths change by less than 0.2\,mm).
+
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=\linewidth]{gap_surfaces}
+  \caption{The two surfaces of chamber~A and the angle resolution. (a) Drift gap as a function of $x$ at mid-gap,
+  averaged over $y$, and (b) as a function of $y$, averaged over $x$, both runs combined: geometric gap with the X
+  strips (filled circles) and the Y strips (open circles; relative, placed on 28.19\,mm), and the product of the
+  angle-scale velocity and the drift time (squares). Line: the fit of the mesh and cathode model to all observables.
+  (c) Angle resolution (s68 of $\theta-\theta_\mathrm{ref}$) with the pass-1 conversion (left) and with a map of the
+  drift-tilt offset and the velocity made on the other run, as a function of the cell size of the map. X solid, Y
+  dashed; Run~1 filled, Run~2 open.}
+  \label{fig:gapsurf}
+\end{figure}
+
+\subsection{A finer map of the drift direction improves the angles}
+The reconstruction converts the fitted transverse rate into an angle with the bow block of \cref{sec:bow}. This block
+corrects the drift tilt with a quadratic surface and the angle scale with a linear term. The added errors above show
+that the drift tilt has structure that a quadratic surface does not describe, with an amplitude of 0.18\,\textmu m/ns.
+This corresponds to about 0.005 in $\tan\theta$, or 0.3\textdegree.
+
+To test whether this structure can be corrected, we make a map of the transverse-rate offset and of the velocity on
+one run and apply it to the other run. The map is a grid of cells over the interior, interpolated between the cell
+centers, and it is indexed by the reconstructed position of the track, not by the reference. Only the two constants
+of the conversion (the mean offset and the mean velocity) are measured again on the run itself. Since the map and the
+test use different runs, the gain cannot come from fitting the noise of the test sample.
+
+\Cref{fig:gapsurf}c and \cref{tab:anglemap} show the result. The smooth two-surface model gives a small gain on the
+X strips (0.03--0.04\textdegree). A map with cells of about 40\,mm improves the angle resolution by 0.15--0.17\textdegree,
+which is 16 to 21\,\% on both views and in both runs. Most of the gain comes from the offset map. The velocity map
+adds a further 0.02--0.04\textdegree. With cells smaller than about 40\,mm, the map made on Run~1 becomes noisy and the gain
+on Run~2 falls.
+
+\begin{table}[tbp]
+  \centering
+  \caption{Angle resolution of chamber~A (s68 of $\theta-\theta_\mathrm{ref}$, degrees), single tracks in the
+  interior with $|\tan\theta_\mathrm{ref}|\le0.6$. Each map is made on the other run.}
+  \label{tab:anglemap}
+  \begin{tabular}{lcccc}
+    \hline
+    angle conversion & X, Run~1 & X, Run~2 & Y, Run~1 & Y, Run~2 \\
+    \hline
+    pass 1 (quadratic bow block)            & 0.905 & 0.929 & 0.796 & 0.809 \\
+    two-surface model (quadratic)           & 0.878 & 0.888 & 0.797 & 0.791 \\
+    map, 85\,mm cells                       & 0.816 & 0.837 & 0.717 & 0.730 \\
+    map, 57\,mm cells                       & 0.764 & 0.790 & 0.661 & 0.679 \\
+    map, 42\,mm cells                       & 0.736 & 0.776 & 0.627 & 0.651 \\
+    map, 42\,mm cells, offset only          & 0.779 & 0.807 & 0.653 & 0.675 \\
+    \hline
+  \end{tabular}
+\end{table}
+
+The structure the map corrects is two-dimensional and smooth. It is not a timing offset between front-end chips. A
+chip reads 64 strips (50\,mm), so a chip offset would appear as steps in the view's own coordinate. The offset varies
+smoothly along that coordinate, without steps at the chip boundaries. A map in that coordinate alone recovers between
+a fifth and a third of the gain (0.852 and 0.873\textdegree\ on X, 0.762 and 0.767\textdegree\ on Y). A map in the other coordinate
+alone recovers none of it. We therefore attribute the structure to the shape of the drift field, which follows the
+shape of the board and of the cathode on scales of about 50\,mm.
+
+The map is a property of one chamber in one mounting, and it is measured with the reference tracks. At n\_TOF the
+boards stand vertical, so the part of the bow caused by gravity is absent, and we have no reference tracks there. We
+have not tested whether any part of the bench map applies at n\_TOF.
+\askDylan{Ship a per-chamber 2-D map of $w_0$ and $\vd$ (42\,mm cells, the bundle's \texttt{v\_map} mechanism of the FA
+spec) in a bench re-finalization? It needs a cross-run map per chamber and mounting; chambers with one good run would
+need a split-in-time version of the test. Numbers: \texttt{rerun/paper1\_gap/results/track\_grid.json}.}

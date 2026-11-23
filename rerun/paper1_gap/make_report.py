@@ -26,6 +26,62 @@ def f(x, e=None, d=2):
     return f'{x:.{d}f}' if e is None else f'{x:.{d}f} ± {e:.{d}f}'
 
 
+def surfaces_html():
+    JJ = json.load(open(f'{HERE}/results/joint.json'))
+    TG = json.load(open(f'{HERE}/results/track_grid.json'))
+    TT = json.load(open(f'{HERE}/results/track_test.json'))['metrics']
+    lab = {'all': 'all', 'tilt': 'positions + drift tilt (w0, sign asymmetry)', 'gap': 'positions + gap (G, GY, T, v)',
+           'geo': 'no timing (positions, G, GY, sign asymmetry)', 'timing': 'timing (positions, w0, T, v)',
+           'no_hp': 'no positions', 'm3dish': 'all + free telescope dish', 'beta068': 'all, beta = 0.68',
+           'beta087': 'all, beta = 0.87'}
+    rows = []
+    for a, l in lab.items():
+        F = JJ['arms'][a]; P, E = F['params'], F['errors']
+        d = lambda k: f"{1.125 * P[k]:.2f} ± {1.125 * E[k]:.2f}" if np.isfinite(E[k]) else f"{1.125 * P[k]:.2f}"
+        tilt = P['c_lu'] - P['h_lu']
+        rows.append(f"<tr><td>{l}</td><td>{F['chi2']:.0f} / {F['n'] - F['nfree']}</td><td>{d('h_kuu')}</td><td>{d('h_kww')}</td>"
+                    f"<td>{d('c_kuu')}</td><td>{d('c_kww')}</td><td>{tilt:.2f}</td><td>{P['beta']:.2f}</td></tr>")
+    fl = JJ['floors']
+    trk = []
+    for arm, src in (('pass 1', None), ('two-surface model', 'model'), ('map 85 mm', '4x4 w0+v'), ('map 57 mm', '6x6 w0+v'),
+                     ('map 42 mm', '8x8 w0+v'), ('map 42 mm, offset only', '8x8 w0'), ('map 42 mm, velocity only', '8x8 v'),
+                     ('map 34 mm', '10x10 w0+v')):
+        vals = []
+        for p in 'xy':
+            for r in ('run1', 'run2'):
+                vals.append(TG[r][p]['pass1']['s68'] if src is None else (TT[r][p]['model']['s68'] if src == 'model' else TG[r][p][src]['s68']))
+        trk.append(f"<tr><td>{arm}</td>" + ''.join(f'<td>{v:.3f}</td>' for v in vals) + '</tr>')
+    return f"""
+<h2>Two surfaces: the mesh and the cathode (joint fit, joint.py)</h2>
+<p>One quadratic mesh h and one quadratic cathode c predict every observable (cellobs.py, 4 × 4 cells, both runs): mesh height
+from positions (X, Y), the drift tilt from the ladder intercept w0 = v (∂h + ∂c)/2 and, timing-free, from the ±tan asymmetry of the
+geometric gap; the gap g = c − h (G, GY); T ∝ g<sup>1+β</sup>; v ∝ g<sup>−β</sup>. Error floors added in quadrature so each class has
+reduced χ² = 1: hp {fl['hp']:.2f} mm, w0 {fl['w0']:.2f} µm/ns, sign-asymmetry tilt {fl['d']:.4f}, G {fl['G']:.2f} mm, T {100 * fl['T']:.1f} %,
+v {100 * fl['v']:.1f} % (what a quadratic surface does not describe). Depths at 150 mm (mm, positive = centre lower):</p>
+<table><tr><th>observables</th><th>χ² / ndf</th><th>mesh x</th><th>mesh y</th><th>cathode x</th><th>cathode y</th><th>gap tilt x (mm/100 mm)</th><th>β</th></tr>{''.join(rows)}</table>
+<ul><li><b>The board dish is measured twice:</b> without any position information the drift tilt (h + c) and the gap (c − h) give a
+mesh 1.01 / 1.55 mm deep (x / y) against 0.77–0.88 / 1.38–1.47 from positions; a free telescope dish is consistent with zero.</li>
+<li><b>Along y the cathode is nearly flat</b> in every subset; the gap is ~1.2 mm longer at the centre than 150 mm out.</li>
+<li><b>Along x the cathode follows the board</b>; the gap rises ~0.4 mm per 100 mm. Only the no-timing subset (geometric gap covers
+x ≈ 100–320 mm only) prefers a flat cathode along x (2.5σ). The w0 ramp along x is steeper at the edges (0.39 µm/ns per 100 mm over
+the interior, 0.31 in the central 200 mm), so r_f along x reads 1.2 > 1: the board is not a pure paraboloid.</li>
+<li>β = 1.0 ± 0.2 (Magboltz 0.68: Δχ² = +5; drift-scan 0.87: +0.7); the surfaces do not depend on it.</li></ul>
+
+<h2>Tracking: a finer drift-direction map (track_test.py, track_grid.py)</h2>
+<p>Maps of the ladder intercept w0 and slope v per cell are made on one run and applied to the other (bilinear, indexed by the
+reconstructed mid-gap position); only two constants are re-measured on the test run. s68 of θ − θ_ref (deg), interior single tracks,
+|tan θ_ref| ≤ 0.6:</p>
+<table><tr><th>conversion</th><th>X Run 1</th><th>X Run 2</th><th>Y Run 1</th><th>Y Run 2</th></tr>{''.join(trk)}</table>
+<ul><li>42 mm cells improve the angles by 0.15–0.17° (16–21 %), both views, both runs. Most is the offset (drift tilt); the velocity
+map adds 0.02–0.04°. At 34 mm the map from the smaller Run 1 is noise-limited.</li>
+<li>The structure is 2-D and smooth: a map in the view's own coordinate alone recovers a fifth to a third of the gain, the other
+coordinate alone none, and there are no steps at the 64-strip (50 mm) chip boundaries. So it is the drift field, not chip timing.</li>
+<li>Not tested at n_TOF (boards vertical: no gravity sag; no reference tracks).</li></ul>
+<figure><img src="figures/gap_surfaces.png"><figcaption>Paper I appendix figure (app:gapmap): gap profiles with the joint model, and the
+angle resolution against the map cell size.</figcaption></figure>
+"""
+
+
 def main():
     ch = C['chamber']
     G4 = C['grids']['4x4']
@@ -116,6 +172,7 @@ Correlations across cells: G–VT {cg('G', 'VT')}, G–GY {cg('G', 'GY')}, GY–
 Amplitude relative to G (fit through the origin): VT {f(sl['VT'][0], sl['VT'][1])}, T {f(sl['T'][0], sl['T'][1])},
 V {f(sl['V'][0], sl['V'][1])}, GY {f(sl['GY'][0], sl['GY'][1])}.</p>
 
+{surfaces_html()}
 <h2>Checks</h2>
 <figure><img src="figures/gap_runs.png" style="max-width:420px"><figcaption>Run 1 against Run 2, every method and cell:
 the runs agree within their errors (χ² per cell ≈ 1 for each method, table above).</figcaption></figure>

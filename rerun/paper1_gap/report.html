@@ -63,6 +63,35 @@ Correlations across cells: G–VT 0.95 (8 cells), G–GY 0.79 (6 cells), GY–VT
 Amplitude relative to G (fit through the origin): VT 0.72 ± 0.13, T 0.94 ± 0.14,
 V 1.26 ± 0.18, GY 0.59 ± 0.39.</p>
 
+
+<h2>Two surfaces: the mesh and the cathode (joint fit, joint.py)</h2>
+<p>One quadratic mesh h and one quadratic cathode c predict every observable (cellobs.py, 4 × 4 cells, both runs): mesh height
+from positions (X, Y), the drift tilt from the ladder intercept w0 = v (∂h + ∂c)/2 and, timing-free, from the ±tan asymmetry of the
+geometric gap; the gap g = c − h (G, GY); T ∝ g<sup>1+β</sup>; v ∝ g<sup>−β</sup>. Error floors added in quadrature so each class has
+reduced χ² = 1: hp 0.18 mm, w0 0.18 µm/ns, sign-asymmetry tilt 0.0053, G 0.10 mm, T 1.9 %,
+v 1.4 % (what a quadratic surface does not describe). Depths at 150 mm (mm, positive = centre lower):</p>
+<table><tr><th>observables</th><th>χ² / ndf</th><th>mesh x</th><th>mesh y</th><th>cathode x</th><th>cathode y</th><th>gap tilt x (mm/100 mm)</th><th>β</th></tr><tr><td>all</td><td>285 / 259</td><td>0.87 ± 0.08</td><td>1.48 ± 0.10</td><td>1.19 ± 0.11</td><td>0.25 ± 0.15</td><td>0.39</td><td>1.02</td></tr><tr><td>positions + drift tilt (w0, sign asymmetry)</td><td>158 / 141</td><td>0.76 ± 0.10</td><td>1.44 ± 0.13</td><td>1.52 ± 0.23</td><td>0.39 ± 0.26</td><td>0.44</td><td>0.68</td></tr><tr><td>positions + gap (G, GY, T, v)</td><td>184 / 168</td><td>0.76 ± 0.10</td><td>1.44 ± 0.13</td><td>1.01 ± 0.16</td><td>0.18 ± 0.25</td><td>0.39</td><td>1.00</td></tr><tr><td>no timing (positions, G, GY, sign asymmetry)</td><td>115 / 110</td><td>0.77 ± 0.10</td><td>1.39 ± 0.12</td><td>0.01 ± 0.46</td><td>-0.22 ± 0.32</td><td>0.58</td><td>0.68</td></tr><tr><td>timing (positions, w0, T, v)</td><td>221 / 198</td><td>0.87 ± 0.08</td><td>1.50 ± 0.12</td><td>1.25 ± 0.13</td><td>0.34 ± 0.25</td><td>0.37</td><td>1.42</td></tr><tr><td>no positions</td><td>215 / 199</td><td>1.02 ± 0.12</td><td>1.55 ± 0.15</td><td>1.26 ± 0.12</td><td>0.29 ± 0.15</td><td>0.39</td><td>1.00</td></tr><tr><td>all + free telescope dish</td><td>282 / 257</td><td>1.02 ± 0.12</td><td>1.50 ± 0.15</td><td>1.26 ± 0.12</td><td>0.26 ± 0.15</td><td>0.38</td><td>1.03</td></tr><tr><td>all, beta = 0.68</td><td>290 / 260</td><td>0.86 ± 0.08</td><td>1.55 ± 0.09</td><td>1.24 ± 0.12</td><td>0.07 ± 0.14</td><td>0.50</td><td>0.68</td></tr><tr><td>all, beta = 0.87</td><td>286 / 260</td><td>0.87 ± 0.08</td><td>1.51 ± 0.09</td><td>1.21 ± 0.11</td><td>0.17 ± 0.13</td><td>0.43</td><td>0.87</td></tr></table>
+<ul><li><b>The board dish is measured twice:</b> without any position information the drift tilt (h + c) and the gap (c − h) give a
+mesh 1.01 / 1.55 mm deep (x / y) against 0.77–0.88 / 1.38–1.47 from positions; a free telescope dish is consistent with zero.</li>
+<li><b>Along y the cathode is nearly flat</b> in every subset; the gap is ~1.2 mm longer at the centre than 150 mm out.</li>
+<li><b>Along x the cathode follows the board</b>; the gap rises ~0.4 mm per 100 mm. Only the no-timing subset (geometric gap covers
+x ≈ 100–320 mm only) prefers a flat cathode along x (2.5σ). The w0 ramp along x is steeper at the edges (0.39 µm/ns per 100 mm over
+the interior, 0.31 in the central 200 mm), so r_f along x reads 1.2 > 1: the board is not a pure paraboloid.</li>
+<li>β = 1.0 ± 0.2 (Magboltz 0.68: Δχ² = +5; drift-scan 0.87: +0.7); the surfaces do not depend on it.</li></ul>
+
+<h2>Tracking: a finer drift-direction map (track_test.py, track_grid.py)</h2>
+<p>Maps of the ladder intercept w0 and slope v per cell are made on one run and applied to the other (bilinear, indexed by the
+reconstructed mid-gap position); only two constants are re-measured on the test run. s68 of θ − θ_ref (deg), interior single tracks,
+|tan θ_ref| ≤ 0.6:</p>
+<table><tr><th>conversion</th><th>X Run 1</th><th>X Run 2</th><th>Y Run 1</th><th>Y Run 2</th></tr><tr><td>pass 1</td><td>0.905</td><td>0.929</td><td>0.796</td><td>0.809</td></tr><tr><td>two-surface model</td><td>0.878</td><td>0.888</td><td>0.797</td><td>0.791</td></tr><tr><td>map 85 mm</td><td>0.816</td><td>0.837</td><td>0.717</td><td>0.730</td></tr><tr><td>map 57 mm</td><td>0.764</td><td>0.790</td><td>0.661</td><td>0.679</td></tr><tr><td>map 42 mm</td><td>0.736</td><td>0.776</td><td>0.627</td><td>0.651</td></tr><tr><td>map 42 mm, offset only</td><td>0.779</td><td>0.807</td><td>0.653</td><td>0.675</td></tr><tr><td>map 42 mm, velocity only</td><td>0.996</td><td>1.011</td><td>0.902</td><td>0.914</td></tr><tr><td>map 34 mm</td><td>0.706</td><td>0.826</td><td>0.610</td><td>0.690</td></tr></table>
+<ul><li>42 mm cells improve the angles by 0.15–0.17° (16–21 %), both views, both runs. Most is the offset (drift tilt); the velocity
+map adds 0.02–0.04°. At 34 mm the map from the smaller Run 1 is noise-limited.</li>
+<li>The structure is 2-D and smooth: a map in the view's own coordinate alone recovers a fifth to a third of the gain, the other
+coordinate alone none, and there are no steps at the 64-strip (50 mm) chip boundaries. So it is the drift field, not chip timing.</li>
+<li>Not tested at n_TOF (boards vertical: no gravity sag; no reference tracks).</li></ul>
+<figure><img src="figures/gap_surfaces.png"><figcaption>Paper I appendix figure (app:gapmap): gap profiles with the joint model, and the
+angle resolution against the map cell size.</figcaption></figure>
+
 <h2>Checks</h2>
 <figure><img src="figures/gap_runs.png" style="max-width:420px"><figcaption>Run 1 against Run 2, every method and cell:
 the runs agree within their errors (χ² per cell ≈ 1 for each method, table above).</figcaption></figure>
