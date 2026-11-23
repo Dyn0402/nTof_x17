@@ -1,5 +1,39 @@
 # Handoff
 
+## Paper I: v1 Overleaf now mirrors v2; Stephan asked about Sec. 3 — updated 2026-11-23 (dylan-MS-7C84)
+
+**Resume:** wait for Stephan's Sec. 3 reply (email or Overleaf edits); draft Sec. 3 in paper1_v2 from it.
+
+**Goal:** Stephan (CEA) writes or briefs the detector design and production section before the paper goes to Pierfrancesco
+and the others.
+
+**Done:**
+- Checked the v1 Overleaf project "MX17 Paper I" (shared with Stephan, editor since 11-06): all 118 history updates were
+  Dylan's, with no comments and no tracked changes. Stephan had made no edits.
+- Copied the v2 text into v1 as a fast-forward (commit `ebc01bf0`, parents = old v1 tip + the v2 split). The two
+  projects are identical. `papers/overleaf_remotes.txt` (third column) maps `paper1` -> `papers/paper1_v2`, so
+  `overleaf.sh ... paper1` syncs the v2 folder. `papers/paper1/` stays frozen as the home of the figures and producers
+  that v2 still uses.
+- Capitalised every linked reference: Figure, Table, Section, Appendix (and subappendix), Equation (`\crefname` in
+  `papers/paper1_v2/main.tex`). This is Dylan's choice, not JINST style. Unlinked words ("this section") stay lower case.
+- Replied to Stephan in the CERN thread "Detector Paper Draft" (Dylan approved and edited it, sent 11-23). The reply has
+  the Overleaf link and invites him to write Sec. 3 there or email what he wants in it. On 11-06 he said he would print
+  and annotate the old version.
+
+**Next steps:**
+1. If Stephan emails content for Sec. 3: draft `papers/paper1_v2/sections/03_design.tex` from it, in Dylan's style.
+2. Day to day, work on and push `paper1_v2` only. Copy to v1 ONLY when Dylan asks: `overleaf.sh status paper1`,
+   `pull paper1` (Stephan's edits land in paper1_v2; stop on a conflict), then `push paper1`. Never `--now` on paper1
+   without Dylan's say-so.
+
+**Gotchas / decisions:**
+- The remaining lowercase "section N" / "appendix A" in the PDF are in the draft notes and name the old v1 numbering.
+- `~/bin/latexmk` does not exist on the desktop. Build with pdflatex + bibtex, and run bibtex inside the build directory
+  with `BIBINPUTS=<paper dir>:` (bibtex refuses to write to an absolute path).
+
+**Key files & commands:**
+- `papers/overleaf.sh`, `papers/overleaf_remotes.txt`, `papers/README.md` § Paper I v2 — the sync and its rules
+
 ## Paper I v2 prose in Dylan's writing style — updated 2026-11-21 (dylan-MS-7C84)
 
 **Resume:** Sec. 4 reviewed with Dylan and closed (11-21), he likes the style; next: review the next section he names the same way.
