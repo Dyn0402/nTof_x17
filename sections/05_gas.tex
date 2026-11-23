@@ -40,9 +40,32 @@ rather than shorter. We have no measurement of the position of the cathode.
 \askStephan{Is a gap of 28.2\,mm at the center plausible (cathode bulging toward the mesh under the overpressure of the
 5\,mm gas gap behind it, frame height)? The other chambers' geometric gaps in our tables are 28.0 (C), 29.4 (D) and
 31.1\,mm (B).}
-\askDylan{The variation of the gap across chamber~A is not re-derived on the final reconstruction (the July map,
-25.7--29.2\,mm, is on a superseded basis), so nothing is said about it. Chamber~E: 30.48\,mm in the configuration,
-28.6\,mm geometric, 27.9\,mm used for the SPS gas fit (\cref{app:beam}).}
+
+The gap is not the same everywhere on chamber~A. To measure how it varies, we divide the interior of the chamber (at
+least 30\,mm from the edge of the active area) into cells of about 100\,mm and measure the gap in each cell. We use the
+two long runs at the operating point, Run~1 and Run~2, and analyze them separately. In each cell we make three
+independent measurements. The first is the geometric gap $L/\tan\theta$ with the X strips, as above. The second is the
+same geometric measurement with the Y strips, which are read by other electronics. The third is the product of the
+angle-scale velocity and the duration of the drift column, both measured in the cell. For each of the three
+measurements, Run~1 and Run~2 agree within their uncertainties. The three measurements also agree with each other.
+Across the cells, their values are correlated with coefficients between 0.8 and 0.95.
+
+All three measurements show the same pattern. The gap increases along $x$ by 0.5 to 0.8\,mm per 100\,mm. This
+corresponds to a tilt of the cathode relative to the mesh of about 0.3 to 0.5\textdegree. Along $y$, the gap is
+largest near the center and shorter toward both ends, by about 0.5\,mm at 100\,mm from the center. This shape along
+$y$ is the one expected if the cathode were flat above the dished readout board of \cref{sec:bow}. A fit of the
+measured dish to the cell values gives 0.5 to 0.8 of its depth. Over the interior the gap therefore ranges from about
+27 to about 29\,mm, and the cell values scatter by 0.5 to 0.7\,mm around the mean of 28.2\,mm. The product of the
+velocity and the duration shows the same pattern as the geometric gap, but with about 0.7 of its amplitude. The size
+of the variation is therefore known to about 30\,\%.
+
+This variation is a change of the gap, and not a change of the gas. At a fixed drift voltage, a shorter gap means a
+higher drift field. Since the drift velocity increases with the field, a shorter gap shortens the drift time by more
+than the change of the gap itself. Magboltz predicts $\mathrm{d}\ln\vd/\mathrm{d}\ln T=-0.41$ for a change of the gap,
+while a change of the gas composition would give $-1$. The cells give $-0.50\pm0.02$.
+\askDylan{New 2026-11-23 (pass 1, both golden runs, three methods): \texttt{rerun/paper1\_gap/report.html}; candidate
+figure \texttt{rerun/paper1\_gap/figures/gap\_profiles.pdf} (gap along $x$ and $y$). Keep, shorten, or add the figure?
+Chamber~E: 30.48\,mm in the configuration, 28.6\,mm geometric, 27.9\,mm used for the SPS gas fit (\cref{app:beam}).}
 
 \begin{figure}[tbp]
   \centering
