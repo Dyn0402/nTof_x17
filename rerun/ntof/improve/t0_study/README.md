@@ -17,6 +17,12 @@ tracks) and the scintillator wall hits of the slim files, which cover ±1000 ns 
 - Taken over all pairs (30 % of them contain a split child, which is in time), that is about 13 % (A) and 12 % (C).
   The same-chamber rate fit gives 7 % (A) and 13 % (C). So C agrees, and A's accidental share appears to be about twice
   what the rate fit subtracts.
+- An injection test (real in-time tracks shifted by known amounts and added to other triggers) confirms the response
+  directly. On A, tc equals the true offset within 10 ns from −120 to +420 ns; t0 moves by at most 90 ns. The track
+  angle changes by less than 0.5° within −120 to +300 ns, so accidental pairs keep their opening angle there.
+- The injection test also found that two separated in-time tracks are both found only 76 % (A) and 71 % (C) of the
+  time. Most of the loss comes from the seeder's plane-wide significance floor. A 30 mm local floor raises this to
+  87 % and 84 % (roadmap 4.12).
 
 ## How the reconstruction treats the start time
 
@@ -81,13 +87,117 @@ ToF on A: 2.26, 2.27 and 2.44 per 1000 at 25-35, 35-50 and 50-75 ms. This is wha
 timing picture is self-consistent. However, the rate fit's accidental share for A (7 %) is about half of this one
 (about 13 % of all pairs). We do not yet know which is right.
 
+## The injection test (2026-11-23)
+
+The wall-based numbers above are diluted, because some off-time wall hits are unrelated to the track. So we also
+measured the response directly, with an injection test (`inject.py`, analysis `inject_ana.py`). The test uses one
+sub-run, run_145 stat090_0000, on chambers A and C.
+
+**How the test works.** A donor is a real late single track (ToF ≥ 25 ms). It must be the only gated track of its
+chamber, have one seed cluster per view, not be railed or a split child, and have an in-time hit in its own wall group.
+The last condition means that it arrived with the trigger. We cut the donor's waveforms out on its seed cluster plus two
+strips on each side. We shift them by k whole samples (60 ns each, so the shift is exact) and add them to the
+waveforms of a host trigger. The host is then reconstructed with the pass-1 configuration (the E2_beam bundle, minimum
+3 strips). There are three kinds of host.
+- An **empty** host is a late trigger with no seed in the chamber. Each of 300 donors goes into one empty host at each
+  of 19 shifts, from −360 to +720 ns.
+- A **pair** host is a late trigger that already holds another clean in-time single track. Each of 1500 pair hosts gets
+  one donor at a random shift. This makes an accidental same-chamber pair whose true time offset we know.
+- A **control** host is an empty host with nothing added. None of the 300 control hosts made a gated track, on A or C.
+
+Three details of the method matter.
+- The true offset is delta = 60 k + pin(ftst of the donor) − pin(ftst of the host). The pin moves by 10 ns per ftst
+  tick.
+- The donor's charge keeps the donor's x–y trigger phase. With the same k in both views, 45 % of the injected tracks
+  would carry a 60 ns x–y column-time error. Since that error is exactly one sample, the y view gets its own shift
+  k_y = k ± 1 where needed, so both views see the same true offset.
+- On the injected strips, the analyzer hits are replaced by hits from the injected waveform (5σ, as
+  `wft_beam.hits_from_waveforms`). Adding a second event's waveform also raises the noise on those strips by √2. The
+  k = 0 injection measures what these two changes do by themselves. It gives an acceptance of 0.97 and a tc spread
+  (16-84 %) of ±30 ns about the donor's own value on both chambers.
+
+### Single tracks: the response to the arrival time
+
+Each row compares the injected track with the same donor reconstructed in its own event, so the donor-to-donor spread
+cancels. Δt0 and Δtc are medians of (injected − donor). dθ is the median angle between the injected and the donor
+direction.
+
+| delta (ns) | −360 | −240 | −120 | 0 | +120 | +240 | +360 | +480 | +600 | +720 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| A acceptance | 0.80 | 0.92 | 0.95 | 0.97 | 0.97 | 0.95 | 0.92 | 0.84 | 0.81 | 0.75 |
+| A Δt0, x view | −115 | −100 | −61 | −5 | +32 | +54 | +73 | +83 | +87 | +70 |
+| A Δtc | −281 | −209 | −111 | −1 | +118 | +236 | +358 | +469 | +565 | +638 |
+| A railed | 0.55 | 0.40 | 0.05 | 0.00 | 0.01 | 0.12 | 0.18 | 0.21 | 0.23 | 0.16 |
+| A dθ (°) | 2.9 | 1.3 | 0.46 | 0.20 | 0.29 | 0.37 | 0.57 | 0.96 | 1.5 | 2.6 |
+| C acceptance | 0.89 | 0.93 | 0.95 | 0.97 | 0.92 | 0.90 | 0.86 | 0.84 | 0.74 | 0.58 |
+| C Δtc | −248 | −192 | −109 | −1 | +122 | +237 | +339 | +415 | +458 | +544 |
+| C railed | 0.52 | 0.44 | 0.15 | 0.00 | 0.01 | 0.05 | 0.06 | 0.05 | 0.05 | 0.04 |
+| C dθ (°) | 2.5 | 1.1 | 0.47 | 0.21 | 0.35 | 0.56 | 1.06 | 1.6 | 2.4 | 3.8 |
+
+What this shows.
+- **tc measures the arrival time.** On A, Δtc equals delta within 10 ns from −120 to +420 ns. Beyond +480 ns it falls
+  behind (by 80 ns at +720 ns), because the end of the column leaves the 1200 ns window. On the early side, tc
+  follows 75-80 % of the offset. On C, tc follows the offset to +300 ns and then falls behind faster, with a wider
+  spread. So the wall-based table above was indeed diluted, and the true response is steeper, as expected.
+- **t0 does not measure the arrival time.** A late track moves t0 by only about a quarter of the offset, and never by
+  more than 70-90 ns (A) or 50-75 ns (C). The fit puts the rest of the delay into the depth profile.
+- **The angle is preserved near the trigger.** Within −120 to +300 ns, the direction changes by less than 0.5°. It
+  changes by 1° at about −240 and +420 ns (A), and by 2.5-3.8° at the edges of the range. A late track reads
+  shallower (|tan| × 0.86 at +720 ns), and an early track on A reads steeper (|tan| × 1.18 at −360 ns).
+- **Acceptance falls slowly.** A track 300 ns late is still found 94 % (A) and 86 % (C) of the time. So accidental
+  tracks from about ±500 ns around the trigger enter the sample.
+
+### Accidental pairs: the time difference and the opening angle
+
+In the pair hosts, the two reconstructed tracks are matched to the donor and the host view by view, since the x–y
+combination of two tracks can swap (the swap leaves Δtc unchanged, and the opening angle almost unchanged).
+- The opening angle of an accidental pair is close to its true value when the offset is small. Within −120 to
+  +300 ns, the median change is below 0.2° and 68 % of the pairs change by less than 0.5°. At the edges of the range,
+  the median change is 1-1.5° and 68 % change by less than 2-3°. **So an event-mixed shape built from in-time tracks
+  describes the accidental pairs within ±300 ns well.** Beyond ±300 ns it is less exact, but the |Δtc| < 300 ns cut
+  removes most of those pairs anyway: the fraction with |Δtc| > 300 ns rises from about 0.1 (A) and 0.2 (C) at zero
+  offset to 0.66 (A) and 0.51 (C) at +360 ns.
+
+### Finding: a second track is often lost, mostly by the seeder
+
+Two in-time tracks more than 50 mm apart should both be found about 0.97² ≈ 94 % of the time if they were independent.
+Instead, both are found 76 ± 3 % of the time on A and 71 ± 3 % on C (|k| ≤ 1). Over all shifts the numbers are 66 %
+and 60 %. Below 50 mm apart, the two tracks merge, as expected.
+
+We looked at the events where one of two well-separated tracks was lost. Two causes appear.
+- **The seeder does not offer the lost track's cluster in one view** (about two thirds of the cases). The cause is
+  the significance floor in `wft/seed.py`: a strip is kept only if it is above 10 % of the strongest strip **in the
+  whole plane** (`SIG_REL_FLOOR`, `SIG_FLOOR_LOCAL_MM = 0`). A bright track therefore pushes a fainter one anywhere in
+  the plane below the 3-strip minimum. The bench intra-chamber study found the same thing in September
+  (`sept26_prelim_analysis/intra_bench.py`), but the local floor never reached production.
+- **Both views are fitted, but the x–y association builds only one track** (the rest). The two views are combined
+  across the tracks, and the leftover combination then fails the x–y coincidence.
+
+We tested the first cause directly. We reconstructed the same pair hosts, with the same donors and shifts, with the
+floor judged against the strongest strip within 30 mm (`--floor-local-mm 30`). Both tracks are then found 87 ± 3 %
+(A) and 84 ± 3 % (C) of the time at |k| ≤ 1, and 77 % and 76 % over all shifts. So the plane-wide floor costs
+roughly 11-14 points of pair acceptance for two separated tracks.
+
+What this means. The same-chamber pair yield is reduced by this loss. A comparison with Geant4 accounts for it only if
+the digitised Geant4 events go through the same seeder with realistic relative amplitudes. We have not checked that
+yet. The local floor's effect on single tracks (fakes, noise clusters) has not been measured either, so it is a
+candidate for phase 4 (roadmap 4.12), not a decision.
+
+### What the injection test does not cover
+
+- The donors are clean tracks with a wall hit, so they are biased toward the wall acceptance and toward ordinary
+  track energies.
+- For k < 0, the samples the shift opens at the end of the window are filled with the donor's last sample. So the
+  early side is approximate at the end of the window.
+- Only one sub-run (run_145 stat090_0000) and chambers A and C are done.
+- The accidental fraction of the data has not been redone with this response yet (next: the rate fit with
+  |Δtc| < 300 ns, and A's 7 % against about 13 %).
+
 ## What this study does not cover yet
 
 - The accidental template takes its shape from tracks selected by an off-time wall hit. That selection can bias it
-  (wall acceptance, energy). An injection test is still to do: real late tracks shifted in time by known amounts,
-  added to empty events and reconstructed. It would give the exact response and acceptance.
-- The opening-angle shape of the accidental pairs has not been compared with the event-mixed shape yet. Early
-  arrivals rail and read 14-33 % too steep, so the two shapes may differ.
+  (wall acceptance, energy). The injection test above now gives the response directly; the |Δtc| template of
+  `look9.py` has not been rebuilt from it yet.
 - Chamber D is not done: its fakes need the `d_faint` view and its oscillating channels first.
 
 ## Possible mitigations (not decided)
@@ -104,4 +214,6 @@ timing picture is self-consistent. However, the rate fit's accidental share for 
 - `collect.py` writes `tracks_t0.parquet` (t0 − pin per view, per gated track).
 - `wall_time.py` writes `wall_hits.parquet` (own-group wall hits within ±1000 ns).
 - Study scripts: `look1.py` to `look9.py` (fixed paths, output to stdout).
+- `inject.py` (the injection, about 25 min per chamber and sub-run on 7 cores) and `inject_ana.py` (matching and
+  tables). Outputs: `$WORK_DATA/ntof_pass1/ana/t0_study/inject/` (`ana_prod.txt`, `ana_local30.txt` hold the tables).
 - Outputs: `$WORK_DATA/ntof_pass1/ana/t0_study/`.
