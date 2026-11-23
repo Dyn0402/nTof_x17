@@ -44,42 +44,8 @@ def events(run, sub, late_frac, seed=1, lo=1.0, hi=20.0):
 
 
 def hits_filter(wb, cfg, nsig=5.0):
-    """Wrap wft_beam.read_hits_tag: in a plane the corrected reader changed, drop hits whose corrected waveform
-    stays below nsig (peak or 3-sample running sum, as hits_from_waveforms)."""
-    import pandas as pd
-    from wft import io as wio
     from rerun.ntof.ringing import deflect as DF
-    orig = wb.read_hits_tag
-
-    def read(path, feus):
-        h = orig(path, feus)
-        tag = wio.file_tag(path.replace('_feu-combined_hits', '_00'))
-        keep = np.ones(len(h), bool)
-        for feu in feus:
-            fs = [f for f in wio.subrun_files(cfg.BASE_PATH, cfg.RUN, cfg.SUB_RUN, feu) if wio.file_tag(f) == tag]
-            if not fs:
-                continue
-            rdr = wio.FeuReader(fs[0])
-            nz = np.maximum(rdr.noise.astype(np.float64), 1e-3)
-            hf = h[h.feu == feu]
-            want = set(hf.eventId.astype(int)) & set(cfg._wanted)
-            drop = []
-            for eid, _f, W in rdr.iter_events(want):
-                if not getattr(rdr, '_last_corrected', False):
-                    continue
-                c = np.cumsum(np.pad(W, ((0, 0), (1, 0))), axis=1)
-                rs = (c[:, 3:] - c[:, :-3]).max(axis=1) / (nz * np.sqrt(3) * 1.3)
-                sig = np.maximum(W.max(axis=1) / nz, rs)
-                drop.append(pd.DataFrame(dict(eventId=eid, channel=np.flatnonzero(sig < nsig))))
-            if drop:
-                d = pd.concat(drop)
-                key = set(zip(d.eventId.astype(int), d.channel.astype(int)))
-                m = (h.feu == feu).to_numpy()
-                kk = np.array([(int(e), int(c)) in key for e, c in zip(h.eventId[m], h.channel[m])])
-                keep[np.flatnonzero(m)[kk]] = False
-        cfg._hits_dropped = getattr(cfg, '_hits_dropped', 0) + int((~keep).sum())
-        return h[keep].reset_index(drop=True)
-    wb.read_hits_tag = read
+    DF.install_hits_filter(wb, cfg, wanted=cfg._wanted, nsig=nsig)
 
 
 def main():
@@ -125,16 +91,7 @@ def main():
     if a.mode != 'pass1':
         from rerun.ntof.ringing import deflect as DF
         stats = DF.install('gated')
-        # mark the reader when the last event was corrected (for the hits filter)
-        it = wio.FeuReader.iter_events
-
-        def it2(self, wanted=None, with_raw=False):
-            for x in it(self, wanted, with_raw):
-                n0 = stats.get('corrected', 0)
-                self._last_corrected = n0 > getattr(self, '_n_corr_seen', 0)
-                self._n_corr_seen = n0
-                yield x
-        wio.FeuReader.iter_events = it2
+        DF.mark_corrected()             # the reader remembers whether its last event was corrected (hits filter)
         if a.mode == 'deflect_hits':
             hits_filter(wb, cfg)
     bundle = f'{WD}/ntof_pass1/bundles/pf/{a.arm}_E2_beam'

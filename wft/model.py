@@ -1125,7 +1125,7 @@ TWO_N_REFINE = 2
 
 def fit_plane_two_raw(W, noise, pos, sat, plane, starts, hyper=None,
                       wgt=None, maxiter=220, maxiter_polish=140,
-                      n_refine=TWO_N_REFINE, bins=None):
+                      n_refine=TWO_N_REFINE, bins=None, t0_prior=None):
     """Fit two tracks to one prepared plane window from several starting points.
 
     ``starts``: list of ``(pa, pb, tie_t0)``. All are scored, the best
@@ -1136,7 +1136,10 @@ def fit_plane_two_raw(W, noise, pos, sat, plane, starts, hyper=None,
 
     The caller prepares the window (``prep_plane``) once and passes it in: the
     two-track fit is always a SECOND look at a window a one-track fit has
-    already seen, so re-preparing it here would be waste."""
+    already seen, so re-preparing it here would be waste.
+
+    ``t0_prior=(t0_pred, sigma)``: adds ((t0 - t0_pred) / sigma)^2 per child to the objective (wft.reco
+    TWO_TRACK_T0_PRIOR); the returned ``chi2`` is the plain chi2 without it."""
     _require_cal()
     hyper = hyper or HYPER
     dof = int((~sat).sum())
@@ -1151,6 +1154,10 @@ def fit_plane_two_raw(W, noise, pos, sat, plane, starts, hyper=None,
         # depths where both children have charge. One quantity, so the
         # optimiser is not pushed onto a threshold the guard then rules on.
         d = two_track_distinguishability(pa, pb, common_weight(qa, qb, bins))
+        if t0_prior is not None:
+            c = c + ((pa[2] - t0_prior[0]) / t0_prior[1]) ** 2           # tied: one shared t0, counted once
+            if not tie_t0:
+                c = c + ((pb[2] - t0_prior[0]) / t0_prior[1]) ** 2
         return c * (1.0 + TWO_BARRIER * (1.0 - d) ** 2) if d < 1.0 else c
 
     scored = sorted((obj(_two_pack(pa, pb, tie), tie), i, (pa, pb, tie))

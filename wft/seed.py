@@ -31,6 +31,11 @@ GAP_THRESHOLD_MM = 12.0    # production spatial clustering gap
 MIN_STRIPS = 3
 SPARK_VETO_HITS = 50       # full-detector discharge: drop the event
 N_CANDIDATES = 3           # clusters offered to the fit per plane
+#: How the clusters offered to the fit are ranked when a plane holds more than n_candidates (roadmap 4.4, n_TOF
+#: tracking audit reco review 10).  'strips' (pass 1): by strip count, the top n_candidates kept before the min_strips
+#: test, so a wide noise band can take a slot from a short bright track.  'charge': among the clusters that pass
+#: min_strips, by summed amplitude.
+SEED_RANK = 'strips'
 PITCH_MM = 398.58 / 512    # 0.7784 — strip pitch, for the hot-run bridge below
 #: Let a run of hot strips be crossed for free when clustering the clean ones
 #: (``_clean_cluster_labels``). Off, on the argument in that docstring: making
@@ -275,6 +280,16 @@ def _clean_cluster_labels(pos: np.ndarray, hot_mask: np.ndarray,
     return np.concatenate([[0], np.cumsum(d > gap_mm)])
 
 
+def _rank(counts, charge, min_strips, n_candidates):
+    """Cluster labels in the order offered to the fit (SEED_RANK)."""
+    if SEED_RANK == 'strips':
+        return np.argsort(counts)[::-1][:max(1, n_candidates)]
+    if SEED_RANK != 'charge':
+        raise ValueError(f'SEED_RANK must be strips or charge: {SEED_RANK!r}')
+    ok = np.flatnonzero(counts >= min_strips)
+    return ok[np.argsort(charge[ok], kind='stable')[::-1]][:max(1, n_candidates)]
+
+
 def seed_candidates(pos: np.ndarray, channels: np.ndarray, amps: np.ndarray,
                     gap_mm: float = GAP_THRESHOLD_MM,
                     min_strips: int = MIN_STRIPS,
@@ -348,7 +363,8 @@ def seed_candidates(pos: np.ndarray, channels: np.ndarray, amps: np.ndarray,
         lab = _clean_cluster_labels(pos, hot_mask, gap_mm, dead_pos=dead_pos)
         cpos = pos[~hot_mask]
         counts = np.bincount(lab, minlength=int(lab.max()) + 1 if len(lab) else 0)
-        order = np.argsort(counts)[::-1][:max(1, n_candidates)]
+        order = _rank(counts, np.bincount(lab, weights=amps[~hot_mask], minlength=len(counts)),
+                      min_strips, n_candidates)
         out = []
         for c in order:
             if counts[c] < min_strips:
@@ -366,7 +382,7 @@ def seed_candidates(pos: np.ndarray, channels: np.ndarray, amps: np.ndarray,
     lab = _cluster_labels(pos, gap_mm, dead_pos)
     n_labels = int(lab.max()) + 1 if len(lab) else 0
     counts = np.bincount(lab, minlength=n_labels)
-    order = np.argsort(counts)[::-1][:max(1, n_candidates)]
+    order = _rank(counts, np.bincount(lab, weights=amps, minlength=n_labels), min_strips, n_candidates)
     out = []
     for c in order:
         if counts[c] < min_strips:

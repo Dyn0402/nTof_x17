@@ -320,6 +320,11 @@ BUSY_PLANE_HITS = 150      # after the significance floor: flash/discharge veto
 # 2026-10-06.md §9-10, sept26_prelim_analysis/SAME_CHAMBER_PAIRS.md.
 MIN_STRIPS_BEAM = int(os.environ.get('WFT_BEAM_MIN_STRIPS', 5))
 N_CANDIDATES_BEAM = 5
+#: Head-on rescue in the beam driver (roadmap 4.5, tracking audit reco review 11): a plane the clustering left
+#: empty gets the bench's 2-strip head-on seeds (wft.seed.headon_seeds, HEADON_SIG) and, if still empty, a
+#: whole-plane '_rescue_' window, in which the fit worker looks for a drift column starting at the other view's t0
+#: (wft.reco._headon_rescue, as wft.reco.reconstruct_run does on the bench).  Off = pass 1.
+HEADON_RESCUE_BEAM = False
 WIDE_STRIPS = 10           # >= this many strips AND
 ISOCHRONOUS_SPAN = 3       #   < this many samples of time span = not a column
                            #   (det D's X plane is full of these -- see
@@ -479,6 +484,10 @@ def seeds_from_hits_beam(df, pos_maps, feu_x, feu_y,
                 keep = wseed.rescue_candidates(keep, cands,
                                                plane_seeds(gl[gl['feu'] == feu], plane)[1],
                                                pos_maps[feu], n_candidates)
+            if not keep and HEADON_RESCUE_BEAM and wseed.HEADON_SIG and 'significance' in gp:
+                ch = gp['channel'].to_numpy().astype(int)
+                keep = wseed.headon_seeds(pos_maps[feu][ch], ch, gp['significance'].to_numpy(), wseed.HEADON_SIG,
+                                          dead_pos=dead_pos[plane], n_raw=len(gp))[:max(1, n_candidates)]
             rec[plane] = keep
         if rec['x'] or rec['y']:
             out[int(eid)] = rec
@@ -755,6 +764,10 @@ def _windows_for_tag(cfg, tag, pos_maps, seeds, wanted, pad_strips, dead=None):
         for eid, ftst, wfm in rdr.iter_events(want):
             cl = seeds[eid][plane]
             if not cl:
+                if HEADON_RESCUE_BEAM and not seeds[eid].get('spark'):
+                    rec = buf.setdefault(eid, {'w': {}, 's': {}})
+                    rec['w'][f'_rescue_{plane}'] = dict(W=wfm, noise=rdr.noise, pos=pos_maps[feu])
+                    rec['ftst_' + plane] = ftst
                 continue
             wins, used = [], []
             for s in cl:
@@ -774,6 +787,8 @@ def _windows_for_tag(cfg, tag, pos_maps, seeds, wanted, pad_strips, dead=None):
             rec['ftst_' + plane] = ftst
     payloads = []
     for eid, rec in buf.items():
+        if not any(k in rec['w'] for k in ('x', 'y')):       # a rescue window alone: nothing for it to follow
+            continue
         # per-plane ftst dict — wft.reco._worker_fit's contract since the
         # 2026-08-11 t0-prior work (it derives ftst_diff itself; the old
         # scalar here made every event with ftst_x != ftst_y fit as None)

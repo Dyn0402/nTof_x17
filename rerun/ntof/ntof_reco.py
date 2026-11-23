@@ -60,9 +60,15 @@ def main():
     ap.add_argument('--hits-dir', default='combined_hits_root', help='hits generation dir name under the sub-run')
     ap.add_argument('--events', default=None, help='text file of event ids: fit only these (studies; seeding still '
                                                    'runs over every tag, so the seeded-but-not-listed count is kept)')
+    ap.add_argument('--ringing', choices=('none', 'deflect_hits'), default='none',
+                    help='roadmap 4.10: deflect_hits = the gated A/C ringing correction of the waveforms '
+                         '(rerun/ntof/ringing/deflect.py) and the hits it no longer supports dropped')
+    ap.add_argument('--headon-rescue', action='store_true',
+                    help='roadmap 4.5: wft_beam.HEADON_RESCUE_BEAM (2-strip seeds and the whole-plane rescue window)')
     a = ap.parse_args()
 
     from ntof_tracking import wft_beam as wb
+    import wft.model, wft.seed, wft.io, wft.reco  # noqa: E401,F401  (each applies its WFT_DIAG overrides on import)
     from wft import diag
     rows = registry_rows(a.run, a.subrun)
     rows = [r for r in rows if r['excluded'] != 'True']
@@ -86,6 +92,15 @@ def main():
                  registry={k: r0[k] for k in r0 if k not in ('tag', 't_local', 'n_dec', 'n_fdf', 'n_hits', 'dec_gb',
                                                               'fdf_gb', 'dec_min_bytes')},
                  tags=tags, base=base, diag=dict(diag.ACTIVE) if hasattr(diag, 'ACTIVE') else {})
+    extra['phase4'] = dict(ringing=a.ringing, headon_rescue=bool(a.headon_rescue))
+    if a.headon_rescue:
+        wb.HEADON_RESCUE_BEAM = True
+    if a.ringing == 'deflect_hits':
+        from rerun.ntof.ringing import deflect as DF
+        if a.arm == 'D':
+            raise SystemExit('--ringing deflect_hits is for A and C (rerun/ntof/ringing/README.md: not on D)')
+        extra['phase4']['ringing_stats'] = DF.install('gated')
+        DF.install_hits_filter(wb, cfg)
     allow = None
     if a.events:
         ids = {int(x) for x in open(a.events).read().split()}

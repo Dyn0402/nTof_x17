@@ -87,6 +87,7 @@ def main():
     ap.add_argument('--seed', type=int, default=1)
     ap.add_argument('--label', default='')
     ap.add_argument('--pairs-only', action='store_true', help='only the pair hosts (same donors and plan as the full run)')
+    ap.add_argument('--k-fixed', type=int, default=None, help='every pair host gets this shift (in-time tail study)')
     ap.add_argument('--floor-local-mm', type=float, default=None,
                     help='wft.seed.SIG_FLOOR_LOCAL_MM for the reconstruction (default: the production plane-wide floor)')
     a = ap.parse_args()
@@ -195,7 +196,8 @@ def main():
         plan.append(dict(kind='control', host_tag=tg, host_eid=e, donor=-1, k=0))
     for j in pair_hosts.index:
         plan.append(dict(kind='pair', host_tag=pair_hosts.tag[j], host_eid=int(pair_hosts.event_id[j]),
-                         donor=int(rng.choice(donors.index)), k=int(rng.choice(KGRID)), host_row=j))
+                         donor=int(rng.choice(donors.index)),
+                         k=int(rng.choice(KGRID)) if a.k_fixed is None else a.k_fixed, host_row=j))
     plan = pd.DataFrame(plan)
     if a.pairs_only:
         plan = plan[plan.kind == 'pair'].reset_index(drop=True)
@@ -281,7 +283,8 @@ def main():
                           allow_meta=dict(source='t0_study inject plan'), allow_bow=True, min_strips=3,
                           extra_meta=dict(inject=dict(kgrid=KGRID, pad=PAD, late_ms=LATE_MS, wall_peak=float(pk),
                                                       n_donors=int(len(donors)), seed=a.seed,
-                                                      pairs_only=a.pairs_only, floor_local_mm=a.floor_local_mm)))
+                                                      pairs_only=a.pairs_only, floor_local_mm=a.floor_local_mm,
+                                                      k_fixed=a.k_fixed)))
 
     # ---- the plan table, with the true offsets and the donor's own values --------------------------------------
     D = donors.add_prefix('d_')

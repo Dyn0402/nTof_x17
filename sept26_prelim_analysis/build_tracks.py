@@ -33,6 +33,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -406,6 +407,30 @@ def predictions(df: pd.DataFrame) -> pd.DataFrame:
 # --------------------------------------------------------------------------- #
 # Build
 # --------------------------------------------------------------------------- #
+#: Reference of the quality_ok flag (roadmap 4.6, tracking audit finding 14): pass 1 takes the median chi2/dof over
+#: every live winner of the sub-run x arm, and before ~12 ms most of those are fits to the post-flash ringing baseline
+#: (A x: median 7.4 early against 1.4 late), so the reference is set by the ringing and the flag removes nothing there.
+#: When set (ms), the median comes from the candidates of triggers at or after this time since the flash only, and the
+#: flag is applied to all.  None = pass 1.  $X17_QUALITY_REF_LATE_MS sets it for a stage-3 rebuild.
+QUALITY_REF_LATE_MS = (float(os.environ['X17_QUALITY_REF_LATE_MS']) if os.environ.get('X17_QUALITY_REF_LATE_MS')
+                       else None)
+
+
+def _late_quality_medians(cand: pd.DataFrame, run: str, subrun: str):
+    """{'x': m, 'y': m} from the late candidates (QUALITY_REF_LATE_MS), or None (the pass-1 rule)."""
+    if QUALITY_REF_LATE_MS is None or not len(cand):
+        return None
+    from wft.reco import quality_flags
+    tt = trigger_time.read(run, subrun).set_index('eventId')
+    tp = tt['t_pred_ns'].reindex(cand['event_id'].to_numpy()).to_numpy()
+    fl = tt['is_flash'].reindex(cand['event_id'].to_numpy()).to_numpy()
+    t, _e = trigger_time.flash_time_and_energy(tp, np.nan_to_num(fl) == 1)
+    late = np.isfinite(t) & (t >= QUALITY_REF_LATE_MS * 1e6)
+    if late.sum() < 50:                      # too few late winners to set a median: keep the pass-1 rule
+        return None
+    return quality_flags(cand[late])[1]
+
+
 def build_arm(reco_dir: Path, arm: str, tr: G.DetTransform,
               run: str, subrun: str,
               k: float | None = None,
@@ -414,7 +439,7 @@ def build_arm(reco_dir: Path, arm: str, tr: G.DetTransform,
     # quality_ok relative to this sub-run x arm over all its tags (wft.reco.CHI2DOF_REL x the median chi2/dof of the
     # live winners; GE 2026-10-28), so every tag of the sub-run is judged by one number
     from wft.reco import quality_flags
-    cand = quality_flags(cand)[0]
+    cand = quality_flags(cand, _late_quality_medians(cand, run, subrun))[0]
     df = pair_rows(cand)
     df['run'], df['subrun'], df['arm'] = run, subrun, arm
 

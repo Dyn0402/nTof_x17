@@ -801,6 +801,16 @@ TWO_TRACK_SIG = 5.0
 #:       time-offset pair with opposite slopes the TIED fit scores higher
 #:       (test_two_track.test_free_t0_mode_reaches_a_time_offset_pair).
 TWO_TRACK_T0 = 'tied'
+#: Pin the children of a joint two-track fit to the trigger as the one-track fit is pinned (roadmap 4.3, t0 study
+#: 2026-11-23): when on, the joint fit adds the parent's own t0 prior, ((t0 - pin) / sigma)^2, for each child (both t0
+#: when untied), so a child cannot slide along the t0 <-> profile valley to the box edge (27-28 % of n_TOF children
+#: railed with it off).  The split statistic and the reported chi2 stay the plain chi2 (no prior), as for the parent.
+#: Off = pass 1.  Only acts where the parent carries a prior (the n_TOF bundles' kept_t0_prior; the bench has none).
+TWO_TRACK_T0_PRIOR = False
+#: Write each candidate's fitted depth profile (its K-bin charge per drift-depth bin, the '_q' the x-y pairing reads)
+#: as a list column 'q_profile' of the candidates table (roadmap 4.11: lets profile-distance x-y matching run at table
+#: level).  Off = pass 1 (the candidates table without it).
+STORE_PROFILES = False
 #: t0 offsets, relative to the parent's, at which the residual is scanned for a
 #: second track [ns]. One depth bin apart; wider only when t0 is free.
 T0_RESID_SCAN = np.arange(-60.0, 60.1, 60.0)
@@ -1150,16 +1160,17 @@ def fit_plane_two(P, plane: str, cal: CalibrationBundle, parent: PlaneFit,
     wgt = wgt * (wgt > 0.05 * wgt.max()) if wgt.max() > 0 else None
     starts = _two_track_starts(W, noise, pos, sat, plane, parent_r, hyper,
                                t0_hints=t0_hints, t0_mode=t0_mode)
+    t0p = getattr(parent, '_t0_prior', None) if TWO_TRACK_T0_PRIOR else None
     if TWO_TRACK_SEARCH not in ('starts', 'grid'):
         raise ValueError(f'TWO_TRACK_SEARCH must be starts or grid: {TWO_TRACK_SEARCH!r}')
     if TWO_TRACK_SEARCH == 'grid':
         starts = _grid_starts(W, noise, pos, sat, plane, parent_r, hyper) + starts
         r = wm.fit_plane_two_raw(W, noise, pos, sat, plane, starts, hyper=hyper,
                                  wgt=wgt, bins=bins, n_refine=TWO_TRACK_GRID_KEEP + 2,
-                                 maxiter=3000, maxiter_polish=2000)
+                                 maxiter=3000, maxiter_polish=2000, t0_prior=t0p)
     else:
         r = wm.fit_plane_two_raw(W, noise, pos, sat, plane, starts, hyper=hyper,
-                                 wgt=wgt, bins=bins)
+                                 wgt=wgt, bins=bins, t0_prior=t0p)
     if r is None:
         return None
     dof = int((~sat).sum())
@@ -1942,6 +1953,11 @@ def candidate_rows(event_id: int, all_fits: Dict[str, list],
             row['split_child'] = bool(getattr(f, '_split_child', False))
             row['split_replaced'] = bool(getattr(f, '_split_replaced', False))
             row['split_dchi2'] = float(getattr(f, '_split_dchi2', np.nan))
+            if STORE_PROFILES:
+                q = getattr(f, '_q', None)
+                row['q_profile'] = (np.asarray(q, np.float32).round(3).tolist() if q is not None else None)
+            # the bow block's height at this track (apply_bow, set on paired candidates only; roadmap 4.7)
+            row['bow_h'] = float(getattr(f, '_bow_h', np.nan) if getattr(f, '_bow_h', None) is not None else np.nan)
             tid, gated = track_of.get((plane, rank), (-1, False))
             row['track_id'], row['track_gated'] = int(tid), bool(gated)
             row['isochronous'] = bool(np.isfinite(f.q_uend)
@@ -2126,9 +2142,13 @@ def _worker_fit(payload):
             fits[plane], all_fits[plane] = None, []
             continue
         try:
+            pr = t0_prior_for(_CAL, plane, ftst.get(plane))
             best, ranked = fit_plane_candidates(
                 cand, plane, _CAL, seeds=seeds.get(plane), return_all=True,
-                t0_prior=t0_prior_for(_CAL, plane, ftst.get(plane)))
+                t0_prior=pr)
+            for f in ranked or []:
+                if f is not None:
+                    f._t0_prior = pr          # the joint two-track fit reads it (TWO_TRACK_T0_PRIOR)
             fits[plane], all_fits[plane] = best, ranked
         except Exception:
             fits[plane], all_fits[plane] = None, []

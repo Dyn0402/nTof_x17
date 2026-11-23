@@ -24,7 +24,7 @@ import pandas as pd
 WD = os.environ.get('WORK_DATA', '/media/ucla/work')
 D = f'{WD}/ntof_pass1/ana/t0_study/inject'
 MATCH_MM = 15.0
-RAIL = 175.0
+RAIL = float(os.environ.get('RAIL_NS', 175.0))     # |t0 - pin| at the box edge (box 180 ns; set 355 for a 360 ns box)
 
 
 def tracks(cand):
