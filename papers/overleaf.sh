@@ -26,10 +26,15 @@ cd "$(dirname "$0")/.."
 cmd=${1:-}; paper=${2:-}; flag=${3:-}
 [[ -n $cmd && -d papers/$paper ]] || { sed -n 2,11p "$0"; exit 1; }
 remote=overleaf-$paper
-prefix=papers/$paper
 
 # The remote comes from papers/overleaf_remotes.txt (tracked), so a fresh clone or another machine needs no setup.
 url_of() { awk -v p="$paper" '$1 == p { print $2 }' papers/overleaf_remotes.txt 2>/dev/null; }
+# An optional third column names the folder the project mirrors, when it is not papers/<paper>. Since 2026-11-23 the
+# Paper I project shared with Stephan (paper1) carries the paper1_v2 text: pull and push for paper1 use papers/paper1_v2,
+# and papers/paper1 stays in the repo only as the home of the figures and producers that v2 still uses.
+dir_of() { awk -v p="$paper" '$1 == p && NF >= 3 { print $3 }' papers/overleaf_remotes.txt 2>/dev/null; }
+prefix=papers/$(d=$(dir_of); echo "${d:-$paper}")
+[[ $prefix == papers/$paper ]] || echo "($paper mirrors $prefix)"
 if [[ $cmd != link ]] && ! git remote get-url "$remote" >/dev/null 2>&1; then
   u=$(url_of)
   [[ -n $u ]] || { echo "no Overleaf URL for $paper in papers/overleaf_remotes.txt (run: $0 link $paper <url>)"; exit 1; }

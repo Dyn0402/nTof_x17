@@ -1,7 +1,8 @@
 # paper  Overleaf git URL. overleaf.sh adds the remote overleaf-<paper> from here when a clone lacks it,
 # so every machine pushes without a manual `git remote add`. `overleaf.sh link` appends a line.
+# Optional third column: the folder under papers/ that the project mirrors (default: the paper name).
 # Auth: the Overleaf git token in ~/.git-credentials (one token covers every project of the account).
-paper1     https://git.overleaf.com/6ad61186fe591228d14dac68
+paper1     https://git.overleaf.com/6ad61186fe591228d14dac68 paper1_v2
 paper1_v2  https://git.overleaf.com/6af3a464cb8d4f7336894eac
 paper2     https://git.overleaf.com/6afd95721cafc7642db6e620
 tpc_mixing_review https://git.overleaf.com/6afd959240ffa63d38038700
