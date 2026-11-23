@@ -36,7 +36,7 @@ Numbers: `results/compare.json`.
 - **The board dish is measured twice.**
   - Without positions, the drift tilt (h + c) and the gap (c − h) give a mesh 1.01 / 1.55 mm deep at 150 mm (x / y).
   - The positions give 0.77–0.88 / 1.38–1.47 mm.
-  - A free reference-telescope dish fits to −0.26 ± 0.16 / −0.05 ± 0.19 mm, consistent with zero.
+  - A free reference-telescope dish fits to −0.25 ± 0.16 / −0.05 ± 0.20 mm, consistent with zero.
 - **Cathode along y:** nearly flat in every subset (−0.2 to 0.4 mm at 150 mm), so the gap domes by about 1.2 mm.
 - **Cathode along x:** it follows the board, and the gap rises about 0.4 mm per 100 mm.
   - Only the no-timing subset prefers a flat cathode along x (2.5σ). The X geometric gap covers x 100–320 mm only.
