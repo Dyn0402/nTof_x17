@@ -32,7 +32,7 @@ import sys
 
 # ── Config ────────────────────────────────────────────────────────────────────
 SOURCE_DIR  = "/media/dylan/data/x17/feb_beam/runs"
-DEST_HOST   = "192.168.0.89"
+DEST_HOST   = "192.168.1.89"   # desktop, Freebox static lease (home LAN flat since 2026-11-23)
 DEST_DIR    = "/media/dylan/data/x17/feb_beam/runs"
 DEST_BUDGET = 470 * 1024 ** 3   # 470 GiB in bytes
 MIN_RUN     = 17                 # skip run_N where N < MIN_RUN
