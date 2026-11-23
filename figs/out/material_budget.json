@@ -1,0 +1,174 @@
+{
+ "rows": [
+  {
+   "key": "air",
+   "layer": "Air, target to window",
+   "material": "air",
+   "thickness_mm": 200.0,
+   "X0_cm": 30390.041,
+   "x_over_X0_pct": 0.06581,
+   "assumed": false,
+   "theta0_deg": {
+    "4MeV": 3.241,
+    "8MeV": 1.701,
+    "16MeV": 0.875
+   }
+  },
+  {
+   "key": "window",
+   "layer": "Entrance window (Mylar)",
+   "material": "mylar",
+   "thickness_mm": 0.06,
+   "X0_cm": 28.536,
+   "x_over_X0_pct": 0.02103,
+   "assumed": false,
+   "theta0_deg": {
+    "4MeV": 1.722,
+    "8MeV": 0.904,
+    "16MeV": 0.465
+   }
+  },
+  {
+   "key": "gap5",
+   "layer": "Gas gap, window to cathode",
+   "material": "gas",
+   "thickness_mm": 5.0,
+   "X0_cm": 11974.092,
+   "x_over_X0_pct": 0.00418,
+   "assumed": false,
+   "theta0_deg": {
+    "4MeV": 0.698,
+    "8MeV": 0.366,
+    "16MeV": 0.188
+   }
+  },
+  {
+   "key": "kapton",
+   "layer": "Drift cathode, Kapton",
+   "material": "kapton",
+   "thickness_mm": 0.05,
+   "X0_cm": 28.577,
+   "x_over_X0_pct": 0.0175,
+   "assumed": false,
+   "theta0_deg": {
+    "4MeV": 1.555,
+    "8MeV": 0.816,
+    "16MeV": 0.419
+   }
+  },
+  {
+   "key": "cu",
+   "layer": "Drift cathode, copper",
+   "material": "Cu",
+   "thickness_mm": 0.009,
+   "X0_cm": 1.435,
+   "x_over_X0_pct": 0.06271,
+   "assumed": true,
+   "theta0_deg": {
+    "4MeV": 3.156,
+    "8MeV": 1.656,
+    "16MeV": 0.851
+   }
+  },
+  {
+   "key": "drift",
+   "layer": "Drift gas",
+   "material": "gas",
+   "thickness_mm": 28.2,
+   "X0_cm": 11974.092,
+   "x_over_X0_pct": 0.02355,
+   "assumed": false,
+   "theta0_deg": {
+    "4MeV": 1.834,
+    "8MeV": 0.963,
+    "16MeV": 0.495
+   }
+  }
+ ],
+ "cumulative": {
+  "front": {
+   "layers": [
+    "air",
+    "window",
+    "gap5",
+    "kapton",
+    "cu"
+   ],
+   "x_over_X0_pct": 0.17123,
+   "theta0_deg": {
+    "4MeV": 5.492,
+    "8MeV": 2.882,
+    "16MeV": 1.482
+   }
+  },
+  "front_noCu": {
+   "layers": [
+    "air",
+    "window",
+    "gap5",
+    "kapton"
+   ],
+   "x_over_X0_pct": 0.10852,
+   "theta0_deg": {
+    "4MeV": 4.272,
+    "8MeV": 2.242,
+    "16MeV": 1.153
+   }
+  },
+  "total": {
+   "layers": [
+    "air",
+    "window",
+    "gap5",
+    "kapton",
+    "cu",
+    "drift"
+   ],
+   "x_over_X0_pct": 0.19478,
+   "theta0_deg": {
+    "4MeV": 5.895,
+    "8MeV": 3.094,
+    "16MeV": 1.59
+   }
+  },
+  "total_noCu": {
+   "layers": [
+    "air",
+    "window",
+    "gap5",
+    "kapton",
+    "drift"
+   ],
+   "x_over_X0_pct": 0.13207,
+   "theta0_deg": {
+    "4MeV": 4.76,
+    "8MeV": 2.498,
+    "16MeV": 1.284
+   }
+  }
+ },
+ "check_introduction": {
+  "air_200mm": {
+   "4MeV": 3.241,
+   "8MeV": 1.701
+  },
+  "air_204mm": {
+   "4MeV": 3.277,
+   "8MeV": 1.72
+  },
+  "introduction_text": {
+   "4MeV": 3.2,
+   "8MeV": 1.7
+  }
+ },
+ "momenta_MeV": {
+  "4MeV": 4.482,
+  "8MeV": 8.4956,
+  "16MeV": 16.5031
+ },
+ "gas": {
+  "X0_g_cm2": 20.396,
+  "rho_g_cm3": 0.001703
+ },
+ "notes": "Highland per projection with momentum; Mylar aluminisation ignored; Cu 9 um assumed (spec)."
+}

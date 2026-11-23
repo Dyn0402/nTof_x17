@@ -1,7 +1,15 @@
 #!/usr/bin/env python3
-"""make_chamber_stack.py -- Paper I, fig.chamber_stack: 2D cross-section of an MX17 chamber (Dylan 2026-11-03).
+"""make_chamber_stack.py -- Paper I v2, fig.chamber_stack: 2D cross-section of an MX17 chamber (Dylan 2026-11-03).
 
-    .venv/bin/python papers/paper1/figs/make_chamber_stack.py
+    .venv/bin/python papers/paper1_v2/figs/make_chamber_stack.py            # (a) + (b)
+    .venv/bin/python papers/paper1_v2/figs/make_chamber_stack.py --only-a   # (a) alone -> out/chamber_stack_a (Fig. 3)
+
+v2 copy of papers/paper1/figs/make_chamber_stack.py (v2 feedback note, Fig. 3, 2026-11-12): (a) E_drift arrow clear of
+the -HV label, Al plate drawn light (it is to scale in z, 8 mm, and not the point), zoom box top above the electron
+arrowheads; (b) the vias as the gerbers have them: every pad has one 0.25 mm plated via drilled L4 -> L7
+(DFS3498A_pla2-5.gbr, "Plated,4,7"), with a copper land in every cell on L5 and L6 (0.50 mm) and L7 (0.65 mm); a land
+joins its strip only on its own layer.  The cut runs through a row of pad centres: the Y stubs run along the cut (to
+the bus on their +x side), the X stubs run along y, so the X strip of this row lies 0.39 mm behind the cut (drawn light).
 
 Layers carry short names only; every dimension is in the .tex caption (numbers from docs/detector_spec/spec.py, STACK /
 ELEMENTS; status ok / cad / asm / open there; daggers = asm/open, in the caption).  Two scales:
@@ -25,7 +33,8 @@ HERE = Path(__file__).resolve().parent
 sys.path[:0] = [str(HERE.parents[2] / 'papers')]
 import paper_style as ps                                           # noqa: E402
 
-OUT = HERE / 'out' / 'chamber_stack'
+ONLY_A = '--only-a' in sys.argv     # panel (a) alone, for the v2 Fig. 3 with the 3D panel (2026-11-14)
+OUT = HERE / 'out' / ('chamber_stack_a' if ONLY_A else 'chamber_stack')
 ps.use()
 plt.rcParams['savefig.pad_inches'] = 0.01
 FS = ps.BASE_PT * 0.85
@@ -66,7 +75,8 @@ XI0, XI1 = 1.13, 2.62                    # inner gas; the chamber continues to t
 XF0 = 2.28
 XW = 0.08                                # left wall
 T(0.0, 3.17, '(a)', va='top', fs=ps.BASE_PT, fontweight='bold')
-T(2.86, 3.17, '(b)', va='top', fs=ps.BASE_PT, fontweight='bold')
+if not ONLY_A:
+    T(2.86, 3.17, '(b)', va='top', fs=ps.BASE_PT, fontweight='bold')
 mm = dict(win=(0, 0.06), flange=(0.06, 5.06), cat=(5.06, 5.118), drift=(5.118, 35.118), amp=(35.118, 35.268),
           board=(35.268, 36.968), roh=(36.968, 41.968), myl=(41.968, 41.993), plate=(41.993, 49.993))
 R(XI0, ya(mm['flange'][1]), XI1, ya(mm['flange'][0]), GAS, ec='none')
@@ -83,7 +93,7 @@ XO = XI0 - XW                                                      # outer face 
 wmm = lambda w: XO + XW * w / 15.0
 R(XO, ya(mm['flange'][1]), wmm(19.9), ya(mm['flange'][0] + 0.5), AL)
 R(XO, ya(mm['drift'][1]), XI0, ya(mm['drift'][0]), AL)
-R(XO, ya(mm['plate'][1]), wmm(19.0), ya(mm['plate'][0]), AL)
+R(XO, ya(mm['plate'][1]), wmm(19.0), ya(mm['plate'][0]), '#e6e9ed', ec=MUTED, lw=0.35)   # light: not the point
 line([XI0, XI1], [ya(mm['drift'][1])] * 2, c=INK, lw=1.0)
 R(XO, ya(mm['board'][1]), XI1, ya(mm['board'][0]), FR4, lw=0.5)
 R(XO, ya(mm['roh'][1]), XI1, ya(mm['roh'][0]), ROH, lw=0.5)
@@ -108,14 +118,21 @@ for zz in (8, 12.5, 17, 21.5, 26, 30):
     ax.plot(x, y, 'o', ms=2.0, color=ps.ACCENT, mew=0, zorder=7)
     arrow((x, y - 0.03), (x, ya(34.4)), c=ps.DET_COLOR['det2'], lw=0.5, style='-|>', ms=4)
 T(xt(ya(28)) + 0.07, ya(27), 'e$^-$', ha='left', fs=FS, c=ps.DET_COLOR['det2'])
-arrow((XF0 - 0.12, ya(32)), (XF0 - 0.12, ya(8)), c=INK, lw=1.0, style='-|>', ms=7)
-T(XF0 - 0.20, ya(20), '$E_\\mathrm{drift}$', ha='center', rotation=90, fs=FS)
+arrow((XF0 - 0.12, ya(32)), (XF0 - 0.12, ya(10.5)), c=INK, lw=1.0, style='-|>', ms=7)
+T(XF0 - 0.20, ya(21), '$E_\\mathrm{drift}$', ha='center', rotation=90, fs=FS)
 T(XF0 - 0.02, ya(5.09) - 0.13, '$-HV_\\mathrm{drift}$', ha='right', fs=FS, c=INK)
 # cut-off: fade to white on the right (the chamber continues)
 fade = np.zeros((2, 64, 4)); fade[..., :3] = 1.0; fade[..., 3] = np.linspace(0, 1, 64) ** 0.8
 ax.imshow(fade, extent=[XF0, XI1 + 0.01, ya(50.2), 3.07], aspect='auto', zorder=10, interpolation='bilinear')
 ax.set_xlim(0, W); ax.set_ylim(0, H)
-BZ = (XI0 + 0.02, ya(36.2) - 0.05, XF0 - 0.02, ya(34.6) + 0.04)
+BZ = (XI0 + 0.02, ya(36.2) - 0.05, XF0 - 0.02, ya(32.6))           # top crosses the electron lines above their heads
+if ONLY_A:                                                         # no zoom box: nothing beside it to zoom into
+    WA = XI1 + 0.04                                                # the axes spans the figure: crop it to (a)
+    fig.set_size_inches(WA, H); ax.set_xlim(0, WA)
+    fig.canvas.draw()
+    ps.save(fig, OUT)
+    print('ok', OUT)
+    sys.exit(0)
 R(BZ[0], BZ[1], BZ[2], BZ[3], 'none', ec=MUTED, lw=0.6, z=11, ls=(0, (3, 2)))
 
 # ====================================================================================================== (b)
@@ -156,24 +173,30 @@ for i in range(nw):
 # L4 pads
 for x in padx:
     R(x - PADW * KH / 2, yb(zl['L4'][1]), x + PADW * KH / 2, yb(zl['L4'][0]), CU, ec='none', z=4)
-# L5: Y-strip copper (bus 98 um in the gap left of each pad column; the Y pads add a 0.5 mm land and a stub to their bus)
-yl5 = (yb(zl['L5'][1]), yb(zl['L5'][0]))
+# vias and strip copper, as in the gerbers (see the docstring).  Cut through a row of pad centres: pads Y, X, Y.
+VIA, LAND, LAND7 = 0.25, 0.50, 0.65                                # drill, L5/L6 land, L7 land (mm)
+lay = lambda k: (yb(zl[k][1]), yb(zl[k][0]))
+view = ('Y', 'X', 'Y')
+# L6: the X strip of this row, 0.39 mm behind the cut (its stubs run along y), drawn light
+XLIGHT = tuple(1 - 0.40 * (1 - c) for c in matplotlib.colors.to_rgb(XC))
+R(XB0, lay('L6')[0], XB1, lay('L6')[1], XLIGHT, ec='none', z=3)
+# L5: the Y buses (98 um) in every gap between pad columns, cut across
 for i in range(4):
     xbus = xc + (i - 1.5) * PITCH * KH
-    R(xbus - 0.049 * KH, yl5[0], xbus + 0.049 * KH, yl5[1], YC, ec='none', z=4)
-for i in (0, 2):
-    xbus = padx[i] - PITCH * KH / 2
-    R(xbus, yl5[0], padx[i] + 0.25 * KH, yl5[1], YC, ec='none', z=4)
-# L6: the X strip runs along the cut: one solid band (Dylan 2026-11-04: no charge-profile shading)
+    R(xbus - 0.049 * KH, lay('L5')[0], xbus + 0.049 * KH, lay('L5')[1], YC, ec='none', z=4)
 xa_ = padx[1] - 0.10
-R(XB0, yb(zl['L6'][1]), XB1, yb(zl['L6'][0]), XC, ec='none', z=4)
-# vias (schematic barrel 0.15 mm) from each pad to the land of its strip
 for i, x in enumerate(padx):
-    if i % 2 == 0:
-        R(x - 0.05 * KH, yl5[0], x + 0.05 * KH, yb(zl['L4'][0]), YC, ec='none', z=5)
-    else:
-        R(x - 0.05 * KH, yb(zl['L6'][1]), x + 0.05 * KH, yb(zl['L4'][0]), XC, ec='none', z=5)
-        R(x - 0.25 * KH, yb(zl['L6'][1]), x + 0.25 * KH, yb(zl['L6'][0]), XC, ec='none', z=5)
+    col = YC if view[i] == 'Y' else XC
+    # barrel L4 -> L7: plated wall (drawn 30 um) round a hole whose fill is not in the spec (drawn as a light tint)
+    tint = tuple(1 - 0.30 * (1 - c) for c in matplotlib.colors.to_rgb(col))
+    R(x - VIA / 2 * KH, lay('L7')[0], x + VIA / 2 * KH, yb(zl['L4'][0]), tint, ec='none', z=5)
+    for sx_ in (-1, 1):
+        R(x + sx_ * VIA / 2 * KH - (sx_ > 0) * 0.030 * KH, lay('L7')[0], x + sx_ * VIA / 2 * KH + (sx_ < 0) * 0.030 * KH,
+          yb(zl['L4'][0]), col, ec='none', z=6)
+    for k, w in (('L5', LAND), ('L6', LAND), ('L7', LAND7)):                                       # a land per layer
+        R(x - w / 2 * KH, lay(k)[0], x + w / 2 * KH, lay(k)[1], col, ec='none', z=7)
+    if view[i] == 'Y':                                                                             # stub to its bus
+        R(x, lay('L5')[0], x + PITCH / 2 * KH, lay('L5')[1], YC, ec='none', z=7)
 # frame
 line([XB0, XB0], [yb(-0.35), yb(ZEND)], c=INK, lw=0.5)
 line([XB1, XB1], [yb(-0.35), yb(ZEND)], c=INK, lw=0.5)
@@ -200,7 +223,8 @@ ent = [
     (yb(sum(zl['ins']) / 2), 2.11, 'kapton'),
     (yb(sum(zl['L4']) / 2), 1.88, 'pads'),
     (yb(sum(zl['L5']) / 2), None, 'Y strips'),
-    (yb(sum(zl['L6']) / 2), None, 'X strip'),
+    (yb(sum(zl['L6']) / 2), None, 'X strip (behind the cut)'),
+    (yb(sum(zl['L7']) / 2), None, 'via lands (L7)'),
     (yb(zl['f4'][0] + 0.5 * (zl['f4'][1] - zl['f4'][0])), None, 'FR4'),
 ]
 for y, yl, s_ in ent:

@@ -1,0 +1,110 @@
+{
+ "gas": {
+  "mixture": "Ar/iC4H10 95/5 by volume, 1 atm, 20 C",
+  "rho_g_cm3": 0.001703,
+  "mass_fraction_Ar": 0.9269,
+  "X0_g_cm2": 20.396,
+  "X0_m": 119.74,
+  "inputs": "PDG: Ar X0 19.55 g/cm2, rho 1.662 mg/cm3; isobutane X0 45.23 g/cm2, rho 2.489 mg/cm3"
+ },
+ "gap_mm": 28.2,
+ "gap_x_over_X0": 0.0002355,
+ "model": "Gaussian random walk of the projected angle, total width = Highland theta0 over the gap; normal incidence; no single-scatter tails; no energy loss",
+ "stretch_factor_panel_a": 2.94,
+ "energies": {
+  "3MeV": {
+   "T_MeV": 3.0,
+   "p_MeV": 3.474,
+   "theta0_highland_deg": 2.37787,
+   "exit_minus_entry_rms_deg": 2.38423,
+   "fit_minus_entry_rms_deg": 1.4556,
+   "fit_over_theta0": 0.61215,
+   "deviation_rms_mm": 0.05753,
+   "deviation_max_rms_mm": 0.13641,
+   "theta0_lynch_dahl_deg": 2.26351,
+   "lynch_dahl_over_highland": 0.95191,
+   "omega_scatters": 37.94944
+  },
+  "4MeV": {
+   "T_MeV": 4.0,
+   "p_MeV": 4.482,
+   "theta0_highland_deg": 1.83422,
+   "exit_minus_entry_rms_deg": 1.84025,
+   "fit_minus_entry_rms_deg": 1.12445,
+   "fit_over_theta0": 0.61304,
+   "deviation_rms_mm": 0.04448,
+   "deviation_max_rms_mm": 0.10544,
+   "theta0_lynch_dahl_deg": 1.74564,
+   "lynch_dahl_over_highland": 0.95171,
+   "omega_scatters": 37.64567
+  },
+  "5MeV": {
+   "T_MeV": 5.0,
+   "p_MeV": 5.487,
+   "theta0_highland_deg": 1.49462,
+   "exit_minus_entry_rms_deg": 1.49368,
+   "fit_minus_entry_rms_deg": 0.91411,
+   "fit_over_theta0": 0.6116,
+   "deviation_rms_mm": 0.036,
+   "deviation_max_rms_mm": 0.08541,
+   "theta0_lynch_dahl_deg": 1.42229,
+   "lynch_dahl_over_highland": 0.95161,
+   "omega_scatters": 37.49348
+  },
+  "8MeV": {
+   "T_MeV": 8.0,
+   "p_MeV": 8.496,
+   "theta0_highland_deg": 0.96267,
+   "exit_minus_entry_rms_deg": 0.95913,
+   "fit_minus_entry_rms_deg": 0.58586,
+   "fit_over_theta0": 0.60858,
+   "deviation_rms_mm": 0.02324,
+   "deviation_max_rms_mm": 0.05508,
+   "theta0_lynch_dahl_deg": 0.91597,
+   "lynch_dahl_over_highland": 0.95149,
+   "omega_scatters": 37.31561
+  },
+  "12MeV": {
+   "T_MeV": 12.0,
+   "p_MeV": 12.501,
+   "theta0_highland_deg": 0.65355,
+   "exit_minus_entry_rms_deg": 0.65484,
+   "fit_minus_entry_rms_deg": 0.40093,
+   "fit_over_theta0": 0.61347,
+   "deviation_rms_mm": 0.01581,
+   "deviation_max_rms_mm": 0.03748,
+   "theta0_lynch_dahl_deg": 0.62181,
+   "lynch_dahl_over_highland": 0.95144,
+   "omega_scatters": 37.24708
+  },
+  "16MeV": {
+   "T_MeV": 16.0,
+   "p_MeV": 16.503,
+   "theta0_highland_deg": 0.49485,
+   "exit_minus_entry_rms_deg": 0.49732,
+   "fit_minus_entry_rms_deg": 0.30328,
+   "fit_over_theta0": 0.61288,
+   "deviation_rms_mm": 0.012,
+   "deviation_max_rms_mm": 0.02842,
+   "theta0_lynch_dahl_deg": 0.47081,
+   "lynch_dahl_over_highland": 0.95143,
+   "omega_scatters": 37.222
+  }
+ },
+ "muon_4GeV": {
+  "T_MeV": 4000.0,
+  "p_MeV": 4104.299,
+  "theta0_highland_deg": 0.001989,
+  "exit_minus_entry_rms_deg": 0.001986,
+  "fit_minus_entry_rms_deg": 0.001211,
+  "fit_over_theta0": 0.608856,
+  "deviation_rms_mm": 4.8e-05,
+  "deviation_max_rms_mm": 0.000114,
+  "theta0_lynch_dahl_deg": 0.001893,
+  "lynch_dahl_over_highland": 0.951419,
+  "omega_scatters": 37.211575
+ },
+ "fit_over_theta0_mean": 0.6105,
+ "analytic_fit_over_theta0": 0.6094,
+ "notes": "fit - entry = uniform-weight line fit vs entry direction; analytic ratio sqrt(13/35)=0.609 for a continuous random walk: var(slope) = (36/L^6) * int int u(L-u) v(L-v) min(u,v) du dv / L * theta0^2."
+}

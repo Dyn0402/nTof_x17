@@ -1,0 +1,158 @@
+{
+ "A": {
+  "scan": "mx17_det3_saturday_scan_6-27-26",
+  "drift_V": 1000.0,
+  "V_best": 470.0,
+  "eff_best": 93.76811594202898,
+  "plateau": [
+   460.0,
+   490.0
+  ],
+  "band_drawn": [
+   457.5,
+   492.5
+  ],
+  "long_runs": [
+   {
+    "run": "mx17_det3_p2_det1_overnight_6-27-26",
+    "subrun": "long_run_p2_det1_sanity_check",
+    "V": 490.0,
+    "eff": 92.17443249701314,
+    "err": 0.1894937137756236,
+    "n": 20088,
+    "discharge_loss_pct": 1.15474590612712,
+    "f_sat": 0.3699487763232783
+   },
+   {
+    "run": "mx17_det3_saturday_scan_6-27-26",
+    "subrun": "long_run_resist_490V_drift_1000V",
+    "V": 490.0,
+    "eff": 92.64022311744654,
+    "err": 0.3250256533210283,
+    "n": 6454,
+    "discharge_loss_pct": 0.94515029439107,
+    "f_sat": 0.3410015926384711
+   }
+  ],
+  "scan_at_long_run_V": [
+   {
+    "V": 490.0,
+    "eff": 93.07909604519774,
+    "err": 0.9538736694658904,
+    "discharge_loss_pct": 0.84745762711864
+   }
+  ]
+ },
+ "B": {
+  "scan": "mx17_det2_det3_overnight_6-22-26",
+  "drift_V": 1000.0,
+  "V_best": 480.0,
+  "eff_best": 92.17731421121252,
+  "plateau": [
+   475.0,
+   490.0
+  ],
+  "band_drawn": [
+   472.5,
+   492.5
+  ],
+  "long_runs": [
+   {
+    "run": "mx17_det2_det3_overnight_6-22-26",
+    "subrun": "long_run",
+    "V": 495.0,
+    "eff": 90.94376138433516,
+    "err": 0.2165206006836613,
+    "n": 17568,
+    "discharge_loss_pct": 1.45150273224043,
+    "f_sat": 0.6032931137924138
+   },
+   {
+    "run": "mx17_det2_det3_overnight_6-22-26",
+    "subrun": "longer_run",
+    "V": 495.0,
+    "eff": 90.30927835051548,
+    "err": 0.5077200992895414,
+    "n": 3395,
+    "discharge_loss_pct": 1.85567010309278,
+    "f_sat": 0.5836212854181064
+   }
+  ],
+  "scan_at_long_run_V": [
+   {
+    "V": 495.0,
+    "eff": 90.05988023952096,
+    "err": 1.0354240620430692,
+    "discharge_loss_pct": 1.43712574850299
+   }
+  ]
+ },
+ "C": {
+  "scan": "mx17_det6_det7_hv_scan_6-26-26",
+  "drift_V": 700.0,
+  "V_best": 480.0,
+  "eff_best": 85.79881656804734,
+  "plateau": [
+   480.0,
+   480.0
+  ],
+  "band_drawn": [
+   472.5,
+   482.5
+  ],
+  "long_runs": [
+   {
+    "run": "mx17_det6_det7_overnight_6-26-26",
+    "subrun": "long_run",
+    "V": 495.0,
+    "eff": 74.43168222062694,
+    "err": 0.4771762408759064,
+    "n": 8358,
+    "discharge_loss_pct": 16.774347930126822,
+    "f_sat": 0.923803101820634
+   }
+  ],
+  "scan_at_long_run_V": [
+   {
+    "V": 495.0,
+    "eff": 68.99841017488076,
+    "err": 1.8441073647426045,
+    "discharge_loss_pct": 24.32432432432432
+   }
+  ]
+ },
+ "D": {
+  "scan": "mx17_det6_det7_hv_scan_6-26-26",
+  "drift_V": 700.0,
+  "V_best": 430.0,
+  "eff_best": 89.79591836734694,
+  "plateau": [
+   430.0,
+   435.0
+  ],
+  "band_drawn": [
+   427.5,
+   437.5
+  ],
+  "long_runs": [
+   {
+    "run": "mx17_det6_det7_overnight_6-26-26",
+    "subrun": "long_run",
+    "V": 495.0,
+    "eff": 68.03571428571429,
+    "err": 0.7448313413739234,
+    "n": 3920,
+    "discharge_loss_pct": 24.6938775510204,
+    "f_sat": 0.8592923952826352
+   }
+  ],
+  "scan_at_long_run_V": [
+   {
+    "V": 495.0,
+    "eff": 66.10738255033557,
+    "err": 2.7420123332132875,
+    "discharge_loss_pct": 25.503355704697988
+   }
+  ]
+ }
+}

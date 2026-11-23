@@ -1,0 +1,141 @@
+\section{Two particles in one chamber}\label{sec:twoparticle}
+\sectionstate{partial}{\texttt{rerun/effbudget/single} (\texttt{single\_track\_area.py}, \texttt{xy\_pairing.py},
+\texttt{PAIRING\_FIX\_2026-11-02.md}, \texttt{MERGED\_PROJECTION\_2026-11-02.md}); figure \texttt{papers/paper1\_v2/figs/make\_pairing.py},
+numbers \texttt{figs/out/pairing.json}, bookkeeping \texttt{figs/out/two\_particle\_numbers.md}; charge balance
+\texttt{rerun/paper1\_charge}. v2 2026-11-10: the old sections 5.1 and 5.5, results only; how the reconstruction got there
+(the joint fit, the veto rescue) is in \cref{app:moved}.}
+\intent{The result specific to this readout: both views see the same charge, and that is what tells which X segment
+belongs to which Y segment when two particles cross one chamber.}
+
+A chamber with two strip views has no direct way to determine which segment in the X view belongs to which segment in
+the Y view. With one particle in the chamber there is only one segment per view, and no ambiguity. With two particles
+there are two ways to pair the segments, and the wrong pairing produces two ghost tracks. The two views do not share a
+coordinate. In this design, however, they share the charge: every avalanche lands on pads that alternate between the X
+and the Y strips, so both views read the same charge at the same time.
+
+\subsection{The two views see the same charge}\label{sec:balance}
+\Crefp{fig:pairing}{a} shows this charge balance for single tracks. We define $f=q_X/(q_X+q_Y)$ as the fraction of the
+charge read by the X strips. Its median is 0.485 in chamber~A and 0.513 in chamber~B, and between 0.485 and 0.509 in
+the other chambers. Track by track, the ratio $q_X/q_Y$ of chamber~A scatters by 6\,\% (a core spread of 0.014 in $f$;
+0.017 to 0.028 in the other chambers). The balance does not depend on the position or the angle of the track.
+Chamber~D has the same core, but a quarter of its tracks lie in a tail, which is caused by the poorly mounted readout card
+of its X view.
+
+\subsection{Finding the muon when it is not alone}\label{sec:twoeff}
+In 3.2\,\% of the events (931 of 29\,398), a second particle crosses chamber~A together with the muon. We identify
+these events by a second segment that appears in both views with matching charge. They occur in three configurations
+(\cref{fig:twoparticle}):
+\begin{itemize}
+  \item The two particles are separate in both views (662 events). In this case the muon is detected in
+  $95.6\pm0.8$\,\% of the events, as often as when it is alone.
+  \item The two particles are separate in one view and merged in the projection of the other (176 events). The muon is
+  detected in $47\pm4$\,\% of these events.
+  \item The muon is clean in both views and a separate, large deposit lies elsewhere in the plane (93 events). The
+  event then exceeds the 50 strips above which the reconstruction treats an event as a discharge and fits nothing. The
+  muon is detected in 1\,\% of these events.
+\end{itemize}
+Over all three configurations, the muon is detected in $77.0\pm1.4$\,\% of the events. The reconstruction addresses
+the second configuration with a joint fit. This fit offers a second track to a merged column when the charge of the
+other view supports it. On a fixed set of 195 merged events, the joint fit raises the detection of the muon from 41 to
+54\,\%, and it does not split a clean single muon in any of the five chambers. The pairs that remain unsplit either
+share almost no depth or lie within four strip pitches of each other.
+\askDylan{The third configuration is a loss of the discharge veto, not of two-track reconstruction; its display moved to
+the gallery of \cref{app:effdef}. The counts 146, 195, 232 and 176 for ``merged events'' in the old text belong to three
+classifiers and two versions of the reconstruction; only 176 (final reconstruction, full area) and the 195-event validation set
+are used here.}
+
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=\linewidth]{two_particle_ab}
+  \caption{Two particles in chamber~A, with one real event per configuration (Run~1). Both views are shown as strip
+  position against drift time, with the amplitude normalized to the full scale of the ADC. Solid black: the reference
+  track. Dashed: the fitted tracks, magenta for the first track and brown for the second. Dotted: a fitted candidate
+  that was not kept. Gray lines: mesh and cathode. Each title gives the fraction of such events in which the muon is
+  reconstructed within 5\,mm of the reference. (a) The two particles are separate in both views. Both are fitted, and
+  the muon is found as often as when it is alone. (b) Two columns 63\,mm apart in X are merged into one broad column
+  in Y, and the joint fit splits the Y column in two. The track within 5\,mm of the reference counts as the muon. In
+  this event, however, it is paired with the X segment of the other particle, and its angle differs from that of the
+  reference.}
+  \label{fig:twoparticle}
+\end{figure}
+
+\subsection{Pairing the views}\label{sec:pairing}
+To test the pairing we use 567 two-particle events in which the reference track identifies one of the two particles
+in both views, so that the correct pairing is known. \Crefp{fig:pairing}{b} shows the charge ratio of the correct
+pairing and of the swapped pairing in these events. The correct pairing lies on the single-track balance, while the
+swapped pairing is spread over a factor of several. If we choose the pairing whose charge ratios are closer to the
+single-track value, the choice is correct in 95.6\,\% of the events.
+
+The drift time provides a second criterion. The charge of one particle arrives at the same times in both views, while
+the charge of two particles at different depths does not. The median arrival times of a correct pair agree to 48\,ns,
+and those of a swapped pair to 176\,ns (\crefp{fig:pairing}{d}). Using the charge and the time together, the pairing
+is correct in
+\[ 97.7\pm0.6\ \%.\]
+The failures occur where they are expected (\crefp{fig:pairing}{c}). Every event in which the two particles differ in
+charge by more than a factor 1.65 is paired correctly (290 of 290), and in all of the failures the two particles have
+nearly equal charge. The reconstruction makes the same choice with a cost function that includes further timing terms.
+On the same 567 events it pairs $96.6\pm0.8$\,\% correctly~\cite{paperII}.
+\askDylan{The old text also listed ``A 95.9, B 96.8, C 92.2, D 90.1, E 94.0\,\%'' for the production pairing. That is another
+sample (all runs of each chamber, first-version tables with the pairing selection replayed), which is why A read 95.9 there and
+96.6 here. It could go in the summary table as ``pairing, all runs'' if you want the other chambers shown.}
+
+This result demonstrates the feasibility of measuring pairs in one chamber: with a single plane of pads read in two
+views, a chamber can separate and pair two tracks without a third coordinate.
+
+\begin{figure}[tbp]
+  \centering
+  \figorbox{pairing}{charge balance, true and swapped pairings, pairing fraction against charge ratio, arrival-time difference}
+  \caption{Pairing the X and Y views when two particles cross chamber~A. (a) The X/Y charge balance $\ln(q_X/q_Y)$
+  of 24\,510 single tracks (Runs 1 and 2); inset: median and core spread per chamber (long runs, unsaturated tracks).
+  (b) $\ln(q_X/q_Y)$ of the true (reference-tagged) and the swapped pairings in 567 two-particle events; gray, the
+  single-track $\pm1\sigma$ band. (c) Fraction of events paired correctly against the ratio of the charges of the two
+  particles, using the charge balance alone (open) and the charge balance with the arrival-time difference (filled);
+  68\,\% binomial intervals, the number of events per bin below the points. (d) Difference between the views of the
+  median charge-arrival time for the true and the swapped pairings; gray, the single-track band.}
+  \label{fig:pairing}
+\end{figure}
+
+\subsection{How close two tracks can be}\label{sec:separation}
+Real two-particle events cannot tell us how close two tracks can be before they are no longer resolved. The second
+particle has no reference track, and the separation is unknown precisely in the events where the tracks merge. We
+therefore make the measurement by overlay. The waveforms of two real single-muon events of chamber~A are added, each
+at its own position, and the sum is passed through the same reconstruction. Each muon keeps its own reference track.
+Both muons were reconstructed when alone, so the result is relative to the single-track efficiency. As a check, an
+overlay with an empty partner event returns the single-track result (200 of 200 found, with the single-track
+resolution).
+
+\Crefp{fig:separation}{a} shows the probability that both muons are reconstructed, as a function of the separation of
+the two tracks in the view where they are closer. Here, both muons count as reconstructed if each is found within
+5\,mm of its own reference and has its two views paired correctly. Above 18\,mm this probability is 94 to 96\,\%.
+Between 3 and 18\,mm it is lower, falling from $74\pm3$\,\% to $53\pm3$\,\% as the separation decreases. Below 3\,mm,
+which is about four strip pitches, it is $11\pm2$\,\%. Without the requirement on the pairing, these probabilities are
+2 to 7 points higher. The limit is therefore resolving the two tracks, and not pairing them.
+
+When both muons are reconstructed, the opening angle of the pair is measured with a resolution of 1.2 to
+1.5\textdegree{} in space at every separation (\crefp{fig:separation}{b}). This is close to $\sqrt2$ times the
+resolution of one track. The separation of the two tracks is measured to 0.8 to 1.1\,mm above 3\,mm
+(\crefp{fig:separation}{c}). A chamber therefore measures the opening angle of a pair that it contains about as well
+as two independent tracks allow, down to a separation of 18\,mm. Below this separation it still measures the opening
+angle, but with decreasing efficiency.
+
+Three caveats apply. First, both particles are minimum-ionizing muons within $\pm20$\textdegree{} of the normal.
+Second, the electronic noise is added twice under the second track. Third, the summed signal saturates at the limit of
+the ADC. In addition, the two tracks start at the same time, which is correct for a pair from one decay but not for an
+accidental coincidence.
+\askDylan{Run 2026-11-11 on the final reconstruction: 2\,400 overlays of Run~1 muons, 300 per bin, plus 200 single and 200
+empty-partner checks (\texttt{figs/out/two\_track\_separation.json}; batch job in \texttt{figs/two\_track\_batch/}). Against the
+26 October run on the earlier reconstruction (joint fit 28/43/50\,\% at 0--6/6--12/12--18\,mm) the final chain does better
+at 6--18\,mm (64--74\,\%); the definitions differ slightly (5\,mm from the reference here, 2\,mm from the donor's own fit
+there; with the old definition the numbers are 14/57/63/65/74\,\% in the five lowest bins). The step at 18\,mm is not
+explained in the text; it is where two columns stop touching.}
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=\linewidth]{two_track_separation}
+  \caption{Two tracks in chamber~A, from overlays of two real single-muon events (300 per bin). (a) Probability that
+  both muons are reconstructed with their views paired correctly (filled), or found in both views without the
+  requirement on pairing (open), against the separation of the two tracks at mid-gap in the view where they are
+  closer; binomial 68\,\% intervals; dotted, the same for a muon overlaid with an empty event. (b) Resolution of the
+  opening angle of the pair ($s_{68}$) in space and in each projection, for pairs with both muons reconstructed.
+  (c) Error on the reconstructed separation: $s_{68}$ (filled) and median (open). The horizontal axis is not linear.}
+  \label{fig:separation}
+\end{figure}

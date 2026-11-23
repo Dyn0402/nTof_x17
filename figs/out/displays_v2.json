@@ -1,0 +1,128 @@
+{
+ "muon_data_model": {
+  "run": "Run 1",
+  "event": 7884,
+  "views": "X and Y, data and model both",
+  "vmax_adc": 2315.7724999999996,
+  "fit_tan": {
+   "x": 0.16907875291802196,
+   "y": -0.026267213093753128
+  },
+  "ref_tan": {
+   "x": 0.17623542434090034,
+   "y": -0.006315958290127552
+  }
+ },
+ "two_particle_ab": {
+  "run": "Run 1",
+  "events": [
+   1063,
+   17907
+  ]
+ },
+ "not_straight": {
+  "run": "Run 1",
+  "panels": [
+   {
+    "panel": "a",
+    "event": 28537,
+    "cls": "loss_delta"
+   },
+   {
+    "panel": "b",
+    "event": 41373,
+    "cls": "loss_satblob"
+   },
+   {
+    "panel": "c",
+    "event": 41538,
+    "cls": "loss_spark_shower"
+   },
+   {
+    "panel": "d",
+    "event": 963,
+    "cls": "loss_multi_deposit"
+   }
+  ]
+ },
+ "loss_gallery_1": {
+  "run": "Run 1",
+  "panels": [
+   {
+    "panel": "a",
+    "event": 14789,
+    "cls": "loss_band"
+   },
+   {
+    "panel": "b",
+    "event": 30375,
+    "cls": "loss_multi_m3picked"
+   },
+   {
+    "panel": "c",
+    "event": 28078,
+    "cls": "loss_multi_otherpicked"
+   },
+   {
+    "panel": "d",
+    "event": 30049,
+    "cls": "loss_multi_merged"
+   },
+   {
+    "panel": "e",
+    "event": 18645,
+    "cls": "loss_spark_discharge"
+   },
+   {
+    "panel": "f",
+    "event": 36694,
+    "cls": "loss_spark_muonother"
+   },
+   {
+    "panel": "g",
+    "event": 41538,
+    "cls": "loss_spark_shower"
+   }
+  ]
+ },
+ "loss_gallery_2": {
+  "run": "Run 1",
+  "panels": [
+   {
+    "panel": "a",
+    "event": 28537,
+    "cls": "loss_delta"
+   },
+   {
+    "panel": "b",
+    "event": 41373,
+    "cls": "loss_satblob"
+   },
+   {
+    "panel": "c",
+    "event": 4490,
+    "cls": "loss_fit"
+   },
+   {
+    "panel": "d",
+    "event": 12351,
+    "cls": "loss_headon"
+   },
+   {
+    "panel": "e",
+    "event": 9855,
+    "cls": "loss_postail"
+   },
+   {
+    "panel": "f",
+    "event": 8662,
+    "cls": "loss_edge"
+   },
+   {
+    "panel": "g",
+    "event": 963,
+    "cls": "loss_multi_deposit"
+   }
+  ]
+ }
+}

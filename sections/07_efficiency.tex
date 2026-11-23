@@ -1,0 +1,124 @@
+\section{Operating point and efficiency}\label{sec:efficiency}
+\sectionstate{partial}{\texttt{rerun/effbudget/single/README.md} and \texttt{results/single\_track\_area.json} (chamber~A, Runs 1 and 2);
+\texttt{rerun/effbudget/PASS1\_RESULT\_2026-10-31.md} (all chambers); \texttt{rerun/paper1\_ops} (scans, discharges, currents);
+efficiency against the reference angle: \texttt{rerun/effbudget/single/eff\_vs\_angle.py}, \texttt{results/eff\_vs\_angle.json} (2026-11-20);
+bookkeeping checked in \texttt{papers/paper1\_v2/figs/out/two\_particle\_numbers.md} and \texttt{NUMBERS\_RUNDOWN.md}. v2 2026-11-10:
+the old sections 4 and 5.2--5.4 in three pages; one efficiency number per area; the definition, the selection variants and the
+loss classes are in \cref{app:effdef}; the two-particle material is \cref{sec:twoparticle}.}
+\intent{Where the chambers run and why, how efficient each is, and for the best chamber where every lost track goes.
+The efficiency maps of the five chambers are in \cref{sec:datasets} (moved 2026-11-14), so that C, D and E are explained
+before any of their numbers.}
+
+\subsection{What ``detected'' means}\label{sec:effdef}
+We measure the efficiency on events with one clean reference track whose reference ray crosses the active area of
+the chamber. These events form the denominator. We call the muon \emph{detected} if the chamber reconstructs a track
+within $R=5$\,mm of the reference ray at the mesh in both views. When the chamber reconstructs several tracks, any one
+of them can be the match, and no event is removed from the denominator. We choose the radius at the knee of the
+efficiency as a function of $R$. At 5\,mm, the probability that an unrelated track matches is 0.07\,\%. Moving $R$
+between 4 and 8\,mm changes the efficiency by $-0.5/{+0.7}$ percentage points, which we quote as a systematic
+uncertainty (\cref{app:effdef}). To compare chambers we also use a stricter definition, in which only the single track
+kept by the reconstruction can be the match. We call this the \emph{kept-track} efficiency.
+
+\subsection{Plateau and discharges}\label{sec:hvscan}
+\Cref{fig:hv} shows the efficiency and the discharge rate as a function of $HV_\mathrm{resist}$ for four chambers.
+Here we define a discharge as a trigger in which at least one readout chip has eight or more strips above 3000 ADC
+counts.
+\askStephan{Expected gain curve and spark behavior for this resistivity: does what we see match production tests?}
+
+Chamber~A reaches its efficiency plateau before discharges become significant. Its efficiency is within one
+percentage point of its maximum from 460 to 490\,V, and it stays between 91 and 94\,\% from 425 to 500\,V. The
+fraction of reference tracks lost to a discharge stays below 1\,\% up to 490\,V. Chamber~B behaves in the same way, at
+voltages 10\,V higher. Chambers C and D do not reach a plateau. Both are more efficient below the voltage of their
+long runs: the efficiency of chamber~C rises to $85.8\pm1.9$\,\% at 480\,V, and that of chamber~D lies between 87 and
+90\,\% from 425 to 435\,V. At these voltages the two chambers already lose 1.5--2.4\,\% of their tracks to discharges,
+and at higher voltages their efficiency falls. These scan numbers should be taken as indications rather than as the
+efficiencies of the two chambers. Each scan point is 10 or 20 minutes of data, which corresponds to 250--720 reference
+rays for chamber~C and 120--340 for D. Each point is therefore uncertain by 1.4 to 3.5 percentage points, and the
+points of chamber~D scatter by more than that from one voltage to the next. The long runs of \cref{tab:datasets} were
+taken before the scans were analyzed, at 490--495\,V. This is about 10\,V above the best voltage for chamber~A, 15\,V
+for B and C, and 65\,V for D, where each best voltage is known to $\pm5$\,V. At 495\,V, chambers C and D lose 17 and
+24\,\% of their tracks to discharges.
+\askDylan{Reworded 2026-11-14: the scan numbers of C and D are no longer given as what the chambers reach. C: 84.1(14) at
+465\,V, 85.8(19) at 480\,V, 81.8(15) at 485\,V. D: 86.6(19), 89.8(25), 89.0(18), 82.2(35), 88.0(18) at 425, 430, 435, 440,
+445\,V. D's scan points and its 68.0\,\% long run are rows of one table with one ray selection
+(\texttt{rerun/paper1\_ops/results/tradeoff.csv}, column \texttt{n\_ig}), and D has 0.4--0.5 of C's rays at equal triggers,
+so the scan uses the same half of X as the long run.}
+
+Two further observations about operation are documented in \cref{app:discharges}. First, a discharge produces no
+measurable dead time. Integrated over the first 0.1\,s after a discharge, the lost time is $0.2\pm0.6$\,ms for
+chamber~A (below 1.2\,ms at 95\,\% confidence), and it is compatible with zero for every chamber. Second, the
+resistive strips draw a dark current that follows the gain. This current is about 1\,\textmu A for chamber~A at
+490\,V.
+
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=\linewidth]{hv_scan_v2}
+  \caption{Scans of $HV_\mathrm{resist}$, one chamber per panel (A on 27 June and B on 22 June at 1000\,V on the
+  cathode, C and D on 26 June at 700\,V): kept-track efficiency in the interior (left axis, solid) and discharges per
+  trigger (right axis, dashed, open). Shaded: the efficiency plateau, within one point of the maximum. Stars: the long
+  runs. Chamber~C's long run was taken on the morning of 26 June, before its scan, while the gas was still drying; it
+  lost fewer tracks to discharges and lies above the scan. Chamber~E has no scan. About 4\,\% of all triggers of
+  chamber~A carry a discharge at 490\,V, but only 0.9\,\% of its reference tracks are lost to one.}
+  \label{fig:hv}
+\end{figure}
+
+\subsection{Five chambers}\label{sec:fleet}
+The five chambers and their defects were introduced with the efficiency maps of \cref{fig:effmap}
+(\cref{sec:datasets}). Here we give the corresponding numbers. In the interior and at the voltage of the long runs,
+the kept-track efficiency is 92.3\,\% for chamber~A, 90.3\,\% for B, 74.4\,\% for C, 68.0\,\% for D (on the good half
+of its X readout) and 40.9\,\% for E (71.3\,\% in its live bands). No single loss class accounts for more than
+1.7\,\% of the tracks of chambers A and B.
+
+\subsection{Chamber A: single-track efficiency and where the loss goes}\label{sec:single}
+We now ask how efficient chamber~A is for a single track. To answer this, events with a second particle in the
+chamber must be set aside. This must be done without letting the chamber's own failures decide which events are
+removed. Otherwise, a failure that looks like two tracks would remove itself from the sample. The reference telescope
+cannot identify these events, because the second particles are mostly local, soft secondaries. We use the two views of
+the chamber instead. A real second particle is ionization in the gas, and it is seen in both views with the same
+charge (\cref{sec:balance}). An event is removed from the single-track sample only if it contains such a second
+particle (\cref{sec:twoeff}). All other events stay in the sample and count against the chamber. Of the 29\,398
+reference tracks of Runs 1 and 2, 931 come with a second particle and 28\,467 are single tracks.
+
+The single-track efficiency of chamber~A is
+\[ \varepsilon=94.8\pm0.1\,\text{(stat)}\,^{+0.7}_{-0.5}\,(R)\ \%\]
+over the full active area, and 95.7\,\% in the interior. \Cref{fig:lossbudget} shows how the remaining 5.2\,\% of the
+tracks are lost. We group the losses as follows.
+
+\emph{The chamber itself: 0.6\,\%.} Discharges (0.47\,\%) and noise bands (0.10\,\%), which are patches of strips with
+a shifted baseline, are the only losses that are caused by the hardware.
+
+\emph{$\delta$-rays: 2.4\,\%.} The largest group consists of muons accompanied by a knock-on electron that they
+produced in the chamber. The straight-track reconstruction does not describe these events (\cref{sec:straight}).
+
+\emph{The edges: 0.9 points.} The drift field fringes within 30\,mm of the unpassivated $x$ sides (\cref{sec:edge}).
+Tracks in this region spread over more strips, or their fit lands away from the reference. This loss is the difference
+between the efficiency over the full area and the efficiency in the interior.
+
+\emph{The rest: 0.7\,\%.} This group contains fits that are wrong with nothing flagged (0.34\,\%), second deposits that
+are not particle-like (0.18\,\%), and tracks that have the right angle but lie more than 5\,mm from the reference
+(0.16\,\%). About two thirds of this last class are muons that scattered between the reference planes.
+
+\emph{Uniformity over the track angle.} \Cref{sec:requirement} requires that the efficiency not depend on the angle of
+the track. To test this, we measure the single-track efficiency in the interior in 5\textdegree{} bins of the
+reference angle over $\pm20$\textdegree. The efficiency stays between 95.3 and 96.5\,\% in X and between 94.8 and
+96.6\,\% in Y. As a function of the polar angle up to 25\textdegree, it stays between 94.7 and 96.0\,\%. We see no
+trend with the magnitude of the angle. In X the bins agree within their uncertainties ($\chi^2/\mathrm{ndf}=3.6/7$
+about the mean). In Y they scatter by more ($17.7/7$), at the level of one percentage point. Over the full area, the
+efficiency for tracks within 5\textdegree{} of the normal in Y is 1.4 points below that of the others. This difference
+is caused by the edge zone and not by the angle: 72\,\% of the tracks in the edge zone are within 5\textdegree{} of
+the normal in Y, compared to 40\,\% in the interior, and the difference is absent in the interior. The bench provides
+few tracks beyond 20\textdegree, so we have no measurement of the efficiency for steeper tracks.
+
+All but 0.6 points of the inefficiency is therefore real ionization that the reconstruction does not yet handle. Every
+loss class is documented in \cref{app:effdef}, with an event display and the result of our attempt to recover it.
+
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=\linewidth]{loss_budget}
+  \caption{The single-track inefficiency of chamber~A over the full active area (Runs 1 and 2, 28\,467
+  single-track reference tracks, 5.2\,\% lost), divided by loss class, with Poisson errors. The group ``edges'' counts
+  every track lost in the edge zone. This includes about 0.4 points that those tracks would lose even at the loss rate
+  of the interior, so the cost of the edges themselves is the 0.9 points between the full-area and the interior
+  efficiency.}
+  \label{fig:lossbudget}
+\end{figure}

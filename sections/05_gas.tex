@@ -1,0 +1,143 @@
+\section{Drift velocity, drift gap and gas}\label{sec:gas}
+\sectionstate{partial}{\texttt{rerun/paper1\_gas/README.md} and \texttt{results/summary.json}, \texttt{twov.json} (bench);
+\texttt{rerun/paper1\_spsfigs}, \texttt{sps\_beam\_test\_26/analysis/cloud\_basics} \S16--27 (beam). v2 2026-11-10: the old
+section 6 written out as prose and moved in front of the tracking results, which depend on it; the gap paragraph is new;
+the SPS gas history moved to \cref{app:beam}.}
+\intent{The chamber calibrates itself. The drift velocity is measured two independent ways and the gap a third; they
+agree; one physics model with one free number, the water content, describes all of it; and the same analysis sees
+oxygen where there is some.}
+
+A TPC measures the depth at which charge was deposited from the time the charge takes to drift to the mesh, and the
+drift velocity $\vd$ converts one into the other. The angle of a track is reconstructed as $\tan\theta=w/\vd$, where
+$w$ is the transverse drift rate of \cref{sec:reco}: the distance the arriving charge moves across the strips per unit
+of drift time. All of the tracking results of \cref{sec:tracking} therefore depend on $\vd$. The drift velocity depends
+strongly on the gas, and the only record of the gas on the bench is its nominal mixture, Ar/iC$_4$H$_{10}$ 95/5\,\%.
+For this reason we measure the drift velocity from the data themselves. We do this with two independent methods, and
+comparing the two also gives a measurement of the drift gap.
+
+\subsection{Two velocities and the gap}\label{sec:gap}
+The first method uses only the timing of the signal. A track near normal incidence deposits charge uniformly across
+the drift gap. If the signals of all strips are summed, the resulting signal begins when the electrons produced next
+to the mesh arrive and ends when the electrons produced at the cathode arrive. We call this summed signal the
+\emph{drift column} (\crefp{fig:twov}{a}). Its duration is $T=g/\vd$, where $g$ is the drift gap. We define the
+\emph{timing velocity} as $g/T$. This method requires the gap to be known.
+
+The second method uses the reference tracks and does not require the gap. For inclined tracks, the fitted transverse
+rate $w$ is proportional to the slope of the reference track, and the constant of proportionality is the drift
+velocity (\crefp{fig:twov}{b}). We call this the \emph{angle-scale velocity}, since it is the velocity for which the
+fitted angles agree with those of the reference tracks.
+
+The gap itself can be measured from geometry, with no drift velocity involved. An inclined track crosses the gap over
+a length $L$ along the strips, so that $g=L/\tan\theta$. This gives $28.19\pm0.19$\,mm for chamber~A. The product of
+the angle-scale velocity and the duration of the drift column is a second, independent measurement of the same gap.
+Over the four drift fields of chamber~A's drift scan, this product gives $28.2\pm0.5$\,mm ($\chi^2=4.1$ for 3 degrees
+of freedom; \crefp{fig:twov}{c}). The two velocity measurements and the geometric gap are therefore consistent to
+2\,\%.
+
+The measured gap is 1.8\,mm shorter than the design value of 30\,mm, which is set by the aluminum frame acting as the
+spacer. The data determine the mean gap but not the reason it is shorter. The bow of the readout board
+(\cref{sec:bow}) cannot explain it, since a mesh dished away from the cathode would make the gap longer at the center
+rather than shorter. We have no measurement of the position of the cathode.
+\askStephan{Is a gap of 28.2\,mm at the center plausible (cathode bulging toward the mesh under the overpressure of the
+5\,mm gas gap behind it, frame height)? The other chambers' geometric gaps in our tables are 28.0 (C), 29.4 (D) and
+31.1\,mm (B).}
+\askDylan{The variation of the gap across chamber~A is not re-derived on the final reconstruction (the July map,
+25.7--29.2\,mm, is on a superseded basis), so nothing is said about it. Chamber~E: 30.48\,mm in the configuration,
+28.6\,mm geometric, 27.9\,mm used for the SPS gas fit (\cref{app:beam}).}
+
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=\linewidth]{two_velocities}
+  \caption{Two drift velocities and the gap, chamber~A, drift-field scan of 27 June (color: drift field). (a) Signal
+  summed over all strips for tracks near normal incidence, averaged over tracks (points), with the model of a uniform
+  column (lines); triangles mark the fitted start and end of the column, whose difference is the drift time
+  $T=g/\vd$. (b) Fitted transverse rate $w$, less its offset $w_0$ (\cref{sec:bow}), against the slope of the reference
+  track, X filled and Y open; the slope of each line is the angle-scale velocity, which involves no gap. (c) The
+  product $g=\vd\,T$ per field: mean $28.2\pm0.5$\,mm (gray band), against the geometric gap $28.19\pm0.19$\,mm
+  (hatched), obtained without any drift velocity from the extent in strips of inclined tracks.}
+  \label{fig:twov}
+\end{figure}
+
+\subsection{Drift velocity against field: one curve, one number}\label{sec:vE}
+\Cref{fig:vE} shows both velocities of chamber~A as a function of the drift field. The timing velocity increases from
+17.7 to 37.2\,\textmu m/ns between 177 and 390\,V/cm, and the angle-scale velocity from 2.55 to 38.9\,\textmu m/ns over
+seven drift fields. These velocities are not consistent with dry Ar/iC$_4$H$_{10}$, for which the drift velocity would
+be about 40\,\textmu m/ns at the fields used here. They are, however, well described by a
+Magboltz~\cite{Biagi1999} calculation in which the water content of the gas is the only free parameter. A fit to the
+timing velocity gives a water content of 0.97\,\% (68\,\% interval 0.95--0.99\,\%; $\chi^2=2.5$ for 3 degrees of
+freedom). The angle-scale velocities were not used in the fit, and they lie within $-1.7$ to $+1.5\,\%$ of the fitted
+curve.
+
+The other chambers have no drift-field scan. For them we have only the drift velocity of their long runs, each at a
+single field. A single velocity can always be matched by some water content, so it does not test the model. It can
+only be expressed as an equivalent water content: 0.69\,\% for B, 1.00\,\% for C, 0.48\,\% for D and 0.42\,\% for E.
+This equivalent water content differs between chambers by more than a factor of two, which is one reason we use the
+drift velocity measured in each run (\cref{sec:drying}). Water at this level has a large effect: a water content of
+one percent lowers the drift velocity at 250\,V/cm by about 40\,\%.
+\askDylan{``About 40\,\%'' and ``about 40\,\textmu m/ns'' are read off the dry curve of \cref{fig:vE}; to replace by the
+Magboltz table values.}
+
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=\linewidth]{gas_vE_all}
+  \caption{Drift velocity against drift field, chamber~A. (a) Drift scan of 27 June: timing velocity $g/T$ from the
+  duration of the drift column ($g=28.19$\,mm; filled circles) and angle-scale velocity from the reference tracks
+  (no gap; open squares). Line: Magboltz for Ar/iC$_4$H$_{10}$ 95/5 with the water fitted to the timing
+  velocity, 0.97\,\% [0.95, 0.99]; gray band, its 68\,\% interval; dotted, dry gas. (b) Ratio of the points to the
+  curve.}
+  \label{fig:vE}
+\end{figure}
+
+\subsection{The gas dries over hours}\label{sec:drying}
+The water content also changes with time. Over the night of 26--27 June, the drift velocity of chambers C and D rose
+steadily (\crefp{fig:drying}{a}). To interpret this rise, we invert the Magboltz curve at each chamber's drift field
+to convert the measured velocity into a water content. The water content falls from 1.47 to 0.76\,\% in chamber~C and
+from 0.68 to 0.35\,\% in chamber~D (\crefp{fig:drying}{b}). The excess of water over the final plateau follows the same
+shape in time in both chambers (\crefp{fig:drying}{c}; correlation 0.975). The two chambers reach different plateaus,
+however, so the gas in the two chambers is not the same. Chamber~A dried in the same way but more slowly: its drift
+velocity rose by 1.8\,\% between Run~1 and the end of Run~2, from 35.8 to 36.6\,\textmu m/ns (\cref{app:gain}).
+
+This has a practical consequence for a TPC of this kind. The water content is at the percent level and can change by
+a factor of two overnight. If the drift velocity were taken from the nominal gas mixture, or from an earlier run,
+every reconstructed angle would carry a scale error of tens of percent. For this reason the reconstruction takes
+$\vd$ from the data of each run. In effect, the measured drift velocity serves as the gas monitor of the bench.
+\askStephan{Gas system on the bench: flow, materials, expected outgassing / water ingress? Were chambers C and D on one
+gas line on 26 June?}
+
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=\linewidth]{gas_drying}
+  \caption{The gas dries over the night of 26--27 June, chambers C and D. (a) Measured drift velocity (the angle-scale
+  velocity, anchored to the timing velocity on the runs free of attachment), at 250 and 238\,V/cm respectively. (b)
+  Water fraction inferred from (a) by inverting the Magboltz curve at each chamber's field; dashed, each chamber's
+  plateau the following afternoon. (c) Excess over the plateau, chamber~C divided by 2.17: one time shape.}
+  \label{fig:drying}
+\end{figure}
+
+\subsection{Oxygen: charge lost along the drift}\label{sec:attachment}
+Water in the gas slows the drift. Oxygen has a different effect: drifting electrons attach to it and are lost before
+they reach the mesh. This loss can be seen in the drift column. A track near normal incidence deposits the same charge
+at every depth, so the drift column (the summed signal as a function of time) shows how much of the charge from each
+depth survives the drift. On the bench, the drift column of chamber~A is flat until its end
+(\crefp{fig:attach_charge}{a}), which indicates that no charge is lost. In the beam, chamber~E ran with two other
+mixtures, Ar/CF$_4$/iC$_4$H$_{10}$ and Ar/CO$_2$/iC$_4$H$_{10}$, and in both of them its drift column falls with drift time. To
+describe this we use the same Magboltz model, now including drift, diffusion and attachment, on a grid of water and
+oxygen contents. The model fits the two drift columns with 226 and 403\,ppm of oxygen. With the same water content and
+no oxygen, the model column stays flat and does not describe the data (\crefp{fig:attach_charge}{b, c}). The method
+therefore finds oxygen in the runs where charge is lost and none in the run where it is not. The water and oxygen
+contents during the beam test are shown as a function of time in \cref{app:beam}.
+
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=\linewidth]{attachment_charge}
+  \caption{Charge against drift time for tracks near normal incidence, each curve normalized to its plateau
+  250--450\,ns after the start of the column. (a) Chamber~A on the bench (248\,V/cm) stays flat to the end of the
+  column; chamber~E in the beam falls with drift time in both gases (Ar/CF$_4$/iC$_4$H$_{10}$ and Ar/CO$_2$/iC$_4$H$_{10}$, both at
+  251\,V/cm): electrons from the far side of the gap are lost to attachment. (b, c) The two beam columns with the gas
+  model (solid): Magboltz drift, diffusion and attachment, a fixed response of the electronics and a free time offset
+  and amplitude, with water and oxygen fitted (226 and 403\,ppm of O$_2$). Dashed: the same water with no oxygen,
+  which fails ($\chi^2$ 842 and 9060 against 49 and 271 for 55 points). The columns last longer in the beam because
+  the drift is slower in these mixtures. The Ar/CO$_2$/iC$_4$H$_{10}$ data were zero-suppressed, and the model includes the distortion
+  this causes.}
+  \label{fig:attach_charge}
+\end{figure}
