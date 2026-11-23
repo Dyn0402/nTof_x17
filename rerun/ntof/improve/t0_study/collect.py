@@ -23,7 +23,8 @@ OUT = WD / 'ntof_pass1' / 'ana' / 't0_study'
 COLS = ['run', 'subrun', 'tag', 'event_id', 'arm', 'track_id', 'gated', 't_since_flash_ns', 'x_t0', 'y_t0', 'x_ftst',
         'y_ftst', 'x_q_u50', 'y_q_u50', 't0_railed', 'dca_source_mm', 'wall_A', 'wall_C', 'wall_D', 'tanx', 'tany',
         'x_local', 'y_local', 'x_q_sum', 'y_q_sum', 'x_n_strips', 'y_n_strips', 'event_class', 'dtc_ns', 'amp_norm',
-        'n_cand_x', 'n_cand_y', 'x_split_child', 'y_split_child']
+        'n_cand_x', 'n_cand_y', 'x_split_child', 'y_split_child', 'x_q_u90', 'y_q_u90', 'x_q_uend', 'y_q_uend',
+        'drift_t_end_ns', 'drift_railed', 'x_plausible', 'y_plausible', 'x_isochronous', 'y_isochronous']
 
 
 def one(args):
