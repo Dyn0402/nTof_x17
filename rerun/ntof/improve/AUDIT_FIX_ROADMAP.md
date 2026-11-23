@@ -77,13 +77,16 @@ the code, test each change on a few sub-runs against pass 1, and then decide whe
 
 | # | item | from | change | status |
 |---|---|---|---|---|
-| 4.1 | x–y coincidence uses the bench `tc_tol` | reco review 4 | n_TOF tolerance from the late x–y column-time difference | todo (Dylan: fix, test on a few sub-runs, then decide on a pass 2) |
+| 4.1 | x–y coincidence uses the bench `tc_tol` | reco review 4 | studied 11-23 (`xy_match/README.md`): the matching is replayable from the candidates table; an n_TOF likelihood is 1–4 points better on overlays but not better where it disagrees with pass 1 (junk events); two-track swaps move the opening angle by 0.1–0.2°. Keep pass-1 matching; n_TOF `tc_tol` + matching-score column; pass 2 stores candidate depth profiles | done (study); score column todo |
 | 4.2 | Out-of-time tracks are biased, not rejected | reco review 6 | flag tracks with t0 at the ±180 ns box edge | todo |
 | 4.3 | Two-track children ignore the t0 pin; `split_child` not in stage 3 | 22, reco review 8 | pin the children (reco); `split_child` is carried into stage 3 from the rebuild on (`x/y_split_child`) | todo (pin) |
 | 4.4 | Seeder keeps the five widest clusters | reco review 10 | rank by significance | todo |
 | 4.5 | Head-on rescue not wired into the beam driver | 22, reco review 11 | wire `headon_seeds` / `_rescue_` windows into `wft_beam` | todo |
 | 4.6 | `quality_ok` reference median set by the ringing | 14, reco review 3 | reference from late tracks | todo |
 | 4.7 | Candidates carry no `bow_h` | stage-3 review 4 | write it | todo |
+| 4.9 | D oscillating channels (19 x, 42 y unmasked) | ringing study 11-23 | add to D's hot list; test on a re-reco of a few sub-runs | todo |
+| 4.10 | A/C ringing correction | ringing study 11-23 | `deflect` v1, gated, mode `deflect_hits`, plus the own-window waveform flag; not on D | todo (pass 2) |
+| 4.11 | Candidate depth profiles not stored | xy_match 11-23 | write the 20-bin profile per candidate (enables `profile_distance` matching at table level) | todo (pass 2) |
 | 4.8 | Smaller | reco review 12 | events table pairs the plane winners; `tan_err` at its floor; `dt_xy` bench key | todo |
 
 ## Phase 5. Rerun the downstream and write it up
