@@ -183,6 +183,45 @@ the digitised Geant4 events go through the same seeder with realistic relative a
 yet. The local floor's effect on single tracks (fakes, noise clusters) has not been measured either, so it is a
 candidate for phase 4 (roadmap 4.12), not a decision.
 
+### Settling the accidental fraction of A (2026-11-24)
+
+The rate fit gives an accidental share of 6.7 % (A) and 10.5 % (C) of the late same-chamber pairs, on
+`stage3_r2_final`. The timing template gave about 13 % for A. We settled the difference with the column-time
+difference of the pairs (`look10.py`, `look11.py`).
+
+**The rate fit split by time.** We fitted f = a + b ρ separately to the pairs with |Δtc| < 300 ns and to those with
+|Δtc| ≥ 300 ns. The ρ-proportional pairs, which are accidental, are 73 % (A) and 76 % (C) out of time. This confirms
+that the ρ term is the accidentals. The constant term a is the rate fit's correlated pairs. Of a, 11.0 ± 1.6 % (A)
+and 17.5 ± 2.6 % (C) sit at |Δtc| ≥ 300 ns.
+
+**The in-time tail.** A truly in-time pair can still have |Δtc| ≥ 300 ns, because tc has a spread. We measured that
+fraction t with a zero-offset injection (`inject.py --k-fixed 0`, about 2000 pairs per chamber). It is 6.7 ± 0.7 % on
+A and 19.5 ± 1.2 % on C, and it does not depend on the separation of the two tracks. The wall-confirmed data pairs
+give the same (6.0 % and 17.7 %).
+
+**Accidentals in the constant term.** A second track from a source that is constant in ToF (activation, cosmics) makes
+a constant pair fraction, which the rate fit puts into a. With p the out-of-time share of the accidentals (b_out / b),
+the amount of such accidentals is X = (a_out − t a) / (p − t). The table gives X as a fraction of a, for pairs
+without a split child.
+
+| cut on \|Δtc\| | 250 ns | 300 ns | 400 ns | 500 ns |
+|---|---|---|---|---|
+| A: X / a | +0.077 | +0.085 | +0.004 | −0.015 |
+| C: X / a | −0.091 | −0.108 | −0.096 | −0.055 |
+
+A real constant-source component would appear at every cut. On A, the excess appears at 250-300 ns and is gone at
+400 ns and above, and on C the estimate is negative everywhere. **So we find no constant-source accidentals, and the
+rate fit's accidental shares stand: 6.7 % (A) and 10.5 % (C).** The ~13 % of the timing template came from its tail.
+The A excess between 250 and 400 ns is a feature of the correlated pairs' Δtc distribution that the injected in-time
+pairs do not have. We state it as a systematic: at most about 8 % of A's correlated pairs.
+
+### A wider t0 box (2026-11-24)
+
+We repeated the empty-host injection with the box at ±360 ns instead of ±180 ns (`WFT_DIAG=model.LM_T0_RANGE=360`).
+In-time tracks do not change. Early tracks stop railing, but their t0 moves only 5-20 ns further. The trigger prior
+(15 ns) holds t0, not the box. The angle of early tracks on A improves a little (2.9° → 2.4° at −360 ns, |tan| ratio
+1.18 → 1.14), and late tracks do not change. So a wider box is not worth a pass-2 item by itself.
+
 ### What the injection test does not cover
 
 - The donors are clean tracks with a wall hit, so they are biased toward the wall acceptance and toward ordinary
@@ -190,8 +229,6 @@ candidate for phase 4 (roadmap 4.12), not a decision.
 - For k < 0, the samples the shift opens at the end of the window are filled with the donor's last sample. So the
   early side is approximate at the end of the window.
 - Only one sub-run (run_145 stat090_0000) and chambers A and C are done.
-- The accidental fraction of the data has not been redone with this response yet (next: the rate fit with
-  |Δtc| < 300 ns, and A's 7 % against about 13 %).
 
 ## What this study does not cover yet
 

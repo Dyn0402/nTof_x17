@@ -19,8 +19,8 @@ decides whether a pass 2 is worth it.
 | 4.11 | The candidates table carries each candidate's 20-bin depth profile (`q_profile`). | `WFT_DIAG=reco.STORE_PROFILES=1` |
 | 4.12 | The seeding significance floor is judged within 30 mm instead of over the whole plane. | `WFT_DIAG=seed.SIG_FLOOR_LOCAL_MM=30` |
 
-Item 4.8 (three small output fixes) is not done yet. The wider t0 box (4.2) waits for the injection test with a
-±360 ns box (`../t0_study/`).
+Item 4.8 (three small output fixes) is not done yet. The wider t0 box (4.2) was tested by injection and gains little
+(`../t0_study/README.md`), so it is not in the campaign.
 
 ## The test
 
@@ -36,3 +36,10 @@ Item 4.8 (three small output fixes) is not done yet. The wider t0 box (4.2) wait
 ## Status
 
 - 2026-11-23: test cluster 4729099 (12 jobs of `all`, the heaviest configuration) submitted to size the campaign.
+  9 of 12 done by 23:30: CPU efficiency 98 % on 4 cores, peak memory 957 MB, median 40 min, max 104 min. The 3 D
+  jobs were still running after more than 4 h.
+- The campaign (8 configurations, 896 jobs, clusters 4729137-44, `cpus=4 mem=4000 flavour=tomorrow maxmat=30`) was
+  submitted and then removed the same night: Dylan wants to review it before a long campaign runs. Estimate about
+  5,000 core-hours.
+- Not done yet: the check that `stage3_chain.sh ref` reproduces `stage3_r2_final` on the five sub-runs, and the
+  comparison script.
