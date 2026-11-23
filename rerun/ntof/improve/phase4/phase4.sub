@@ -1,0 +1,19 @@
+# Phase-4 test re-reconstruction (README.md here): ntof.sub plus the configuration's WFT_DIAG.
+#   mkdir log_<cfg> && condor_submit phase4.sub code=<code dir> jobfile=jobs_<cfg>.txt logdir=log_<cfg> \
+#       diag="$(cat diag_<cfg>.txt)" [cpus=4] [mem=8000] [flavour=workday]
+# One NEW log directory per submission (global CLAUDE.md: AFS directory slots).
+executable     = $ENV(HOME)/x17rerun/ntof/pass1/ntof_stage.sh
+arguments      = $(code) $(args)
+output         = $(logdir)/$(Cluster).$(ProcId).out
+error          = $(logdir)/$(Cluster).$(ProcId).err
+log            = $(logdir)/phase4.log
+request_cpus   = $(cpus:4)
+request_memory = $(mem:8000)
+request_disk   = 4 GB
+environment    = "NTOF_JOBS=$(cpus:4) PYTHONDONTWRITEBYTECODE=1 WFT_DIAG=$(diag)"
++JobFlavour    = "$(flavour:workday)"
+max_retries    = 2
+should_transfer_files = NO
+requirements   = (Machine != "b9g42p2031.cern.ch")
+max_materialize = $(maxmat:200)
+queue args from $(jobfile)
