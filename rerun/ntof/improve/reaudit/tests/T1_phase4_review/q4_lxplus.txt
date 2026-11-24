@@ -1,0 +1,36 @@
+Q4: sizing cluster 4729099 (config `all`), read on lxplus 2026-11-24 00:38-00:50 CET. Read-only.
+
+User log log_p4test/phase4.log: 000 x12, 001 x12 (one start per job, all 20:14:50-55), 005 x9, 004/009/012 none, 040 = file transfer.
+Running (condor_q at ~00:45): procs 8,9,10 (D, run_145 16H07_007, 16H07_004, 15H07_004), start 20:14:50, wall ~15,800 s,
+RemoteUserCpu 60,754-60,908 s => 3.85 cores busy (fits dominate, not serial seeding/windowing). RSS ~1.0 GB.
+JobFlavour workday (MaxRuntime 28,800 s), RequestMemory 12000, RequestCpus 4.
+.out/.err of running jobs do not exist yet (stdout transferred at job end), so no in-progress printout.
+
+Per tag: config all (p4test, code e86028b5) vs pass 1 (cluster 4636418 log_pass1_2026-11 = D_E2_beam;
+cluster 4677439 log_s13_dbeamL1 = D_E2_beam_L1, the canon for run_145 D)
+tag                         p4 all: seeded / wall / cpu-s/ev     pass1 main                 pass1 dbeam_L1
+A 145 15H07_002             2,884 / 2176 s / 3.02                 3,950 / 7013 s / 7.10
+A 145 14H06_002             2,838 / 2370 / 3.34                   3,920 / 7830 / 7.99
+A 139 01H02_005             2,734 / 2335 / 3.42                   3,716 / 5757 / 6.20
+A 104 22H24_012                34 /   45 / 5.34                      44 /   59 / 5.34
+C 145 15H07_002             3,015 / 6231 / 8.27                   3,869 / 14316 / 14.80
+C 145 15H07_000             3,008 / 5254 / 6.99                   3,843 / 16195 / 16.86
+C 139 01H02_001             2,761 / 5347 / 7.75                   3,561 / 12046 / 13.53
+C 104 22H24_012                30 /  145 / 19.36                     38 /   253 / 26.66
+D 145 16H07_008               735 / 3172 / 17.26                    734 /  2605 / 14.20       734 / 2415 / 13.16
+D 145 15H07_004             running >4h23m                        6,925 / 26542 / 15.33      6,925 / 19480 / 11.25
+D 145 16H07_004             running                               7,000 / 22925 / 13.10      7,000 / 25311 / 14.46
+D 145 16H07_007             running                               7,008 / 29775 / 17.00      7,008 / 29564 / 16.87
+
+Bundle: jobs_test.txt (the sizing cluster) ran D on bundles_osc/D_E2_beam; jobs_all.txt (the campaign) on
+bundles_osc/D_E2_beam_L1 (canon). So the sizing D jobs are not the campaign's D configuration.
+
+condor_budget size log_p4test/phase4.log (9 terminated):
+  jobs terminated 9, started 12, starts 12, holds 0, evictions 0, aborted 0
+  CPU requested 4, used 3.46 cores (p90 3.96), efficiency 98 %
+  memory requested 12000 MB, peak 957 MB (median 892)
+  run time median 39.8 min, p90 89.4 min, max 104.2 min
+  -> recommended request_cpus 4, request_memory 1300 MB, +JobFlavour "workday"; VERDICT OK
+  (the 3 long D jobs are not in this; workday is wrong for D)
+
+Job lists: all/floor30/headon/ref/seedrank/t0prior 128 each (47 A, 47 C, 34 D), ringing 94, osc 34 => 896.

@@ -1,0 +1,32 @@
+W3_g4_scale -- the T5/W2b pointing scale k (1 + slope of the windowed-median residual measured-e in 0.04 bins of e,
+0.18 <= |e| <= 0.44) on Geant4 capsule electrons.  Errors: 150-200 bootstrap replicas of the tracks.
+Selection (data analogue): full gap (w span > 20 mm), |tan| < 0.5 both views, |v| <= 125 mm, D needs its wall.
+Source = band crossings of the same sample (xs from A/C, zs from D): nose (0.46, 0.32) mm, ear2 (0.35, 1.11) mm.
+
+DATA (T5 cache, late gated, W2b q2c/q2a; reproduced by w3lib.scale to 0.003, D nomap 0.012): mapped A 0.990 C 0.965
+D 0.946; unmapped A 0.952 C 0.959 D 0.922.  Core sigma of the residual: data 0.065-0.075, G4 truth 0.087-0.117.
+
+LEVEL (a) truth gap line, crossing source [generator (0,0)]          n_sel
+  nose  A 0.989 +- 0.013 [0.989]   C 0.986 +- 0.011 [0.989]   D 0.972 +- 0.012 [0.972]    13717 / 13787 / 8351
+  ear2  A 0.931 +- 0.018 [0.941]   C 0.924 +- 0.016 [0.919]   D 0.987 +- 0.022 [0.987]     9497 /  9412 / 4496
+  A/C with wall required: nose A 0.989 C 1.001, ear2 A 0.964 C 0.939
+LEVEL (b) pass-1 reco of the digitised (wall) events / (c) truth on the same reco-selected events
+  nose  A b 1.018 +- 0.013  c 0.984 +- 0.012  paired b-c +0.034 +- 0.011
+        C b 1.029 +- 0.009  c 0.992 +- 0.010  paired b-c +0.036 +- 0.009
+  ear2  A b 1.025 +- 0.019  c 0.939 +- 0.017  paired b-c +0.086 +- 0.019
+        C b 1.017 +- 0.021  c 0.917 +- 0.017  paired b-c +0.100 +- 0.018
+  median(reco tan / truth tan), 0.15<|truth|<0.45: nose 1.033/1.035, ear2 1.099/1.092 (A/C)
+DECOMPOSITION (all 100 + 100 HitTree files, creation vertex of the dominant gas track)
+                      K_full          K_nosc (source only)  K_point (scatt.)  K_full no tan cut
+  nose  A   0.989 +- 0.014   0.9966 +- 0.0008   1.001 +- 0.006   0.996 +- 0.011
+        C   0.986 +- 0.011   0.9994 +- 0.0007   0.997 +- 0.004   0.988 +- 0.011
+        D   0.972 +- 0.012   0.9969 +- 0.0008   0.989 +- 0.010   0.980 +- 0.011
+  ear2  A   0.931 +- 0.018   0.992  +- 0.002    0.973 +- 0.009   0.952 +- 0.015
+        C   0.924 +- 0.016   0.998  +- 0.003    0.971 +- 0.009   0.935 +- 0.016
+        D   0.987 +- 0.023   0.995  +- 0.003    0.961 +- 0.010   0.981 +- 0.020
+  vertex upstream of the chamber only: K_point nose 0.982/0.989/0.968, ear2 0.930/0.960/0.951 (+-0.011-0.015)
+  tracks born in the chamber (|n_o| >= 195 mm): nose 15 % of A/C, 4 % of D; ear2 26 % of A/C, 9 % of D
+  vertex spread seen in the band (h about the source): MAD nose 3.3-4.1 mm, ear2 7.0-9.0 mm;
+  depth offset of the vertices toward the viewing chamber: nose 4.1-5.2 mm, ear2 4.8-7.0 mm
+Files: level_a.csv, level_bc.csv, decompose_nose.csv, decompose_ear2_L19p5.csv, decompose_profiles_*.csv,
+core_sigma.csv (data row: core_sigma = nomap, centre column = mapped), data_check.csv, fig_profiles.png

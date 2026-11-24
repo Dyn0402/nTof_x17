@@ -781,9 +781,9 @@ redeployed (dylan-cern-site 91d4386). Inputs on the desktop: $WORK_DATA/claude-j
 - Deck: `WORK_DATA=~/work_data .venv/bin/python papers/paper1/make_figures_deck.py --out <html>` then
   `dylan-cern-site/scripts/add-note.py <html> --slug mx17-paper1-figures --force --deploy`.
 
-## n_TOF tracking audit fixes: t0/pile-up study done, phase-4 code in, test campaign NOT submitted — updated 2026-11-24 (dylan-MS-7C84)
+## n_TOF tracking audit fixes: re-audited 11-24, test campaign NOT submitted, r3 map candidate — updated 2026-11-24 (dylan-MS-7C84)
 
-**Resume:** review the phase-4 test campaign (Dylan checks it first), then submit it; read test cluster 4729099 first.
+**Resume:** read `rerun/ntof/improve/reaudit/report.html`; Dylan decides on the r3 map and on the changes to the test campaign (next steps below).
 
 **Goal:** close every loose end of the 11-21 tracking audit on existing data, so that a possible pass 2 (week-long
 re-reco) is the last one. Plan and status per item: `rerun/ntof/improve/AUDIT_FIX_ROADMAP.md`.
@@ -812,27 +812,38 @@ re-reco) is the last one. Plan and status per item: `rerun/ntof/improve/AUDIT_FI
   seed.SIG_FLOOR_LOCAL_MM=30. Tests: wft + rerun/ntof + sept26 suites pass (test_profile_is_retired fails on clean
   main too). Code deployed on lxplus as `~/x17rerun/code_e86028b5`.
 
-**In progress / where it stopped:**
-- Test cluster **4729099** (12 jobs of config `all`, the heaviest; log `~/x17rerun/ntof/pass1/p4jobs/log_p4test/`,
-  outputs EOS `Analysis_pass1/tests/phase4_e86028b5/out/sizetest/`): 9 done (98 % CPU eff on 4 cores, peak 957 MB,
-  median 40 min, max 104 min); 3 D jobs still running at > 4 h when left. Dylan: let them finish.
-- The campaign (8 configs, 896 jobs: ref, all, floor30, t0prior, seedrank, headon, ringing, osc) was submitted
-  (4729137-44) and **removed by Dylan's request** the same night: he wants to check everything before a long campaign.
+**Re-audit of 2026-11-24** (`rerun/ntof/improve/reaudit/report.html`, README there; roadmap phase 6):
+- `ref` (code `e86028b5`, every switch off) reproduces `stage3_r2_final` on 8 A/C acquisitions (cluster 4729151, outputs
+  `out/reftest/`): all gated tracks matched, largest difference 1.3e-6 mm.
+- The phase-4 chain failed on every sub-run (no chamber-B files). Fixed: `ntof_stage3.py --allow-missing`,
+  `phase4/stage3_chain.sh`. New: `phase4/compare.py`. `deflect.py` fixed (corrected-event flag per reader).
+- First look at `all` against pass 1 (sizing cluster, 8 A/C + 4 D acquisitions): late tracks A +3.7 %, C +8.1 %
+  (head-on rescue, wall-confirmed), early A fakes removed by the ringing correction, D −6.6 % real late tracks.
+- A spline angle map (r3 candidate, `reaudit/tests/W2a_map_r3/`) is 16-26 % better than the current map on held-out
+  cosmic lines in A, C and D, and is at the noise of a track. Table level. Not applied.
+- Drift geometry at n_TOF: tilt field curl-free; drift-time maps stable but not a gap map on C/D; pointing confirms the
+  map and helps only D. Per-track timing gains 0.4-3.3 %: no timing correction, no joint x-y fit.
+- Chamber D: efficiency hole at x_local 0-60 mm for the whole campaign; no scale correction (Geant4 check). B: noisy box
+  through run_132.
 
-**Next steps:**
-1. `ssh lxplus 'cd ~/x17rerun/ntof/pass1/p4jobs && condor_budget size log_p4test/phase4.log'` once 4729099 is done;
-   read the D run times (did they fit `workday`? memory?). Explain any failure.
-2. With Dylan, review the campaign before submitting: configs (`make_jobs.py` CFGS), job lists (regenerate:
-   `.venv/bin/python rerun/ntof/improve/phase4/make_jobs.py --code e86028b5 --outdir <dir>`; copies on lxplus in
-   `p4jobs/`), D bundles from the canon (D_E2_beam_L1), requests (cpus 4, mem 4000, flavour tomorrow, maxmat 30 per
-   submission: 8 x 30 x 4 = 960 cores). Estimate ~5,000 core-h; at the cap ~6 h, realistically 12-24 h with the
-   group near quota. D `all` jobs are the long pole (> 4 h).
-3. Submit (command in `phase4.sub` header), then per config `bash rerun/ntof/improve/phase4/stage3_chain.sh <cfg>`
-   (fetches via ssh tar, builds stage 3 -> vt -> map with angle_map_r2 + r2 quality refs FIXED). Validate first: the
-   chain's `ref` must reproduce `stage3_r2_final` for the 5 sub-runs (tolerance, not bytes).
-4. Write the comparison (per config vs ref: gated tracks per ToF bin, railing incl. children, pair fraction and
-   both-found, dca to source, angle widths, D fakes), then Dylan decides pass 2.
-5. Still open: 4.8 (small output fixes); per-track wall-time column; chamber D in the t0 study.
+**In progress / where it stopped:**
+- Nothing is running. Sizing cluster 4729099 finished (12/12, exit 0; D jobs 6.9-7.6 h). The campaign is not submitted.
+- Not run: the single-switch configurations, the injection test on the new code, any cosmic sub-run.
+
+**Next steps (Dylan decides each):**
+1. r3 map: wire `apply_r3.py` into `rerun/ntof/stage3/map_view.py` and build the view with it (roadmap 6.1). It must
+   be refitted after any new reconstruction (minutes).
+2. Table-level items 6.2-6.5 (D fiducial region, B box, the charge rule and the other decided flags, the D
+   oscillating-channel flag).
+3. Before submitting the test campaign: the list in `rerun/ntof/improve/phase4/README.md` ("Before submitting"):
+   seed rank by significance, the waveform flag in `--ringing`, profiles everywhere, a configuration with the n_TOF
+   x-y tolerance, D on run_104, 2-3 beam-off cosmic sub-runs, D single switches before `all`, `tomorrow` for D,
+   redeploy the code, free AFS space (quota 90 %). Cost about 10,000-12,000 core-hours.
+4. Submit, then per configuration `bash rerun/ntof/improve/phase4/stage3_chain.sh <cfg>` and
+   `phase4/compare.py --cfg <dir>/final --ref <ref dir>/final`. What decides each switch: Table 2 of the report.
+5. Decide pass 2. From the measurements it gains efficiency and purity (4-8 % late tracks near normal incidence, a
+   cleaner sample before 12 ms, second tracks), not angle resolution.
+6. Still open: 4.8; chamber D in the t0 study; the Geant4 digitisation side findings (roadmap 6.10).
 
 **Gotchas / decisions:**
 - Dylan 11-23: A/C ringing cut (q >= 600 + waveform flag before 8 ms, flag alone after); HOLD the switch (2.11) and

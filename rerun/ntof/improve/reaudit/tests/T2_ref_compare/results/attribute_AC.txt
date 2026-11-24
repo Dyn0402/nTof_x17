@@ -1,0 +1,24 @@
+--- A 16-75 ms: paired 1937 onlyC 79 onlyR 7
+  paired  |tanx|<0.08 0.17  x_n_strips<=2 0.00 y_n_strips<=2 0.00 track_id>0 0.01 wall 0.94 median x_n_seed 7
+  onlyC   |tanx|<0.08 0.65  x_n_strips<=2 0.00 y_n_strips<=2 0.00 track_id>0 0.01 wall 0.95 median x_n_seed 2
+  onlyR   |tanx|<0.08 0.14  x_n_strips<=2 0.00 y_n_strips<=2 0.00 track_id>0 0.14 wall 0.71 median x_n_seed 8
+  onlyC tracks in an event the ref also has a gated track in: 0.01
+  onlyR tracks whose event has any (ungated) cfg track: 0.86
+--- A 1-12 ms: paired 391 onlyC 242 onlyR 825
+  paired  |tanx|<0.08 0.26  x_n_strips<=2 0.00 y_n_strips<=2 0.00 track_id>0 0.02 wall 0.62 median x_n_seed 6
+  onlyC   |tanx|<0.08 0.40  x_n_strips<=2 0.00 y_n_strips<=2 0.00 track_id>0 0.10 wall 0.36 median x_n_seed 4
+  onlyR   |tanx|<0.08 0.40  x_n_strips<=2 0.00 y_n_strips<=2 0.00 track_id>0 0.17 wall 0.21 median x_n_seed 4
+  onlyC tracks in an event the ref also has a gated track in: 0.05
+  onlyR tracks whose event has any (ungated) cfg track: 0.27
+--- C 16-75 ms: paired 1598 onlyC 118 onlyR 4
+  paired  |tanx|<0.08 0.09  x_n_strips<=2 0.00 y_n_strips<=2 0.00 track_id>0 0.01 wall 0.98 median x_n_seed 7
+  onlyC   |tanx|<0.08 0.47  x_n_strips<=2 0.00 y_n_strips<=2 0.00 track_id>0 0.04 wall 0.99 median x_n_seed 2
+  onlyR   |tanx|<0.08 0.00  x_n_strips<=2 0.00 y_n_strips<=2 0.00 track_id>0 0.00 wall 1.00 median x_n_seed 8
+  onlyC tracks in an event the ref also has a gated track in: 0.02
+  onlyR tracks whose event has any (ungated) cfg track: 0.75
+--- C 1-12 ms: paired 444 onlyC 429 onlyR 710
+  paired  |tanx|<0.08 0.19  x_n_strips<=2 0.00 y_n_strips<=2 0.00 track_id>0 0.03 wall 0.75 median x_n_seed 6
+  onlyC   |tanx|<0.08 0.40  x_n_strips<=2 0.00 y_n_strips<=2 0.00 track_id>0 0.12 wall 0.42 median x_n_seed 4
+  onlyR   |tanx|<0.08 0.29  x_n_strips<=2 0.00 y_n_strips<=2 0.00 track_id>0 0.11 wall 0.35 median x_n_seed 5
+  onlyC tracks in an event the ref also has a gated track in: 0.03
+  onlyR tracks whose event has any (ungated) cfg track: 0.46

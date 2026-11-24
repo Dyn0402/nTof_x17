@@ -1,0 +1,45 @@
+ref vs ref.  Gated tracks; paired = same event, nearest position.  Differences config - ref (median / 68 % half-width / 95 % half-width; f>tol = fraction with |d| > 0.0001).
+
+=== chamber A
+ ToF ms  n_trig    cfg    ref  cfg/trg  ref/trg paired  onlyC  onlyR  ev C  ev R  wallP  wallC  wallR   hoC  pairC  pairR
+    all   24334   3520   3520   0.1447   0.1447   3520      0      0     0     0  0.691      -      -     - 0.0403 0.0403
+    1-3    1970    274    274   0.1391   0.1391    274      0      0     0     0  0.204      -      -     - 0.1328 0.1328
+    3-5    1764    186    186   0.1054   0.1054    186      0      0     0     0  0.274      -      -     - 0.0888 0.0888
+    5-8    2713    456    456   0.1681   0.1681    456      0      0     0     0  0.298      -      -     - 0.1350 0.1350
+   8-12    3285    300    300   0.0913   0.0913    300      0      0     0     0  0.560      -      -     - 0.0567 0.0567
+  12-16    2597    235    235   0.0905   0.0905    235      0      0     0     0  0.830      -      -     - 0.0173 0.0173
+  16-25    3729    516    516   0.1384   0.1384    516      0      0     0     0  0.917      -      -     - 0.0118 0.0118
+  25-75    7916   1428   1428   0.1804   0.1804   1428      0      0     0     0  0.945      -      -     - 0.0035 0.0035
+  differences (all ToF):
+     x_local: med +0  w68 0  w95 2.86e-14  f>tol 0.0000  max 1.208e-06
+     y_local: med +0  w68 0  w95 4.281e-14  f>tol 0.0000  max 1.255e-06
+        tanx: med +0  w68 0  w95 1.575e-15  f>tol 0.0000  max 1.003e-07
+        tany: med +0  w68 0  w95 1.396e-15  f>tol 0.0000  max 6.256e-08
+        x_t0: med +0  w68 0  w95 1.606e-12  f>tol 0.0000  max 9.658e-05
+        y_t0: med +0  w68 0  w95 1.274e-12  f>tol 0.0003  max 0.0001053
+  flags cfg/ref: t0_railed 0.0349/0.0349;  split children t0_railed 0.435/0.435 (n 69/69);  low_charge 0.0000/0.0000;  d_faint 0.0000/0.0000;  censored_window 0.0819/0.0819
+  pointing (>= 25 ms) cfg/ref: n 1428/1428;  dca<15 0.611/0.611;  half-width (q68 within 45 mm) 16.00/16.00 mm
+  same-chamber pair events cfg/ref: 136/136 (0.0403/0.0403 of events)
+
+=== chamber C
+ ToF ms  n_trig    cfg    ref  cfg/trg  ref/trg paired  onlyC  onlyR  ev C  ev R  wallP  wallC  wallR   hoC  pairC  pairR
+    all   24981   2993   2993   0.1198   0.1198   2993      0      0     0     0  0.794      -      -     - 0.0264 0.0264
+    1-3    2019    290    290   0.1436   0.1436    290      0      0     0     0  0.369      -      -     - 0.0741 0.0741
+    3-5    1792    220    220   0.1228   0.1228    220      0      0     0     0  0.395      -      -     - 0.1061 0.1061
+    5-8    2792    349    349   0.1250   0.1250    349      0      0     0     0  0.521      -      -     - 0.0485 0.0485
+   8-12    3386    295    295   0.0871   0.0871    295      0      0     0     0  0.705      -      -     - 0.0351 0.0351
+  12-16    2645    214    214   0.0809   0.0809    214      0      0     0     0  0.953      -      -     - 0.0142 0.0142
+  16-25    3834    427    427   0.1114   0.1114    427      0      0     0     0  0.965      -      -     - 0.0095 0.0095
+  25-75    8137   1175   1175   0.1444   0.1444   1175      0      0     0     0  0.992      -      -     - 0.0017 0.0017
+  differences (all ToF):
+     x_local: med +0  w68 0  w95 0  f>tol 0.0000  max 0
+     y_local: med +0  w68 0  w95 0  f>tol 0.0000  max 1.677e-12
+        tanx: med +0  w68 0  w95 0  f>tol 0.0000  max 3.331e-16
+        tany: med +0  w68 0  w95 0  f>tol 0.0000  max 2.048e-13
+        x_t0: med +0  w68 0  w95 0  f>tol 0.0000  max 8.238e-13
+        y_t0: med +0  w68 0  w95 0  f>tol 0.0000  max 3.417e-10
+  flags cfg/ref: t0_railed 0.0501/0.0501;  split children t0_railed 0.358/0.358 (n 137/137);  low_charge 0.0000/0.0000;  d_faint 0.0000/0.0000;  censored_window 0.0027/0.0027
+  pointing (>= 25 ms) cfg/ref: n 1175/1175;  dca<15 0.575/0.575;  half-width (q68 within 45 mm) 16.41/16.41 mm
+  same-chamber pair events cfg/ref: 77/77 (0.0264/0.0264 of events)
+
+Columns: onlyC/onlyR = tracks only in the config / reference; ev C/R = events with gated tracks only in one set; wallP/C/R = wall fraction of paired / only-config / only-ref tracks; hoC = fraction of the only-config tracks at |tanx| < 0.08; pairC/R = events with >= 2 gated tracks in the chamber.

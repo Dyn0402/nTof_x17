@@ -175,6 +175,32 @@ Not done (Dylan's call, all on existing data): fix 12 and rebuild the context co
 D rule) to the analysis view as a flag like `censored_window`; rerun the same-chamber rate fit from 12 ms; fix 20 and
 rerun the scint-stack maps; point `campaign_imaging` at the view and re-centre `focus_split`.
 
+## Re-audit, 2026-11-24 (findings 24-31)
+
+Report: `reaudit/report.html` (README and tests in `reaudit/`). Baseline `stage3_r2_final`. The plan items are phase 6
+of `AUDIT_FIX_ROADMAP.md`.
+
+24. **`ref` (code `e86028b5`, every switch off) reproduces pass 1** track by track on 8 acquisitions. The phase-4 chain
+    failed on every sub-run before the fix (`ntof_stage3.py --allow-missing`); `phase4/compare.py` is new.
+25. **A spline map beats the 50 mm cells on held-out cosmic lines** (clean width, 1e-3, x / y): A 21.2 / 19.6 ->
+    15.7 / 16.5, C 24.3 / 28.7 -> 18.2 / 22.0, D 34.8 / 33.9 -> 25.6 / 26.0. The map is then at the noise of a track.
+    The held-out numbers of finding 4 (0.031 -> 0.026 ...) are the all-lines widths before the stage-3 rebuild; on
+    `stage3_r2_final` the clean widths are the ones given here.
+26. **The tilt field is curl-free** (curl rms 1.0e-4 per mm against 0.9e-4 of noise and 3.0e-4 shuffled), so it is
+    the gradient of one potential, as on the bench. The scale is common to the two views on C (r 0.86), not on A (0.28).
+27. **Capsule pointing confirms the map** (r 0.93 A, 0.70 C, 0.94 D against the lines-only spline) and adds information
+    only for D. It measures one combination of tilt and scale in a band 0.10 < |tan| < 0.44.
+28. **Drift-time maps** (90 % point of the charge profile) are stable in A, B, C, D (r 0.90-0.99 between campaign
+    halves). On A they behave like a gap map; on C and D they are too large to be a gap (10-13 % per 100 mm), and C's
+    scale gradient along y has the wrong sign for a velocity effect.
+29. **Per-track timing gains 0.4-3.3 %**; the relative errors of the x and y views of a track are uncorrelated
+    (-0.002 +- 0.008 A, -0.018 +- 0.008 C). No timing correction and no joint x-y fit.
+30. **Chamber D**: efficiency hole at x_local 0-60 mm for the whole campaign (9-13 % of the neighbouring level); five
+    channels of FEU 1 connector 4 hotter from run_133 (pedestal of 4 August); the angle scale does not follow v(t)
+    (0.04 +- 0.08). **Chamber B**: noisy box (x channels 258, 259, y channels 13-63) through run_132.
+31. **The beam pointing scale** (A 0.990, C 0.965, D 0.946 +- 0.009) is consistent with an estimator effect: Geant4
+    truth gives 0.92-0.99, mostly from scattering and the |tan| < 0.5 cut. The cosmic lines stay the scale reference.
+
 ## Not decided (Dylan)
 
 - Whether the map becomes a table-level step in the analysis view (`<col>_map` twins, like the κ step), and which

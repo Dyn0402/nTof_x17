@@ -41,5 +41,31 @@ Item 4.8 (three small output fixes) is not done yet. The wider t0 box (4.2) was 
 - The campaign (8 configurations, 896 jobs, clusters 4729137-44, `cpus=4 mem=4000 flavour=tomorrow maxmat=30`) was
   submitted and then removed the same night: Dylan wants to review it before a long campaign runs. Estimate about
   5,000 core-hours.
-- Not done yet: the check that `stage3_chain.sh ref` reproduces `stage3_r2_final` on the five sub-runs, and the
-  comparison script.
+- 2026-11-24 (re-audit, `../reaudit/report.html`):
+  - The sizing cluster finished: 12 of 12 jobs, exit 0. The three large D jobs ran 6.9, 7.6 and 7.6 h, close to the
+    8 h limit of `workday`. Use `tomorrow` for D.
+  - `ref` reproduces pass 1. Cluster 4729151 ran `ref` on the 8 A and C acquisitions of the sizing cluster (outputs
+    in `out/reftest/`). Against `stage3_r2_final`: 20,251 tracks in both, all gated tracks matched, largest difference
+    1.3e-6 mm.
+  - `stage3_chain.sh` failed on every sub-run before this date, because the test has no chamber-B files. It now runs
+    stage 3 with `--allow-missing` and clears `vt/`. Options: `PHASE4_DIR`, `PHASE4_OUT`, `PHASE4_SUBS`,
+    `PHASE4_FETCH`, `PHASE4_JOBS`.
+  - `compare.py` is the comparison script: `compare.py --cfg <dir>/final --ref <ref dir>/final --out <dir> --name <cfg>`.
+    Compare each configuration with `ref` built by the same chain, and `ref` with `stage3_r2_final`.
+  - A `ref` job takes about 3 times longer than an `all` job on A and C (A about 2 h, C 3.6 to 5 h on 4 cores),
+    because the ringing correction removes many early fits. The campaign costs about 10,000 to 12,000 core-hours.
+
+## Before submitting (re-audit 2026-11-24, roadmap 6.6)
+
+1. Correct the seed ranking (4.4): rank by significance and apply the cap after the wide-band veto.
+2. Make `--ringing` write the per-track waveform flag, and store the depth profiles in every configuration.
+3. Add a configuration with the n_TOF x-y time tolerance in the bundles (A 151, C 296, D 535 ns).
+4. Run D on run_104 (canon bundle `D_E2_beam_L1`), and add two or three beam-off cosmic sub-runs (for example of
+   run_149): they are the only angle truth.
+5. Give D the single switches before `all`. With every switch on, D lost 131 real late tracks on 4 acquisitions.
+6. Redeploy the code on lxplus (`deflect.py` and `ntof_stage3.py` changed after `e86028b5`), and regenerate the job lists.
+7. Free AFS space first: the quota was at 90 % and `log_pass1_2026-11` at 93 % of its name slots on 11-24.
+8. Re-run the injection test (`../t0_study/inject.py`) on the new code for 4.3 and 4.12: the five sub-runs hold only
+   158 (A) and 103 (C) two-track events from 12 ms on.
+
+What decides each switch is Table 2 of `../reaudit/report.html`.

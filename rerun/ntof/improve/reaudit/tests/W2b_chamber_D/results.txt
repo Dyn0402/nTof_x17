@@ -1,0 +1,39 @@
+W2b_chamber_D -- key numbers (scripts in this directory; caches: cache/, db_all.parquet, acq_occ.pkl)
+
+Q1  D hole x_local 0-60 (FEU 1 connector 4 = ch 192-255, connector 3 ch 128-141)
+  x_local = -(x_p0 - 199.29); pitch 0.78 mm.  x_local 16-24 = FEU1 ch 211-222 (conn 4 local 19-30).
+  E2 dead in 16-24: 211 212 216 221.  Weak, not masked: 206 210 215 217 220 222 227 (0.3 % vs 3 % on cosmics).
+  Change: live unmasked ch 205 209 213 219 223 go hot.  Cosmic occupancy 213: 3.2 % (runs 117-131) -> 6.4 % (133-134);
+  beam 2.2 % (124-132) -> 10.1 % (run_139).  Masked ch stay dead (cosmic 0.2-0.8 % before and after).
+  Last normal acquisition run_132 stat090_0010 260804_08H37_000; first changed run_133 cos_0000 260804_09H24_000.
+  Pedestal loaded: run_132 = pedestals_07-30-26_11-41-31, run_133-147 = pedestals_08-04-26_09-11-52 (taken in between);
+  pattern changes again at the 08-06 14:45 pedestal (run_149+: 209 hot, 205 cools).
+  Late (>=25 ms) gated per 1000 late triggers, x 16-24: E1 0.081, P1(84-132) 0.189, P2(135-162) 0.543.
+  Hole efficiency (late gated, |y|<150, vs linear interpolation of the edges): P1 8.8 %, P2 13.1 %; 16-24: 3.2 % -> 8.9 %.
+  Missing tracks in the hole: 26.6 % (P1) / 26.2 % (P2) of D's late gated |y|<150 sample (interpolation, inference).
+  Cosmic runs, fraction of D tracks in 0-60: 0.031-0.035 (117-131) -> 0.050-0.058 (133-142).
+  Hole, removed tracks (late): P2 censored 3658 (wall 0.20), d_faint 1908 (wall 0.73); gated 16667 (wall 0.99).
+  Separate: late gated x 60-120 per 1000 late trig: 38-40 (84-132) -> 22.9-35.1 (135-150), back to 38-40 from 152;
+  cosmic fraction x>60 flat (0.15-0.18) in 133-146.
+
+Q2  D angle scale from pointing (late gated wall, |e| 0.18-0.44, |y|<=125, holes excluded; T5 late_tracks.parquet)
+  pooled k mapped 0.946 +- 0.009, unmapped 0.922 (A mapped 0.990, C 0.965 same method)
+  per run (q2_scale_per_run.csv): d ln k / d ln v_t mapped 0.04 +- 0.08, unmapped 0.11 +- 0.09 (25 runs, chi2/ndf 1.2)
+  periods mapped: 84-106 0.946+-0.004, 107-132 0.949+-0.003, 135-147 0.933+-0.007, 150-162 0.944+-0.004
+  B-D cosmic lines (bd_lines.parquet, clean z, unmapped): 80-106 0.994+-0.007, 107-132 1.011+-0.011, 133-147 0.991+-0.008,
+  149-159 0.999+-0.006; dk/dln v_t 0.01 +- 0.10
+  tanx rms vs v_t: 0.36 +- 0.09 (corr 0.71) all x; corr(rms, frac x>60) 0.96; joint fit v_t coeff 0.015;
+  fixed windows: x -150..-20 +0.15 +- 0.06, x 60..150 -0.23 +- 0.10
+  held-out (odd runs) with constant k=0.9424 from even runs: binned residual centres
+  (0.019, 0.004, -0.007, -0.033) -> (-0.001, -0.010, 0.007, -0.012); core sigma 0.0694 -> 0.0712.
+
+Q3  B: FEU 5 ch 258/259 (x_local -48.0/-47.2, E2 dead) noisy 25-55 % occupancy to run_117, decaying 118-132, normal from
+  run_133 (same 08-04 09:12 boundary); B-y ch 13-63 (FEU 6 conn 1) co-noisy.  Late gated B in the box:
+  <=106 17.8 % of B (38x neighbour density), 107-132 4.2 % (17x), >=133 0.05 % (0.81x; cosmic 0.99x).
+  B-D lines with B in box: 9/780 (<=106), 0/264, 4/1749.
+
+Q4  4 D acquisitions run_145 (15H07_004, 16H07_004/007/008).  Late ref-gated with no gated cfg track within 5 mm: 131
+  (wall 0.985, dca15 0.54); same track kept but ungated 43: censored 16 (y_cens 0.18 -> 0.56), d_faint 5, not reco-gated 9,
+  acceptance 13; 93 % of the 43 have newly flagged y channels.  88 have no cfg track within 5 mm.
+  Added 69 (wall 0.957, dca15 0.41).  Paired 816: x_t0 shift +17.7 ns with no newly flagged channel (218),
+  +14.7 with dfy>0; y_t0 +10.0 ns with dfy>0 (586) vs +1.7-2.0 ns without.

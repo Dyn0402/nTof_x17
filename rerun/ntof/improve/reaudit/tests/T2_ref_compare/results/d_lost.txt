@@ -1,0 +1,30 @@
+late D: paired 816 only all 59 only ref 121
+-- only ref (lost by all): n 121, wall 0.98; event has a track in the other set 0.77
+no track                                                         28
+not reco-gated + different track (>5 mm)                         19
+censored                                                         16
+acceptance                                                       11
+not reco-gated + censored + d_faint + different track (>5 mm)    11
+not reco-gated                                                    9
+not reco-gated + d_faint + different track (>5 mm)                7
+d_faint + different track (>5 mm)                                 5
+d_faint                                                           5
+censored + different track (>5 mm)                                3
+censored + d_faint + different track (>5 mm)                      2
+not reco-gated + censored + different track (>5 mm)               2
+acceptance + censored                                             2
+acceptance + censored + different track (>5 mm)                   1
+   own x_cens_frac median 0.08, amp_norm median 0.92, x_p0 quartiles [132. 211. 262.]
+-- only all (added): n 59, wall 0.95; event has a track in the other set 0.75
+no track                                                         15
+not reco-gated + d_faint + different track (>5 mm)               10
+not reco-gated + different track (>5 mm)                          9
+not reco-gated                                                    7
+acceptance                                                        7
+d_faint + different track (>5 mm)                                 5
+not reco-gated + censored + d_faint + different track (>5 mm)     3
+d_faint                                                           1
+acceptance + d_faint + different track (>5 mm)                    1
+acceptance + different track (>5 mm)                              1
+   own x_cens_frac median 0.14, amp_norm median 0.87, x_p0 quartiles [136. 170. 238.]
+paired late D: x_t0 shift median 15.1 ns, y_t0 8.3 ns
