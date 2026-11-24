@@ -8,7 +8,6 @@
 #   papers/overleaf.sh status <paper>  who is ahead, what Overleaf changed, any hold (read-only)
 #   papers/overleaf.sh hold <paper> "why"   block every push (Stephan is editing); release lifts it
 #   papers/overleaf.sh release <paper>
-#   papers/overleaf.sh push <paper> --now   push even if Overleaf changed in the last 30 min
 #
 # The Overleaf project's git URL is under Menu > Integrations > Git; auth is user "git" and a
 # token from Account Settings > Git integration. Never forces: if Overleaf moved on, push is
@@ -17,9 +16,9 @@
 # Protections for shared editing (Stephan in Overleaf, Claude in this repo):
 #   - pull tags HEAD first (overleaf-backup/<paper>-<time>) and, on a conflict, aborts the merge so
 #     the repo is left clean and the conflicted files are listed. Nobody resolves it blindly.
-#   - push fetches first, refuses if Overleaf is ahead, refuses while a hold is set, refuses if
-#     Overleaf's last commit is under 30 min old (someone is probably editing; --now overrides),
-#     and prints exactly which files it is about to change.
+#   - push fetches first, refuses if Overleaf has edits this repo has not merged (it lists them and the files they
+#     changed), refuses while a hold is set, and prints exactly which files it is about to change. There is no time
+#     guard any more (removed 2026-11-24: it measured the bridge's commit time, which a fetch resets, not the edit).
 #   - hold/release: a tracked flag file papers/.overleaf-hold-<paper>, so it holds on every machine.
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -110,13 +109,13 @@ release)
 push)
   [[ ! -f papers/.overleaf-hold-$paper ]] || { echo "REFUSED: hold set: $(cat papers/.overleaf-hold-$paper)"; echo "(papers/overleaf.sh release $paper)"; exit 1; }
   git fetch -q "$remote"
+  # The check for edits: the fetch above brings every edit saved in Overleaf. If Overleaf has commits this repo has not
+  # merged, someone edited there since the last pull, and the push is refused until they are pulled.
   if [[ $(git rev-list --count HEAD.."$remote"/main) != 0 ]]; then
-    echo "REFUSED: Overleaf has commits this repo lacks. Run: papers/overleaf.sh pull $paper"; exit 1
-  fi
-  age=$(( $(date +%s) - $(git log -1 --format=%ct "$remote"/main) ))
-  if (( age < 1800 )) && [[ $flag != --now ]]; then
-    echo "REFUSED: Overleaf's last commit is $((age/60)) min old ($(git log -1 --format='%an: %s' "$remote"/main))."
-    echo "Someone is probably editing. Ask Dylan, or re-run with --now."; exit 1
+    echo "REFUSED: Overleaf has edits this repo has not merged:"
+    git log --format='  %h %an, %ar: %s' HEAD.."$remote"/main
+    echo "Files they changed:"; git diff --stat HEAD..."$remote"/main | sed 's/^/  /'
+    echo "Run: papers/overleaf.sh pull $paper"; exit 1
   fi
   split=$(git subtree split -q --prefix="$prefix")
   echo "This push changes in Overleaf:"; git diff --stat "$remote"/main "$split" | sed 's/^/  /'

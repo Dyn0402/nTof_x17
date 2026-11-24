@@ -111,12 +111,12 @@ and a push can reload a file under someone who has it open. `overleaf.sh` now gu
 |---|---|
 | `status <paper>` | read-only: Overleaf-only commits (who, when), any hold, the files a push would change |
 | `pull <paper>` | tags HEAD `overleaf-backup/<paper>-<time>` first; on a conflict **aborts the merge**, leaves the repo clean and lists the files |
-| `push <paper>` | fetches first; refuses if Overleaf is ahead, if a hold is set, or if Overleaf's last commit is under 30 min old (`--now` overrides); prints the files it changes |
+| `push <paper>` | fetches first; refuses if Overleaf has edits the repo has not merged (it lists the commits and the files they changed) or if a hold is set; prints the files it changes. The 30-minute guard and `--now` were removed on 2026-11-24 (Dylan): the guard read the git bridge's commit time, which a fetch resets, so it blocked pushes when nobody was editing |
 | `hold <paper> "why"` / `release <paper>` | tracked flag `papers/.overleaf-hold-<paper>`: blocks every push, on every machine, while Stephan works |
 
 Rules for Claude (also in the project `CLAUDE.md`):
 1. `status`, then `pull`, before editing any paper text. Pull again right before a push.
-2. Never use `--now`, never remove a hold, and never resolve a pull conflict, without Dylan saying so. Report it.
+2. Never remove a hold and never resolve a pull conflict without Dylan saying so. Report it.
 3. Don't edit a `sections/*.tex` that Overleaf changed since your last pull, unless Dylan asked for that section.
 4. Push small and often (a section or a figure at a time), not one big push at the end of a session.
 5. Figures are generated (`figures/*` from `make_figures.py`): if Stephan changed one in Overleaf, don't regenerate over it; ask.
@@ -164,8 +164,7 @@ A reorganised copy of Paper I, made after the audit in `paper1_audit/`. `paper1/
   Not shared with Stephan. Since 2026-11-23 the v1 project "MX17 Paper I", which Stephan edits, mirrors this folder too:
   `overleaf.sh status|pull|push paper1` works on `papers/paper1_v2/`. Day to day, work goes to v2 only
   (`pull`/`push paper1_v2`). Copy to v1 only when Dylan asks (Dylan, 2026-11-23): then `status paper1`, `pull paper1`
-  (this brings any edits by Stephan into `paper1_v2/`; if they conflict, stop and report), and `push paper1`. Never
-  `push paper1 --now` unless Dylan says so, since Stephan edits that project.
+  (this brings any edits by Stephan into `paper1_v2/`; if they conflict, stop and report), and `push paper1`.
 
 ## The feedback note and drafting from it (Paper I, from 2026-11-04)
 

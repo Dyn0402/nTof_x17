@@ -15,10 +15,27 @@
   - A spline map per mounting gives A 0.69 / 0.60 deg (pass 1 0.92 / 0.81), 17-35 % on A, B, C, D; E gains only on Y. A map does not transfer between mountings.
   - Reference-free correction (bow-block mesh + gap from `q_u90`) recovers 40-90 % of the map gain; amplitude 0.37-0.47 on B, D, A golden, 0.2 on C and A 6-25.
 - **Paper I v2** (commit `9181efb0`): `sections/A4b_surfaces.tex` rewritten; `sections/05_gas.tex` updated between Dylan's two `\todo` markers (left in place); three new figures `gap_mountings`, `gap_driftlines`, `gap_tiltpred` (`rerun/paper1_gap/audit/paperfig.py`, entries in `figures.toml`); `gap_surfaces` is no longer included. Compiles (74 pages with notes), no undefined references.
-- **Overleaf:** pulled Dylan's 11-24 edit of `paper1_v2` (his two markers and a caption fix). The add/add conflict in `A4b_surfaces.tex` was resolved with the repo version on Dylan's OK (Overleaf's copy was the unedited 11-23 push). The push of these changes to the `paper1_v2` Overleaf project was held by the 30-minute guard of `overleaf.sh` and is done by a follow-up command of this session; check `papers/overleaf.sh status paper1_v2` (it should list no file a push would change).
+- **Overleaf:** pulled Dylan's 11-24 edit of `paper1_v2` (his two markers and a caption fix). The add/add conflict in `A4b_surfaces.tex` was resolved with the repo version on Dylan's OK (Overleaf's copy was the unedited 11-23 push). Pushed to the `paper1_v2` Overleaf project (6 files: `sections/A4b_surfaces.tex`, `sections/05_gas.tex`, `figures.toml`, the three new figure PDFs); `status paper1_v2` shows nothing left to push. The 30-minute guard of `overleaf.sh` and `--now` were removed on Dylan's word: a push is now refused only when Overleaf has edits the repo has not merged, or a hold is set (`papers/README.md`, project `CLAUDE.md` updated).
 - **n_TOF:** results sent to session `n_tof-tracking-status-reaudit`; its answer is recorded in the audit note ("Decisions and follow-up") and in `rerun/ntof/improve/reaudit/report.html` §2.6. The n_TOF side is that session's work, not this workstream's.
 
 **In progress / where it stopped:** nothing half-done. No reconstruction code, bundle or pass product was changed. The prototype maps exist only in the audit work directory.
+
+**What has to be rerun, and what does not:**
+
+| product | rerun? | how |
+|---|---|---|
+| waveform fits (pass 1: p0, w, t0, charge) | no | the fit does not use v, the tilt or the scale; `w` is the input of the map |
+| per-row w0, kw | yes | after the map is in the bundle, as `rerun/w12/set_w0kw.py --bow-json` does for the bow block |
+| angle columns of every bench table (`x_tan_theta`, `y_tan_theta`, `*_theta_deg`, `slope_reliable`, mid-gap position, `bow_h` users) | yes, table level | `wft.reco.bow_pairs` (vectorised) once it knows the new block; the pattern is `rerun/calib/bow/bow_finalize.py` |
+| per-mounting maps | new | `rerun/paper1_gap/audit/a2_lib.py` (fit), one per mounting, C per row |
+| cross-validated angle columns for the quoted numbers | new | 5 time blocks per mounting, constants refit inside the fold |
+| gate / transfer check | yes | every row >= 2,000 events: angle s68, far fraction, position s68 against pass 1 |
+| Paper I numbers and figures that use the angle | yes | list below |
+| efficiency, charge, gain, time resolution, position at the mesh | no | they do not use the angle (mid-gap and depth-dependent positions do) |
+| SPS chamber E beam data | no decision | no reference-matched gain on E's X view; leave on the bow block |
+| n_TOF products | not this workstream | `rerun/ntof/improve/reaudit/` (in-situ spline map candidate `tests/W2a_map_r3/`) |
+
+**Paper I items that depend on the angle** (regenerate after the maps are installed; producers in `papers/paper1_v2/figures.toml`): `angle_resolution_v2` (`papers/paper1_v2/figs/make_angle_resolution_v2.py`; numbers `rerun/paper1_res/angle_resolution.py`, `NUMBERS_RUNDOWN.md` items on the angular resolution and the five-chamber table), `gain_scan` (angle panel), `edge_turnon` (angle bias in the edge zone), `two_track_separation` and the pointing numbers if they use table angles, `det_a_timeseries` (if it plots the angle), `bow` (the block stays, the text around it changes), `a1_table_rows_v2.tex`. **The paper quotes the angle resolution with its own selection** (`03_angles interior_good`: A 0.99 / 0.90 deg), which is not the audit's selection (|tan| <= 0.6, 30 mm interior: 0.92 / 0.81 deg). Recompute with the paper's producer; do not copy the audit's numbers into §6.
 
 **Next steps (the re-finalization):**
 1. **Read** `rerun/paper1_gap/audit/AUDIT_2026-11-24.md`, then `results/a2_RESULT.md` (the spline map), `results/r3_RESULT.md` (all chambers, the mounting list, the flags) and `results/c_RESULT.md` (why maps do not transfer).
@@ -42,7 +59,7 @@
 - The straight-line fit weights the mesh end: tau = grad h + a grad g with a ~ 0.4, not 1/2. The reference-free route is documented but not needed on the bench, where reference tracks exist.
 - The telescope-free check (C and D in the same events) cannot see the 60-80 % of the correction that is common to both chambers. The drift-time prediction and the magnitude argument cover it (audit note §3.3).
 - Open physics, not blocking: 0.2 deg of reproducible curl-free fine tilt not explained by the gap gradient; the X-view velocity map varies more than the gap explains; the gap map flattens below 700 V; what moves the foil is unknown.
-- **Shared checkout:** another background session commits to `main` in this same working tree. Stage by path, never `git add -A`, and do not switch branches in place.
+- **Shared checkout:** another background session commits to `main` in this same working tree. Stage by path, never `git add -A`, and do not switch branches in place. On 2026-11-24 that session (n_TOF re-audit) had uncommitted edits in `wft/reco.py`, `wft/seed.py`, `ntof_tracking/wft_beam.py`, `rerun/ntof/stage3/quality_join.py` and `sept26_prelim_analysis/build_tracks.py`: the re-finalization also touches `wft/reco.py` (`tan_bow`, `bow_pairs`), so check `git log -- wft/reco.py` and coordinate before editing it.
 - **Work directory** (staged inputs, all test outputs, the figure cache; 1.2 GB): `/media/ucla/work/claude-jobs/e1a7a26e/gap`. The audit scripts take it as their `<work>` argument or have it as default. It is regenerable: `rerun/paper1_gap/README.md` "How to run" for the 11-23 inputs, `audit/results/COMMON_brief.md` for the layout, `pass1_all/` = the 14 `bow_gate_table.parquet` of `Analysis_pass1` with their bundles and alignments, `audit/r4/eos/` = the event tables of the det3 scans (`audit/r4_01_fetch.py`). Keep it until the re-finalization is done.
 - Reports and figures are also on EOS: `/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/paper1_gap/audit/`.
 
