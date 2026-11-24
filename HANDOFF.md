@@ -1,8 +1,15 @@
 # Handoff
 
-## Chamber A gap, surfaces and angle map: audited; bench re-finalization with per-mounting maps to do — updated 2026-11-24 (dylan-MS-7C84)
+## Chamber A gap, surfaces and angle map: audit closed; bench re-finalization with per-mounting maps to do — updated 2026-11-24 (dylan-MS-7C84)
 
-**Resume:** audit questions all closed (but #20, n_TOF); next: bench re-finalization with per-mounting maps + censored-track rule, then Paper I §6.
+**Resume:** audit closed; first fit Run 2's column (sum Run 1+2 at 355 V/cm), then the bench rerun with per-mounting spline maps.
+
+**Dylan's decisions (11-24 night) for the rerun:**
+- **Sum Run 1 and Run 2 at 355 V/cm** (Fig. 7 c, Fig. 8, water fit, v x T gap), as elsewhere. Today only Run 1 is in (S4 re-check stack, T 779.4 +- 7.3 ns, `pg_twov.golden_point`). Run 2's head-on cache exists (`/media/ucla/work/claude-jobs/e1a7a26e/gap/build_g_det3_wknd/out/g_det3_wknd/headon.pkl`), but the S4r fit inputs (pass template `arrays.npz`, masks) were in a deleted scratch dir: rebuild per `rerun/calib/s4/s4r_specs.py` (pass bundle of the p2 row from EOS Analysis_pass1, mask = bundle dead + strip_gain_audit), fit the `mask_in30_pass` arm with `s4f_fit.py` on both caches (or one combined), then update `golden_point()` and requote §5.1/§5.2.
+- **Rows without a gate table** (6-17, 6-22 / 6-23 det3, 6-26 quick and hv_scan): treat them the same as the other runs (build their gate tables and maps) unless that hits a real problem. (6-22 det3 is 70 % censored by the depth grid: that is a real problem for its angles; say so if it stays on the bow block.)
+- **Censored tracks:** rescale per row on C, exclude on E and D (as recommended).
+- **Chamber E:** one map for both days (its cathode did not change, r = 0.97).
+- Fig. 7 (c) legend split done (diamond alone at top left).
 
 **Evening 11-24 (session `cosmic-bench-drift-windows`, dylan-MS-7C84):**
 - **Item 7 answered:** the low-voltage flattening is the end of the recorded waveform. At 500 V the drift column (1800 ns) is longer than the record after the track start (~1730 ns), at 300 V twice as long; every quantile then measures 2019 ns - t0 (d q_u90/d t0 = -1.2 +- 0.3 at 500 V, 0 at >= 700 V), and a fixed gap shape cut at the record end reproduces the flat map. R4 points 4-5 withdrawn. `rerun/paper1_gap/audit/q7_window.py`, `results/q_RESULT.md` (fourth round).

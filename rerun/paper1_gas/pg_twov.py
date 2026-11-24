@@ -248,7 +248,10 @@ def fig():
     hg = ax.errorbar(GP['E'], GP['gap'], yerr=GP['gap_err'], fmt='D', ms=3.8, color=ps.INK, zorder=5)
     rows.append(dict(panel='c', drift_V=1000, E=GP['E'], gap_mm=GP['gap'], err=GP['gap_err'], v_ang=GP['v_ang'],
                      v_timing=GP['v'], T_ns=GP['T']))
-    ax.legend([hb, hh, hg], ['mean of the four', r'geometric gap $L/\tan\theta$', '355 V/cm (Run 1)'], loc='lower right', handlelength=1.4)
+    # Dylan 2026-11-24: legend split, the Run 1 diamond on its own at the top left
+    l1 = ax.legend([hb, hh], ['mean of the four', r'geometric gap $L/\tan\theta$'], loc='lower right', handlelength=1.4)
+    ax.add_artist(l1)
+    ax.legend([hg], ['355 V/cm (Run 1)'], loc='upper left', handlelength=1.4)
     ax.set_xlim(150, 420); ax.set_ylim(21.5, 34)
     ax.set_xlabel(r'drift field $E$ (V/cm)'); ax.set_ylabel(r'gap $g = v_\mathrm{d}\,T$ (mm)')
     hs = [Line2D([], [], color=shade[Vd], marker='o', ms=3.5,
