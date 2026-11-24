@@ -99,6 +99,14 @@ the lines just pushed (the "add/add bridge conflict"). If that happens on a proj
 script, `papers/overleaf.sh adopt <paper>` records Overleaf's tip as merged. It refuses unless Overleaf's text equals
 a version the repo already committed, so it can never drop an Overleaf edit.
 
+**Since 2026-11-24 (evening) a push does not use `git subtree split`.** The join commits of the first version carried
+git-subtree trailers. A join is copied to Overleaf with the next push, so the same trailers appeared twice in the
+history, and `git subtree split` stopped with `fatal: cache for <commit> already exists!`. A push now sends one commit
+with the repo's `papers/<paper>` tree and Overleaf's tip as its only parent (`overleaf_commit` in the script). It is
+still a plain fast-forward, and it is still refused unless every Overleaf commit is merged in the repo, so no Overleaf
+edit can be lost. Joins no longer carry trailers. The section below on the recursion limit applies only to the
+one-time `link`, which still uses `git subtree split`.
+
 **"Maximum function recursion depth (1000) reached"** (seen on the laptop, 2026-10-23): git runs `git-subtree`
 under dash, which caps recursion, and this repo's history is deep enough to hit it. Run the split under bash, then
 push the split commit (still a plain fast-forward, never forced):

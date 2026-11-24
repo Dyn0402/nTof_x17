@@ -47,18 +47,31 @@ clean() {
   git diff --quiet && git diff --cached --quiet || { echo "commit or stash your changes first"; exit 1; }
 }
 
+# The commit a push sends: this repo's $prefix tree, with Overleaf's current tip as its only parent, so the push is
+# always a fast-forward and never forces. The push is refused earlier unless every Overleaf commit is merged here, so
+# nothing of Overleaf's is dropped. The message lists the repo commits since Overleaf's tip that touched $prefix.
+# (This replaces `git subtree split`, which fails on this history; see join below.) Prints nothing if Overleaf
+# already has this text.
+overleaf_commit() {
+  local tree; tree=$(git rev-parse "HEAD:$prefix")
+  [[ $tree == $(git rev-parse "$remote/main^{tree}") ]] && return 0
+  local msg; msg=$(printf 'Push from the repo (%s)\n\n%s' "$(git rev-parse --short HEAD)" \
+    "$(git log --no-merges --format='- %s' "$remote"/main..HEAD -- "$prefix" | cut -c1-200)")
+  git commit-tree "$tree" -p "$remote/main" -m "$msg"
+}
+
 # Record an Overleaf commit as merged into this repo's history, without changing any file: a commit with this repo's
 # tree, parents HEAD and <split>, and the git-subtree trailers. Without it, the next pull merges from an older base and
 # every line edited since then conflicts with itself (the "add/add bridge conflict" of 11-23 and 11-24). The branch is
 # moved with update-ref, so a dirty working tree (another session's edits) is not touched.
+# 2026-11-24 (evening): no git-subtree trailers in this message any more. A join is pushed to Overleaf with the next
+# push (as a copy of the commit), so its trailers appeared twice in the history and `git subtree split` stopped with
+# "fatal: cache for <commit> already exists". Pushes no longer use `git subtree split` (see overleaf_commit), and the
+# pull only needs the Overleaf commit as a parent.
 join() {
   local split=$1 head; head=$(git rev-parse HEAD)
   git merge-base --is-ancestor "$split" "$head" && return 0
-  local j; j=$(git commit-tree "$head^{tree}" -p "$head" -p "$split" -m "Record Overleaf $paper at ${split:0:8} as merged (no file change)
-
-git-subtree-dir: $prefix
-git-subtree-mainline: $head
-git-subtree-split: $split")
+  local j; j=$(git commit-tree "$head^{tree}" -p "$head" -p "$split" -m "Record Overleaf $paper at ${split:0:8} as merged (no file change)")
   git update-ref -m "overleaf.sh join $paper" "$(git symbolic-ref HEAD)" "$j" "$head"
   echo "recorded Overleaf ${split:0:8} as merged (${j:0:8}); push origin main to share it"
 }
@@ -111,8 +124,8 @@ status)
   echo "Overleaf-only commits (not in repo): $(git rev-list --count HEAD.."$remote"/main)"
   git log --format='  %h %an, %ar: %s' -n 5 "$remote"/main
   [[ -f papers/.overleaf-hold-$paper ]] && echo "HOLD: $(cat papers/.overleaf-hold-$paper)" || echo "no hold"
-  split=$(git subtree split -q --prefix="$prefix" 2>/dev/null || true)
-  [[ -n $split ]] && { echo "Files a push would change:"; git diff --stat "$remote"/main "$split" | sed 's/^/  /'; }
+  [[ $(git rev-parse "HEAD:$prefix") == $(git rev-parse "$remote/main^{tree}") ]] \
+    || { echo "Files a push would change:"; git diff --stat "$remote"/main "HEAD:$prefix" | sed 's/^/  /'; }
   ;;
 hold)
   echo "${3:-held by $(git config user.name) $(date +%F\ %H:%M)}" > papers/.overleaf-hold-$paper
@@ -136,7 +149,8 @@ push)
     echo "Files they changed:"; git diff --stat HEAD..."$remote"/main | sed 's/^/  /'
     echo "Run: papers/overleaf.sh pull $paper"; exit 1
   fi
-  split=$(git subtree split -q --prefix="$prefix")
+  split=$(overleaf_commit)
+  [[ -n $split ]] || { echo "nothing to push: Overleaf already has this text"; exit 0; }
   echo "This push changes in Overleaf:"; git diff --stat "$remote"/main "$split" | sed 's/^/  /'
   git push -q "$remote" "$split":refs/heads/main
   join "$split"
