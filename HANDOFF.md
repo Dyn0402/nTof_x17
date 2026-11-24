@@ -844,9 +844,9 @@ redeployed (dylan-cern-site 91d4386). Inputs on the desktop: $WORK_DATA/claude-j
 - Deck: `WORK_DATA=~/work_data .venv/bin/python papers/paper1/make_figures_deck.py --out <html>` then
   `dylan-cern-site/scripts/add-note.py <html> --slug mx17-paper1-figures --force --deploy`.
 
-## n_TOF tracking: spline map built, fixes in, test campaign deployed and validated, NOT submitted — updated 2026-11-24 (dylan-MS-7C84)
+## n_TOF tracking: test campaign ready to submit (validated + sized); pass-2 and Geant4 plans written — updated 2026-11-24 (dylan-MS-7C84)
 
-**Resume:** run the phase-4 test campaign from `rerun/ntof/improve/phase4/CAMPAIGN.md` (start at its section 4; sections 2–3 are done, see below).
+**Resume:** submit the phase-4 test campaign: `rerun/ntof/improve/phase4/CAMPAIGN.md` section 4 (sections 2–3 done, sizing record OK).
 
 **Goal:** Dylan, 2026-11-24: run with the spline map, make the fixes for the re-processing, write up what we do not
 understand and look into it before the rerun, then hand the campaign to another session. Dylan decides after the test
@@ -876,17 +876,35 @@ campaign whether a second pass runs, and with which switches.
 - **Validation cluster** (18 jobs, configurations `ref` and `all`, clusters 4736887/90/93/97, logs
   `p4jobs_77fb1d31/log_val_*`, outputs `out/val_ref`, `out/val_all`): all 18 finished, exit 0, 18 starts = 18 completions, no holds. `ref` reproduces `stage3_r3_final`: every gated track matched on A, C (2,106) and D (173), no track only in one set, largest difference 1.1e-5 mm in position, 1.4e-6 in tan, 1.4e-4 ns in t0 (tolerance level; outputs differ in the last digits between nodes). One small difference: D `censored_window` 0.5945 against 0.5932 of rows, which does not change `gated`. `all` ran without error and its candidates carry `rescued`, `q_profile`, `n_sig5`, `q_sig5`. Comparison: `$WORK_DATA/ntof_pass1/phase4/val_ref/compare/`. condor_budget size: A/C OK (ref median 66 min, max 4.7 h on run_139 C; peak memory 1.0 GB); D NOT OK only because each D log had 3 jobs (needs 5). The sizing records are on lxplus.
 
-**In progress / where it stopped:** nothing running. The campaign (1,848 jobs, about 10,000–12,000 core-hours) is not submitted.
+- **Sizing (evening):** the `condor_budget` record for `ntof_stage.sh` is OK, measured on all 18 validation jobs
+  together (`p4jobs_77fb1d31/val_all18.log`). The test campaign is 1,848 jobs and about 10,000–12,000 core-hours
+  (the shim's 6,600 is a lower bound). Pass 1 measured from its user log: 17,982 jobs, about 209,000 core-hours,
+  maximum 22.8 h per job (79 jobs over 16 h). So a pass 2 takes about 70 % of the 30-day budget, needs at least 9 days,
+  and needs `testmatch` for the long D rows. Details: `CAMPAIGN.md` sections 3 and 8.
+- **Chamber distance (new, evening):** `rerun/ntof/improve/reaudit/MESH_DISTANCE.md`. The survey measured the window
+  faces, and the as-built chamber has 5 mm of gas between the window and the cathode. Therefore the mesh is most
+  likely at 239.6 mm (A, C) and 239.1 mm (B, D), not 234.6. With that distance κ comes within 1 % of 1. The data angle
+  scale is 2.1 % too steep, and pointing is unchanged. Not applied.
+- **Geant4 plan:** no new simulation is needed. Retire the `nose` library, build a simulation bundle, pass a muon
+  closure gate, then re-digitise `ear2_L19p5` with `X17_G4_W_MESH=35.1` (about 1 h on the desktop) and redo the pair
+  response and the pose fits. An optional extension costs under about 1,000 core-hours per 1e9 neutrons, and its job
+  script must be rewritten for scratch and `eosio`. Details: `CAMPAIGN.md` section 10.
+
+**In progress / where it stopped:** nothing running. The test campaign is NOT submitted: the next session submits it.
 
 **Next steps:**
-1. `ssh lxplus lxstore status` (AFS was at 91 %); free space with `lxstore offload` if needed, ask Dylan before deleting old `code_*`.
-2. Submit per `CAMPAIGN.md` section 4 with `code=$HOME/x17rerun/code_77fb1d31`, `ref` first, sum of `maxmat` × 4 < 1,000 cores.
-   The D validation logs had only 3 jobs each, so `condor_budget size` says NOT OK for D alone; the A/C logs passed.
-   Size D on the combined validation logs or on the first `ref` D jobs before opening D wide.
-3. Post-process per configuration (`CAMPAIGN.md` section 6), judge each switch by the table of section 7 (written before the results), write the report, give Dylan the table.
-4. Dylan decides pass 2 (section 8).
+1. Submit the test campaign (`CAMPAIGN.md` section 4, `code=$HOME/x17rerun/code_77fb1d31`), `ref` first. Keep the sum
+   of `maxmat` × 4 below 1,000 cores, and use `tomorrow` for D.
+2. Post-process and judge each switch (sections 6–7), then write the report and give Dylan the table.
+3. **Dylan decides:** (a) pass 2 and its switches; (b) the chamber distance 239.6 / 239.1 mm, applied at the stage 3
+   of pass 2 with κ and the spline map refitted; (c) whether to extend the Geant4 statistics.
+4. Before pass 2: roadmap 4.8 in the code, `lxstore offload` of old `code_*` directories (AFS 91 %), and a test
+   cluster with long D rows for the `testmatch` flavour.
+5. The Geant4 re-digitisation (section 10), on the pass-2 switches.
 
 **Gotchas / decisions:**
+- Never run `condor_budget size` on a log with fewer than 5 jobs. The record is per executable, and a NOT OK result
+  overwrites the good one.
 - Every D beam row uses the L1 pin bundle (`D_E2_beam_L1`). The morning's sizing cluster used `D_E2_beam` (+36 ns on every D t0): its D numbers are void.
 - The spline map and the quality references of `stage3_r3_final` are held fixed in the test chain; after a real pass 2 the map is refitted (`run_r3_chain.sh`, minutes).
 - Dylan 11-23: A/C ringing rule `r28`; HOLD the EOS/ledger switch (roadmap 2.11) and the 6 h downstream rerun until the pass-2 decision; `t0_railed` stays a flag.

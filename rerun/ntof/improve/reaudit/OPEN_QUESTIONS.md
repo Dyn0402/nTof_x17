@@ -20,7 +20,7 @@ inference), **open** (we do not know).
 | 5 | Chamber A: gap gradients from muons and from beam tracks disagree along y | explained | none |
 | 6 | The beam pointing scale reads 0.95 to 0.99 | explained as an estimator effect, to about 5 % | none; the cosmic lines are the scale reference |
 | 7 | Geant4 events reconstruct 3 to 10 % steeper than their truth | explained | fix the digitisation before it is re-run (two items) |
-| 8 | The two Geant4 builds disagree on the chamber distance by 5 mm | open | settle from the drawings or state as a limitation |
+| 8 | The two Geant4 builds disagree on the chamber distance by 5 mm | answered (documents + κ test) | the data scale is 2.1 % steep: change the distance at the stage 3 of pass 2 (Dylan decides); retire the `nose` library |
 | 9 | Chamber D with every switch on lost real tracks | explained: the sizing run used a wrong pin | the campaign uses the right bundle; the D comparison must be redone there |
 | 10 | Chamber D loses tracks at x_local 60 to 120 mm in runs 135 to 150 | partly explained | none; state as a limitation |
 | 11 | All chambers lose about 6 % of tracks in runs 139 to 147 | partly explained | none found; state as a limitation |
@@ -150,12 +150,15 @@ by 5 to 6 %, so p1 is about 5 % low and p2 about 10 % low (an inference, not rec
 The "broken" y view of chamber C in the EAR2 product was one runaway fit that dominated a correlation computed without
 a cut. With |tan| < 0.5 the correlation is 0.983.
 
-## 8. The chamber distance in the two Geant4 builds (open)
+## 8. The chamber distance in the two Geant4 builds (answered in the evening, `MESH_DISTANCE.md`)
 
-The two Geant4 builds place the mesh at 234.6 mm and at 239.6 mm from the axis. The analysis assumes 234.6 mm
-(`D_PERP`). A 5 mm error in the distance is a 2 % error in every expected pointing tangent. Which value is right has to
-come from the drawings and the survey (`~/CLionProjects/MX17_Full_Geant/docs/HANDOFF_ARM_GEOMETRY.md`). We did not
-settle it.
+The two Geant4 builds place the mesh at 234.6 mm and at 239.6 mm from the axis. The analysis assumes 234.6 mm.
+- **The answer.** The survey measured the mylar window faces, and the as-built chamber has a 5 mm gas gap between the
+  window and the cathode. Therefore the mesh is most likely at 239.6 mm (A, C) and 239.1 mm (B, D).
+- **A check in the data.** κ comes within 1 % of 1 in all four views when the A–C separation is set to 479.2 mm.
+- **The consequence.** The data angle scale is 2.1 % too steep, and pointing is unchanged. The fix is a geometry
+  constant plus a refit of the map and of κ, with no re-reconstruction. Dylan decides.
+- **For Geant4.** The `nose` library is retired. No new simulation is needed.
 
 ## 9. Chamber D with every switch on (explained: a wrong pin)
 

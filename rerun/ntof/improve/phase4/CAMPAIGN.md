@@ -57,6 +57,23 @@ candidate of rank 3.
 
 ## 3. Before submitting
 
+**Status on 2026-11-24 evening: items 2 to 5 are done**, and the sizing record passes. What was done:
+- Code `77fb1d31` is deployed slim at `lxplus:~/x17rerun/code_77fb1d31`. The osc bundles are on EOS, with the L1 pin
+  checked. The job lists are in `lxplus:~/x17rerun/ntof/pass1/p4jobs_77fb1d31/`.
+- The validation cluster ran 18 jobs (clusters 4736887, 4736890, 4736893 and 4736897). All 18 finished with exit code 0:
+  18 starts, 18 completions, no holds. `ref` reproduces `stage3_r3_final` on A, C and D, with every gated track
+  matched and the largest differences at 1e-5 mm and 1e-4 ns. `all` runs, and its outputs carry the new columns.
+- Sizing: `condor_budget size val_all18.log --all --exe ~/x17rerun/ntof/pass1/ntof_stage.sh --jobs 1848`.
+  `val_all18.log` concatenates the four validation user logs, so that D's 6 jobs count together with A/C's 12.
+  The verdict is OK: 4 CPUs (efficiency 100 %), peak memory 1.0 GB, longest job 4.7 h, `workday`.
+  - The shim's estimate of 6,600 core-hours is a lower bound, because the validation set is mostly short
+    acquisitions. Plan on 10,000 to 12,000.
+  - D's large beam acquisitions take 6.9 to 7.6 h, so D still needs `tomorrow`.
+  - **Do not run `condor_budget size` on a 3-job log.** The record is per executable, shared by A/C and D, and a
+    NOT OK result overwrites it. If the record goes bad, rerun the command above.
+- AFS: 0.9 GB free (91 %) on 2026-11-24. That is enough for the test campaign, whose logs come to under 50 MB. Use
+  one new log directory per submission. Never use `log_pass1_2026-11`, which is at 93 % of its name slots.
+
 Use the `condor-campaign` skill for the submission itself. Read `~/.claude/CLAUDE.md`, section "lxplus storage".
 
 1. **AFS space.** The quota was at 90 % on 2026-11-24 (9.39 of 10 GB), and `~/x17rerun/ntof/pass1/log_pass1_2026-11`
@@ -172,9 +189,23 @@ give Dylan the table. He decides the second pass.
 ## 8. If Dylan decides a second pass
 
 - **Configuration:** the adopted switches. `reco.STORE_PROFILES=1` in any case.
-- **Size:** pass 1 was 15,550 jobs (3,937 acquisitions on four chambers) plus about 2,550 re-runs of D. Measure the
-  pass-1 core-hours from its user logs before submitting (`condor_budget size` on the logs under
-  `~/x17rerun/ntof/pass1/log_pass1_2026-11`); do not extrapolate from run_145, whose acquisitions are the largest.
+- **Size, measured 2026-11-24 from the pass-1 user log** (`lxplus:~/x17rerun/ntof/pass1/log/ntof.log`, 134 MB).
+  - **Jobs:** 17,982 completed, in 24 clusters, all with exit code 0. Another 948 attempts were evicted, held or
+    aborted, and they cost 1,561 wall-hours.
+  - **Run time:** 52,246 wall-hours on 4 cores, so about **209,000 core-hours**, with 214,000 CPU-hours used. Per job,
+    the median is 2.2 h, p90 6.4 h and the maximum 22.8 h. 556 jobs ran over 8 h, 79 over 16 h and 8 over 20 h.
+  - **Budget:** a pass 2 at that size takes about 70 % of the 300,000 core-hours per 30 days. At the cap of 1,000
+    cores it needs at least 9 days of wall time. It does not fit in the same 30-day window as a second large campaign.
+    The ringing correction makes A and C cost about a third, so pass 2 is probably 150,000 to 200,000 core-hours.
+    Measure the ratio per configuration from the test campaign (core-hours of `all` over `ref` per chamber, from the
+    user logs) before submitting.
+  - **Flavour:** the shim refuses a time limit below 1.2 × the longest test job. A 22.8 h job needs 27 h, which is
+    above `tomorrow` (24 h). Give the rows whose pass-1 job ran over 16 h `testmatch` (72 h), in their own
+    submission, or split those acquisitions. Size with a test cluster that contains such long rows.
+  - **AFS:** before pass 2, free space with `lxstore offload` (it copies to EOS and leaves a link), for example the old
+    `~/x17rerun/code_*` directories. Ask Dylan before deleting anything. Keep each log directory below 25,000 entries.
+- **Before pass 2, also:** roadmap item 4.8 (the events table pairs the plane winners; `tan_err` at its floor; the
+  `dt_xy` bench key). It only acts through a new reconstruction, so it has to be in the code before the pass.
   The machinery is pass 1's: `rerun/ntof/NTOF_PASS_PLAN_2026-11-02.md` (P6), `rerun/ntof/condor/`, the ledger
   (`ntof_ledger.py`, `ledger_canon.json`).
 - **Bundles:** the canon bundles. Every D beam row on the L1 pin (`D_E2_beam_L1`).
@@ -184,7 +215,9 @@ give Dylan the table. He decides the second pass.
      `rerun/ntof/improve/run_r3_chain.sh` with the new roots (its header gives the variables);
   3. the quality flags with the decided rules: `quality_join.py apply --low-charge r28 --b-box-cut`;
   4. the switch on EOS and in the ledger (roadmap 2.11), then `rerun/ntof/PASS1_DOWNSTREAM.sh` (about 6 h);
-  5. the Geant4 digitisation with the same switches (after `OPEN_QUESTIONS.md` item 7).
+  5. the Geant4 digitisation with the same switches (section 10).
+- **The chamber distance** (`../reaudit/MESH_DISTANCE.md`). If Dylan adopts 239.6 / 239.1 mm, change it before step 1.
+  The stage 3 of pass 2 is the natural place, and the spline map and κ are refitted after it.
 
 ## 9. Gotchas
 
@@ -199,3 +232,44 @@ give Dylan the table. He decides the second pass.
 - `wft/tests/test_two_track.py::test_accepted_split_replaces_its_parent` can fail under load and pass alone;
   `test_profile_is_retired` fails on main.
 - The desktop has no xrootd binaries: the chain streams `tar` over `ssh lxplus`. Reach lxplus only as `lxplus`.
+
+## 10. The Geant4 re-digitisation (planned 2026-11-24)
+
+**No new Geant4 simulation is needed.** The steep reconstruction of the Geant4 events (`../reaudit/OPEN_QUESTIONS.md`
+item 7) comes from the digitisation and the bundle, not from the simulation. The `ear2_L19p5` library already has the
+real EAR2 beam and the as-built chamber geometry (`../reaudit/MESH_DISTANCE.md`).
+
+**What to do:**
+1. **Retire the `nose` library.** Its beam profile is the resolution function (memory: EAR2 beam profile, 10-14), and
+   its chambers sit 5 mm too close to the axis. Re-digitising cannot fix either.
+2. **Build a simulation bundle**, copied from `A_E2_beam` and `C_E2_beam`: kw = 1, no bow block, no angle map, v equal to
+   the simulated velocity (v_true 38.6 for A, 28.1 for C, as printed by `run_digi.py`). Keep the noise, kernel, pins
+   and hot lists. This is new code (a few dozen lines next to `ntof_cosmics/g4_digi/run_digi.py`).
+3. **Muon closure gate** before the neutron library: the median of reco tan / true tan, taken directly from w, must be
+   1.00 ± 0.005 per chamber and view (`smk_mu_A_pass1` pattern; X2 measured 0.994 / 0.998). Use the median, never a
+   line fit, since outliers pull the fit.
+4. **Re-digitise `ear2_L19p5`** with `X17_G4_W_MESH=35.1`, the simulation bundle, and the same seeder and
+   reconstruction switches as the data pass: `bash ntof_cosmics/g4_digi/run_pass1.sh ear2_L19p5`, with the bundle
+   argument changed. The step files are `/media/dylan/data/x17/ntof_cosmics/g4_digi/steps_ear2_L19p5` (490 MB, also
+   on EOS `full_sim/angle_scale/steps_ear2_L19p5`). Cost: about 30 min per chamber on the desktop (14 processes),
+   giving about 10,000 wall events per chamber. No condor.
+5. **Redo what rests on it:** the EAR2 pair response (`pair_response.py`; today p1 0.762 / 0.728, p2 0.398 / 0.433),
+   the capsule pose fits with `POSE2_LIB=ear2_L19p5`, the Geant4 rows of the tracking audit, and the data/G4 ratio of
+   same-chamber pairs (about 0.10). Reject fits with p0 outside the strip plane or |tan| > 5
+   (`OPEN_QUESTIONS.md` item 15) when reading ungated rows.
+6. **When to run it:** after Dylan has chosen the pass-2 switches, so that the data and Geant4 go through the same
+   seeder. A preliminary run on the pass-1 switches is cheap and shows the size of the fix now.
+
+**Only if more statistics are wanted** (Dylan decides; the present library is 1e9 neutrons, 100 jobs):
+- **Cost:** about 1 CPU-hour per 10 M neutrons, measured on cluster 4454431 (100 jobs, median 0.9 h, maximum 1.6 h,
+  1 CPU, 2 GB). The extraction of steps and the gap/wall reduction come on top (`make_ear2_subs.sh`; the reduction
+  peaks at about 12 GB, so it is charged as 4 to 5 cores). In total this is under about 1,000 core-hours per 1e9
+  neutrons. The output is about 5 GB of ROOT per job (510 GB for the present 100).
+- **Rewrite the job script first.** `~/condor/mx17_neutrons_thermal_ear2_L19p5/run_neutron_job.sh` writes
+  `-o /eos/...` straight through FUSE. That is the failure of 2026-11-10 (a truncated ROOT file with exit code 0).
+  Write the file in `$_CONDOR_SCRATCH_DIR`, run the steps extraction and the reduction in the job, `eosio out` the
+  parquet files (and the ROOT file only if wanted), and delete the scratch files. The hook and the `condor_submit`
+  shim refuse the old form.
+- **Use new seeds**, not those of `neutrons.sub` (jobs 000 to 099). The 400-job extension 4465059 was removed by hand
+  on 10-15 after an hour, and its seeds (jobs 100 and up) were never used.
+- More than 50 jobs needs a test cluster sized with `condor_budget size` (the `condor-campaign` skill).
