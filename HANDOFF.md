@@ -760,6 +760,12 @@ redeployed (dylan-cern-site 91d4386). Inputs on the desktop: $WORK_DATA/claude-j
 ## n_TOF tracking: test campaign ready to submit (validated + sized); pass-2 and Geant4 plans written — updated 2026-11-24 (dylan-MS-7C84)
 
 **Resume:** submit the phase-4 test campaign: `rerun/ntof/improve/phase4/CAMPAIGN.md` section 4 (sections 2–3 done, sizing record OK).
+**FIRST, before anything else (Dylan, 2026-11-24 evening):** Dylan was not aware of the chamber-distance change (mesh at
+239.6 / 239.1 mm instead of 234.6 mm, `rerun/ntof/improve/reaudit/MESH_DISTANCE.md`). Open the session by explaining it
+to him in his style: what was measured (the survey points are the window faces), what the as-built chamber adds (5 mm
+of gas between window and cathode), how that moves the mesh, what it does to the angle scale (2.1 % steep), to κ and to
+pointing (unchanged), and what applying it involves (geometry.py / run_config.json at the stage 3 of pass 2, then κ and
+the spline map refitted). He decides only after that explanation.
 
 **Goal:** Dylan, 2026-11-24: run with the spline map, make the fixes for the re-processing, write up what we do not
 understand and look into it before the rerun, then hand the campaign to another session. Dylan decides after the test
@@ -814,6 +820,24 @@ campaign whether a second pass runs, and with which switches.
 4. Before pass 2: roadmap 4.8 in the code, `lxstore offload` of old `code_*` directories (AFS 91 %), and a test
    cluster with long D rows for the `testmatch` flavour.
 5. The Geant4 re-digitisation (section 10), on the pass-2 switches.
+
+**From the bench angle re-finalization (2026-11-24, session cosmic-analysis-reprocessing-plan; bench report
+`rerun/calib/phimap/RESULT.md`, `rerun/calib/phimap/map1/GATES.md`):** the bench confirms the r3 approach (a spline map
+per mounting gains 17-35 % on A-D; the n_TOF r3 map gains 16-28 % on held-out cosmic lines, the same size). The bench
+found three things the r3 fit should be checked for, not yet verified on n_TOF:
+1. **One map per mounting.** On the bench the cathode foil changes shape every time a chamber is mounted, and a map from
+   one mounting gives nothing on another (`rerun/paper1_gap/audit/results/c_RESULT.md`); only the mesh term is static.
+   Any n_TOF chamber that was opened or moved during the campaign needs a map per period. First suspect: the 27 July
+   access (chamber A x-view connector 8 repaired). Test with the cosmic lines: fit the map before and after, compare
+   (held out), and check whether one map over the whole campaign loses resolution.
+2. **Tracks railed at the end of the depth grid.** On the bench they read 0.3-1.2 deg too flat and spoiled the fits on
+   C, D and E (fractions 1-35 % per row); they were excluded from every map fit (C rescaled per row, D and E flagged).
+   Flag from `x_q_uend` / `y_q_uend` reaching K x 60 ns. Check their fraction in the n_TOF cosmic lines and exclude them
+   from the r3 fit if it matters.
+3. **Edge zone and cross-validation.** The bench map, clamped at its fit domain, made the edge (< 30 mm from the border)
+   worse on four of eight maps, so the bench ships the map only inside its domain and keeps the bow block outside
+   (`wft/bow_phi.py`, `outside: "block"`). Check how r3 behaves near the edges (its clamp is to the 0.1-99.9 percentile
+   of the training lines) against held-out lines in an edge bin. Quote held-out numbers only (r3 already does).
 
 **Gotchas / decisions:**
 - Never run `condor_budget size` on a log with fewer than 5 jobs. The record is per executable, and a NOT OK result
