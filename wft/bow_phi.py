@@ -27,6 +27,14 @@ Layout of the block (JSON lists only; tensors are flattened with the U index run
     cx, cy           constant tilt of each view [tan]
     sx, sy           KS*KS coefficients of S_x, S_y (S, not 1 + S); a single coefficient when KS = 0
     provenance       free text / dict (mounting, rows, fit script), not used
+    outside          optional: 'clamp' (default: a track outside the domain is evaluated at the nearest domain point) or
+                     'block' (interior only: outside the domain the view keeps the plain bow block, with the constants of
+                     ``fallback``)
+    domain_x, domain_y   optional, per view: {'U': [lo, hi], 'W': [lo, hi]}, the region where that view uses the map when
+                     outside = 'block' (default U_domain, W_domain).  Chamber D's X view: U >= 0 (x >= 200 mm).
+    fallback         required with outside = 'block': {'w0': {'x', 'y'}, 'kw': {'x', 'y'}} [um/ns, as in the bundle], the
+                     per-row constants the plain bow block was calibrated with (pass 1).  The bundle's own w0, kw are the
+                     ones measured WITH the map, so they cannot be used for the plain block.  v_drift is common.
 The constants cx, cy and the mean of S are absorbed by the per-row w0 and kw, which are measured after the map is applied.
 """
 import numpy as np
@@ -85,6 +93,22 @@ def validate(phi: dict, where: str = '') -> None:
     for nm in ('phi', 'sx', 'sy'):
         if not np.all(np.isfinite(phi[nm])):
             raise ValueError(f'{tag}: non-finite {nm}')
+    out = phi.get('outside', 'clamp')
+    if out not in ('clamp', 'block'):
+        raise ValueError(f"{tag}: outside must be 'clamp' or 'block', not {out!r}")
+    for v in 'xy':
+        d = phi.get(f'domain_{v}')
+        if d is not None:
+            for k in ('U', 'W'):
+                lo, hi = d[k]
+                if not (np.isfinite(lo) and np.isfinite(hi) and hi > lo):
+                    raise ValueError(f'{tag}: bad domain_{v}[{k}]')
+    if out == 'block':
+        fb = phi.get('fallback') or {}
+        for k in ('w0', 'kw'):
+            for v in 'xy':
+                if not np.isfinite(float((fb.get(k) or {}).get(v, np.nan))):
+                    raise ValueError(f"{tag}: outside = 'block' needs fallback[{k}][{v}]")
 
 
 def evaluate(phi: dict, U, W) -> tuple:
@@ -107,6 +131,22 @@ def evaluate(phi: dict, U, W) -> tuple:
         sx = np.einsum('ni,ij,nj->n', Su, np.asarray(phi['sx'], float).reshape(KS, KS), Sw)
         sy = np.einsum('ni,ij,nj->n', Su, np.asarray(phi['sy'], float).reshape(KS, KS), Sw)
     return ax, ay, sx, sy
+
+
+def interior_only(phi: dict) -> bool:
+    """True when a track outside the domain keeps the plain bow block (``outside`` = 'block')."""
+    return phi.get('outside', 'clamp') == 'block'
+
+
+def in_domain(phi: dict, U, W, view: str):
+    """Boolean array: (U, W) lies inside the region where ``view`` ('x' or 'y') uses the map (closed interval; NaN is
+    outside).  Per-view ``domain_<view>`` if the block has it, else U_domain and W_domain."""
+    d = phi.get(f'domain_{view}') or {}
+    (ulo, uhi), (wlo, whi) = d.get('U', phi['U_domain']), d.get('W', phi['W_domain'])
+    U = np.asarray(U, float)
+    W = np.asarray(W, float)
+    with np.errstate(invalid='ignore'):
+        return (U >= ulo) & (U <= uhi) & (W >= wlo) & (W <= whi)
 
 
 def from_a2_map(M: dict, provenance=None) -> dict:
