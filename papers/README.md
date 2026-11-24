@@ -93,6 +93,12 @@ Each paper is its own Overleaf project, kept in step with `papers/<paper>/` by `
 
 It never forces. If Overleaf moved on, a push is refused: pull first. Then push to `origin main` as usual.
 
+A push also records the pushed commit as merged in the repo (a "join" commit with no file change; push `origin main`
+afterwards so other machines have it). Before 2026-11-24 it did not, and the next pull after every push conflicted on
+the lines just pushed (the "add/add bridge conflict"). If that happens on a project pushed by an older copy of the
+script, `papers/overleaf.sh adopt <paper>` records Overleaf's tip as merged. It refuses unless Overleaf's text equals
+a version the repo already committed, so it can never drop an Overleaf edit.
+
 **"Maximum function recursion depth (1000) reached"** (seen on the laptop, 2026-10-23): git runs `git-subtree`
 under dash, which caps recursion, and this repo's history is deep enough to hit it. Run the split under bash, then
 push the split commit (still a plain fast-forward, never forced):
