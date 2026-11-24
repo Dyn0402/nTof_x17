@@ -20,9 +20,9 @@ with `WORK=/media/ucla/work/claude-jobs/e1a7a26e/gap`.
 2. **Item 17 (the mean gap).** The product of the ladder velocity and the median q_u90 is the same in every mounting of a
    chamber, even when the velocity changes by a large factor. On chamber A the gap is 28.2 mm on 6-25 (v = 22 µm/ns at
    500 V), against 28.1 and 28.2 mm in the golden mounting (v = 37 µm/ns at 1000 V). So the gap is a property of the
-   chamber and not of a mounting. The 1.8 mm shortfall from the design is shared by chambers C and E (28.3 and 28.2–28.5 mm).
-   It is therefore most likely a common construction height or a common scale of the estimator, and not something
-   particular to chamber A.
+   chamber and not of a mounting. *(Corrected in the third round: the statement first made here, that C and E share A's
+   1.8 mm shortfall, came from v × q_u90 normalised to chamber A. The independent v_ang × T table gives A 28.2, C 28.7,
+   D 29.7, E 29.5, B 31.1 mm, in agreement with the geometric gaps.)*
 3. **Item 10 (chamber C).** The audit had the order of C's rows reversed. In time order (short 00:58, longer 01:58, long
    06:03) the velocity *rose* from 16.8 to 18.9 to 25.0 µm/ns. Chamber D, on the same gas the same night, rose from 32.5
    to 35.3 to 38.1 µm/ns. The gas therefore dried out during the night, and the gain rose with it (saturated fraction 0, 33,
@@ -102,8 +102,8 @@ time is not censored. Table 2 normalises it to 28.2 mm on the golden mounting of
 The product holds to 1 % across a factor 1.7 in velocity on chamber A, across 14 % on E and across 15 % on D. This is a
 strong check that the ladder velocity and q_u90 measure the same drift. It also means the gap of chamber A is the same in
 the 6-25 mounting as in the golden mounting. We have no absolute measurement of the gap of any chamber, so the
-1.8 mm shortfall from the design value cannot be placed in the chamber or in the scale of the estimator. However, the
-shortfall is not particular to chamber A.
+1.8 mm shortfall from the design value cannot be placed in the chamber or in the scale of the estimator. (The other
+chambers' values in this table are relative to chamber A; the third round gives them independently.)
 
 ## Item 16: chamber E's two mountings
 
@@ -248,7 +248,105 @@ water on 6-25 and 0.90 % in the golden mounting, from the logged drift voltage a
 with the 0.68 % against 0.97 % of audit C. Table 2 adds that the gap is the same in the two mountings, so the lower
 velocity on 6-25 is gas and field, and not gap. Item 9 is confirmed.
 
+## Third round (same day, after Dylan's notes): gaps of all chambers, censored tracks, items 1, 3, 4, 5, 7, 12, 15
+
+Scripts: `gaps_all/make_gaps.py` (its `report.html` is the internal gap table), `q12_gain.py` (second test),
+`q12_views.py`, `q15_windows.py`, `q1_surfaces.py`, `q3_vx.py`, `q4_yamp.py`, `q5_curv.py`. Outputs in
+`$WORK/audit/q16/`.
+
+**Drift windows (Dylan, 11-24).** The drift windows could have been exchanged between chambers between runs, and there is
+no record of it. A change of a gap map between two mountings of one chamber may therefore be a different window.
+
+**The gap of every chamber** (`gaps_all/report.html`). We measured g = v_ang × T on every row that has a head-on stack,
+the method of Paper I's figure two_velocities (c). Rows taken in the first hours after a chamber was installed are left
+out, because attachment shortens the visible column there (C before 06:00 on 6-26, D's first row, E's first row on 6-23).
+
+| chamber | rows | g = v_ang × T (mm) | χ² | geometric gap (mm) |
+|---|---|---|---|---|
+| A | 4 (drift scan) | 28.24 ± 0.41 | 4.8 | 28.08 ± 0.19 |
+| B | 3 | 31.09 ± 0.29 | 1.3 | 31.12 ± 0.42 |
+| C | 8 | 28.71 ± 0.37 | 7.3 | 28.0 ± 1.0 (adopted) |
+| D | 7 | 29.70 ± 0.32 | 6.9 | 29.44 ± 1.12 |
+| E | 2 | 29.54 ± 0.40 | 2.0 | 30.48 ± 0.44 |
+
+The two independent methods agree for every chamber within 1 mm (E: 2σ). The chambers are therefore not all near 28 mm.
+They range from 28.2 (A) to 31.1 mm (B), around the design value of 30 mm. In Table 2 above, v × q_u90 was normalised
+to chamber A, so it only measured each chamber against A. Since the windows may have moved between chambers, the gap
+belongs to a chamber and a window together, and we cannot say which part comes from which.
+
+**Censored tracks: correction or exclusion.** The charge past the last depth bin was recorded. Censored tracks start
+about 300 ns into the 1920 ns readout window, and the depth grid ends 1440 ns after the start, so about 180 ns (3 bins)
+of recorded waveform are not used. A refit with K = 27 would use it, but that is a pass-level job. At table level, the
+pass-1 angle of the censored tracks against the reference has a slope below 1 (C: 0.89 to 0.96). Rescaling their angle by a
+cross-validated slope per row removes their median bias (C long Y: −0.80° → −0.10°, C longer X: −0.55° → +0.09°). It does not
+change the row's s68 (≤ 0.02°). On E 6-24 X and D short, the censored tracks are weak tracks (charge about 3 times lower),
+not long columns. There the slope is unstable (0.80 and 0.50) and the correction overshoots. Leaving them out improves E
+6-24 X from 2.14° to 2.03°. Recommendation: rescale per row on C, and exclude on E and D.
+
+**Item 12, second and third tests.** Three results:
+1. The drift-time estimator does not respond to the gain. In the mesh-voltage scan of the golden mounting the gain rises
+   by a factor of 6 from 445 to 495 V, while the median q_u90 of unsaturated tracks stays at 612–620 ns. Even at high gain
+   the response is at most about 0.05 per unit ln q. Therefore the fine gap map does not need a gain correction.
+2. The fine charge map follows the fine drift-time map with slope d ln q / d ln T = 1.30 ± 0.19 (unsaturated, cross-run,
+   r = 0.46). Two known effects predict part of it. The charge of a track is proportional to its path in the gas, which
+   is the gap: this gives 1 / (1 + β) ≈ 0.6. The drift field is lower where the gap is longer, and the drift scan gives
+   d ln q / d ln E = −0.12: this adds about 0.07. Together they explain about half (0.60–0.67).
+3. The link is the same in the two views: each view's charge map follows the other view's drift-time map as closely as its
+   own (slopes 1.19–1.36, ± 0.2), and the fine charge maps of the two views agree (slope 0.95 ± 0.02). So it is a property
+   of the position in the chamber, not of the electronics channels. The other half is a gain that is higher where the gap
+   is longer. A change of the amplification gap of about 0.3 µm per mm of drift gap would be enough, but we cannot test
+   this.
+
+**Item 15 and Dylan's window question.** If a window moved between chambers, its cathode relief should reappear in the
+other chamber's gap map, possibly turned by 90° or mirrored. We first removed the dependence of q_u90 on the track angle,
+since the telescope acceptance makes the angle mix vary across the chamber in the same way for every chamber. Then we
+compared every pair of mountings with one map turned in steps of 5°, with and without a mirror. The null distribution is
+the correlation at angles that are not multiples of 90°, which has the same smoothness. The known same-window pair, E 6-23
+and E 6-24, peaks at 0° with r = 0.73, but only z = 2.9 above its own null. Several pairs of different chambers reach
+similar levels: A golden with C at 0° (z 2.7), A golden with B at 180° (2.5), A golden with E 6-23 at 0° (2.7) and with E
+6-24 at 90° mirrored (2.9). The last two contradict each other, because E's two days match each other at 0°. The fine
+maps therefore have too few independent features to identify a window. **A swap can be neither confirmed nor excluded
+from the gap maps.** The similarity between chambers does not come from the angle mix, because it survives the
+correction.
+
+**Item 1 (the fine tilt not explained by the gap).** In the two-surface model the tilt potential is P = h + a g. So the
+fine mesh height can be predicted from the tilt map and the drift time alone, h = P − a g. We compared it with the fine
+mesh height of the position route (6 × 6 cells, golden mounting, quadratic removed, P from one run and h_pos from the
+other). With a = 0.2–0.4 the correlation is r = 0.65–0.66 and the slope of h_pos on the prediction is 0.88–0.91 (the model
+expects 1). The position-route map is noisy (run 1 against run 2: r = 0.31), so r = 0.65 is at its noise ceiling
+(about √0.31 = 0.56). The fine gap alone does not correlate with h_pos (r = 0.1). Therefore the fine tilt that the gap
+does not explain is a fine relief of the mesh, about 0.15 mm rms, and the position route sees it independently. The fine
+gap structure is on the cathode (audit B). Both surfaces carry fine structure.
+
+**Item 3 (X-view velocity map).** Saturation does not explain it: the angle scale of saturated tracks is 0.997 ± 0.003 of
+that of the unsaturated ones on X (1.001 ± 0.002 on Y). The X map is reproducible (run to run r = 0.93, rms 3.2 %), larger
+than Y (2.5 %), and the two correlate at r = 0.71. About 2 % of X-only structure remains. The X strips lie one layer
+deeper and the X charge sharing is asymmetric on chamber A; we have no waveform-free way to test either.
+
+**Item 4 (geometric against drift-time amplitude along y).** On the audit's 4 × 4 cells, with the same cells for every
+estimate, the curvature of the gap along y is −1.02 ± 0.66 (run 1) and −1.26 ± 0.38 (run 2) mm per (100 mm)² for the
+geometric X method, −1.30 ± 0.21 and −1.35 ± 0.13 for the drift time, and −0.9 to −1.3 for the β-free product v × T.
+The ratio is 0.8–0.9 ± 0.3–0.5. The factor 1.4 is not reproduced, and the geometric errors are too large to support it.
+
+**Item 5 (curvature along x).** The curvature of the gap along x in the golden mounting (event-level quadratic with |tan|
+terms) is +0.43 ± 0.03–0.05 mm per (100 mm)² over the whole chamber. Without x < 80 mm it is +0.08 to +0.13 (± 0.04–0.09),
+and over 80 < x < 320 mm it is +0.05 to +0.09. On the half x < 200 mm it is +1.7. So the gap is flat along x between 80
+and 320 mm, and it rises toward the board edge at x < 80 mm. This is the drift-line slice that "bends the other way". A
+single parabola along x does not describe it. This also explains item 6: a gradient or curvature depends on the region.
+
+**Item 7 (flattening below 700 V).** Three causes are now excluded. The depth grid is not the cause (Table 1). The readout
+window is not the cause (R4). Attachment is not the cause either, because the charge per unit path at 500 V (ln q 9.11)
+equals that at 700–1100 V (9.06–9.11). At 300 V the charge does drop, by 0.6 in ln q. The drift-time estimator does not
+respond to the gain (item 12). The flattening at 500 V remains open.
+
+**Items 6, 11, 13, 14.** Item 6 is explained by item 5. Item 11 agrees with the water ledger (Run 2 is the drier run,
+0.90 % against 0.90–1.05 % in the Saturday sub-runs). Item 13 is a property of the maps (they have fine structure that a
+gradient fit does not describe), and no estimator in this audit depends on it. Item 14 is the per-sample charge centroid
+of the drift-line test. A sample mixes charge from several depths, because the electronics response spans several
+samples, so the centroid slope is compressed at large |tan|. This is the aggregate effect of `RECONSTRUCTION_BASIS.md`.
+The drift-line test removes it by balancing the sign of tan. This explanation is an argument, not a new measurement.
+
 ## Not answered here
 
-Items 1, 3–7, 11, 13–15 and 20 are unchanged. Item 7 (flattening below 700 V) is not caused by the depth grid
+Only item 20 (n_TOF, the re-audit session's) is not treated here; item 7 and the second half of item 12 remain open. Item 7 (flattening below 700 V) is not caused by the depth grid
 (Table 1). Items 9, 12 and 19 are in the second round above.

@@ -66,3 +66,26 @@ for lab, sel in (('all', np.ones(D.n, bool)), ('unsaturated', sat == 0), ('satur
                     r_gain_satfrac=(float(k0[2]), float(np.nanstd(B[:, 2]))))
     print(lab, json.dumps(res[lab]), flush=True)
 json.dump(res, open(f'{OUT}/q12_gain.json', 'w'), indent=1)
+
+
+# ---- second test (11-24, later): the path-length hypothesis.  A track crossing a gap g leaves charge in proportion to
+# g, so the fine charge map should contain the fine gap map: d ln q / d ln T = 1 / (1 + beta) (about 0.6) if the
+# fine T structure is gap.  Cross-run, noise-free denominator: kGT = [cov(G_1, T_2) + cov(G_2, T_1)] / [2 cov(T_1, T_2)].
+def k_GT(sel, wts):
+    T, G = {}, {}
+    for r in (0, 1):
+        m = sel & inside & (D.row == r)
+        T[r], G[r] = fine(cmean(D.lnq, m, wts)), fine(cmean(qs, m, wts))
+    return ((cov(G[0], T[1]) + cov(G[1], T[0])) / (2 * cov(T[0], T[1])),
+            (cov(G[0], G[1])) ** 0.5, (cov(T[0], T[1])) ** 0.5,
+            (cov(G[0], T[1]) + cov(G[1], T[0])) / 2 / np.sqrt(cov(G[0], G[1]) * cov(T[0], T[1])))
+
+
+res2 = {}
+for lab, sel in (('all', np.ones(D.n, bool)), ('unsaturated', sat == 0)):
+    k0 = k_GT(sel, np.ones(D.n))
+    B = np.array([k_GT(sel, rng.poisson(1.0, D.n).astype(float)) for _ in range(200)])
+    res2[lab] = dict(k_lnq_on_lnT=(float(k0[0]), float(np.nanstd(B[:, 0]))), rms_fine_gain=float(k0[1]),
+                     rms_fine_T=float(k0[2]), r_signal=(float(k0[3]), float(np.nanstd(B[:, 3]))))
+    print('pathlength', lab, json.dumps(res2[lab]), flush=True)
+json.dump(dict(first=res, pathlength=res2), open(f'{OUT}/q12_gain.json', 'w'), indent=1)
