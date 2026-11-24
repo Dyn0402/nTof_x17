@@ -1,0 +1,159 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Bench angle maps, step 4: gates</title><style>
+body{font:14px/1.5 system-ui,sans-serif;max-width:1180px;margin:0 auto;padding:16px;color:#1c1f24;background:#fff}
+h1{font-size:22px} h2{font-size:17px;margin-top:28px;border-bottom:1px solid #d5d8de;padding-bottom:3px}
+table{border-collapse:collapse;font-size:12px;margin:8px 0;display:block;overflow-x:auto}
+th,td{border:1px solid #d5d8de;padding:2px 6px;text-align:right;white-space:nowrap} th{background:#f1f3f6} td:first-child,th:first-child,td:nth-child(2),th:nth-child(2){text-align:left}
+tr.bad td{background:#fbe3e0}
+.verdict{background:#eef6ee;border:1px solid #b7d7b7;padding:10px 14px;border-radius:6px;font-size:15px} .verdict.fail{background:#fbe3e0;border-color:#e0a49d}
+img{max-width:100%} figcaption{font-size:12px;color:#444;margin-bottom:12px} code{font-size:12px}
+@media (prefers-color-scheme:dark){body{background:#15171a;color:#e3e5e8} th{background:#23262b} th,td{border-color:#3a3e45} .verdict{background:#1c2b1c;border-color:#355a35} tr.bad td{background:#4a2420}}
+</style></head><body>
+<h1>Bench re-finalization, step 4: interior-only angle maps in the row bundles, and the gates</h1>
+<div class="verdict"><b>Verdict.</b> The interior-only maps pass the gates on all 11 rows with at least 2000 gate events and on all 13 pooled groups: no angle s68, no position s68 is worse than pass 1 beyond 2 sigma, and no far fraction is higher beyond 2 sigma.</div>
+<h2>Headline numbers (angle s68 [deg], pass 1 -> cross-validated map, interior only)</h2>
+<p>A_0627: X 0.922 -&gt; 0.687 (26 %), Y 0.819 -&gt; 0.609 (26 %); A_0625: X 0.876 -&gt; 0.680 (22 %), Y 1.030 -&gt; 0.668 (35 %); B_0622: X 0.942 -&gt; 0.671 (29 %), Y 0.957 -&gt; 0.723 (25 %); C_long (own map): X 1.128 -&gt; 0.946 (16 %), Y 1.379 -&gt; 1.179 (15 %); D_0626: X 1.466 -&gt; 1.377 (6 %), Y 0.956 -&gt; 0.752 (21 %); The same chambers on pass 1 are the reference; E, A 6-22, A 6-23, A 6-27 at 100 and 300 V and B 6-17 stay on pass 1 (identical columns).
+Quoted angles are the cross-validated ones (five time blocks, map and row constants trained without the event's block); events outside the map's region count with their pass-1 value.
+Positions: the mid-gap position residual s68 improves by 0-8 % where the map is used (one group, C borrowed from the longer row, Y, gets worse by 0.025 +- 0.013 mm, below 2 sigma); the mesh position p0 is not touched by the map.</p>
+<h2>What was done</h2>
+<ul><li>92 of the 156 rows carry a map bundle (<code>map1/&lt;run&gt;/&lt;subrun&gt;/&lt;det&gt;/calib_bundle</code>: the pass bundle, the <code>bow['phi']</code> block with
+<code>outside = 'block'</code>, the row's w0 and kw measured with the map, and the pass-1 w0 and kw as <code>fallback</code>); the other 64 keep the pass-1 bundle.
+215,797 events were recomputed in all 156 <code>events.parquet</code> (104,029 X and 115,108 Y angles from a map).</li>
+<li>Chamber D's X view uses the map only for x &gt;= 200 mm (<code>domain_x</code>, U &gt;= 0); its Y view uses the whole domain.</li>
+<li>C: railed tracks (q_uend at the end of the depth grid) are multiplied by the per-row factor of step 3 (<code>x_resc</code>, <code>y_resc</code>). D and E railed tracks are flagged in <code>x_railed</code>, <code>y_railed</code> and not changed (the map still applies to D's).
+C rows without their own map use the map of the nearest C row (<code>map_borrowed</code>).</li>
+<li>Columns changed where the map is used: <code>x/y_tan_theta, x/y_theta_deg, x/y_slope_reliable, x/y_bow_h</code>, <code>bow_h</code>. Added: <code>map_unit, map_variant, map_borrowed, map_used_x/y, x/y_railed, x/y_resc, x/y_tan_pass1</code>.</li></ul>
+<h2>Exactness checks</h2><ul>
+<li><b>Outside the map's region the angle is pass 1, bit for bit.</b> 70,444 view-events of the 92 rows with a map are outside the region
+(or have no finite position) and keep the stored pass-1 value; the largest difference between the new table and pass 1 there is 0.0e+00
+(per row in <code>map1/&lt;row&gt;/map1_row.json</code>). The bundle code path (<code>bow_pairs</code> with the fallback constants) gives
+the same array as the pass-1 bundle's <code>bow_pairs</code>, bit for bit, on all 184 row/view pairs: True. It differs from the <i>stored</i> pass-1 value on
+286 events (0.41 % of the events outside; up to 6e+08), the same events on which the pass-1 bundle itself does not
+reproduce the stored table (stored value from the winner mapping, quality flag false); the table keeps the stored value.</li>
+<li><b>Agreement with step 3:</b> where the map is used, the new tangent equals step 3's <code>x_tan_map</code> / <code>y_tan_map</code> to 0.0e+00 on 104,029 X and 115,108 Y
+events (every event of every mapped row with a finite value).</li>
+<li><b>Edge zone:</b> largest |new - pass 1| where the map is not used is 0.0e+00 (all groups, both views).</li>
+</ul>
+<h2>Gates by pooled group (gate selection of step 3; D and E railed tracks excluded, C railed tracks included)</h2>
+<p>Gates: angle s68 not worse than pass 1 beyond 2 sigma (paired bootstrap); far fraction (|residual| &gt; 3 s68 of pass 1) not higher; position s68 not worse. &quot;map used&quot; is the share of events inside the map's region.</p>
+<table class=""><thead><tr><th>group</th><th>view</th><th>N</th><th>pass 1</th><th>map (CV)</th><th>diff +- err</th><th>far %: pass 1 -&gt; CV</th><th>position s68 [mm]: pass 1 -&gt; CV</th><th>map used</th><th>gates</th></tr></thead><tbody>
+<tr><td>A_0627</td><td>X</td><td>28560</td><td>0.922 +- 0.006</td><td>0.687 +- 0.004</td><td>-0.235 +- 0.006</td><td>1.3 -&gt; 0.9</td><td>0.556 -&gt; 0.522</td><td>100 %</td><td>ok</td></tr>
+<tr><td>A_0627</td><td>Y</td><td>28560</td><td>0.819 +- 0.005</td><td>0.609 +- 0.004</td><td>-0.210 +- 0.005</td><td>1.5 -&gt; 0.9</td><td>0.535 -&gt; 0.513</td><td>100 %</td><td>ok</td></tr>
+<tr><td>A_0625</td><td>X</td><td>6279</td><td>0.876 +- 0.012</td><td>0.680 +- 0.009</td><td>-0.196 +- 0.011</td><td>1.3 -&gt; 0.8</td><td>0.415 -&gt; 0.386</td><td>100 %</td><td>ok</td></tr>
+<tr><td>A_0625</td><td>Y</td><td>6279</td><td>1.030 +- 0.017</td><td>0.668 +- 0.010</td><td>-0.362 +- 0.018</td><td>1.2 -&gt; 0.4</td><td>0.441 -&gt; 0.404</td><td>100 %</td><td>ok</td></tr>
+<tr><td>B_0622</td><td>X</td><td>21411</td><td>0.942 +- 0.006</td><td>0.671 +- 0.005</td><td>-0.270 +- 0.006</td><td>1.7 -&gt; 1.3</td><td>0.537 -&gt; 0.511</td><td>99 %</td><td>ok</td></tr>
+<tr><td>B_0622</td><td>Y</td><td>21411</td><td>0.957 +- 0.006</td><td>0.723 +- 0.004</td><td>-0.235 +- 0.006</td><td>1.6 -&gt; 1.2</td><td>0.515 -&gt; 0.490</td><td>99 %</td><td>ok</td></tr>
+<tr><td>C_long (own map)</td><td>X</td><td>4981</td><td>1.128 +- 0.017</td><td>0.946 +- 0.015</td><td>-0.181 +- 0.016</td><td>3.1 -&gt; 2.5</td><td>0.476 -&gt; 0.451</td><td>100 %</td><td>ok</td></tr>
+<tr><td>C_long (own map)</td><td>Y</td><td>4981</td><td>1.379 +- 0.019</td><td>1.179 +- 0.018</td><td>-0.200 +- 0.018</td><td>2.2 -&gt; 1.7</td><td>0.425 -&gt; 0.405</td><td>100 %</td><td>ok</td></tr>
+<tr><td>C_longer (own map)</td><td>X</td><td>2191</td><td>1.237 +- 0.027</td><td>1.156 +- 0.026</td><td>-0.082 +- 0.023</td><td>3.4 -&gt; 3.3</td><td>0.452 -&gt; 0.451</td><td>100 %</td><td>ok</td></tr>
+<tr><td>C_longer (own map)</td><td>Y</td><td>2191</td><td>1.583 +- 0.035</td><td>1.491 +- 0.032</td><td>-0.092 +- 0.029</td><td>2.8 -&gt; 2.5</td><td>0.523 -&gt; 0.490</td><td>100 %</td><td>ok</td></tr>
+<tr><td>C borrowed (C_long)</td><td>X</td><td>6300</td><td>1.097 +- 0.017</td><td>0.808 +- 0.012</td><td>-0.289 +- 0.015</td><td>3.1 -&gt; 2.4</td><td>0.465 -&gt; 0.438</td><td>100 %</td><td>ok</td></tr>
+<tr><td>C borrowed (C_long)</td><td>Y</td><td>6300</td><td>1.278 +- 0.017</td><td>1.056 +- 0.016</td><td>-0.222 +- 0.016</td><td>2.8 -&gt; 2.3</td><td>0.463 -&gt; 0.439</td><td>100 %</td><td>ok</td></tr>
+<tr><td>C borrowed (C_longer)</td><td>X</td><td>947</td><td>1.424 +- 0.050</td><td>1.335 +- 0.052</td><td>-0.089 +- 0.037</td><td>4.1 -&gt; 4.2</td><td>0.548 -&gt; 0.532</td><td>99 %</td><td>ok</td></tr>
+<tr><td>C borrowed (C_longer)</td><td>Y</td><td>947</td><td>1.955 +- 0.082</td><td>1.839 +- 0.063</td><td>-0.115 +- 0.052</td><td>5.2 -&gt; 5.1</td><td>0.555 -&gt; 0.580</td><td>99 %</td><td>ok</td></tr>
+<tr><td>D_0626</td><td>X</td><td>9235</td><td>1.466 +- 0.023</td><td>1.377 +- 0.021</td><td>-0.089 +- 0.011</td><td>9.6 -&gt; 9.5</td><td>0.695 -&gt; 0.685</td><td>41 %</td><td>ok</td></tr>
+<tr><td>D_0626</td><td>Y</td><td>9270</td><td>0.956 +- 0.010</td><td>0.752 +- 0.010</td><td>-0.204 +- 0.010</td><td>3.2 -&gt; 2.8</td><td>0.534 -&gt; 0.521</td><td>99 %</td><td>ok</td></tr>
+<tr><td>E</td><td>X</td><td>5280</td><td>2.192 +- 0.046</td><td>2.192 +- 0.046</td><td>+0.000 +- 0.000</td><td>9.8 -&gt; 9.8</td><td>0.886 -&gt; 0.886</td><td>0 %</td><td>ok</td></tr>
+<tr><td>E</td><td>Y</td><td>5352</td><td>1.512 +- 0.036</td><td>1.512 +- 0.036</td><td>+0.000 +- 0.000</td><td>12.3 -&gt; 12.3</td><td>0.730 -&gt; 0.730</td><td>0 %</td><td>ok</td></tr>
+<tr><td>A_0622</td><td>X</td><td>22186</td><td>3.398 +- 0.031</td><td>3.398 +- 0.031</td><td>+0.000 +- 0.000</td><td>4.0 -&gt; 4.0</td><td>0.898 -&gt; 0.898</td><td>0 %</td><td>ok</td></tr>
+<tr><td>A_0622</td><td>Y</td><td>22186</td><td>2.664 +- 0.022</td><td>2.664 +- 0.022</td><td>+0.000 +- 0.000</td><td>4.3 -&gt; 4.3</td><td>0.744 -&gt; 0.744</td><td>0 %</td><td>ok</td></tr>
+<tr><td>A_0623</td><td>X</td><td>3999</td><td>18.094 +- 0.444</td><td>18.094 +- 0.444</td><td>+0.000 +- 0.000</td><td>6.7 -&gt; 6.7</td><td>5.444 -&gt; 5.444</td><td>0 %</td><td>ok</td></tr>
+<tr><td>A_0623</td><td>Y</td><td>3999</td><td>35.372 +- 0.876</td><td>35.372 +- 0.876</td><td>+0.000 +- 0.000</td><td>0.0 -&gt; 0.0</td><td>12.704 -&gt; 12.704</td><td>0 %</td><td>ok</td></tr>
+<tr><td>A_0627 (100/300 V, no map)</td><td>X</td><td>907</td><td>6.751 +- 0.309</td><td>6.751 +- 0.309</td><td>+0.000 +- 0.000</td><td>4.2 -&gt; 4.2</td><td>1.884 -&gt; 1.884</td><td>0 %</td><td>ok</td></tr>
+<tr><td>A_0627 (100/300 V, no map)</td><td>Y</td><td>907</td><td>4.145 +- 0.179</td><td>4.145 +- 0.179</td><td>+0.000 +- 0.000</td><td>7.7 -&gt; 7.7</td><td>1.177 -&gt; 1.177</td><td>0 %</td><td>ok</td></tr>
+<tr><td>B_0617</td><td>X</td><td>104</td><td>12.814 +- 1.148</td><td>12.814 +- 1.148</td><td>+0.000 +- 0.000</td><td>1.9 -&gt; 1.9</td><td>19.139 -&gt; 19.139</td><td>0 %</td><td>ok</td></tr>
+<tr><td>B_0617</td><td>Y</td><td>104</td><td>8.373 +- 1.115</td><td>8.373 +- 1.115</td><td>+0.000 +- 0.000</td><td>2.9 -&gt; 2.9</td><td>4.327 -&gt; 4.327</td><td>0 %</td><td>ok</td></tr>
+</tbody></table>
+<p>Where the map is used only (the groups with a partial region: D's X view for x &gt;= 200 mm):</p>
+<table class=""><thead><tr><th>group</th><th>view</th><th>N (map used)</th><th>pass 1</th><th>map (CV)</th><th>diff +- err</th></tr></thead><tbody>
+<tr><td>A_0627</td><td>X</td><td>28464</td><td>0.922 +- 0.005</td><td>0.686 +- 0.004</td><td>-0.236 +- 0.005</td></tr>
+<tr><td>A_0627</td><td>Y</td><td>28464</td><td>0.817 +- 0.005</td><td>0.608 +- 0.004</td><td>-0.209 +- 0.005</td></tr>
+<tr><td>A_0625</td><td>X</td><td>6265</td><td>0.877 +- 0.012</td><td>0.680 +- 0.010</td><td>-0.196 +- 0.012</td></tr>
+<tr><td>A_0625</td><td>Y</td><td>6265</td><td>1.029 +- 0.017</td><td>0.666 +- 0.010</td><td>-0.362 +- 0.017</td></tr>
+<tr><td>B_0622</td><td>X</td><td>21289</td><td>0.938 +- 0.006</td><td>0.668 +- 0.005</td><td>-0.270 +- 0.006</td></tr>
+<tr><td>B_0622</td><td>Y</td><td>21289</td><td>0.955 +- 0.006</td><td>0.721 +- 0.005</td><td>-0.234 +- 0.006</td></tr>
+<tr><td>C_long (own map)</td><td>X</td><td>4959</td><td>1.127 +- 0.017</td><td>0.945 +- 0.014</td><td>-0.183 +- 0.017</td></tr>
+<tr><td>C_long (own map)</td><td>Y</td><td>4959</td><td>1.378 +- 0.018</td><td>1.178 +- 0.017</td><td>-0.201 +- 0.019</td></tr>
+<tr><td>C_longer (own map)</td><td>X</td><td>2186</td><td>1.237 +- 0.028</td><td>1.155 +- 0.028</td><td>-0.082 +- 0.022</td></tr>
+<tr><td>C_longer (own map)</td><td>Y</td><td>2186</td><td>1.583 +- 0.035</td><td>1.490 +- 0.034</td><td>-0.093 +- 0.029</td></tr>
+<tr><td>C borrowed (C_long)</td><td>X</td><td>6273</td><td>1.095 +- 0.015</td><td>0.806 +- 0.011</td><td>-0.288 +- 0.015</td></tr>
+<tr><td>C borrowed (C_long)</td><td>Y</td><td>6273</td><td>1.276 +- 0.017</td><td>1.052 +- 0.016</td><td>-0.223 +- 0.017</td></tr>
+<tr><td>C borrowed (C_longer)</td><td>X</td><td>939</td><td>1.409 +- 0.047</td><td>1.309 +- 0.046</td><td>-0.100 +- 0.036</td></tr>
+<tr><td>C borrowed (C_longer)</td><td>Y</td><td>939</td><td>1.942 +- 0.078</td><td>1.824 +- 0.060</td><td>-0.118 +- 0.052</td></tr>
+<tr><td>D_0626</td><td>X</td><td>3738</td><td>0.925 +- 0.019</td><td>0.777 +- 0.013</td><td>-0.148 +- 0.016</td></tr>
+<tr><td>D_0626</td><td>Y</td><td>9223</td><td>0.954 +- 0.010</td><td>0.749 +- 0.010</td><td>-0.205 +- 0.009</td></tr>
+</tbody></table>
+<figure><img src="figures/units_s68.png" alt="angle s68 per group"><figcaption>Figure 1. Angle s68 of every group, pass 1 (grey) and the cross-validated interior-only map (blue), with bootstrap errors. The groups without a map are identical by construction. D's X bar includes the events at x &lt; 200 mm that stay on pass 1.</figcaption></figure>
+<figure><img src="figures/profile.png" alt="angle residual profile"><figcaption>Figure 2. Mean angle residual (angle minus the reference) against the reference tangent, pass 1 and the cross-validated map, for three of the mounted maps (bins of the reference tangent with at least 20 events). The map flattens the curvature of B and the slope of C Y in the interior bins; the residuals of A are small before and after (0.1 deg or less). The outermost bin of C Y is not better with the map (it holds few events and lies near the edge of the region).</figcaption></figure>
+<h2>Gates by row (rows with at least 2000 gate events)</h2>
+<p>Each line is one row of the registry: angle s68 pass 1 and cross-validated map with the paired difference, far fraction, and mid-gap position s68 [mm].</p>
+<table class=""><thead><tr><th>row</th><th>group</th><th>N</th><th>X: pass 1</th><th>X: CV</th><th>X: diff +- err</th><th>X far %</th><th>X pos</th><th>Y: pass 1</th><th>Y: CV</th><th>Y: diff +- err</th><th>Y far %</th><th>Y pos</th><th>gates</th></tr></thead><tbody>
+<tr><td>det2_det3_ovn_6-22__long_run__3</td><td>A_0622</td><td>11972</td><td>3.369</td><td>3.369</td><td>+0.000 +- 0.000</td><td>4.3 -&gt; 4.3</td><td>0.895 -&gt; 0.895</td><td>2.671</td><td>2.671</td><td>+0.000 +- 0.000</td><td>4.6 -&gt; 4.6</td><td>0.728 -&gt; 0.728</td><td>ok</td></tr>
+<tr><td>det3_day_6-25__long_run__3</td><td>A_0625</td><td>6279</td><td>0.876</td><td>0.680</td><td>-0.196 +- 0.011</td><td>1.3 -&gt; 0.8</td><td>0.415 -&gt; 0.386</td><td>1.030</td><td>0.668</td><td>-0.362 +- 0.018</td><td>1.2 -&gt; 0.4</td><td>0.441 -&gt; 0.404</td><td>ok</td></tr>
+<tr><td>det3_det4_ovn_6-23__long_run__3</td><td>A_0623</td><td>3113</td><td>18.395</td><td>18.395</td><td>+0.000 +- 0.000</td><td>6.8 -&gt; 6.8</td><td>5.378 -&gt; 5.378</td><td>40.220</td><td>40.220</td><td>+0.000 +- 0.000</td><td>0.0 -&gt; 0.0</td><td>13.761 -&gt; 13.761</td><td>ok</td></tr>
+<tr><td>3_p2_det1_ovn_6-27__long_run_p2_det1_sanity_check__3</td><td>A_0627</td><td>14066</td><td>0.929</td><td>0.696</td><td>-0.233 +- 0.008</td><td>1.2 -&gt; 0.9</td><td>0.554 -&gt; 0.522</td><td>0.809</td><td>0.605</td><td>-0.204 +- 0.008</td><td>1.4 -&gt; 0.8</td><td>0.542 -&gt; 0.519</td><td>ok</td></tr>
+<tr><td>sat_det3</td><td>A_0627</td><td>4654</td><td>0.905</td><td>0.669</td><td>-0.237 +- 0.012</td><td>1.0 -&gt; 0.7</td><td>0.558 -&gt; 0.523</td><td>0.796</td><td>0.582</td><td>-0.215 +- 0.012</td><td>1.5 -&gt; 0.9</td><td>0.507 -&gt; 0.484</td><td>ok</td></tr>
+<tr><td>det2_det3_ovn_6-22__long_run__2</td><td>B_0622</td><td>10963</td><td>0.956</td><td>0.687</td><td>-0.269 +- 0.008</td><td>1.7 -&gt; 1.2</td><td>0.544 -&gt; 0.512</td><td>0.970</td><td>0.740</td><td>-0.231 +- 0.009</td><td>1.7 -&gt; 1.3</td><td>0.523 -&gt; 0.498</td><td>ok</td></tr>
+<tr><td>o22_long_det2</td><td>B_0622</td><td>2159</td><td>0.960</td><td>0.670</td><td>-0.290 +- 0.018</td><td>1.8 -&gt; 1.5</td><td>0.535 -&gt; 0.494</td><td>0.947</td><td>0.721</td><td>-0.226 +- 0.020</td><td>1.5 -&gt; 1.2</td><td>0.516 -&gt; 0.485</td><td>ok</td></tr>
+<tr><td>det6_det7_ovn_6__longer_run__6</td><td>C_longer (own map)</td><td>2191</td><td>1.237</td><td>1.156</td><td>-0.082 +- 0.023</td><td>3.4 -&gt; 3.3</td><td>0.452 -&gt; 0.451</td><td>1.583</td><td>1.491</td><td>-0.092 +- 0.029</td><td>2.8 -&gt; 2.5</td><td>0.523 -&gt; 0.490</td><td>ok</td></tr>
+<tr><td>g_det6_long</td><td>C_long (own map)</td><td>4981</td><td>1.128</td><td>0.946</td><td>-0.181 +- 0.016</td><td>3.1 -&gt; 2.5</td><td>0.476 -&gt; 0.451</td><td>1.379</td><td>1.179</td><td>-0.200 +- 0.018</td><td>2.2 -&gt; 1.7</td><td>0.425 -&gt; 0.405</td><td>ok</td></tr>
+<tr><td>g_det7_long</td><td>D_0626</td><td>2680</td><td>1.631</td><td>1.528</td><td>-0.103 +- 0.022</td><td>9.1 -&gt; 9.0</td><td>0.710 -&gt; 0.688</td><td>1.036</td><td>0.814</td><td>-0.221 +- 0.019</td><td>3.4 -&gt; 2.8</td><td>0.566 -&gt; 0.541</td><td>ok</td></tr>
+<tr><td>g_det4</td><td>E</td><td>3128</td><td>2.025</td><td>2.025</td><td>+0.000 +- 0.000</td><td>9.4 -&gt; 9.4</td><td>0.853 -&gt; 0.853</td><td>1.419</td><td>1.419</td><td>+0.000 +- 0.000</td><td>12.0 -&gt; 12.0</td><td>0.749 -&gt; 0.749</td><td>ok</td></tr>
+</tbody></table>
+<figure><img src="figures/row_pulls.png" alt="row pulls"><figcaption>Figure 3. For every row with at least 300 gate events, the change of the angle s68 divided by its bootstrap error against the number of events. Negative is better. The dashed line is the 2 sigma limit for &quot;worse&quot;; no row crosses it.</figcaption></figure>
+<h3>Rows with 300-2000 gate events</h3>
+<p>71 rows with 37,913 gate events in total (50 with a map); view/gate combinations failing the 2 sigma rule: 0.
+The remaining 74 rows have fewer than 300 gate events (8,869 in total) and enter only the pooled groups.</p>
+<p>None of them fails a gate.</p>
+<h2>Edge zone</h2>
+<p>Events inside the active area but within 30 mm of its border, which no map saw in its fit. Outside the map's region they are pass 1 by construction; the few that fall just inside the region (a few percent) use the map.</p>
+<table class=""><thead><tr><th>group</th><th>view</th><th>N</th><th>map used %</th><th>pass 1</th><th>interior-only map (CV)</th><th>diff +- err</th></tr></thead><tbody>
+<tr><td>A_0627</td><td>X</td><td>3413</td><td>1.8</td><td>1.295</td><td>1.287</td><td>-0.009 +- 0.006</td></tr>
+<tr><td>A_0627</td><td>Y</td><td>3413</td><td>1.8</td><td>1.222</td><td>1.216</td><td>-0.006 +- 0.004</td></tr>
+<tr><td>A_0625</td><td>X</td><td>1189</td><td>1.1</td><td>1.512</td><td>1.516</td><td>+0.004 +- 0.004</td></tr>
+<tr><td>A_0625</td><td>Y</td><td>1189</td><td>1.1</td><td>1.482</td><td>1.480</td><td>-0.002 +- 0.009</td></tr>
+<tr><td>B_0622</td><td>X</td><td>4462</td><td>1.5</td><td>3.845</td><td>3.845</td><td>+0.000 +- 0.002</td></tr>
+<tr><td>B_0622</td><td>Y</td><td>4462</td><td>1.5</td><td>2.398</td><td>2.392</td><td>-0.006 +- 0.005</td></tr>
+<tr><td>C_long (own map)</td><td>X</td><td>1600</td><td>1.4</td><td>2.061</td><td>2.055</td><td>-0.006 +- 0.011</td></tr>
+<tr><td>C_long (own map)</td><td>Y</td><td>1600</td><td>1.4</td><td>1.579</td><td>1.573</td><td>-0.006 +- 0.012</td></tr>
+<tr><td>C_longer (own map)</td><td>X</td><td>682</td><td>2.2</td><td>2.402</td><td>2.384</td><td>-0.018 +- 0.021</td></tr>
+<tr><td>C_longer (own map)</td><td>Y</td><td>682</td><td>2.2</td><td>1.887</td><td>1.930</td><td>+0.043 +- 0.025</td></tr>
+<tr><td>C borrowed (C_long)</td><td>X</td><td>1772</td><td>2.2</td><td>1.797</td><td>1.793</td><td>-0.004 +- 0.009</td></tr>
+<tr><td>C borrowed (C_long)</td><td>Y</td><td>1772</td><td>2.2</td><td>1.594</td><td>1.598</td><td>+0.004 +- 0.009</td></tr>
+<tr><td>C borrowed (C_longer)</td><td>X</td><td>227</td><td>1.3</td><td>2.347</td><td>2.347</td><td>+0.000 +- 0.002</td></tr>
+<tr><td>C borrowed (C_longer)</td><td>Y</td><td>227</td><td>1.3</td><td>2.063</td><td>2.099</td><td>+0.037 +- 0.051</td></tr>
+<tr><td>D_0626</td><td>X</td><td>1989</td><td>2.5</td><td>1.531</td><td>1.533</td><td>+0.002 +- 0.004</td></tr>
+<tr><td>D_0626</td><td>Y</td><td>2027</td><td>4.2</td><td>1.169</td><td>1.169</td><td>+0.000 +- 0.006</td></tr>
+<tr><td>E</td><td>X</td><td>812</td><td>0.0</td><td>2.308</td><td>2.308</td><td>+0.000 +- 0.000</td></tr>
+<tr><td>E</td><td>Y</td><td>828</td><td>0.0</td><td>2.385</td><td>2.385</td><td>+0.000 +- 0.000</td></tr>
+<tr><td>A_0622</td><td>X</td><td>3573</td><td>0.0</td><td>6.459</td><td>6.459</td><td>+0.000 +- 0.000</td></tr>
+<tr><td>A_0622</td><td>Y</td><td>3573</td><td>0.0</td><td>6.312</td><td>6.312</td><td>+0.000 +- 0.000</td></tr>
+<tr><td>A_0623</td><td>X</td><td>1245</td><td>0.0</td><td>18.151</td><td>18.151</td><td>+0.000 +- 0.000</td></tr>
+<tr><td>A_0623</td><td>Y</td><td>1245</td><td>0.0</td><td>24.341</td><td>24.341</td><td>+0.000 +- 0.000</td></tr>
+<tr><td>A_0627 (100/300 V, no map)</td><td>X</td><td>125</td><td>0.0</td><td>7.661</td><td>7.661</td><td>+0.000 +- 0.000</td></tr>
+<tr><td>A_0627 (100/300 V, no map)</td><td>Y</td><td>125</td><td>0.0</td><td>4.692</td><td>4.692</td><td>+0.000 +- 0.000</td></tr>
+<tr><td>B_0617</td><td>X</td><td>58</td><td>0.0</td><td>11.378</td><td>11.378</td><td>+0.000 +- 0.000</td></tr>
+<tr><td>B_0617</td><td>Y</td><td>58</td><td>0.0</td><td>5.911</td><td>5.911</td><td>+0.000 +- 0.000</td></tr>
+</tbody></table>
+<figure><img src="figures/edge_zone.png" alt="edge zone"><figcaption>Figure 4. Angle s68 in the edge zone, pass 1 and the interior-only map. The bars are equal up to the few events that lie inside the map's region. Step 3 had found a clamped map up to 1 degree worse here (E, C longer, D, A 6-25 Y).</figcaption></figure>
+<h2>Railed tracks of C</h2>
+<table class=""><thead><tr><th>group</th><th>view</th><th>railed N</th><th>mean residual x sign(tan) [deg]: pass 1</th><th>map CV x rescale</th><th>s68: pass 1</th><th>s68: CV x rescale</th></tr></thead><tbody>
+<tr><td>C_long (own map)</td><td>X</td><td>209</td><td>-0.143</td><td>+0.070</td><td>1.113</td><td>1.040</td></tr>
+<tr><td>C_long (own map)</td><td>Y</td><td>924</td><td>-0.375</td><td>+0.007</td><td>1.185</td><td>1.074</td></tr>
+<tr><td>C_longer (own map)</td><td>X</td><td>444</td><td>-0.385</td><td>-0.016</td><td>1.158</td><td>1.155</td></tr>
+<tr><td>C_longer (own map)</td><td>Y</td><td>492</td><td>-0.373</td><td>+0.023</td><td>1.536</td><td>1.498</td></tr>
+<tr><td>C borrowed (C_long)</td><td>X</td><td>607</td><td>-0.203</td><td>-0.065</td><td>1.176</td><td>0.951</td></tr>
+<tr><td>C borrowed (C_long)</td><td>Y</td><td>942</td><td>-0.202</td><td>+0.031</td><td>1.338</td><td>1.231</td></tr>
+<tr><td>C borrowed (C_longer)</td><td>X</td><td>222</td><td>-0.432</td><td>-0.049</td><td>1.207</td><td>1.324</td></tr>
+<tr><td>C borrowed (C_longer)</td><td>Y</td><td>253</td><td>-0.289</td><td>-0.216</td><td>1.677</td><td>1.752</td></tr>
+</tbody></table>
+<h2>What the result does not rule out</h2>
+<ul>
+<li>The maps are trained on the gate rows of their mounting and the quoted numbers are cross-validated in five time blocks of the same mounting. We have no measurement of a map on a mounting it was not trained on, and a map does not transfer between mountings.</li>
+<li>The railed tracks of A 6-22 (80 %), D and E are not corrected: their angles are biased flat by the depth grid (pass-level fix: K = 27), and they are flagged only.</li>
+<li>Pass-1 angles outside the map's region (edge zone, D's X at x &lt; 200 mm, the rows without a map) are as good or as bad as before: A 6-22 3.4 / 2.7 deg, A 6-23 18 / 35 deg, E 2.2 / 1.5 deg, the 100 V and 300 V rows of A 6-27.</li>
+<li>The region is a rectangle in (U, W) at the reconstructed mid-gap position. A track of large angle can move across its border, so the angle can jump by the difference between the map and the plain block at the border (smooth within a few tenths of a degree for the mounted maps; not measured as a function of distance to the border).</li>
+<li>The gate selection is the reference-matched, single-track, interior selection of step 3. Events without a reference track, or with several tracks, have the map applied but no measurement of its effect.</li>
+<li>The row constants w0, kw of the 22 borrowed C rows come from few events (20 to 450 per row).</li>
+</ul>
+<p>Code: <code>rerun/calib/phimap/map1/</code> (<code>build_map1.py</code>, <code>gates.py</code>, this script). Data: <code>/media/ucla/work/claude-jobs/d006ab29/map1</code>.</p>
+</body></html>
