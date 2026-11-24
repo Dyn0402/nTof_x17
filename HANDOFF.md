@@ -1,5 +1,36 @@
 # Handoff
 
+## Readout board stack-up: asked Bertrand Mehl (CERN) — updated 2026-11-24 (dylan-MS-7C84)
+
+**Resume:** waiting for Bertrand's reply on the 3498-A stack-up; then fold it into Geant4, the response model and Paper I tab:layers.
+
+**Goal:** get the as-built readout-board stack-up (layer order, copper and dielectric thicknesses, materials) for Paper I and
+the Geant4 material model.
+
+**Done:**
+- Stephan forwarded (CERN mail, 2026-11-24, "TR: Offre 3498-A pour MMX17") Rui De Oliveira's offer 3498-A and the stack-up
+  spreadsheet. Bertrand laid out the readout board and the M1/M2/M4 multiplexing cards.
+- Built an annotated copy of the spreadsheet and sent Bertrand a short email (cc Stephan, Pierfrancesco) with it and the
+  readout Gerber zip. It asks for the stack-up as built, whether the Gerbers (2025-05-23) are the production revision, and
+  whether L7 is only the via landing. Everything in `docs/detector_spec/stackup_3498A/` (README has the comparison).
+
+**Next steps:**
+1. When Bertrand answers: update `MX17_Geant/shared/MX17ModuleGeometry.hh` (AsBuiltSpec) and `MX17_Geant/design/NEEDED_INPUTS.md` §6,
+   `docs/detector_spec/spec.py`, Paper I v2 `tab:layers` and the material table. Check whether the 1.70 mm CAD board includes a
+   stiffener (ask Stephan if Bertrand does not know).
+2. Response model: if the insulator over the pads is 25 µm polyimide + 25 µm prepreg (not 50 µm Kapton + 25 µm glue), re-evaluate
+   `GLUE_FLOW_MODEL` / d_eff (`response/common/constants.py`, MX17_Geant). Dylan decides before anything is regenerated.
+3. Follow-up email (Dylan's call, later): the questions in `followup_questions_draft.txt` (copper total 68 vs 128 µm, prepreg
+   grades and glass content, Ni/Au thickness, via fill, pad map). A separate email on the multiplexing cards: **M1 cards were
+   used on the chambers** (Dylan, 2026-11-24), not M2 as Bertrand's 2025 mail suggested.
+
+**Gotchas / decisions:**
+- Dylan: keep emails to Bertrand short, ask the broad question first and follow up later; English only; leave the resistive
+  layer out (Bertrand did not do it, Saclay did).
+- Gerber file names are not board layers: read `TF.FileFunction` (DFS3498A_L5.gbr is board L7). Layer map in the section
+  "Readout stack from the gerbers" below.
+- The hub mail API can create CERN drafts (attachments work) but not delete them.
+
 ## Bench angle re-finalization with per-mounting maps: DONE (steps 0-5) — updated 2026-11-24 (dylan-MS-7C84, session cosmic-analysis-reprocessing-plan)
 
 **Resume:** all five steps are done, merged and pushed; Paper I v2 is on Overleaf `paper1_v2` (b367fb1d). Only Dylan's decisions below remain.
@@ -237,7 +268,7 @@ the gas-detector community. Dylan wants low manual effort: Claude builds it and 
    `papers/paper1/figs/make_chamber_stack.py` (vias end at their strip layer), `02_design.tex` fig:stack caption (0.10 mm barrel → 0.25 mm drill,
    stale "shading … induced-charge profile" sentence), fig:readout caption ("leave the layer by a via to L7" → hop to the other strip layer).
 3. `papers/paper1/figs/extract_readout_gerber.py` docstring and `docs/detector_spec/spec.py` `pcb_l7` ("fan-out") → "via lands"; `MX17_Geant/design/NEEDED_INPUTS.md` §6 the same.
-4. Ask Stephan/fab for the stack-up drawing: are the in-pad vias filled and capped, and is the back face sealed by a blank laminate.
+4. ~~Ask Stephan/fab for the stack-up drawing~~ asked Bertrand 2026-11-24, see "Readout board stack-up" above (via fill is a follow-up question).
 
 **Gotchas:** parse gerbers with `MX17_Geant/scripts/gerber/gerber_outline.py`; drill files are `pla*`. To screenshot the note headless:
 `google-chrome --headless=new --use-gl=angle --use-angle=swiftshader --enable-unsafe-swiftshader --virtual-time-budget=5000 --screenshot=…`

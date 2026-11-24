@@ -1,0 +1,19 @@
+Hi Bertrand,
+
+My name is Dylan Neff. I work with Stephan on the MX17 Micromegas detectors that you designed the boards for, for the X17 search at n_TOF.
+
+First, thank you! The boards work very well. On cosmic muons the best chamber is about 95 % efficient, with an angular resolution of about 1 degree in TPC mode. We are now writing a detector paper and analyzing the physics data from n_TOF.
+
+For the paper, and for our Geant4 model of the material in the chamber, we would like to describe the readout board as accurately as possible. Could you send us the stack-up of the board as it was built: the order of the layers, the copper and dielectric thicknesses, and the materials?
+
+To make this easier, I have attached two files:
+
+- MX17_readout_3498A_stackup_annotated.xlsx: the stack-up spreadsheet you made for Stephan, with our reading of it added next to each layer. The rows we are not sure about are marked with a "?". Corrections directly in the file are very welcome.
+- MX17_readout_3498A_gerbers.zip: the Gerber files we have for the readout board (created 23-05-2025). Could you tell us whether these went to production, or whether there was a later revision?
+
+One specific question: the spreadsheet calls the lowest copper layer (L7) "GND", but in the Gerber file it carries only a land under each pad. We think it is just the landing for the vias. Is that right?
+
+Thank you very much for your help, and for the boards!
+
+Best regards,
+Dylan

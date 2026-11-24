@@ -1,0 +1,54 @@
+Dear Bertrand,
+
+My name is Dylan Neff. I work with Stephan on the MX17 Micromegas detectors for the X17 search at n_TOF. Stephan forwarded me your emails from last year about the readout board (offer 3498-A) and the multiplexing cards.
+
+First, thank you: the boards work very well. We built five chambers on your readout board and read them out through your M1 multiplexing cards. Four of them took beam data at n_TOF EAR2 over the summer, and one was tested in the SPS H4 beam. On cosmic muons the best chamber is about 95 % efficient, with an angular resolution of about 1 degree in TPC mode. The X and Y views collect the same charge to within 3 %, which is exactly what the pad design was meant to do. We are now writing a detector paper and analyzing the physics data from n_TOF.
+
+For the paper, and for our Geant4 model of the material in the chamber, we would like to describe the board construction in more detail. I have attached the Gerber files we have for the readout board (MX17_readout_3498A_gerbers.zip). The copper files carry a creation date of 2025-05-23. Could you tell us whether these are the files that went to production, or whether there was a later revision?
+
+Our understanding of the stack-up
+
+Stephan also sent us the stack-up spreadsheet (stack-up 3498-A.xlsx). Matched to the layer numbers in the Gerber attributes, we read it as follows, from the top (the mesh side) down:
+
+  L1  3498A_bulk           bulk / pillar artwork (not copper)
+  L2  3498A_top-resist     outline only, 412 x 412 mm (not copper)
+  L3  DFS3498A_top-cu      top copper, 9 + 17 = 26 um, Ni/Au, connector pads
+      dielectric 1         25 um UBE polyimide + 25 um EMC prepreg
+  L4  DFS3498A_L2-pads     pads, 17 + 17 um (0.68 mm squares on a 0.78 mm pitch)
+      dielectric 2         100 um prepreg
+  L5  DFS3498A_L3-TrackY   Y strips, 17 um
+      dielectric 3         100 um EMC prepreg
+  L6  DFS3498A_L4-TrackX   X strips, 17 um
+      dielectric 4         100 um prepreg
+  L7  DFS3498A_L5          17 + 17 um (called "GND" in the spreadsheet)
+      dielectric 5         25 um EMC prepreg + 25 um UBE polyimide
+  L8  DFS3498A_Bot         no copper (outline only)
+
+The vias are Ø0.25 mm from L3 to L4 (DFS3498A_pla1-2) and Ø0.25 / Ø0.50 mm from L4 to L7 (DFS3498A_pla2-5). Each pad has one via down to L7, with a land on every layer it crosses, and joins its strip only on that strip's own layer. This adds up to 528 um, which agrees with the 530 um total in the offer.
+
+What we are not sure about
+
+1. The total thickness. Our mechanical CAD model has the readout board as a single 1.70 mm body, while the offer and the stack-up give 530 um. Is the circuit really 530 um thick as delivered? If the 1.70 mm includes something added later (a stiffener or a support glued at Saclay), Stephan may know. We would like to fix this, since it is the largest uncertainty in our material budget.
+
+2. The copper total. The offer says "about 68 um of copper", but the layers in the spreadsheet add up to about 128 um (26 + 34 + 17 + 17 + 34). Are the "+ 17 um" entries the via plating, and is the plating present over the whole layer or only on the via lands?
+
+3. The dielectric above the pads. In our signal model this is the most important distance in the board, since it sets how strongly the surface of the board couples to the pads. Until now we assumed 50 um of Kapton plus about 20 um of adhesive. The stack-up instead gives 25 um polyimide + 25 um prepreg. Is 50 um the final thickness after pressing, above the pads? Since the pads are 34 um thick with 100 um gaps between them, how much of the prepreg flows into those gaps?
+
+4. The materials. Which EMC prepreg was used (product name, glass style and resin content), and is the polyimide UBE Upilex? For the dielectric constant and the radiation length we need to know how much of each 100 um layer is glass and how much is resin.
+
+5. The Ni/Au finish on the top copper: what are the nickel and gold thicknesses?
+
+6. Are the vias filled (resin or copper) or left open?
+
+The lowest copper layer (L7)
+
+The spreadsheet calls L7 "GND", but in the Gerber file it carries only a 0.65 mm land under each pad position in the active area, plus a few larger features outside it. We think L7 is only the landing for the vias, needed because the vias drilled from the pad layer end at L7 and the bottom face has no copper. Is that right? Or is L7 connected to ground somewhere, for example at the connectors?
+
+One more question
+
+7. The pad-to-strip map. Could you confirm that the pads alternate between the X and Y views in a checkerboard, and is there a table of the strip-to-connector mapping?
+
+Thank you very much for your help, and for the boards. I am happy to send the relevant section of the paper once it is drafted, and we would of course like to acknowledge your work there.
+
+Best regards,
+Dylan
