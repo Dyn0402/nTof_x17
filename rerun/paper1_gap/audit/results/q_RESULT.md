@@ -1,6 +1,6 @@
-# Follow-up of the outstanding questions: items 2, 8, 10, 16, 17 and 18 (audit tag q, 2026-11-24)
+# Follow-up of the outstanding questions: items 2, 8, 9, 10, 12, 16, 17, 18 and 19 (audit tag q, 2026-11-24)
 
-This note answers six of the twenty outstanding questions of `AUDIT_2026-11-24.md` with the data on disk. Nothing in the
+This note answers or narrows nine of the twenty outstanding questions of `AUDIT_2026-11-24.md` with the data on disk. Nothing in the
 reconstruction, the bundles or the pass products was changed.
 
 Scripts (`rerun/paper1_gap/audit/`): `q16_mountings.py` (item 16), `q2_amplitude.py` (item 2). The product of velocity and
@@ -191,8 +191,64 @@ no explanation.
 **Consequence for the reference-free route.** Fit b on unsaturated events, and quote it at the β of the operating point.
 The direct per-mounting maps do not use b and are not affected.
 
+## Second round (same day): items 9, 12, 19, and the angles of censored tracks
+
+Scripts: `q19_curl_cens.py`, `q12_gain.py`. Outputs: `$WORK/audit/q16/q19_curl.json`, `q12_gain.json`.
+
+**Censored tracks have biased angles.** A track whose charge reaches the last depth bin is reconstructed shallower than
+the other tracks of the same row. Table 7 compares the two groups at 0.1 < |tan θ_ref| < 0.5, where the median |tan| of
+the two groups is the same. The signed residual is (θ − θ_ref) times the sign of tan θ_ref, so a negative value means
+the track is reconstructed too flat.
+
+**Table 7.** Censored ("railed") against uncensored tracks, pass-1 angles (deg).
+
+| row | view | railed / other tracks | s68 railed / other | median signed residual, railed / other |
+|---|---|---|---|---|
+| C short | X | 94 / 360 | 1.19 ± 0.15 / 1.54 ± 0.08 | −0.30 / +0.02 |
+| C longer | X | 229 / 962 | 1.43 ± 0.09 / 1.31 ± 0.04 | −0.55 / +0.12 |
+| C longer | Y | 190 / 689 | 1.58 ± 0.12 / 1.56 ± 0.06 | −0.47 / +0.29 |
+| C long | X | 72 / 2418 | 1.28 ± 0.16 / 1.26 ± 0.02 | −0.74 / +0.14 |
+| C long | Y | 119 / 1742 | 1.45 ± 0.16 / 1.43 ± 0.03 | −0.80 / +0.38 |
+| E 6-24 | X | 170 / 1628 | 4.55 ± 0.88 / 2.23 ± 0.08 | −0.76 / +0.07 |
+| E 6-24 | Y | 128 / 1309 | 1.57 ± 0.44 / 1.50 ± 0.06 | +0.04 / +0.09 |
+
+The railed tracks are 0.3 to 1.2° flatter than the others. Since the waveform fit does not see the charge beyond the
+last bin, it sees a shorter column and therefore a smaller angle. On the rows of chambers A, B and D (except D short)
+fewer than 3 % of the tracks are railed, so the effect is negligible there.
+
+**Item 19 (curl test on C and D).** We repeated the curl test of audit D (planes through 6 × 6 cells of τ = w0/v) with
+and without the railed tracks. On C's last row the cross difference is +1.80 ± 0.67 (1e-3 per 100 mm, 2.7σ) with all
+tracks, which reproduces audit D, and +0.26 ± 0.91 (0.3σ) without the railed 21 %. The curl excess of chamber C
+therefore comes from the censored tracks. These tracks are biased flatter, and they are more common where the gap is
+longer, so their bias has a position dependence that need not be a gradient field. On D's longer row no track is
+railed, so censoring does not explain its 3.3σ. However, with only 7 cells on the X view, our bootstrap of the same
+test gives +12 ± 13 instead of audit D's +6.4 ± 1.9. The error depends on which cells survive the 40-event cut, so we
+do not consider the D excess established.
+
+**Item 12 (fine drift-time map against the gain map).** We tested whether saturation causes the correlation. Saturated
+tracks carry an offset in ln q_u90, and their fraction follows the gain. On 8 × 8 cells of the golden mounting
+(fine part = cell map minus a quadratic, cross-run slope with a noise-free denominator) the slope d ln T / d ln q is:
+
+| events | slope | events in the cells |
+|---|---|---|
+| all | +0.067 ± 0.013 | 18,677 |
+| unsaturated only | +0.164 ± 0.023 | 13,377 |
+
+The hypothesis is contradicted: without the saturated tracks the slope is larger, not smaller, and it is 5 times the
+event-level walk slope (about 0.03). The fine gain map is almost the same as the map of the saturated fraction
+(cross-run r = 0.99), so the saturated tracks, whose charge is capped, dilute the correlation instead of making it. A
+real fine-scale correlation between the drift time and the gain therefore exists at 7σ. Audit B found no correlation
+between the full maps, so the link acts on the fine scale only. One candidate is the mesh transparency, which rises
+where the drift field is lower, i.e. where the gap is longer. However, that would also act on the smooth gap map,
+where no correlation is seen. We have not identified the mechanism. Until it is understood, the fine gap map is
+uncertain at the level of the gain correction (audit B: about 10 % of the fine structure).
+
+**Item 9 (the 6-25 gas).** The water ledger (`mx_june_wft/drift_consistency/water_ledger.csv`) gives at least 0.65 %
+water on 6-25 and 0.90 % in the golden mounting, from the logged drift voltage and the Magboltz tables. This agrees
+with the 0.68 % against 0.97 % of audit C. Table 2 adds that the gap is the same in the two mountings, so the lower
+velocity on 6-25 is gas and field, and not gap. Item 9 is confirmed.
+
 ## Not answered here
 
-Items 1, 3–7, 9 and 11–15, 19 and 20 are unchanged. Item 7 (flattening below 700 V) is not caused by the depth grid
-(Table 1). Item 9 (drier gas on 6-25) is consistent with Table 2: the product v × q_u90 on 6-25 gives the golden gap, so
-the low velocity on 6-25 is gas and field, not gap.
+Items 1, 3–7, 11, 13–15 and 20 are unchanged. Item 7 (flattening below 700 V) is not caused by the depth grid
+(Table 1). Items 9, 12 and 19 are in the second round above.
