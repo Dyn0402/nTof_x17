@@ -212,7 +212,7 @@ title = "Drift velocity against field: chamber A's scan and its Magboltz water f
 state = "current"
 source = "papers/paper1_v2/figs/out/gas_vE_all.pdf"
 producer = ".venv/bin/python papers/paper1_v2/figs/make_gas_vE_all.py"
-note = "needs figs/_gas_labels.py next to it; water fractions from rerun/paper1_gas/results/summary.json; 2026-11-24: the 500 V timing point is an upper limit (column longer than the record; gap audit q_RESULT.md, fourth round): drawn open with an arrow and refitted without it in the script (water 0.970 % [0.947, 0.993], chi2 1.78/2; was 0.967, 2.5/3); later 11-24: Run 1 timing point at 355 V/cm added (S4 re-check stack, pg_twov.golden_point): water 0.969 % [0.949, 0.989], chi2 1.78/3, out/gas_vE_all_waterfit.json"
+note = "needs figs/_gas_labels.py next to it; water fractions from rerun/paper1_gas/results/summary.json; 2026-11-24: the 500 V timing point is an upper limit (column longer than the record; gap audit q_RESULT.md, fourth round): drawn open with an arrow and refitted without it in the script (water 0.970 % [0.947, 0.993], chi2 1.78/2; was 0.967, 2.5/3); later 11-24: Run 1 timing point at 355 V/cm added (S4 re-check stack, pg_twov.golden_point): water 0.969 % [0.949, 0.989], chi2 1.78/3; later 11-24 (Dylan): Run 1 + Run 2 summed at 355 V/cm, timing and angle-scale point (s4r_run2/golden_355.json): water 0.958 % [0.939, 0.977], chi2 2.62/3, out/gas_vE_all_waterfit.json"
 
 [fig.angle_resolution_v2]
 title = "Angular resolution, chamber A: theta_fit vs theta_ref 2D (top row), residual with a Gaussian core fit, s68 against angle (B-E dropped from the figure 2026-11-14, kept in the json)"
