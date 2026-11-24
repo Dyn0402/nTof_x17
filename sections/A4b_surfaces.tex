@@ -119,19 +119,29 @@ $a=0.28\pm0.05$ in the X view and $a=0.41\pm0.02$ in the Y view. The weight is b
 cathode end has diffused more and constrains the fit less.
 
 \subsection{The gap changes with the mounting, and the mesh does not}
-\Cref{fig:gapmount} shows the map of the drift time of chamber~A in the three mountings for which we have data. In the
-mounting of 27 and 28~June, in which Run~1 and Run~2 were taken, the gap is longest at the center along $y$ and has a
-ridge along a diagonal of the chamber, about 1.5\,mm high. On 25~June the gap is shortest at the center along $y$ and
-the ridge is absent. On 22~June the gap is nearly uniform. The curvature of the gap along $y$ is $-1.2$ to
-$-1.5$\,mm per $(100\,\mathrm{mm})^2$ in the third mounting and $+0.6$\,mm per $(100\,\mathrm{mm})^2$ on 25~June.
+\Cref{fig:gapmount} shows the map of the drift time of chamber~A in the two mountings for which the map can be
+measured. In the mounting of 27 and 28~June (the third mounting), in which Run~1 and Run~2 were taken, the gap is longest at the center
+along $y$ and has a ridge along a diagonal of the chamber, about 1.5\,mm high. On 25~June the gap is shortest at the
+center along $y$ and the ridge is absent. The curvature of the gap along $y$ is $-1.2$ to $-1.5$\,mm per
+$(100\,\mathrm{mm})^2$ in the third mounting and $+0.6$\,mm per $(100\,\mathrm{mm})^2$ on 25~June.
+
+We also have data from the first mounting of chamber~A, on 22~June, but its map cannot be used. The waveform fit represents
+the charge of a track in depth bins of 60\,ns, up to 1440\,ns after the start of the track. On 22~June the gas in
+chamber~A was wet, and the drift velocity was 24 to 26\,\textmu m/ns at the nominal 1000\,V. In 70\,\% of the tracks
+the charge reaches the last depth bin. The drift time of these tracks is therefore cut at the end of the bins, and a
+map made from it is compressed toward a uniform value.
+
+The mean gap is the same in the two mountings. The product of the angle-scale velocity and the drift time gives
+28.2\,mm on 25~June and 28.1 and 28.2\,mm in Run~1 and Run~2, while the velocity differs by a factor of 1.7 between
+them. So the cathode changes its shape between the mountings, but not its mean height.
 
 \begin{figure}[tbp]
   \centering
   \includegraphics[width=\linewidth]{gap_mountings}
-  \caption{Relative drift time across chamber~A in three mountings: (a) 22~June, (b) 25~June, (c) 27 and 28~June
-  (Run~1 and Run~2). The drift time of a track is the time by which 90\,\% of its charge has arrived, and the map
-  shows its deviation from the mean of each mounting. Contour lines are drawn every 2.5\,\% (dashed for negative
-  values). A change of 1\,\% corresponds to about 0.17\,mm of gap at the operating point of (a) and (c).}
+  \caption{Relative drift time across chamber~A in two mountings: (a) 25~June, (b) 27 and 28~June (Run~1 and
+  Run~2). The drift time of a track is the time by which 90\,\% of its charge has arrived, and the map shows its
+  deviation from the mean of each mounting. Contour lines are drawn every 2.5\,\% (dashed for negative values). A
+  change of 1\,\% corresponds to about 0.12\,mm of gap at the operating point of (a) and 0.17\,mm at that of (b).}
   \label{fig:gapmount}
 \end{figure}
 
@@ -283,9 +293,15 @@ mounting and the drift-time map of 25~June, the resolution of the Y strips impro
 separate parts of the data of that mounting. Chambers A, B, C and D gain between 17 and 35\,\%. Chamber~E gains only
 on the Y strips. The correction without reference tracks recovers between 40 and 70\,\% of the gain of the spline map.
 Its amplitude $b$ is 0.37 to 0.47 for chamber~B, chamber~D and the third mounting of chamber~A, in agreement with the
-weight $a$ measured above. It is about 0.2 for chamber~C and for chamber~A on 25~June, so the amplitude has to be
-measured for each mounting. For chamber~C the drift velocity changed during the night, and one map per run is needed:
-with one run left out, its gain is 12\,\%.
+weight $a$ measured above. It is about 0.2 for chamber~C and for chamber~A on 25~June. On 25~June the low value has
+two causes. First, 87\,\% of the tracks have a saturated strip, and saturated tracks give a lower amplitude: with
+unsaturated tracks only, $b$ is $0.33\pm0.02$. Second, $b$ is quoted at $\beta=0.68$, while at 500\,V $\beta$ is
+about 1.4, so the same gap gives a larger map of the drift time. With both taken into account, the amplitude on
+25~June agrees with that of the third mounting to about 10\,\%. For chamber~C the gas dried during the night: its drift
+velocity rose from 17 to 25\,\textmu m/ns, and in the first two runs about a fifth of the tracks reach the last
+depth bin of the fit. Its map of the drift time therefore does not describe its gap in those runs, and one map per
+run is needed: with one run left out, its gain is 12\,\%. The amplitude has to be measured for each mounting, with
+unsaturated tracks.
 
 \begin{table}[tbp]
   \centering
@@ -336,8 +352,12 @@ or leave n\_TOF out of Paper I entirely (the n\_TOF re-audit has the in-situ num
 fit, resolution against cell size) is no longer used: drop it or keep the profiles in \cref{sec:gap}?}
 
 \subsection{Limits}
-We have compared mountings for chamber~A only: two mountings with reference tracks and three with drift-time maps.
-The statement that the cathode changes with the mounting therefore rests on one chamber. The X-strip velocity varies across the chamber by
+We have compared mountings for two chambers. Chamber~A changed the shape of its cathode between its two usable
+mountings, which were in different positions in the test stand. Chamber~E was put back in the same position between
+its two mountings, shifted by a few millimetres, and its map of the drift time did not change (correlation
+$0.97\pm0.03$). A map of the drift direction made in one mounting of chamber~E works in the other. We therefore do
+not know which handling changes the cathode, and we have no record of the gas flow, which could also press on the
+foil. The X-strip velocity varies across the chamber by
 more than the gap explains (\cref{sec:gap}). Below 700\,V the drift-time map of the third mounting becomes flatter,
 and it returns at 1000\,V. At these low fields the end of the drift column is close to the end of the recorded
 window, and we cannot say whether the foil or the measurement changes. The geometric gap shows a larger variation
