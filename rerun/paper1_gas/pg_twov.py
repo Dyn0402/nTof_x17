@@ -42,15 +42,22 @@ TBIN = np.arange(-0.60, 0.6001, 0.05)
 # T = 779.4 +- 7.3 ns (rerun/calib/s4/results/s4r/summary.json, det3). It is added here as the 355 V/cm point, with the
 # 1.5 % v_sys that pg_gas adds to every T, and the 1000 V ladder of this package (hv_scan2 490 V, 36.67) for v_ang.
 S4R = os.path.join(REPO, 'rerun', 'calib', 's4', 'results', 's4r', 'summary.json')
+S4R2 = os.path.join(REPO, 'rerun', 'calib', 's4', 'results', 's4r_run2', 'golden_355.json')
 V_SYS = 0.015
 
 
 def golden_point():
-    d = json.load(open(S4R))['det3']
+    """355 V/cm (1000 V) timing point of chamber A. Dylan 2026-11-24: Run 1 (sat_det3) and Run 2 (p2 night) summed,
+    as at every other place where both golden runs exist. rerun/calib/s4/results/s4r_run2/golden_355.json (s4f_fit,
+    same mask_in30 arm and pass template as the S4 re-check of Run 1, which it reproduces: T 779.4 +- 7.3 ns).
+    v_ang is the stack-event-weighted mean of the two runs' angle velocities (Run 2's gas is drier and faster), so v_ang
+    and T describe the same tracks."""
+    d = json.load(open(S4R2))['sum']
     T = d['T']; T_err = T * np.hypot(d['T_err'] / T, V_SYS)
     E = 1000.0 / (GAP_REF / 10)
     return dict(V=1000, E=E, T=T, T_err=T_err, v=GAP_REF / T * 1e3, v_err=GAP_REF / T * 1e3 * T_err / T,
-                n=d['n'], source='S4 re-check, golden Run 1 (sat_det3), mask_in30')
+                n=d['n'], v_ang=d['v_ang'], v_ang_err=d['v_ang_err'],
+                source='S4 stack fit, golden Run 1 + Run 2 summed (sat_det3 + p2 night), mask_in30')
 
 
 GAP_REF = 28.19                                  # det3 interior gap, S4 re-check (the E and timing-v gap)
@@ -222,9 +229,9 @@ def fig():
     # 2026-11-24 (gap audit, q_RESULT.md fourth round): at 500 V the column (1800 ns from v_ang) runs past the end of the
     # recorded stack (1590 ns), so T there is a lower limit. It is drawn open with an arrow and left out of the mean.
     use = [v for v in map(str, STACK_V) if int(v) not in LIMIT_V]
-    GP = golden_point(); La = D['ladder']['1000_hv']
-    GP['v_ang'] = La['v_ang']; GP['gap'] = La['v_ang'] * GP['T'] * 1e-3
-    GP['gap_err'] = GP['gap'] * np.hypot(La['v_ang_err'] / La['v_ang'], GP['T_err'] / GP['T'])
+    GP = golden_point()
+    GP['gap'] = GP['v_ang'] * GP['T'] * 1e-3
+    GP['gap_err'] = GP['gap'] * np.hypot(GP['v_ang_err'] / GP['v_ang'], GP['T_err'] / GP['T'])
     gu = np.array([D['fields'][v]['gap'] for v in use] + [GP['gap']])
     gue = np.array([D['fields'][v]['gap_err'] for v in use] + [GP['gap_err']])
     wt = 1 / gue ** 2
@@ -251,7 +258,7 @@ def fig():
     # Dylan 2026-11-24: legend split, the Run 1 diamond on its own at the top left
     l1 = ax.legend([hb, hh], ['mean of the four', r'geometric gap $L/\tan\theta$'], loc='lower right', handlelength=1.4)
     ax.add_artist(l1)
-    ax.legend([hg], ['355 V/cm (Run 1)'], loc='upper left', handlelength=1.4)
+    ax.legend([hg], ['355 V/cm (Run 1 + 2)'], loc='upper left', handlelength=1.4)
     ax.set_xlim(150, 420); ax.set_ylim(21.5, 34)
     ax.set_xlabel(r'drift field $E$ (V/cm)'); ax.set_ylabel(r'gap $g = v_\mathrm{d}\,T$ (mm)')
     hs = [Line2D([], [], color=shade[Vd], marker='o', ms=3.5,

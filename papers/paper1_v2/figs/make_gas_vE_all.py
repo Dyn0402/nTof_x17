@@ -41,7 +41,7 @@ LIMIT_V = (500.0,)
 # sub-runs. Golden Run 1's head-on stack from the S4 re-check (same model and arm) is added (pg_twov.golden_point).
 import pg_twov                                                     # noqa: E402
 _gp = pg_twov.golden_point()
-SCAN_PTS = sc['points'] + [dict(V=float(_gp['V']), E=_gp['E'], v=_gp['v'], v_err=_gp['v_err'], key='sat_det3 (S4 re-check)')]
+SCAN_PTS = sc['points'] + [dict(V=float(_gp['V']), E=_gp['E'], v=_gp['v'], v_err=_gp['v_err'], key='sat_det3 + p2 night (S4, Run 1+2)')]
 _fit = [p for p in SCAN_PTS if p['V'] not in LIMIT_V]
 _ws = np.arange(0.80, 1.15, 0.0005)
 _c2 = np.array([sum(((p['v'] - GI.v_of(w, p['E'])) / p['v_err']) ** 2 for p in _fit) for w in _ws])
@@ -74,6 +74,10 @@ ax.plot(E, [GI.v_of(0.0, e) for e in E], ':', color=ps.MUTED, lw=0.9, zorder=2, 
 La = sorted(TW['ladder'].values(), key=lambda L: L['drift_V'])
 xa = np.array([L['drift_V'] / (gap / 10) for L in La]); ya = np.array([L['v_ang'] for L in La])
 ea = np.array([L['v_ang_err'] for L in La])
+# Dylan 2026-11-24: at 355 V/cm (1000 V) Run 1 and Run 2 are summed, for the angle-scale velocity too (golden_point:
+# stack-event-weighted mean of Run 1's hv_scan2 ladder and Run 2's pass bundle)
+_i1000 = [L['drift_V'] for L in La].index(1000)
+ya[_i1000], ea[_i1000] = _gp['v_ang'], _gp['v_ang_err']
 ax.errorbar(xa, ya, yerr=ea, fmt='s', ms=4, color=c3, mfc='white', mec=c3, zorder=4, label=r'A: angle-scale $v_\mathrm{d}$ (reference ladder)')
 P = sorted(SCAN_PTS, key=lambda p: p['E'])
 PL = [p for p in P if p['V'] in LIMIT_V]; P = [p for p in P if p['V'] not in LIMIT_V]

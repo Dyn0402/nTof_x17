@@ -1,0 +1,31 @@
+{
+ "note": "Golden chamber A at 355 V/cm (1000 V): head-on stack of Run 1 (sat_det3) and Run 2 (p2 night, g_det3_wknd) summed (Dylan 2026-11-24). s4f_fit mask_in30 arm, pass template (identical in both bundles), mask = bundle dead + strip_gain_audit[sat_det3] (Run 2 has no audit entry; same mounting). v_ang of the sum = stack-event-weighted mean of Run 1's hv_scan2 ladder and Run 2's pass bundle (v_drift x mean kw_folded); Run 2 v_ang error assumed at Run 1's relative error.",
+ "run1": {
+  "n": 519,
+  "T": 779.3951627511481,
+  "T_err": 7.289503312235078,
+  "v_ang": 36.665191381098026,
+  "v_ang_err": 0.17286123425804875,
+  "gap": 28.576672803772887,
+  "gap_err": 0.2993079128368313
+ },
+ "run2": {
+  "n": 1585,
+  "T": 763.0223759740541,
+  "T_err": 3.0884026806235156,
+  "v_ang": 37.194792579340906,
+  "v_ang_err": 0.1753580851769833,
+  "gap": 28.38045900775081,
+  "gap_err": 0.17634824640182067
+ },
+ "sum": {
+  "n": 2104,
+  "T": 767.0109783556185,
+  "T_err": 2.6502403609894176,
+  "v_ang": 37.064154260953046,
+  "v_ang_err": 0.1388132545984238,
+  "f_run1": 0.24667300380228138,
+  "gap": 28.428613221617162,
+  "gap_err": 0.1448621961982659
+ }
+}

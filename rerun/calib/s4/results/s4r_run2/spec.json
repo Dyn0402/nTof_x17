@@ -1,0 +1,98 @@
+{
+ "T0": 837.9888268156425,
+ "arms": {
+  "det3_mask_in30_run1": {
+   "sel": null,
+   "sat": 3500,
+   "amp_lo": 0,
+   "edge": [
+    {
+     "x": [
+      0.0,
+      398.6
+     ],
+     "y": [
+      18.0,
+      379.88
+     ]
+    },
+    30.0,
+    "in"
+   ],
+   "mask_x": [
+    39,
+    262,
+    267,
+    307,
+    332,
+    398,
+    400,
+    501
+   ],
+   "cache": "/media/ucla/work/claude-jobs/e1a7a26e/gap/build_sat_det3/out/sat_det3/headon.pkl",
+   "template": "/media/ucla/work/claude-jobs/d006ab29/s4run2/pass_sat/arrays.npz"
+  },
+  "det3_mask_in30_run2": {
+   "sel": null,
+   "sat": 3500,
+   "amp_lo": 0,
+   "edge": [
+    {
+     "x": [
+      0.0,
+      398.6
+     ],
+     "y": [
+      18.0,
+      379.88
+     ]
+    },
+    30.0,
+    "in"
+   ],
+   "mask_x": [
+    39,
+    262,
+    267,
+    307,
+    332,
+    398,
+    400,
+    501
+   ],
+   "cache": "/media/ucla/work/claude-jobs/e1a7a26e/gap/build_g_det3_wknd/out/g_det3_wknd/headon.pkl",
+   "template": "/media/ucla/work/claude-jobs/d006ab29/s4run2/pass_p2/arrays.npz"
+  },
+  "det3_mask_in30_run1p2": {
+   "sel": null,
+   "sat": 3500,
+   "amp_lo": 0,
+   "edge": [
+    {
+     "x": [
+      0.0,
+      398.6
+     ],
+     "y": [
+      18.0,
+      379.88
+     ]
+    },
+    30.0,
+    "in"
+   ],
+   "mask_x": [
+    39,
+    262,
+    267,
+    307,
+    332,
+    398,
+    400,
+    501
+   ],
+   "cache": "/media/ucla/work/claude-jobs/d006ab29/s4run2/headon_r1r2.pkl",
+   "template": "/media/ucla/work/claude-jobs/d006ab29/s4run2/pass_p2/arrays.npz"
+  }
+ }
+}
