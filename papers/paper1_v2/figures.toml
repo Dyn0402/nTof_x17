@@ -306,11 +306,11 @@ note = "2026-11-24: no longer included in app:gapmap after the audit (the quadra
 producer = "cd rerun/paper1_gap && ../../.venv/bin/python gapmap.py <work> && ../../.venv/bin/python cellobs.py <work> && ../../.venv/bin/python gapcompare.py <work> && ../../.venv/bin/python joint.py <work> && ../../.venv/bin/python track_grid.py <work> && ../../.venv/bin/python gapfig.py <work>"
 
 [fig.gap_mountings]
-title = "Chamber A: relative drift time over the active area in its three mountings (22 June, 25 June, 27 and 28 June)"
+title = "Chamber A: relative drift time over the active area in its two usable mountings (25 June, 27 and 28 June)"
 state = "current"
 source = "rerun/paper1_gap/audit/figures/gap_mountings.pdf"
 section_state = "partial"
-note = "2026-11-24. Appendix app:gapmap. From audit test r4 (spline maps of ln q_u90, K=12, interior >= 30 mm): 22 June overnight long run (drift 1000 V), 25 June day long run (drift 500 V), and 6-27 Run 1 + 6-28 Run 2 fitted together (drift 1000 V). Percent of the map mean, one colour bar."
+note = "2026-11-24. Appendix app:gapmap. From audit test r4 (spline maps of ln q_u90, K=12, interior >= 30 mm): 25 June day long run (drift 500 V), and 6-27 Run 1 + 6-28 Run 2 fitted together (drift 1000 V). Percent of the map mean, one colour bar. The 22 June panel was dropped 11-24: its drift time is censored by the depth grid (audit results/q_RESULT.md)."
 producer = "cd rerun/paper1_gap/audit && ../../../.venv/bin/python paperfig.py <work>"
 
 [fig.gap_driftlines]

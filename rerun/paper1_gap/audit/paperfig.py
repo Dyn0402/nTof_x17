@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """paperfig.py <work> -- the three Paper I (appendix app:gapmap) figures drawn from the audit outputs.
 
-  figures/gap_mountings   r4: spline maps of ln q_u90 of chamber A in its three mountings (22 June, 25 June, 27+28 June)
+  figures/gap_mountings   r4: spline maps of ln q_u90 of chamber A in its two usable mountings (25 June, 27+28 June).
+                          22 June is left out: its drift time is censored by the depth grid of the fit (results/q_RESULT.md).
   figures/gap_driftlines  e : sideways displacement delta against height z above the mesh, five slices, X and Y views
   figures/gap_tiltpred    r1: 25 June tilt, measured / predicted from the mesh shape and the drift-time map / difference
 
@@ -65,9 +66,9 @@ def mountings():
     c = np.corrcoef(P['jun27_28'].ravel(), 0.5 * (P['jun27'] + P['jun28']).ravel())[0, 1]
     print('combined 27+28 vs mean of the two single-run maps: r = %.3f' % c)
     ps.use()
-    fig, axs = plt.subplots(1, 3, figsize=(6.1, 2.55), sharey=True, layout='constrained')
-    titles = ['22 June, drift 1000 V', '25 June, drift 500 V', '27 and 28 June, drift 1000 V']
-    keys = ['jun22', 'jun25', 'jun27_28']
+    fig, axs = ps.fig_for('full', height=3.1, ncols=2, sharey=True)
+    titles = ['25 June, drift 500 V', '27 and 28 June, drift 1000 V']
+    keys = ['jun25', 'jun27_28']
     lev = np.arange(-10, 10.1, 2.5)
     rows = []
     for ax, k, t in zip(axs, keys, titles):
