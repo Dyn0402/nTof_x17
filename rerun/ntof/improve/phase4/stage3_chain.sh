@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
-# stage3_chain.sh <cfg> -- the analysis view of one phase-4 test configuration, built exactly as stage3_r2_final
-# (../run_r2_chain.sh) but with the r2 angle map and quality references held FIXED (a five-sub-run test cannot refit
-# them, and holding them fixed keeps the comparison about the reconstruction alone).
+# stage3_chain.sh <cfg> -- the analysis view of one phase-4 test configuration, built exactly as the baseline view
+# stage3_r3_final (../run_r3_chain.sh) but with the angle map and the quality references held FIXED (a test on a few
+# sub-runs cannot refit them, and holding them fixed keeps the comparison about the reconstruction alone).
+# Since 2026-11-24 the map is the spline map (angle_map_r3.json); PHASE4_MAP / PHASE4_REFS select another.
 #
 #   bash rerun/ntof/improve/phase4/stage3_chain.sh ref
 #   PHASE4_OUT=reftest PHASE4_DIR=/some/dir bash rerun/ntof/improve/phase4/stage3_chain.sh ref
@@ -9,8 +10,10 @@
 # Under $PHASE4_DIR (default $WORK_DATA/ntof_pass1/phase4/<cfg>; all regenerable from EOS tests/phase4_<code>/out/<cfg>):
 #   stage2/  the reconstruction outputs, fetched as a tar stream over ssh (PHASE4_FETCH=0 keeps an existing copy)
 #   stage3/  ntof_stage3.py --allow-missing (context from context_r2, as stage3_r2)
-#   vt/      v(t) view;  final/  + map (angle_map_r2.json) + censored-window cut + quality flags (stage3_r2_final's refs)
-# Then compare with:  python rerun/ntof/improve/phase4/compare.py --cfg <dir>/final --ref <ref dir>/final ...
+#   vt/      v(t) view;  final/  + map (angle_map_r3.json) + censored-window cut + quality flags (stage3_r3_final's refs)
+# Then compare with ref built by this same chain:
+#   python rerun/ntof/improve/phase4/compare.py --cfg <dir>/final --ref <ref dir>/final --out <dir> --name <cfg>
+#   python rerun/ntof/improve/phase4/compare_lines.py --cfg <dir>/final --ref <ref dir>/final --out <dir> --name <cfg>
 #
 # The test never runs chamber B, and a sizing cluster covers only some acquisitions, so stage 3 runs with
 # --allow-missing: (tag, arm) pairs without a candidates table are skipped and listed in the sidecar ("partial").
@@ -28,8 +31,11 @@ D=${PHASE4_DIR:-$P/phase4/$CFG}
 J=${PHASE4_JOBS:-5}
 PY="nice -n 10 .venv/bin/python"
 EOS=/eos/experiment/ntof/data/x17/july_beam/Analysis_pass1/tests/phase4_$CODE/out/${PHASE4_OUT:-$CFG}
-SUBS=${PHASE4_SUBS:-run_145/stat090_0000,run_145/stat090_0001,run_145/stat090_0002,run_104/stat090_0003,run_139/stat090_0003}
-MAP=rerun/ntof/stage3/angle_map/angle_map_r2.json
+COS=$(for i in 0 1 2 3 4 5 6 7 8 9; do printf ',run_149/cosbounce_cos_000%s' $i; done)
+SUBS=${PHASE4_SUBS:-run_145/stat090_0000,run_145/stat090_0001,run_145/stat090_0002,run_104/stat090_0003,run_139/stat090_0003$COS}
+MAP=${PHASE4_MAP:-rerun/ntof/stage3/angle_map/angle_map_r3.json}
+REFS=${PHASE4_REFS:-$P/stage3_r3_final/quality_refs.json}
+[ -f "$MAP" ] && [ -f "$REFS" ] || { echo "missing $MAP or $REFS"; exit 1; }
 mkdir -p $D
 LOG=$D/chain.log
 say() { echo "[$(date +%H:%M:%S)] $*" | tee -a "$LOG"; }
@@ -54,6 +60,6 @@ rm -rf $D/final
 $PY rerun/ntof/stage3/map_view.py --src $D/vt --out $D/final --map $MAP --jobs $J >> $LOG 2>&1
 $PY rerun/ntof/stage3/censor_join.py --view $D/final --stage2 $D/stage2 --side $D/stage2 --tests $D/stage2 \
     --rerun-dbeam $D/stage2 --jobs $J >> $LOG 2>&1
-cp $P/stage3_r2_final/quality_refs.json $D/final/
+cp $REFS $D/final/quality_refs.json
 $PY rerun/ntof/stage3/quality_join.py apply --view $D/final --jobs $J >> $LOG 2>&1
 say "done: $D/final ($(ls $D/final/tracks_run_*.parquet | wc -l) tables)"

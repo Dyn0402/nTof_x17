@@ -65,8 +65,15 @@ def main():
                          '(rerun/ntof/ringing/deflect.py) and the hits it no longer supports dropped')
     ap.add_argument('--headon-rescue', action='store_true',
                     help='roadmap 4.5: wft_beam.HEADON_RESCUE_BEAM (2-strip seeds and the whole-plane rescue window)')
+    ap.add_argument('--tc-tol', type=float, default=0.0,
+                    help='x-y column-time tolerance [ns] in place of the bundle\'s (wft.reco.TC_TOL_OVERRIDE_NS; the '
+                         'n_TOF values are A 151, C 296, D 535). 0 = the bundle\'s')
     a = ap.parse_args()
 
+    if a.tc_tol > 0:
+        # through WFT_DIAG, so every worker process applies it on import and it is recorded with the other overrides
+        os.environ['WFT_DIAG'] = ','.join(filter(None, [os.environ.get('WFT_DIAG', ''),
+                                                         f'reco.TC_TOL_OVERRIDE_NS={a.tc_tol}']))
     from ntof_tracking import wft_beam as wb
     import wft.model, wft.seed, wft.io, wft.reco  # noqa: E401,F401  (each applies its WFT_DIAG overrides on import)
     from wft import diag
@@ -92,7 +99,7 @@ def main():
                  registry={k: r0[k] for k in r0 if k not in ('tag', 't_local', 'n_dec', 'n_fdf', 'n_hits', 'dec_gb',
                                                               'fdf_gb', 'dec_min_bytes')},
                  tags=tags, base=base, diag=dict(diag.ACTIVE) if hasattr(diag, 'ACTIVE') else {})
-    extra['phase4'] = dict(ringing=a.ringing, headon_rescue=bool(a.headon_rescue))
+    extra['phase4'] = dict(ringing=a.ringing, headon_rescue=bool(a.headon_rescue), tc_tol=float(a.tc_tol))
     if a.headon_rescue:
         wb.HEADON_RESCUE_BEAM = True
     if a.ringing == 'deflect_hits':

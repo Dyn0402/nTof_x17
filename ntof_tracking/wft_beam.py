@@ -455,7 +455,7 @@ def seeds_from_hits_beam(df, pos_maps, feu_x, feu_y,
         cands = wseed.seed_candidates(pos_maps[feu_of[plane]][ch], ch,
                                       gp['amplitude'].to_numpy(),
                                       min_strips=min_strips,
-                                      n_candidates=n_candidates,
+                                      n_candidates=(10 ** 6 if wseed.SEED_CAP_AFTER_VETO else n_candidates),
                                       hot=hot.get(plane),
                                       dead_pos=dead_pos[plane])
         if sg:
@@ -470,6 +470,9 @@ def seeds_from_hits_beam(df, pos_maps, feu_x, feu_y,
             if s.n_strips >= WIDE_STRIPS and span < ISOCHRONOUS_SPAN:
                 continue
             keep.append(s)
+        if wseed.SEED_CAP_AFTER_VETO:
+            # the cap counts the clusters that survive the veto; `cands` stays every cluster (the rescue's blockers)
+            keep = keep[:max(1, n_candidates)]
         return cands, keep
 
     for eid, g in df.groupby('eventId', sort=False):
@@ -687,6 +690,8 @@ def _write_meta(df, out_path, cal, cfg, bundle_path, feu_x, feu_y, tags_done,
                                busy_plane_hits=BUSY_PLANE_HITS,
                                min_strips=MIN_STRIPS_BEAM if min_strips is None else min_strips,
                                n_candidates=N_CANDIDATES_BEAM,
+                               seed_rank=wseed.SEED_RANK,
+                               seed_cap_after_veto=bool(wseed.SEED_CAP_AFTER_VETO),
                                wide_strips=WIDE_STRIPS,
                                isochronous_span=ISOCHRONOUS_SPAN,
                                sig_floor_local_mm=wseed.SIG_FLOOR_LOCAL_MM,

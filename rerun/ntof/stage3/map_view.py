@@ -18,6 +18,17 @@ go through build_tracks' own geometry with k = 1 (local_and_global, pointing, pr
 so every derived column sits on one calibration.  drift_len_mm (v only) is unchanged; path_len_mm and q_per_len
 follow the new secant.  B rows pass through unchanged (no angle; their `_nomap` twins equal the plain columns).
 
+Two kinds of map file are accepted, told apart by the file's meta block:
+
+    cell map    (no meta.model, angle_map_r2.json and before): the bilinear 50 / 100 mm cells above, `interp`.
+    spline map  (meta.model == "spline", angle_map_r3.json, fitted by rerun/ntof/improve/spline_map_fit.py): a
+                potential tilt and a per-view scale as tensor cubic B-splines, applied to the LOCAL tan as
+                t' = (t - a_p)/(1 + s_p) through spline_map.py (positions clamped to +-200 mm, fields clamped to their
+                range over the training lines, NaN positions unchanged).  The sign g of each view is still checked
+                on the rows and must equal the map's own g.
+
+Each table's sidecar records the map file, its md5 and its model (meta.map).
+
     map_view.py [--src $WORK_DATA/ntof_pass1/stage3_vt] [--out $WORK_DATA/ntof_pass1/stage3_vtmap] [--jobs 14]
 """
 from __future__ import annotations
@@ -36,6 +47,7 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parents[2]))
 MAP_FILE = HERE / 'angle_map' / 'angle_map.json'
 VIEW = 'pass1_vt_map'
+MODEL_CELL, MODEL_SPLINE = 'cell', 'spline'
 TAN_MAX = 0.5
 MAP_ARMS = ('A', 'C', 'D')
 #: the global coordinate each view's tan measures, and the chamber normal: the map is fitted on global slopes
@@ -74,10 +86,21 @@ def slope_sign(t, d_p, d_z):
     return float(np.sign(g))
 
 
-def apply(t, maps, trs):
+def map_model(M) -> str:
+    """'spline' when the file's meta block says so (spline_map.is_spline), else 'cell'."""
+    from rerun.ntof.stage3 import spline_map as SM
+    return MODEL_SPLINE if SM.is_spline(M) else MODEL_CELL
+
+
+def apply(t, maps, trs, M=None):
+    """Apply the map to one table.  maps: the cell maps (file['maps']) for a cell map; M: the whole file for a spline
+    map (then maps is ignored)."""
     import pandas as pd
     from sept26_prelim_analysis import build_tracks as BT
     from ntof_tracking.reco import geometry as G
+    spline = M is not None and map_model(M) == MODEL_SPLINE
+    if spline:
+        from rerun.ntof.stage3 import spline_map as SM
     cols = list(BT.ANGLE_DERIVED) + ['tan_raw_x', 'tan_raw_y', 'in_acceptance', 'gated']
     out = t.copy()
     for c in cols:
@@ -89,15 +112,27 @@ def apply(t, maps, trs):
             continue
         a = t.loc[m]
         new = {}
-        for p in 'xy':
+        if spline:
+            if arm not in M['maps']:
+                continue
+            sf = SM.fields(M, arm, a['x_local'].to_numpy(float), a['y_local'].to_numpy(float))
+            sfp = {'x': (sf[0], sf[2]), 'y': (sf[1], sf[3])}
+        for vi, p in enumerate('xy'):
             tt = a[f'tan{p}'].to_numpy(float)
             fr = FRAME[arm]
             g = slope_sign(tt, a[f'd_{fr[p]}'].to_numpy(float), a[f'd_{fr["n"]}'].to_numpy(float))
             if g is None:
                 new[p] = tt
                 continue
-            A_, S_ = interp(maps[f'{arm}_{p}'], a['x_local'].to_numpy(float), a['y_local'].to_numpy(float))
-            new[p] = (tt - g * A_) / (1.0 + S_)
+            if spline:
+                gm = float(M['maps'][arm]['g'][vi])
+                if g != gm:
+                    raise AssertionError(f'{arm} {p}: rows give global = {g:+.0f} tan, the spline map says {gm:+.0f}')
+                A_, S_ = sfp[p]
+                new[p] = (tt - A_) / (1.0 + S_)      # local tan: a_p is already in the view's own sign
+            else:
+                A_, S_ = interp(maps[f'{arm}_{p}'], a['x_local'].to_numpy(float), a['y_local'].to_numpy(float))
+                new[p] = (tt - g * A_) / (1.0 + S_)
             ok = np.abs(tt) < TAN_MAX
             info[f'{arm}_{p}'] = dict(g=g, median_abs_shift_in_acc=float(np.nanmedian(np.abs(new[p] - tt)[ok]))
                                       if ok.any() else None)
@@ -129,7 +164,7 @@ def apply(t, maps, trs):
     return out, info
 
 
-def one(src, out, maps, map_md5, force):
+def one(src, out, M, map_path, map_md5, force):
     import pandas as pd
     from ntof_tracking.reco import geometry as G
     from sept26_prelim_analysis import paths
@@ -144,15 +179,21 @@ def one(src, out, maps, map_md5, force):
         raise RuntimeError(f'{src} is already mapped (has *_nomap columns): point --src at the unmapped v(t) view')
     run = str(t['run'].iloc[0]).replace('run_', '')
     cfg = json.loads((Path(str(paths.root('runs'))) / f'run_{run}' / 'run_config.json').read_text())
-    v, info = apply(t, maps, G.detector_transforms(cfg))
+    model = map_model(M)
+    v, info = apply(t, M['maps'], G.detector_transforms(cfg), M=M)
     tmp = dst.with_suffix('.part')
     v.to_parquet(tmp, index=False, compression='snappy')
     os.replace(tmp, dst)
     mj = src.with_suffix('.meta.json')
     meta = json.load(open(mj)) if mj.exists() else {}
-    meta['map'] = dict(name=VIEW, source=str(src), map_file=str(MAP_FILE), map_md5=map_md5,
-                       rule="s' = (s - a)/(1 + s_) on the global slope per (x_local, y_local); A, C, D; <col>_nomap = "
-                            'the v(t) view value; gated/in_acceptance recomputed (true |tan| < 0.5)',
+    rule = ("s' = (s - a)/(1 + s_) on the global slope per (x_local, y_local); A, C, D; <col>_nomap = "
+            'the v(t) view value; gated/in_acceptance recomputed (true |tan| < 0.5)') if model == MODEL_CELL else \
+        ("t' = (t - a_p)/(1 + s_p) on the local tan, spline fields at (x_local, y_local) (spline_map.py: positions "
+         'clamped to the domain, fields to the clamp block, NaN positions unchanged); A, C, D; <col>_nomap = the v(t) '
+         'view value; gated/in_acceptance recomputed (true |tan| < 0.5)')
+    meta['map'] = dict(name=VIEW, source=str(src), map_file=str(map_path), map_md5=map_md5, map_model=model,
+                       map_version=(M.get('meta') or {}).get('version'),
+                       rule=rule,
                        n_gated_by_arm={k: int(x) for k, x in v.groupby('arm')['gated'].sum().items()},
                        n_gated_nomap_by_arm={k: int(x) for k, x in v.groupby('arm')['gated_nomap'].sum().items()},
                        per_view=info, built_by='rerun/ntof/stage3/map_view.py')
@@ -172,12 +213,14 @@ def main():
     a = ap.parse_args()
     if Path(a.src).resolve() == Path(a.out).resolve():
         sys.exit('--src and --out are the same directory')
-    maps = json.load(open(a.map))['maps']
+    M = json.load(open(a.map))
     md5 = hashlib.md5(open(a.map, 'rb').read()).hexdigest()
+    map_path = Path(a.map).resolve()
+    print(f'map {map_path} md5 {md5} model {map_model(M)}', flush=True)
     os.makedirs(a.out, exist_ok=True)
     fs = sorted(Path(a.src).glob(a.only or 'tracks_run_*.parquet'))
     with ProcessPoolExecutor(a.jobs) as ex:
-        jobs = [ex.submit(one, f, a.out, maps, md5, a.force) for f in fs]
+        jobs = [ex.submit(one, f, a.out, M, map_path, md5, a.force) for f in fs]
         for i, j in enumerate(as_completed(jobs)):
             name, msg = j.result()
             print(f'[{i + 1}/{len(fs)}] {name}: {msg}', flush=True)

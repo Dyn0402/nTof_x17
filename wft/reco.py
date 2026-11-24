@@ -683,6 +683,23 @@ def _candidate_score(P, plane, fit: PlaneFit) -> tuple:
     return bool(plausible), float(chi_null - fit.chi2)
 
 
+#: Significance [sigma of the strip's own noise] a strip's peak must exceed to count in ``n_sig5`` / ``q_sig5``.
+WINDOW_SIG = 5.0
+
+
+def window_sig(P, plane: str) -> tuple:
+    """(number of strips of the fit window whose peak sample exceeds WINDOW_SIG x their noise, the sum of those peaks
+    [ADC]): written per candidate as ``n_sig5`` / ``q_sig5``.  It is measured on the waveforms the fit saw, so with the
+    n_TOF ringing correction on (ntof_reco --ringing deflect_hits) it is the per-track waveform test of the ringing
+    study, "does the track keep at least one channel above 5 sigma once the ringing is removed"
+    (rerun/ntof/ringing/README.md, window_own.py; roadmap 2.8: n_sig5 >= 1).  The noise is the fit's (wft.model.prep_plane),
+    so a hot strip, whose noise the bundle inflates, does not certify a track.  Changes no fit."""
+    W, noise, _pos, _sat = wm.prep_plane(P, plane)      # the fit's own view of the window (hot strips down-weighted)
+    pk = np.asarray(W, float).max(axis=1)
+    m = pk > WINDOW_SIG * np.asarray(noise, float)
+    return int(m.sum()), float(pk[m].sum())
+
+
 def fit_plane_candidates(windows: list, plane: str, cal: CalibrationBundle,
                          seeds: Optional[list] = None, return_all: bool = False,
                          t0_prior: Optional[tuple] = None):
@@ -722,6 +739,7 @@ def fit_plane_candidates(windows: list, plane: str, cal: CalibrationBundle,
         fit._plausible, fit._dchi2 = plausible, dchi2
         fit._rescued = bool(getattr(s, 'rescued', False))
         fit._win = i                      # which window this fit came from
+        fit._n_sig5, fit._q_sig5 = window_sig(P, plane)
         key = (1 if plausible else 0, dchi2)
         ranked.append((key, fit))
         if best_key is None or key > best_key:
@@ -1220,6 +1238,7 @@ def fit_plane_two(P, plane: str, cal: CalibrationBundle, parent: PlaneFit,
         f._rescued = False
         f._split_child = True
         f._split_dchi2 = dchi2
+        f._n_sig5, f._q_sig5 = window_sig(P, plane)      # the children share the parent's window
         f._split_f = fstat
     return dict(children=[fa, fb], profiles=(r['qa'], r['qb']),
                 chi2_one=float(chi_one), chi2_two=chi_two,
@@ -1582,6 +1601,10 @@ def two_track_ladder(kept: Dict[str, list], attempts: list, ftst_diff,
 FTST_NS = 10.0
 TC_TOL_DEFAULT_NS = 200.0
 TC_TOL_NS = TC_TOL_DEFAULT_NS
+#: > 0: use this tolerance [ns] instead of the bundle's (a test switch: the n_TOF bundles carry the bench tc_tol,
+#: A 197, C 456, D 726 ns, against 151, 296, 535 ns measured at n_TOF, rerun/ntof/stage3/quality_join.TC_TOL_NTOF;
+#: x/y matching study 2026-11-23, recommendation 3).  Set per job with ntof_reco --tc-tol.  0 = the bundle's value.
+TC_TOL_OVERRIDE_NS = 0.0
 #: legacy names (the t0 gate is retired); kept so old study scripts that read them still import
 DT_XY_TOL_NS = TC_TOL_DEFAULT_NS
 DT_XY_TOL_DEFAULT_NS = TC_TOL_DEFAULT_NS
@@ -1590,6 +1613,8 @@ XY_TOL_NSIG = 2.5
 
 def tc_tol(pairing: Optional[dict]) -> float:
     """The x-y column-time tolerance [ns] a bundle's ``xy_pairing`` implies."""
+    if TC_TOL_OVERRIDE_NS and TC_TOL_OVERRIDE_NS > 0:
+        return float(TC_TOL_OVERRIDE_NS)
     v = (pairing or {}).get('tc_tol')
     return float(v) if v is not None and np.isfinite(v) and v > 0 else TC_TOL_DEFAULT_NS
 
@@ -1956,6 +1981,9 @@ def candidate_rows(event_id: int, all_fits: Dict[str, list],
             if STORE_PROFILES:
                 q = getattr(f, '_q', None)
                 row['q_profile'] = (np.asarray(q, np.float32).round(3).tolist() if q is not None else None)
+            # strips of the fit window above 5 sigma, and their summed peaks (window_sig; roadmap 2.8 / 4.10)
+            row['n_sig5'] = int(getattr(f, '_n_sig5', -1))
+            row['q_sig5'] = float(getattr(f, '_q_sig5', np.nan))
             # the bow block's height at this track (apply_bow, set on paired candidates only; roadmap 4.7)
             row['bow_h'] = float(getattr(f, '_bow_h', np.nan) if getattr(f, '_bow_h', None) is not None else np.nan)
             tid, gated = track_of.get((plane, rank), (-1, False))
@@ -2127,6 +2155,7 @@ def _headon_rescue(R, plane, other):
     if q <= 3 * sq or abs(lq - med) > HEADON_RESCUE_QTOL * np.hypot(rs, sq / q):
         return None
     f._rescued = True
+    f._n_sig5, f._q_sig5 = window_sig(P, plane)
     return f, P
 
 

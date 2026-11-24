@@ -50,7 +50,13 @@ for _v in ('OMP_NUM_THREADS', 'OPENBLAS_NUM_THREADS', 'MKL_NUM_THREADS'):
 import numpy as np
 import pandas as pd
 
-W_MESH = 30.1            # mm, sim local w of the mesh (DriftGas 0.1-30.1)
+W_MESH = float(os.environ.get('X17_G4_W_MESH', 30.1))   # mm, sim local w of the mesh (DriftGas 0.1-30.1)
+#: Steps beyond the mesh are refused (electrons()).  The ear2_L19p5 Geant4 build has the drift gas at w = 5.1-35.1 mm
+#: (mesh at 35.1): digitised with W_MESH = 30.1, the last 5 mm of every track arrived at t0 and the reconstructed
+#: tangent read 6-7 % steep (re-audit 2026-11-24, rerun/ntof/improve/reaudit, X2).  Set W_MESH to the library's mesh
+#: plane before digitising ($X17_G4_W_MESH=35.1 for ear2_L19p5; an environment variable so that every worker process
+#: has it), or shift the steps.
+W_MESH_TOL = 0.3         # mm
 W_ION = 26.0             # eV per ion pair, Ar/iC4H10 90/10
 POLYA_K = 1.5            # avalanche gain shape (Gamma)
 T_BIN = 5.0              # ns, arrival-time grid of the response
@@ -136,6 +142,10 @@ def electrons(steps: pd.DataFrame, rng, v_um_ns: float, hyper: dict):
     rep = lambda c: np.repeat(steps[c].to_numpy(float)[keep], n)   # noqa: E731
     u, v, w = rep('u'), rep('v'), rep('w')
     tp = rep('time') if 'time' in steps else 0.0
+    if len(w) and float(w.max()) > W_MESH + W_MESH_TOL:
+        raise ValueError(f'g4_digi: steps reach w = {float(w.max()):.1f} mm, beyond the mesh at W_MESH = {W_MESH} mm: '
+                         'this library has another drift-gas range (ear2_L19p5: 5.1-35.1). Set $X17_G4_W_MESH '
+                         'for the library; a clipped drift distance makes the tangent 6-7 % steep')
     d = np.clip(W_MESH - w, 0.0, None)
     ta = d / (v_um_ns * 1e-3)                                       # ns
     sig = np.sqrt(hyper['sigma_p0'] ** 2 + hyper['Dp'] ** 2 * ta)

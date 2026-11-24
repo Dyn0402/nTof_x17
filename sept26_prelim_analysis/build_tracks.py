@@ -230,7 +230,8 @@ def pair_rows(cand: pd.DataFrame) -> pd.DataFrame:
             out[f'{pl}_{c}'] = src[c].to_numpy()
         # optional: the bow tilt term and mesh height (n_TOF stage 3 recomputes them, ntof_stage3.bow_patch) and the
         # two-track child flag (tracking audit 2026-11-22: split_child was not carried)
-        for c in ('bow_a', 'bow_h', 'split_child'):
+        # (re-audit 2026-11-24) the seed's rescue flag and the window's strips above 5 sigma (wft.reco.window_sig)
+        for c in ('bow_a', 'bow_h', 'split_child', 'rescued', 'n_sig5', 'q_sig5'):
             if c in src.columns:
                 out[f'{pl}_{c}'] = src[c].to_numpy()
     out['gated'] = x['track_gated'].to_numpy() & y['track_gated'].to_numpy()

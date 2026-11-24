@@ -36,6 +36,13 @@ N_CANDIDATES = 3           # clusters offered to the fit per plane
 #: test, so a wide noise band can take a slot from a short bright track.  'charge': among the clusters that pass
 #: min_strips, by summed amplitude.
 SEED_RANK = 'strips'
+#: Where the n_candidates cap falls in the beam driver (ntof_tracking.wft_beam.seeds_from_hits_beam).  False (pass 1):
+#: seed_candidates returns the n best clusters and the wide-isochronous veto is applied to those, so a wide noise band
+#: takes one of the slots and is then dropped, and a real cluster ranked below the cap is never offered.  True: every
+#: cluster that passes min_strips is ranked, the veto is applied, and the cap keeps the n best SURVIVORS.  Needed
+#: with SEED_RANK = 'charge' in particular: a wide band has a large summed amplitude, so it ranks high (re-audit
+#: 2026-11-24, rerun/ntof/improve/reaudit, T1; roadmap 4.4).
+SEED_CAP_AFTER_VETO = False
 PITCH_MM = 398.58 / 512    # 0.7784 — strip pitch, for the hot-run bridge below
 #: Let a run of hot strips be crossed for free when clustering the clean ones
 #: (``_clean_cluster_labels``). Off, on the argument in that docstring: making

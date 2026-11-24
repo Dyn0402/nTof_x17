@@ -141,6 +141,34 @@ add('<h3>Headline numbers</h3>',
     'were not run.</p>')
 
 # ------------------------------------------------------------------------------------------------------------- part 1
+add('<div class="warn">',
+    '<p><b>Update, afternoon of 24 November.</b> Dylan decided to run with the spline map and asked for the fixes and '
+    'for a look into the open questions. The sections below are the morning audit; where the afternoon changed a '
+    'statement, the text says so.</p>',
+    ul([
+        '<b>The spline map is in the chain.</b> <code>rerun/ntof/stage3/spline_map.py</code>, '
+        '<code>rerun/ntof/improve/spline_map_fit.py</code>, <code>rerun/ntof/improve/run_r3_chain.sh</code>, the map '
+        '<code>rerun/ntof/stage3/angle_map/angle_map_r3.json</code> and the view <code>stage3_r3_final</code>. '
+        'The test chain of the campaign uses it.',
+        '<b>The fixes for the re-reconstruction are made</b> (all behind switches, default = pass 1): the seed cap after '
+        'the wide-band veto, the per-candidate waveform count <code>n_sig5</code>, the x–y time tolerance per job, the '
+        'profiles in every configuration, the decided charge rule and the D and B flags in <code>quality_join.py</code>, '
+        'new job lists with chamber D on run_104 and ten cosmic sub-runs, and a comparison of cosmic lines per configuration.',
+        '<b>Correction: the chamber-D numbers of section 1.3 are confounded.</b> The sizing cluster ran D on a bundle '
+        'with the wrong trigger pin (+36 / +31 ns). The loss of 6.6 % of real D tracks and the verdict on the '
+        'oscillating-channel hot list must be measured again in the campaign, which uses the right bundle.',
+        '<b>The drift-gap puzzle is mostly solved</b> (<code>OPEN_QUESTIONS.md</code>, item 1). For chamber A the bench '
+        'picture holds at n_TOF in the interior: the common scale follows the drift time with slope −0.33 ± 0.06 '
+        '(predicted −0.34), and the tilt follows the gradient of the gap with the bench coefficient (0.53 ± 0.04). '
+        'The test of the morning failed because of noisy cells, the fringe field at the edges, the per-view comparison, '
+        'and the 1200 ns readout window that cuts the column on C and D.',
+        '<b>The Geant4 digitisation had two faults</b> that make its tangents 3 to 10 % steep. One is fixed '
+        '(the mesh plane of the EAR2-beam library); the other needs a simulation bundle before the digitisation is re-run.',
+        'The campaign handoff is <code>rerun/ntof/improve/phase4/CAMPAIGN.md</code>. The list of what we do not '
+        'understand is <code>OPEN_QUESTIONS.md</code> next to this file.',
+    ]),
+    '</div>')
+
 add('<h2>1. Does everything line up?</h2>',
     '<p>We checked the work of the last three days in four ways. We reviewed the phase-4 code against the roadmap and '
     'against the three code reviews of the audit. We reconstructed a few acquisitions with every switch off and '
@@ -172,20 +200,22 @@ add('<h3>1.2 Problems found in the test campaign</h3>',
               'large summed charge.',
          'A noise band can take one of the five seed slots and then be dropped. This is the first suspect for the '
          'real chamber-D tracks that disappear with every switch on.',
-         'Open. The review asked for a ranking by significance.'],
+         '<b>Fixed in the afternoon:</b> <code>seed.SEED_CAP_AFTER_VETO</code> (the cap counts the clusters that '
+         'survive the veto), used with the charge ranking in configuration <code>seedrank</code>.'],
         ['5', 'The job flavour <code>workday</code> (8 h) is too short for chamber D. The large D acquisitions took '
               '5.4 to 8.3 h in pass 1 and 6.9 to 7.6 h in the sizing cluster.',
-         'Some D jobs would be killed.', 'Open. Use <code>tomorrow</code> for D.'],
+         'Some D jobs would be killed.', '<b>Done:</b> the job lists are split per chamber; D is submitted with <code>tomorrow</code>.'],
         ['6', 'The cost was sized on configuration <code>all</code>, in which the ringing correction removes many '
               'early fits. A <code>ref</code> job takes about 3 times longer on A and C.',
          'About 10,000 to 12,000 core-hours instead of 5,000. This is within our budget.', 'Open (information).'],
         ['7', 'No beam-off cosmic sub-run is in the test.',
          'No configuration can be compared with the cosmic-line angle truth. The angle map is trained on cosmic runs.',
-         'Open. Add two or three sub-runs, for example of run_149.'],
+         '<b>Done:</b> ten sub-runs of run_149 (about 1,400 A–C lines) are in the job lists; '
+         '<code>phase4/compare_lines.py</code> compares them.'],
         ['8', 'Chamber D is not run on run_104, although the canon names a bundle for it.',
-         'The early-run slope cut of D cannot be tested.', 'Open.'],
+         'The early-run slope cut of D cannot be tested.', '<b>Done</b> (in the job lists).'],
         ['9', 'The depth profiles (4.11) are stored only in <code>all</code>.',
-         'They change no fit, so they should be on in every configuration.', 'Open.'],
+         'They change no fit, so they should be on in every configuration.', '<b>Done.</b>'],
         ['10', 'The sizing cluster ran D on <code>bundles_osc/D_E2_beam</code>. The campaign uses the canon bundle '
                '<code>D_E2_beam_L1</code>.', 'The sizing D jobs are not the campaign configuration.', 'Information.'],
     ]),
@@ -236,7 +266,8 @@ add('<h3>1.3 First look at every switch on</h3>',
         '<b>The local seeding floor (4.12) shows no visible gain here.</b> Only 1 % of the added late tracks are second '
         'tracks. The sample holds only 158 (A) and 103 (C) two-track events from 12 ms on, so this switch has to be '
         'judged with the injection test, which gave 76 → 87 % (A) and 71 → 84 % (C).',
-        '<b>Chamber D loses real tracks.</b> D loses 131 late tracks that the wall confirms at 0.985 and gains 69 that '
+        '<b>Chamber D loses real tracks (confounded, see the update above: the sizing run used a wrong pin for D).</b> '
+        'D loses 131 late tracks that the wall confirms at 0.985 and gains 69 that '
         'are worse (wall 0.957). Between 21 and 30 of the lost tracks are removed by the flags that the added hot '
         'channels raise. The other 88 have no matching track at all, so a reconstruction switch removed them. '
         'For this reason D should not receive every switch as it stands.',
