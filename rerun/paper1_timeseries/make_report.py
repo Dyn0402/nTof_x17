@@ -105,7 +105,7 @@ def figure(df, J):
     ax.legend(loc='upper right', **leg)
     # (d) position core, (e) angle s68
     for ax, q, key, lab, lim, mk in ((axs[3], 'pos', 'pos', 'position core\n[mm]', (0.4, 0.68), 'v'),
-                                     (axs[4], 'ang', 's68', r'angle $s_{68}$' + '\n[deg]', (0.7, 1.15), 'o')):
+                                     (axs[4], 'ang', 's68', r'angle $s_{68}$' + '\n[deg]', (0.5, 0.95), 'o')):
         for v in 'xy':
             ser(ax, q, f'{key}_{v}', f'{key}_{v}_err', mk, filled=(v == 'x'), ls=ps.VIEW_LS[v], label=v.upper(),
                 xoff=0.04 if v == 'y' else 0.0)
@@ -190,7 +190,7 @@ def paragraph(J):
         f'against {q["run2"] / 1e3:.1f}\\,k ADC, saturated tracks {fs["run1"]:.0f} against {fs["run2"]:.0f}\\,\\%), a step '
         f'between the runs rather than a drift within them. Neither reaches the performance. Each run is reconstructed with its own velocity, and the '
         f'{abs(100 * lad2["change"] / lad2["line_start"]):.0f}\\,\\% left inside Run~2 moves a 20\\textdegree{{}} track by '
-        f'${{\\sim}}0.2$\\textdegree{{}}, a fifth of the resolution; the gain step is what ${{\\sim}}1$\\,V on the resist '
+        f'${{\\sim}}0.2$\\textdegree{{}}, a quarter of the resolution (a fifth on the earlier angles); the gain step is what ${{\\sim}}1$\\,V on the resist '
         f'gives (one doubling per 17\\,V, \\cref{{fig:hvmetrics}}), and the HV scan shows nothing but the time '
         f'resolution moving over 60\\,V.')
 

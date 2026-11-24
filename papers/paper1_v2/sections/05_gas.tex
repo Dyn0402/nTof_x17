@@ -90,7 +90,7 @@ still gives 28.2\,mm.
 \Cref{app:gapmap} describes these measurements. It shows that the drift lines are tilted and bent by the shapes of
 the mesh and of the cathode, as measured directly from the signals, and that the tilt can be predicted from the dish
 of the board and the map of the gap. A map of the drift direction made for one mounting improves the angle resolution
-of chamber~A in that mounting by 26\,\%.
+of chamber~A in that mounting by 25\,\%.
 \askDylan{Updated 2026-11-24 after the audit (\texttt{rerun/paper1\_gap/audit/report.html}). Removed: ``the shape
 along $y$ is the one expected for a flat cathode above the dish, 0.5 to 0.8 of its depth'' (it holds only in the third
 mounting; the 25~June mounting has the opposite curvature). Changed: the gap-or-gas ratio ($-0.50\pm0.02$ averaged
@@ -119,7 +119,7 @@ used for the SPS gas fit (\cref{app:beam}).}
 \Cref{fig:vE} shows both measured drift velocities of chamber~A as a function of the drift field. The timing velocity increases from
 25.2 to 37.2\,\textmu m/ns between fields of 248 and 390\,V/cm, and the angle-scale velocity from 2.55 to 38.9\,\textmu m/ns over
 seven drift fields. These velocities are not consistent with dry Ar/iC$_4$H$_{10}$, for which the drift velocity would
-be about 40\,\textmu m/ns at the fields used here. They are, however, well described by a
+be 40.9\,\textmu m/ns at 248\,V/cm and 37.7\,\textmu m/ns at 390\,V/cm (Magboltz). They are, however, well described by a
 Magboltz~\cite{Biagi1999} calculation in which the water content of the gas is the only free parameter. A fit to the
 timing velocity gives a water content of 0.96\,\% (68\,\% interval 0.94--0.98\,\%; $\chi^2=2.6$ for 3 degrees of
 freedom). The angle-scale velocities were not used in the fit. Above 100\,V/cm, they lie within $-2.6$ to $+2.1\,\%$ of
@@ -130,10 +130,8 @@ The other chambers have no drift-field scan. For them we have only the drift vel
 single field. A single velocity can always be matched by some water content, so it does not test the model. It can
 only be expressed as an equivalent water content: 0.69\,\% for B, 1.00\,\% for C, 0.48\,\% for D and 0.42\,\% for E.
 This equivalent water content differs between chambers by more than a factor of two, which is one reason we use the
-drift velocity measured in each run (\cref{sec:drying}). Water at this level has a large effect: a water content of
-one percent lowers the drift velocity at 250\,V/cm by about 40\,\%.
-\askDylan{``About 40\,\%'' and ``about 40\,\textmu m/ns'' are read off the dry curve of \cref{fig:vE}; to replace by the
-Magboltz table values.}
+drift velocity measured in each run (\cref{sec:drying}). Water at this level has a large effect: in the Magboltz calculation, a water content of
+one percent lowers the drift velocity at 250\,V/cm from 40.9 to 24.7\,\textmu m/ns, which is 40\,\%.
 
 \begin{figure}[tbp]
   \centering

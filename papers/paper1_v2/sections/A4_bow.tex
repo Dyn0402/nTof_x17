@@ -128,7 +128,7 @@ behind it. A Kirchhoff-plate estimate gives a dip at 150\,mm of 0.1--0.25\,mm fr
 0.3--0.7\,mm per mbar of gas overpressure and up to $\sim$1\,mm from a mesh laminated under 10\,N/cm. The measured
 depth can therefore be explained by ordinary loads.
 
-\subsection{Correction, and its transfer to the beam}
+\subsection{Correction, and its transfer to the beam}\label{sec:bowcorr}
 The bow enters the reconstruction in only two places: the conversion of the fitted transverse rate into an angle, and
 the height of the track point. The correction consists of a surface per chamber (the static shape) plus a rigid tilt
 per run. We validate it by two-fold cross-validation on held-out tracks of the final reconstruction. The correction
@@ -140,12 +140,24 @@ from positions alone, with two numbers fitted to the angles, recovers 15\,\%. On
 ($0.3<|\tan\theta|<0.45$) falls from $-0.9^\circ/-1.1^\circ$ (X/Y) to $-0.65^\circ/-0.8^\circ$. Subtracting
 $h\tan\theta$ improves the position residual by 5--18\,\%.
 
+This correction has two parts of a different kind. The mesh height $h$ is a property of the readout board, and we find
+it to be the same in the two mountings of chamber~A in which it can be measured (\cref{app:gapmap}). It is therefore
+static, and it can be carried from one setup to another. The tilt of the drift lines, in contrast, is set by the mesh
+and by the cathode together, and the cathode is a foil on a removable window whose shape changes from one mounting to
+the next. A map of the drift direction made for one mounting is therefore a property of that mounting. It does not
+transfer to another mounting, and the quadratic block transfers only through its mesh term. For the angle of the bench
+data we use one map for each mounting (\cref{sec:angle}), fitted to the reference tracks of that mounting and used
+only in the interior of the chamber. The quadratic block remains in use for the mesh height, for the edge zone, and
+for the data that have no map: chamber~E, chamber~A on 22 and 23 June, and chamber~B on 17 June (\cref{sec:angle}).
+
 The beam reconstruction uses the bench bow correction of each chamber unchanged (chambers A--D: the bench and n\_TOF
-channel-to-strip maps are identical, so the correction carries over by channel). The quadratic reaches about $5$\,mm
+channel-to-strip maps are identical, so the correction carries over by channel). It uses the quadratic block and not
+the maps, because the maps belong to the bench mountings. The quadratic reaches about $5$\,mm
 at the plate corners, which is beyond the range fitted on the bench. The load depends on the mounting, and at n\_TOF
 the chambers stand vertical, so the gravity part of the load acts in the plane of the board rather than across it. The
-carried surface is therefore an assumption about the chambers and not a measurement of them at n\_TOF. A comparison
-with and without the correction on the existing beam data has not been made. Chamber~B, which has no field-shaping
+carried surface is therefore an assumption about the chambers and not a measurement of them at n\_TOF. The n\_TOF
+analysis, which is reported separately, compares the angles with and without the block. For chamber~A the block of the
+bench corrects too much, and for chamber~C it is appropriate. Chamber~B, which has no field-shaping
 ring at n\_TOF, is not used for angles.
 \askDylan{Is a direct flatness measurement of a spare board (or the photographs of the opened chambers) available to
 quote alongside? No new data are needed for the text as it stands.}

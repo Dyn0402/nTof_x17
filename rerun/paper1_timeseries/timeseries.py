@@ -50,6 +50,8 @@ REPO = os.path.abspath(os.path.join(HERE, '..', '..'))
 sys.path[:0] = [REPO, os.path.join(REPO, 'rerun', 'vt_within_rows'), os.path.join(REPO, 'rerun', 'paper1_gas')]
 from vt_common import ladder, bow_aS, stem_time, TICK_S  # noqa: E402
 from wft import reco as wr  # noqa: E402
+sys.path.insert(0, os.path.join(REPO, 'rerun', 'calib', 'phimap', 'map1'))
+import angles_cv as AC  # noqa: E402
 
 RES = os.path.join(HERE, 'results')
 EFFRES = os.path.join(REPO, 'rerun', 'effbudget', 'single', 'results')
@@ -57,6 +59,7 @@ RUNS = {'run1': dict(key='sat_det3', tkey='sat_det3',
                      rel='mx17_det3_saturday_scan_6-27-26/long_run_resist_490V_drift_1000V/mx17_3'),
         'run2': dict(key='p2_det3', tkey='c26__mx17_det3_p2_det1_overnight_6-27-26__long_run_p2_det1_sanity_check__mx17_3',
                      rel='mx17_det3_p2_det1_overnight_6-27-26/long_run_p2_det1_sanity_check/mx17_3')}
+ANGLES = os.environ.get('ANGRES_ANGLES', 'map1')   # 'pass1' = the earlier angles
 T_REF = dt.datetime(2026, 6, 27, 0, 0)        # hours since 6-27 00:00 local CERN time
 V_TIMING_RUN1 = 35.8                          # det3 timing v of Run 1 (rerun/calib/physics_inputs.json v_timing_um_ns)
 GAP_MM = 28.19                                # pg_gas.GAP['det3'] (S4 re-check), for E only
@@ -110,6 +113,7 @@ def gauss_core(res):
 class Run:
     def __init__(self, name, cfg, data):
         self.name, self.key, self.rel = name, cfg['key'], cfg['rel']
+        self.tkey = cfg['tkey']
         w = os.path.join(data, 'ana', self.rel, 'wft')
         self.meta = json.load(open(os.path.join(w, 'events.meta.json')))
         E = pd.read_parquet(os.path.join(w, 'events.parquet'))
@@ -298,9 +302,16 @@ def main():
 
     # --- angle s68
     for R in runs:
-        z = np.load(os.path.join(a.data, 'angles', R.rel, 'per_event.npz'))
+        npz = os.path.join(a.data, 'angles', R.rel, 'per_event.npz')
+        z = np.load(npz)
         R.ang = {p: pd.DataFrame(dict(t=R.t_of(z[f'{p}_eid']), d=np.degrees(np.arctan(z[f'{p}_tan_fit']))
                                       - np.degrees(np.arctan(z[f'{p}_tan_ref'])))) for p in 'xy'}
+        if ANGLES == 'map1':
+            # 2026-11-24 (bench re-finalization step 5): the angle of the per-mounting map (cross-validated by time block,
+            # interior only, pass 1 elsewhere) for the same events, joined by event id (angles_cv.paper_events)
+            Pn = AC.paper_events(R.tkey, npz=npz, variant='cv')
+            R.ang = {p: pd.DataFrame(dict(t=R.t_of(Pn[p].eid.values), d=np.degrees(np.arctan(Pn[p].fit.values))
+                                          - np.degrees(np.arctan(Pn[p].ref.values)))) for p in 'xy'}
 
     def ang(R, lo, hi):
         o = {}

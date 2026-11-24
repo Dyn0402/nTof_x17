@@ -35,14 +35,29 @@ def s68(a):
     return float(np.percentile(np.abs(a - np.median(a)), 68)) if len(a) >= 15 else np.nan
 
 
-def load(det, rays_root, ang_root):
+MAP1_KEY = {'mx17_3': 'sat_det3'}   # registry key of the golden row, for --map1
+
+
+def load(det, rays_root, ang_root, map1=False):
     row = GOLD[det]
     R = pd.read_parquet(glob.glob(os.path.join(rays_root, row, det, f'rays_{SHORT[det]}.parquet'))[0])
     R = R[~R.not_measured].copy()
-    z = np.load(glob.glob(os.path.join(ang_root, row, det, 'wft', 'angles', 'per_event.npz'))[0])
-    for p in 'xy':
-        A = pd.DataFrame({'event_id': z[f'{p}_eid'], f'dt_{p}': z[f'{p}_tan_fit'] - z[f'{p}_tan_ref']})
-        R = R.merge(A.drop_duplicates('event_id'), on='event_id', how='left')
+    if map1:
+        # 2026-11-24 (bench re-finalization step 5): the angle of the per-mounting map (five-time-block cross-validated, used
+        # only inside its 30 mm interior: the edge zone, 0-30 mm from the border, keeps the pass-1 angle), same events,
+        # joined by event id; ang_root holds <row>/<det>/wft/angles/per_event.npz (full coverage, no fiducial cut)
+        sys.path.insert(0, os.path.join(HERE, '..', 'calib', 'phimap', 'map1'))
+        import angles_cv as AC
+        npz = glob.glob(os.path.join(ang_root, row, det, 'wft', 'angles', 'per_event.npz'))[0]
+        P = AC.paper_events(MAP1_KEY[det], npz=npz, variant='cv', exclude_railed=False)
+        for p in 'xy':
+            A = pd.DataFrame({'event_id': P[p].eid.values, f'dt_{p}': (P[p].fit - P[p].ref).values})
+            R = R.merge(A.drop_duplicates('event_id'), on='event_id', how='left')
+    else:
+        z = np.load(glob.glob(os.path.join(ang_root, row, det, 'wft', 'angles', 'per_event.npz'))[0])
+        for p in 'xy':
+            A = pd.DataFrame({'event_id': z[f'{p}_eid'], f'dt_{p}': z[f'{p}_tan_fit'] - z[f'{p}_tan_ref']})
+            R = R.merge(A.drop_duplicates('event_id'), on='event_id', how='left')
     b = TRUE_ACTIVE_BY_DET[det]
     px, py = R.mesh_x + 15 * R.tan_x, R.mesh_y + 15 * R.tan_y
     dd = np.stack([px - b['x'][0], b['x'][1] - px, py - b['y'][0], b['y'][1] - py])
@@ -69,6 +84,8 @@ def main():
     ap.add_argument('--out', default=os.path.join(HERE, 'results', 'edge_angles.json'))
     ap.add_argument('--figs', default=os.path.join(HERE, 'figures'))
     ap.add_argument('--phys', action='store_true', help='profiles against the physical-edge distance (key *_phys per side); no figures')
+    ap.add_argument('--map1', action='store_true', help='angle of the per-mounting map (angles_cv); --angles-root is then the flat '
+                    'root of <row>/<det>/wft/angles/per_event.npz (full-coverage angles: claude-jobs/e0990235/ttroot/Analysis_pass1)')
     ap.add_argument('--dets', nargs='*', default=None)
     ap.add_argument('--merge', action='store_true', help='keep the chambers of the existing --out that are not rerun now '
                     '(--dets), e.g. mx17_3 alone on the two-track re-pass products')
@@ -78,7 +95,7 @@ def main():
         if a.dets and det not in a.dets:
             continue
         try:
-            R = load(det, a.rays_root, a.angles_root)
+            R = load(det, a.rays_root, a.angles_root, a.map1)
         except IndexError:
             print(det, 'missing'); continue
         r = {}

@@ -1,7 +1,9 @@
 \section{The mesh and the cathode of chamber A}\label{app:gapmap}
 \sectionstate{partial}{rewritten 2026-11-24 after the audit of the 11-23 analysis:
 \texttt{rerun/paper1\_gap/audit/AUDIT\_2026-11-24.md} (\texttt{report.html}; one report per test in
-\texttt{audit/results/}). Pass 1. The numbers of \cref{sec:tracking} are still those of pass 1 without these maps.}
+\texttt{audit/results/}). 2026-11-24 later: the maps are installed in the bench tables and the numbers of \cref{sec:tracking} use them
+(\texttt{rerun/calib/phimap/RESULT.md}, \texttt{rerun/calib/phimap/map1/GATES.md}). \Cref{tab:mapall} is the
+production maps, cross-validated in five blocks of time.}
 \intent{The bow of the board (\cref{sec:bow,app:bow}) and the variation of the gap (\cref{sec:gap}) are two views of
 the same two surfaces. We show that the drift lines are tilted and bent by the mesh and by the cathode, that the mesh
 is static while the cathode changes with the mounting, and that a map of the drift direction made for one mounting
@@ -289,8 +291,11 @@ mounting and the drift-time map of 25~June, the resolution of the Y strips impro
 \end{table}
 
 \Cref{tab:mapall} gives the same comparison for every chamber, with one spline map per mounting, made and tested on
-separate parts of the data of that mounting. Chambers A, B, C and D gain between 17 and 35\,\%. Chamber~E gains only
-on the Y strips. The correction without reference tracks recovers between 40 and 70\,\% of the gain of the spline map.
+separate parts of the data of that mounting. Chambers A, B, C and D gain between 11 and 35\,\%. The map of chamber~E gains 0.2\,\% on the X strips and
+3.7\,\% on the Y strips over its two days, and on 24 June the X strips are worse by $0.07\pm0.03$\textdegree. In the
+edge zone, within 30\,mm of the border, the same map is worse than the bow block by 0.5\textdegree{} (X) and
+1.0\textdegree{} (Y). We therefore do not apply a map to chamber~E. The correction without reference tracks
+recovers between 37 and 94\,\% of the gain of the spline map.
 Its amplitude $b$ is 0.37 to 0.47 for chamber~B, chamber~D and the second mounting of chamber~A, in agreement with the
 weight $a$ measured above. It is about 0.2 for chamber~C and for chamber~A on 25~June. On 25~June the low value has
 two causes. First, 87\,\% of the tracks have a saturated strip, and saturated tracks give a lower amplitude: with
@@ -298,8 +303,11 @@ unsaturated tracks only, $b$ is $0.33\pm0.02$. Second, $b$ is quoted at $\beta=0
 25~June Magboltz gives $\beta\approx1.25$, so the same gap gives a larger map of the drift time. With both taken into
 account, the amplitude on 25~June agrees with that of the second mounting to about 5\,\%. For chamber~C the gas dried during the night: its drift
 velocity rose from 17 to 25\,\textmu m/ns, and in the first two runs about a fifth of the tracks reach the last
-depth bin of the fit. Its map of the drift time therefore does not describe its gap in those runs, and one map per
-run is needed: with one run left out, its gain is 12\,\%. The amplitude has to be measured for each mounting, with
+depth bin of the fit. Its map of the drift time therefore does not describe its gap in those runs, and we make one map
+per run. The three runs together then gain 12\,\% in X and 11\,\% in Y. A single map for the three runs, tested
+in blocks of time, gave 21\,\% and 17\,\% in the earlier test. That number was optimistic, because every block of
+time shared runs with the fit. The runs with too few tracks for a map of their own take the map of the nearest run in
+time. The amplitude has to be measured for each mounting, with
 unsaturated tracks.
 
 For chamber~E the amplitude is 0.17 and 0.09 in its two mountings, and the low value comes from the Y strips. Along
@@ -315,22 +323,27 @@ amplitude scatters by about 0.1, and this is the more realistic uncertainty.
 \begin{table}[tbp]
   \centering
   \caption{Angle resolution (s68, degrees, X / Y) with one spline map per mounting, cross-validated in five blocks
-  of time within the mounting. ``Drift time'' is the correction without reference tracks (mesh height of the bow
-  block and gap from the drift time, with the velocity from the gap and one fitted amplitude). Chamber~D, X strips:
-  $x\ge200$\,mm only.}
+  of time within the mounting, for the tracks of the long, longer and short runs. The angle of a track is computed with
+  a map and with conversion constants fitted without its block. Chamber~C has one map per run (the short run takes the
+  map of the nearest run in time), and its tracks that reach the end of the depth grid are rescaled. For chambers D and
+  E these tracks are left out. Chamber~D, X strips: $x\ge200$\,mm only. Chamber~E: one joint map for the two days,
+  which is not applied. ``Drift time'' is the correction without reference tracks (mesh height of the bow block and
+  gap from the drift time, with the velocity from the gap and one fitted amplitude). This column is the earlier test
+  and was not made again. For chambers D and E its pass-1 baseline includes the tracks that reach the end of the depth
+  grid (D 0.968 / 1.028, E 2.405 / 1.627 and 2.141 / 1.436).}
   \label{tab:mapall}
   \small
   \begin{tabular}{lccccc}
     \hline
     chamber, mounting & tracks & pass 1 & spline map & gain & drift time \\
     \hline
-    A, 27 and 28 June & 18\,720 & 0.923 / 0.805 & 0.688 / 0.599 & 26\,\% / 26\,\% & 0.819 / 0.728 \\
-    A, 25 June        & 6\,279  & 0.876 / 1.030 & 0.681 / 0.666 & 22\,\% / 35\,\% & 0.767 / 0.788 \\
-    B, 22 June        & 14\,230 & 0.961 / 0.966 & 0.675 / 0.735 & 30\,\% / 24\,\% & 0.822 / 0.864 \\
-    C, 26 June        & 7\,985  & 1.183 / 1.480 & 0.932 / 1.228 & 21\,\% / 17\,\% & 1.051 / 1.343 \\
-    D, 26 June        & 1\,934 / 5\,137 & 0.968 / 1.028 & 0.802 / 0.829 & 17\,\% / 19\,\% & 0.860 / 0.896 \\
-    E, 23 June        & 1\,610  & 2.405 / 1.627 & 2.354 / 1.377 & 2\,\% / 15\,\% & 2.424 / 1.457 \\
-    E, 24 June        & 3\,128  & 2.141 / 1.436 & 2.120 / 1.324 & 1\,\% / 8\,\% & 2.121 / 1.372 \\
+    A, 27 and 28 June & 18\,720 & 0.923 / 0.805 & 0.689 / 0.597 & 25\,\% / 26\,\% & 0.819 / 0.728 \\
+    A, 25 June        & 6\,279  & 0.876 / 1.030 & 0.681 / 0.667 & 22\,\% / 35\,\% & 0.767 / 0.788 \\
+    B, 22 June        & 14\,230 & 0.961 / 0.966 & 0.684 / 0.734 & 29\,\% / 24\,\% & 0.822 / 0.864 \\
+    C, 26 June        & 7\,985  & 1.183 / 1.480 & 1.042 / 1.324 & 12\,\% / 11\,\% & 1.051 / 1.343 \\
+    D, 26 June        & 1\,931 / 5\,043 & 0.966 / 1.020 & 0.802 / 0.804 & 17\,\% / 21\,\% & 0.860 / 0.896 \\
+    E, 23 June        & 1\,856 / 1\,851 & 2.332 / 1.544 & 2.262 / 1.419 & 3\,\% / 8\,\% & 2.424 / 1.457 \\
+    E, 24 June        & 2\,773 / 2\,849 & 2.025 / 1.419 & 2.096 / 1.403 & $-4$\,\% / 1\,\% & 2.121 / 1.372 \\
     \hline
   \end{tabular}
 \end{table}
@@ -354,11 +367,12 @@ be made from about 2\,000 of them. Where they do not exist, the drift-time map o
 \cref{eq:tilt} gives most of the correction, with an amplitude that should be checked against any available reference.
 For the chambers at n\_TOF, where the boards stand vertical, the quadratic bow block measured on the bench is too
 strong for chamber~A and appropriate for chamber~C.
-\askDylan{Decided 2026-11-24: per-mounting spline maps go into a bench re-finalization (handoff in
-\texttt{HANDOFF.md}); until then \cref{sec:tracking} quotes pass 1. Open: (1) keep the last sentence on n\_TOF here,
-or leave n\_TOF out of Paper I entirely (the n\_TOF re-audit has the in-situ numbers); (2) \cref{tab:mapall} here or in
-\cref{sec:angle} once the maps are shipped; (3) the old figure \texttt{gap\_surfaces} (gap profiles with the quadratic
-fit, resolution against cell size) is no longer used: drop it or keep the profiles in \cref{sec:gap}?}
+\askDylan{The per-mounting maps are installed and \cref{sec:tracking} quotes them. Three questions are still yours, and
+the data cannot answer them. (1) Keep the last sentence on n\_TOF here and in \cref{app:bow} (the bench block is too
+strong for chamber~A and appropriate for chamber~C), or leave n\_TOF out of Paper I entirely? The in-situ numbers are
+in the n\_TOF re-audit and are not quoted. (2) \cref{tab:mapall} stays here for now. Do you want it in \cref{sec:angle}?
+(3) The old figure \texttt{gap\_surfaces} (gap profiles with the quadratic fit, resolution against cell size) is no
+longer used. Drop it, or keep the profiles in \cref{sec:gap}?}
 
 \subsection{Limits}
 We have compared mountings for two chambers. Chamber~A changed the shape of its cathode between its two
@@ -373,3 +387,13 @@ returns at 1000\,V. This is a limit of the measurement and not a motion of the f
 column is longer than the recorded waveform, so every track's measured drift time ends at the end of the record,
 whatever the local gap. A fixed gap map, stretched to the velocity at 500\,V and cut at the end of the record,
 reproduces the flat map. We therefore have a map of the gap only between 700 and 1100\,V, where it does not change.
+
+Four sets of data have no map of the drift direction, and they keep the quadratic bow block. Chamber~E gains nothing
+from a map, as described above. Chamber~A on 22 June was taken with wet gas and a low drift velocity, so for four out of
+five tracks the drift time is cut by the end of the depth grid of the fit (1\,440\,ns), and the angle of the tracks that
+remain is that of the fastest ones. A map made on these tracks gains nothing on all tracks, and we have not refitted
+the data with a longer depth grid. Chamber~A on 23 June has fitted angles that are not correlated with the reference
+angle (correlation 0.01), so no map can be made. Chamber~B on 17 June has only 104 tracks that pass the selection. The
+maps are used only in the interior of the chamber. In the edge zone, within 30\,mm of the border, a spline that is fitted
+inside cannot follow the tilt, and on four of the eight maps it made the angle worse than the bow block by 0.1 to
+0.8\textdegree. The edge zone therefore keeps the angle of the bow block.

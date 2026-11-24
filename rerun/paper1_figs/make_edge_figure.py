@@ -41,9 +41,11 @@ def main():
     ap.add_argument('--det', default='det3')
     ap.add_argument('--out', default=os.path.join(REPO, 'papers', 'paper1', 'figures', 'edge_turnon.pdf'))
     ap.add_argument('--dmax', type=float, default=60.0)
+    ap.add_argument('--angles-json', default='edge_angles_phys.json', help='results/<file> with the angle profiles (edge_angles_phys_map1.json: the angle of the per-mounting map beyond 30 mm)')
+    ap.add_argument('--tag', default='', help='suffix of the figures/ copies')
     a = ap.parse_args()
     ps.use()
-    A = json.load(open(os.path.join(HERE, 'results', 'edge_angles_phys.json')))[a.det]
+    A = json.load(open(os.path.join(HERE, 'results', a.angles_json)))[a.det]
     S = json.load(open(os.path.join(HERE, 'results', 'edge_study_phys.json')))[a.det]
     fig, axs = ps.fig_for('full', height=2.45, nrows=1, ncols=3, sharex=True)
     rows = []
@@ -87,7 +89,7 @@ def main():
     os.makedirs(os.path.dirname(a.out), exist_ok=True)
     ps.publicise(fig)                                          # M3 -> reference in every text (ps.save repeats it harmlessly)
     fig.savefig(a.out, dpi=300)                                # the paper copy (pdf only)
-    ps.save(fig, os.path.join(HERE, 'figures', f'edge_turnon_{a.det}'), data=pd.DataFrame(rows))   # pdf + png + csv
+    ps.save(fig, os.path.join(HERE, 'figures', f'edge_turnon_{a.det}{a.tag}'), data=pd.DataFrame(rows))   # pdf + png + csv
     print('wrote', a.out)
 
 

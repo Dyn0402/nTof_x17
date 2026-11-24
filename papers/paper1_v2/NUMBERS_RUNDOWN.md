@@ -96,6 +96,17 @@ Run 2 = `p2_det3` (registry key `c26__mx17_det3_p2_det1_overnight_6-27-26`, subr
 
 ## 7. Angular resolution: A 0.98 vs 0.99; B 1.03/1.08 vs 1.05/1.13; decile range 0.82-0.94
 
+**Requoted 2026-11-24 on the per-mounting maps (bench re-finalization step 5; everything below this box is the pass-1 / bow-block rundown, kept for the history).**
+Producer `figs/make_angle_resolution_v2.py` (ANGRES_ANGLES=map1 default, `pass1` = the numbers below), angle from `rerun/calib/phimap/map1/angles_cv.py`:
+five-time-block cross-validated map angle where the map is used (30 mm interior), pass 1 elsewhere; the paper's own selection (03_angles interior_good,
+per_event.npz joined by event id; the pass-1 restatement on this sample closes with the old numbers to 1e-3 deg). Railed tracks: rescaled on C, left out on D and E.
+- A Runs 1+2 X 0.759 +- 0.005 / Y 0.693 +- 0.005 (25 422 / 25 359); Run 1 0.750 / 0.677, Run 2 0.763 / 0.698; bow block on the same tracks 0.987 / 0.899; no correction 1.099 / 1.070.
+- B (6-22 long run, 16 746 / 16 675) 0.801 / 0.903 (bow block 1.045 / 1.125); C 1.084 / 1.349 (6 565 / 6 596; bow block 1.256 / 1.506); D 1.029 / 1.149 (2 689 / 2 311 after leaving out 5.8 / 17.4 % railed; bow block on the same tracks 1.179 / 1.355, on all 1.232 / 1.461); E 2.333 / 2.015 (5 130 / 5 546 after leaving out 8 / 9 % railed; no map, bow block; all tracks 2.412 / 2.076).
+- A Gaussian core sigma 0.697 / 0.628, 93.3 / 92.3 % inside, chi2/ndf 25.5/13 and 72.8/11, s68/sigma 1.09 / 1.10; tail > 5 deg 3.38 / 3.43 % (3.44 / 3.44 % before: the map does not touch the tail).
+- gain scan (18 hv_scan rows) X 0.68-0.81, Y 0.62-0.74 (425-505 V), scale 0.995-1.005; drift scan 167-367 V/cm X 0.68-0.78, Y 0.66-0.80 (100 V/cm no map: 1.96 / 2.04); time series run means X 0.75 / 0.76, Y 0.68 / 0.70 (X trend +0.005 +- 0.002 deg/h, 2.6 sigma).
+- pointing: 0.76 / 0.69 deg -> 3.05 / 2.77 mm (position share 0.15 / 0.19 %), `figs/out/pointing.json`.
+- Appendix `tab:mapall`: `rerun/calib/phimap/RESULT.md` ("Against the r3 targets", the C three-row table); its drift-time column is the earlier r3 test, not redone.
+
 - **Paper:** `02_design.tex:32` "A 0.98/0.90, B 1.03/1.08"; `08_tracking.tex:7-8` "A 0.99/0.90; B 1.05/1.13"; `03_setups.tex:47-48` Run 1/Run 2 "0.975 / 0.991 in X and 0.896 / 0.900 in Y"; `05_efficiency.tex:64`.
 - **Source:** `rerun/paper1_res/results/angle_resolution.json` (Runs 1+2, 03_angles interior_good, pass arm), `rows.csv`, `PASS1_RESOLUTION_2026-10-31.md`.
   - A: Run 1 (`sat_det3`) X 0.9748 / Y 0.8960 (6 198 / 6 182 tracks); Run 2 X 0.9906 / Y 0.8999 (19 224 / 19 177); **Runs 1+2 summed X 0.9870 / Y 0.8986** (25 422 / 25 359). `02_design` 0.98/0.90 = Run 1 alone (0.975 rounds to 0.98); `08_tracking` 0.99/0.90 = Runs 1+2 summed (its caption says "Runs 1 and 2 summed"). Run 2 alone is also 0.99/0.90, which is why the two look alike. (`PASS1_RESOLUTION` table quotes 0.991/0.901 = the Run 2 row, "6-27 sanity long_run".)
