@@ -1,0 +1,185 @@
+{
+ "unit": "A_0625",
+ "mounting": "A_0625",
+ "det": "mx17_3",
+ "domain": [
+  [
+   -1.7,
+   1.69
+  ],
+  [
+   -1.52,
+   1.5
+  ]
+ ],
+ "train_rows": [
+  "c26__mx17_det3_day_6-25-26__long_run__mx17_3"
+ ],
+ "apply_rows": [
+  "c26__mx17_det3_day_6-25-26__long_run__mx17_3"
+ ],
+ "n_train": 6279,
+ "folds": {
+  "-1": {
+   "K": 16,
+   "KS": 8,
+   "lam": 0.01,
+   "score": 1.3486059561491741,
+   "info": {
+    "n_cand": 22,
+    "kmax_allowed": 20,
+    "ksmax_allowed": 12,
+    "lam_edge": "",
+    "k_edge": false,
+    "ks_edge": false,
+    "k_limited": false
+   },
+   "n_train": 6279,
+   "n_fx": 6278,
+   "n_fy": 6279,
+   "n_it": 4,
+   "secs": 9.2
+  },
+  "0": {
+   "K": 12,
+   "KS": 8,
+   "lam": 0.01,
+   "score": 1.34930290702944,
+   "info": {
+    "n_cand": 18,
+    "kmax_allowed": 16,
+    "ksmax_allowed": 12,
+    "lam_edge": "",
+    "k_edge": false,
+    "ks_edge": false,
+    "k_limited": false
+   },
+   "n_train": 5022,
+   "n_fx": 5021,
+   "n_fy": 5022,
+   "n_it": 5,
+   "secs": 6.4
+  },
+  "1": {
+   "K": 9,
+   "KS": 10,
+   "lam": 0.01,
+   "score": 1.3540215288161743,
+   "info": {
+    "n_cand": 18,
+    "kmax_allowed": 16,
+    "ksmax_allowed": 12,
+    "lam_edge": "",
+    "k_edge": false,
+    "ks_edge": false,
+    "k_limited": false
+   },
+   "n_train": 4984,
+   "n_fx": 4984,
+   "n_fy": 4984,
+   "n_it": 4,
+   "secs": 6.5
+  },
+  "2": {
+   "K": 12,
+   "KS": 8,
+   "lam": 0.0001,
+   "score": 1.3460741395730824,
+   "info": {
+    "n_cand": 18,
+    "kmax_allowed": 16,
+    "ksmax_allowed": 12,
+    "lam_edge": "",
+    "k_edge": false,
+    "ks_edge": false,
+    "k_limited": false
+   },
+   "n_train": 5054,
+   "n_fx": 5053,
+   "n_fy": 5054,
+   "n_it": 5,
+   "secs": 7.1
+  },
+  "3": {
+   "K": 9,
+   "KS": 8,
+   "lam": 0.1,
+   "score": 1.3561085967403923,
+   "info": {
+    "n_cand": 18,
+    "kmax_allowed": 16,
+    "ksmax_allowed": 12,
+    "lam_edge": "",
+    "k_edge": false,
+    "ks_edge": false,
+    "k_limited": false
+   },
+   "n_train": 5048,
+   "n_fx": 5047,
+   "n_fy": 5048,
+   "n_it": 4,
+   "secs": 6.3
+  },
+  "4": {
+   "K": 16,
+   "KS": 6,
+   "lam": 0.01,
+   "score": 1.356353591215215,
+   "info": {
+    "n_cand": 18,
+    "kmax_allowed": 16,
+    "ksmax_allowed": 12,
+    "lam_edge": "",
+    "k_edge": false,
+    "ks_edge": false,
+    "k_limited": true
+   },
+   "n_train": 5008,
+   "n_fx": 5007,
+   "n_fy": 5008,
+   "n_it": 4,
+   "secs": 6.8
+  }
+ },
+ "rows": {
+  "c26__mx17_det3_day_6-25-26__long_run__mx17_3": {
+   "unit": "A_0625",
+   "role": "train",
+   "const_src": "fit",
+   "v_drift": 22.421208429932715,
+   "n_sel": 6279,
+   "n_const": {
+    "x": 6278,
+    "y": 6279
+   },
+   "w0": {
+    "x": 0.05245738784945265,
+    "y": -0.2030037398948445
+   },
+   "c1": {
+    "x": 22.816700731966705,
+    "y": 22.775837990829903
+   },
+   "kw": {
+    "x": 1.0176392054545107,
+    "y": 1.0158167014951678
+   },
+   "old_w0": {
+    "x": 0.17715232708762169,
+    "y": -0.22239705625411643
+   },
+   "old_kw": {
+    "x": 1.0043461412663988,
+    "y": 0.9956538587336011
+   }
+  }
+ },
+ "reproduction": {
+  "row": "c26__mx17_det3_day_6-25-26__long_run__mx17_3",
+  "n": 6279,
+  "max_abs_diff_x": 1.6653345369377348e-16,
+  "max_abs_diff_y": 1.6653345369377348e-16,
+  "note": "fitter spline algebra (Layout.fields @ c) vs wft.reco.bow_pairs with the block installed in the row bundle"
+ },
+ "secs": 10
+}

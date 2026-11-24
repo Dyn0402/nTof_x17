@@ -1,0 +1,427 @@
+{
+ "tilt": {
+  "A_0627": {
+   "x": {
+    "n": 2967,
+    "p1": [
+     1.5244366500600397,
+     0.04227902153833264
+    ],
+    "tilt": [
+     1.1001897503736653,
+     0.02929213385650575
+    ],
+    "full": [
+     0.9950648093941188,
+     0.02750208357280551
+    ],
+    "full_minus_tilt": -0.1051249409795465,
+    "err": 0.017157279399338487
+   },
+   "y": {
+    "n": 2927,
+    "p1": [
+     1.3007673856917061,
+     0.03271063330756192
+    ],
+    "tilt": [
+     1.0303867944682354,
+     0.027750992866592706
+    ],
+    "full": [
+     0.9857522098636766,
+     0.024205230039852626
+    ],
+    "full_minus_tilt": -0.044634584604558825,
+    "err": 0.0136372873200847
+   },
+   "use_full": true
+  }
+ },
+ "censor": {
+  "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_400V_det7_400V_drift_700V__mx17_6|x": {
+   "n_railed": 29,
+   "pooled": true,
+   "slope": 0.9674472688742889,
+   "factor": 1.033648067623974,
+   "slope_with_intercept": NaN,
+   "intercept": NaN
+  },
+  "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_400V_det7_400V_drift_700V__mx17_6|y": {
+   "n_railed": 33,
+   "pooled": true,
+   "slope": 0.9339494089195173,
+   "factor": 1.0707218083224619,
+   "slope_with_intercept": NaN,
+   "intercept": NaN
+  },
+  "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_405V_det7_405V_drift_700V__mx17_6|x": {
+   "n_railed": 43,
+   "pooled": true,
+   "slope": 0.9674472688742889,
+   "factor": 1.033648067623974,
+   "slope_with_intercept": NaN,
+   "intercept": NaN
+  },
+  "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_405V_det7_405V_drift_700V__mx17_6|y": {
+   "n_railed": 63,
+   "pooled": true,
+   "slope": 0.9339494089195173,
+   "factor": 1.0707218083224619,
+   "slope_with_intercept": NaN,
+   "intercept": NaN
+  },
+  "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_410V_det7_410V_drift_700V__mx17_6|x": {
+   "n_railed": 45,
+   "pooled": true,
+   "slope": 0.9674472688742889,
+   "factor": 1.033648067623974,
+   "slope_with_intercept": NaN,
+   "intercept": NaN
+  },
+  "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_410V_det7_410V_drift_700V__mx17_6|y": {
+   "n_railed": 32,
+   "pooled": true,
+   "slope": 0.9339494089195173,
+   "factor": 1.0707218083224619,
+   "slope_with_intercept": NaN,
+   "intercept": NaN
+  },
+  "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_415V_det7_415V_drift_700V__mx17_6|x": {
+   "n_railed": 46,
+   "pooled": true,
+   "slope": 0.9674472688742889,
+   "factor": 1.033648067623974,
+   "slope_with_intercept": NaN,
+   "intercept": NaN
+  },
+  "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_415V_det7_415V_drift_700V__mx17_6|y": {
+   "n_railed": 54,
+   "pooled": true,
+   "slope": 0.9339494089195173,
+   "factor": 1.0707218083224619,
+   "slope_with_intercept": NaN,
+   "intercept": NaN
+  },
+  "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_420V_det7_420V_drift_700V__mx17_6|x": {
+   "n_railed": 21,
+   "pooled": true,
+   "slope": 0.9674472688742889,
+   "factor": 1.033648067623974,
+   "slope_with_intercept": NaN,
+   "intercept": NaN
+  },
+  "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_420V_det7_420V_drift_700V__mx17_6|y": {
+   "n_railed": 19,
+   "pooled": true,
+   "slope": 0.9339494089195173,
+   "factor": 1.0707218083224619,
+   "slope_with_intercept": NaN,
+   "intercept": NaN
+  },
+  "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_425V_det7_425V_drift_700V__mx17_6|x": {
+   "n_railed": 28,
+   "pooled": true,
+   "slope": 0.9674472688742889,
+   "factor": 1.033648067623974,
+   "slope_with_intercept": NaN,
+   "intercept": NaN
+  },
+  "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_425V_det7_425V_drift_700V__mx17_6|y": {
+   "n_railed": 33,
+   "pooled": true,
+   "slope": 0.9339494089195173,
+   "factor": 1.0707218083224619,
+   "slope_with_intercept": NaN,
+   "intercept": NaN
+  },
+  "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_430V_det7_430V_drift_700V__mx17_6|x": {
+   "n_railed": 33,
+   "pooled": true,
+   "slope": 0.9674472688742889,
+   "factor": 1.033648067623974,
+   "slope_with_intercept": NaN,
+   "intercept": NaN
+  },
+  "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_430V_det7_430V_drift_700V__mx17_6|y": {
+   "n_railed": 23,
+   "pooled": true,
+   "slope": 0.9339494089195173,
+   "factor": 1.0707218083224619,
+   "slope_with_intercept": NaN,
+   "intercept": NaN
+  },
+  "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_435V_det7_435V_drift_700V__mx17_6|x": {
+   "n_railed": 25,
+   "pooled": true,
+   "slope": 0.9674472688742889,
+   "factor": 1.033648067623974,
+   "slope_with_intercept": NaN,
+   "intercept": NaN
+  },
+  "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_435V_det7_435V_drift_700V__mx17_6|y": {
+   "n_railed": 21,
+   "pooled": true,
+   "slope": 0.9339494089195173,
+   "factor": 1.0707218083224619,
+   "slope_with_intercept": NaN,
+   "intercept": NaN
+  },
+  "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_440V_det7_440V_drift_700V__mx17_6|x": {
+   "n_railed": 15,
+   "pooled": true,
+   "slope": 0.9674472688742889,
+   "factor": 1.033648067623974,
+   "slope_with_intercept": NaN,
+   "intercept": NaN
+  },
+  "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_440V_det7_440V_drift_700V__mx17_6|y": {
+   "n_railed": 7,
+   "pooled": true,
+   "slope": 0.9339494089195173,
+   "factor": 1.0707218083224619,
+   "slope_with_intercept": NaN,
+   "intercept": NaN
+  },
+  "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_445V_det7_445V_drift_700V__mx17_6|x": {
+   "n_railed": 21,
+   "pooled": true,
+   "slope": 0.9674472688742889,
+   "factor": 1.033648067623974,
+   "slope_with_intercept": NaN,
+   "intercept": NaN
+  },
+  "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_445V_det7_445V_drift_700V__mx17_6|y": {
+   "n_railed": 20,
+   "pooled": true,
+   "slope": 0.9339494089195173,
+   "factor": 1.0707218083224619,
+   "slope_with_intercept": NaN,
+   "intercept": NaN
+  },
+  "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_465V_det7_465V_drift_700V__mx17_6|x": {
+   "n_railed": 11,
+   "pooled": true,
+   "slope": 0.9674472688742889,
+   "factor": 1.033648067623974,
+   "slope_with_intercept": NaN,
+   "intercept": NaN
+  },
+  "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_465V_det7_465V_drift_700V__mx17_6|y": {
+   "n_railed": 2,
+   "pooled": true,
+   "slope": 0.9339494089195173,
+   "factor": 1.0707218083224619,
+   "slope_with_intercept": NaN,
+   "intercept": NaN
+  },
+  "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_480V_det7_480V_drift_700V__mx17_6|x": {
+   "n_railed": 2,
+   "pooled": true,
+   "slope": 0.9674472688742889,
+   "factor": 1.033648067623974,
+   "slope_with_intercept": NaN,
+   "intercept": NaN
+  },
+  "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_480V_det7_480V_drift_700V__mx17_6|y": {
+   "n_railed": 8,
+   "pooled": true,
+   "slope": 0.9339494089195173,
+   "factor": 1.0707218083224619,
+   "slope_with_intercept": NaN,
+   "intercept": NaN
+  },
+  "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_485V_det7_485V_drift_700V__mx17_6|x": {
+   "n_railed": 2,
+   "pooled": true,
+   "slope": 0.9674472688742889,
+   "factor": 1.033648067623974,
+   "slope_with_intercept": NaN,
+   "intercept": NaN
+  },
+  "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_485V_det7_485V_drift_700V__mx17_6|y": {
+   "n_railed": 31,
+   "pooled": true,
+   "slope": 0.9339494089195173,
+   "factor": 1.0707218083224619,
+   "slope_with_intercept": NaN,
+   "intercept": NaN
+  },
+  "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_495V_det7_495V_drift_700V__mx17_6|x": {
+   "n_railed": 4,
+   "pooled": true,
+   "slope": 0.9674472688742889,
+   "factor": 1.033648067623974,
+   "slope_with_intercept": NaN,
+   "intercept": NaN
+  },
+  "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_495V_det7_495V_drift_700V__mx17_6|y": {
+   "n_railed": 48,
+   "pooled": true,
+   "slope": 0.9339494089195173,
+   "factor": 1.0707218083224619,
+   "slope_with_intercept": NaN,
+   "intercept": NaN
+  },
+  "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_500V_det7_500V_drift_700V__mx17_6|x": {
+   "n_railed": 3,
+   "pooled": true,
+   "slope": 0.9674472688742889,
+   "factor": 1.033648067623974,
+   "slope_with_intercept": NaN,
+   "intercept": NaN
+  },
+  "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_500V_det7_500V_drift_700V__mx17_6|y": {
+   "n_railed": 35,
+   "pooled": true,
+   "slope": 0.9339494089195173,
+   "factor": 1.0707218083224619,
+   "slope_with_intercept": NaN,
+   "intercept": NaN
+  },
+  "g_det6_long|x": {
+   "n_railed": 209,
+   "pooled": false,
+   "slope": 0.9553499324931295,
+   "factor": 1.0467368719965777,
+   "slope_with_intercept": 0.936004575005897,
+   "intercept": -0.005499517163957781
+  },
+  "g_det6_long|y": {
+   "n_railed": 924,
+   "pooled": false,
+   "slope": 0.9016765768003997,
+   "factor": 1.1090451118831335,
+   "slope_with_intercept": 0.8963391841886429,
+   "intercept": 0.0019682454204047245
+  },
+  "c26__mx17_det6_det7_overnight_6-26-26__longer_run__mx17_6|x": {
+   "n_railed": 444,
+   "pooled": false,
+   "slope": 0.9654291530216075,
+   "factor": 1.0358087870769102,
+   "slope_with_intercept": 0.9683124259728267,
+   "intercept": 0.0015857538382650135
+  },
+  "c26__mx17_det6_det7_overnight_6-26-26__longer_run__mx17_6|y": {
+   "n_railed": 492,
+   "pooled": false,
+   "slope": 0.9231300759175372,
+   "factor": 1.0832709561608191,
+   "slope_with_intercept": 0.922466968143948,
+   "intercept": 0.0029476843242224756
+  },
+  "c26__mx17_det6_det7_overnight_6-26-26__resist_det6_505V_det7_480V_drift_700V__mx17_6|x": {
+   "n_railed": 38,
+   "pooled": true,
+   "slope": 0.9674472688742889,
+   "factor": 1.033648067623974,
+   "slope_with_intercept": NaN,
+   "intercept": NaN
+  },
+  "c26__mx17_det6_det7_overnight_6-26-26__resist_det6_505V_det7_480V_drift_700V__mx17_6|y": {
+   "n_railed": 97,
+   "pooled": true,
+   "slope": 0.9339494089195173,
+   "factor": 1.0707218083224619,
+   "slope_with_intercept": NaN,
+   "intercept": NaN
+  },
+  "c26__mx17_det6_det7_overnight_6-26-26__resist_det6_510V_det7_485V_drift_700V__mx17_6|x": {
+   "n_railed": 54,
+   "pooled": true,
+   "slope": 0.9674472688742889,
+   "factor": 1.033648067623974,
+   "slope_with_intercept": NaN,
+   "intercept": NaN
+  },
+  "c26__mx17_det6_det7_overnight_6-26-26__resist_det6_510V_det7_485V_drift_700V__mx17_6|y": {
+   "n_railed": 117,
+   "pooled": true,
+   "slope": 0.9339494089195173,
+   "factor": 1.0707218083224619,
+   "slope_with_intercept": NaN,
+   "intercept": NaN
+  },
+  "c26__mx17_det6_det7_overnight_6-26-26__resist_det6_515V_det7_490V_drift_700V__mx17_6|x": {
+   "n_railed": 56,
+   "pooled": true,
+   "slope": 0.9674472688742889,
+   "factor": 1.033648067623974,
+   "slope_with_intercept": NaN,
+   "intercept": NaN
+  },
+  "c26__mx17_det6_det7_overnight_6-26-26__resist_det6_515V_det7_490V_drift_700V__mx17_6|y": {
+   "n_railed": 112,
+   "pooled": true,
+   "slope": 0.9339494089195173,
+   "factor": 1.0707218083224619,
+   "slope_with_intercept": NaN,
+   "intercept": NaN
+  },
+  "c26__mx17_det6_det7_overnight_6-26-26__resist_det6_520V_det7_495V_drift_700V__mx17_6|x": {
+   "n_railed": 63,
+   "pooled": true,
+   "slope": 0.9674472688742889,
+   "factor": 1.033648067623974,
+   "slope_with_intercept": NaN,
+   "intercept": NaN
+  },
+  "c26__mx17_det6_det7_overnight_6-26-26__resist_det6_520V_det7_495V_drift_700V__mx17_6|y": {
+   "n_railed": 92,
+   "pooled": true,
+   "slope": 0.9339494089195173,
+   "factor": 1.0707218083224619,
+   "slope_with_intercept": NaN,
+   "intercept": NaN
+  },
+  "c26__mx17_det6_det7_overnight_6-26-26__resist_det6_525V_det7_500V_drift_700V__mx17_6|x": {
+   "n_railed": 68,
+   "pooled": true,
+   "slope": 0.9674472688742889,
+   "factor": 1.033648067623974,
+   "slope_with_intercept": NaN,
+   "intercept": NaN
+  },
+  "c26__mx17_det6_det7_overnight_6-26-26__resist_det6_525V_det7_500V_drift_700V__mx17_6|y": {
+   "n_railed": 95,
+   "pooled": true,
+   "slope": 0.9339494089195173,
+   "factor": 1.0707218083224619,
+   "slope_with_intercept": NaN,
+   "intercept": NaN
+  },
+  "c26__mx17_det6_det7_overnight_6-26-26__resist_det6_530V_det7_505V_drift_700V__mx17_6|x": {
+   "n_railed": 47,
+   "pooled": true,
+   "slope": 0.9674472688742889,
+   "factor": 1.033648067623974,
+   "slope_with_intercept": NaN,
+   "intercept": NaN
+  },
+  "c26__mx17_det6_det7_overnight_6-26-26__resist_det6_530V_det7_505V_drift_700V__mx17_6|y": {
+   "n_railed": 65,
+   "pooled": true,
+   "slope": 0.9339494089195173,
+   "factor": 1.0707218083224619,
+   "slope_with_intercept": NaN,
+   "intercept": NaN
+  },
+  "c26__mx17_det6_det7_overnight_6-26-26__short_run__mx17_6|x": {
+   "n_railed": 175,
+   "pooled": false,
+   "slope": 0.941994351403583,
+   "factor": 1.0615774908947042,
+   "slope_with_intercept": 0.9419500633867041,
+   "intercept": 0.000357306275545012
+  },
+  "c26__mx17_det6_det7_overnight_6-26-26__short_run__mx17_6|y": {
+   "n_railed": 188,
+   "pooled": false,
+   "slope": 0.976753750148119,
+   "factor": 1.0237994989508419,
+   "slope_with_intercept": 0.9779969213185615,
+   "intercept": -0.0037794548380277976
+  }
+ }
+}

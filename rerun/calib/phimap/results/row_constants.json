@@ -1,0 +1,4890 @@
+{
+ "c26__mx17_det1_det2_overnight_6-17-26__longer_run__mx17_2": {
+  "unit": "",
+  "role": "nomap",
+  "chamber": "B",
+  "mounting": "B_0617",
+  "map_variant": "none",
+  "block": null,
+  "n_gate": 21,
+  "note": "only 104 gate events in total (< 2000): stays on the bow block",
+  "ntracks_unavailable": false,
+  "x_map_recommended": false,
+  "y_map_recommended": false
+ },
+ "c26__mx17_det1_det2_overnight_6-17-26__quick_run__mx17_2": {
+  "unit": "",
+  "role": "nomap",
+  "chamber": "B",
+  "mounting": "B_0617",
+  "map_variant": "none",
+  "block": null,
+  "n_gate": 1,
+  "note": "only 104 gate events in total (< 2000): stays on the bow block",
+  "ntracks_unavailable": false,
+  "x_map_recommended": false,
+  "y_map_recommended": false
+ },
+ "c26__mx17_det1_det2_overnight_6-17-26__resist_450V_drift_1000V__mx17_2": {
+  "unit": "",
+  "role": "nomap",
+  "chamber": "B",
+  "mounting": "B_0617",
+  "map_variant": "none",
+  "block": null,
+  "n_gate": 2,
+  "note": "only 104 gate events in total (< 2000): stays on the bow block",
+  "ntracks_unavailable": false,
+  "x_map_recommended": false,
+  "y_map_recommended": false
+ },
+ "c26__mx17_det1_det2_overnight_6-17-26__resist_460V_drift_1000V__mx17_2": {
+  "unit": "",
+  "role": "nomap",
+  "chamber": "B",
+  "mounting": "B_0617",
+  "map_variant": "none",
+  "block": null,
+  "n_gate": 1,
+  "note": "only 104 gate events in total (< 2000): stays on the bow block",
+  "ntracks_unavailable": false,
+  "x_map_recommended": false,
+  "y_map_recommended": false
+ },
+ "c26__mx17_det1_det2_overnight_6-17-26__resist_470V_drift_1000V__mx17_2": {
+  "unit": "",
+  "role": "nomap",
+  "chamber": "B",
+  "mounting": "B_0617",
+  "map_variant": "none",
+  "block": null,
+  "n_gate": 4,
+  "note": "only 104 gate events in total (< 2000): stays on the bow block",
+  "ntracks_unavailable": false,
+  "x_map_recommended": false,
+  "y_map_recommended": false
+ },
+ "c26__mx17_det1_det2_overnight_6-17-26__resist_480V_drift_1000V__mx17_2": {
+  "unit": "",
+  "role": "nomap",
+  "chamber": "B",
+  "mounting": "B_0617",
+  "map_variant": "none",
+  "block": null,
+  "n_gate": 6,
+  "note": "only 104 gate events in total (< 2000): stays on the bow block",
+  "ntracks_unavailable": false,
+  "x_map_recommended": false,
+  "y_map_recommended": false
+ },
+ "c26__mx17_det1_det2_overnight_6-17-26__resist_490V_drift_1000V__mx17_2": {
+  "unit": "",
+  "role": "nomap",
+  "chamber": "B",
+  "mounting": "B_0617",
+  "map_variant": "none",
+  "block": null,
+  "n_gate": 10,
+  "note": "only 104 gate events in total (< 2000): stays on the bow block",
+  "ntracks_unavailable": false,
+  "x_map_recommended": false,
+  "y_map_recommended": false
+ },
+ "c26__mx17_det1_det2_overnight_6-17-26__resist_500V_drift_1000V__mx17_2": {
+  "unit": "",
+  "role": "nomap",
+  "chamber": "B",
+  "mounting": "B_0617",
+  "map_variant": "none",
+  "block": null,
+  "n_gate": 11,
+  "note": "only 104 gate events in total (< 2000): stays on the bow block",
+  "ntracks_unavailable": false,
+  "x_map_recommended": false,
+  "y_map_recommended": false
+ },
+ "c26__mx17_det1_det2_overnight_6-17-26__resist_510V_drift_1000V__mx17_2": {
+  "unit": "",
+  "role": "nomap",
+  "chamber": "B",
+  "mounting": "B_0617",
+  "map_variant": "none",
+  "block": null,
+  "n_gate": 22,
+  "note": "only 104 gate events in total (< 2000): stays on the bow block",
+  "ntracks_unavailable": false,
+  "x_map_recommended": false,
+  "y_map_recommended": false
+ },
+ "c26__mx17_det1_det2_overnight_6-17-26__resist_520V_drift_1000V__mx17_2": {
+  "unit": "",
+  "role": "nomap",
+  "chamber": "B",
+  "mounting": "B_0617",
+  "map_variant": "none",
+  "block": null,
+  "n_gate": 26,
+  "note": "only 104 gate events in total (< 2000): stays on the bow block",
+  "ntracks_unavailable": false,
+  "x_map_recommended": false,
+  "y_map_recommended": false
+ },
+ "c26__mx17_det2_det3_overnight_6-22-26__long_run__mx17_2": {
+  "unit": "B_0622",
+  "role": "train",
+  "chamber": "B",
+  "mounting": "B_0622",
+  "map_variant": "full",
+  "block": "blocks/B_0622.json",
+  "w0": {
+   "x": -0.2192979521872337,
+   "y": -0.21043948050176184
+  },
+  "kw": {
+   "x": 1.0130035983453507,
+   "y": 1.022567515061343
+  },
+  "v_drift": 38.31109740560206,
+  "n_const": {
+   "x": 10963,
+   "y": 10963
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 10963,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "o22_long_det2": {
+  "unit": "B_0622",
+  "role": "train",
+  "chamber": "B",
+  "mounting": "B_0622",
+  "map_variant": "full",
+  "block": "blocks/B_0622.json",
+  "w0": {
+   "x": -0.19347158092898745,
+   "y": -0.21326028966137497
+  },
+  "kw": {
+   "x": 0.9771187195315154,
+   "y": 0.9897834318845713
+  },
+  "v_drift": 39.3,
+  "n_const": {
+   "x": 2159,
+   "y": 2159
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 2159,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det2_det3_overnight_6-22-26__resist_450V_drift_1000V__mx17_2": {
+  "unit": "B_0622",
+  "role": "train",
+  "chamber": "B",
+  "mounting": "B_0622",
+  "map_variant": "full",
+  "block": "blocks/B_0622.json",
+  "w0": {
+   "x": -0.2306966320860864,
+   "y": -0.19063824828040046
+  },
+  "kw": {
+   "x": 1.0001402023691082,
+   "y": 1.002142920482175
+  },
+  "v_drift": 37.68249430056605,
+  "n_const": {
+   "x": 477,
+   "y": 477
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 477,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det2_det3_overnight_6-22-26__resist_455V_drift_1000V__mx17_2": {
+  "unit": "B_0622",
+  "role": "train",
+  "chamber": "B",
+  "mounting": "B_0622",
+  "map_variant": "full",
+  "block": "blocks/B_0622.json",
+  "w0": {
+   "x": -0.23228787273855683,
+   "y": -0.2068630665493303
+  },
+  "kw": {
+   "x": 0.9994558443392116,
+   "y": 1.000240409185289
+  },
+  "v_drift": 37.85606763140703,
+  "n_const": {
+   "x": 500,
+   "y": 500
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 500,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det2_det3_overnight_6-22-26__resist_460V_drift_1000V__mx17_2": {
+  "unit": "B_0622",
+  "role": "train",
+  "chamber": "B",
+  "mounting": "B_0622",
+  "map_variant": "full",
+  "block": "blocks/B_0622.json",
+  "w0": {
+   "x": -0.2167162702682263,
+   "y": -0.23187141452113838
+  },
+  "kw": {
+   "x": 0.9962474433024996,
+   "y": 0.9956442450642913
+  },
+  "v_drift": 38.06415628758699,
+  "n_const": {
+   "x": 471,
+   "y": 471
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 471,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det2_det3_overnight_6-22-26__resist_465V_drift_1000V__mx17_2": {
+  "unit": "B_0622",
+  "role": "train",
+  "chamber": "B",
+  "mounting": "B_0622",
+  "map_variant": "full",
+  "block": "blocks/B_0622.json",
+  "w0": {
+   "x": -0.19256508241158798,
+   "y": -0.2365710705890426
+  },
+  "kw": {
+   "x": 0.9893536397357322,
+   "y": 0.9993933736811628
+  },
+  "v_drift": 38.17450062185549,
+  "n_const": {
+   "x": 484,
+   "y": 484
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 484,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det2_det3_overnight_6-22-26__resist_470V_drift_1000V__mx17_2": {
+  "unit": "B_0622",
+  "role": "train",
+  "chamber": "B",
+  "mounting": "B_0622",
+  "map_variant": "full",
+  "block": "blocks/B_0622.json",
+  "w0": {
+   "x": -0.19420341544044295,
+   "y": -0.2126501790843416
+  },
+  "kw": {
+   "x": 0.9837604941227255,
+   "y": 0.9910460482312892
+  },
+  "v_drift": 38.3446567432485,
+  "n_const": {
+   "x": 530,
+   "y": 530
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 530,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det2_det3_overnight_6-22-26__resist_475V_drift_1000V__mx17_2": {
+  "unit": "B_0622",
+  "role": "train",
+  "chamber": "B",
+  "mounting": "B_0622",
+  "map_variant": "full",
+  "block": "blocks/B_0622.json",
+  "w0": {
+   "x": -0.19530937701664952,
+   "y": -0.1876746933075506
+  },
+  "kw": {
+   "x": 0.9975594236160361,
+   "y": 0.9944186368131135
+  },
+  "v_drift": 38.29631340812494,
+  "n_const": {
+   "x": 477,
+   "y": 477
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 477,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det2_det3_overnight_6-22-26__resist_480V_drift_1000V__mx17_2": {
+  "unit": "B_0622",
+  "role": "train",
+  "chamber": "B",
+  "mounting": "B_0622",
+  "map_variant": "full",
+  "block": "blocks/B_0622.json",
+  "w0": {
+   "x": -0.18113738456856088,
+   "y": -0.142925528779226
+  },
+  "kw": {
+   "x": 0.9942079705723869,
+   "y": 1.0009570367738496
+  },
+  "v_drift": 38.206926865939195,
+  "n_const": {
+   "x": 482,
+   "y": 482
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 482,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det2_det3_overnight_6-22-26__resist_485V_drift_1000V__mx17_2": {
+  "unit": "B_0622",
+  "role": "train",
+  "chamber": "B",
+  "mounting": "B_0622",
+  "map_variant": "full",
+  "block": "blocks/B_0622.json",
+  "w0": {
+   "x": -0.21329612456617383,
+   "y": -0.18914901612881146
+  },
+  "kw": {
+   "x": 0.9965821162783953,
+   "y": 1.003676639997895
+  },
+  "v_drift": 38.096792602904245,
+  "n_const": {
+   "x": 514,
+   "y": 514
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 514,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det2_det3_overnight_6-22-26__resist_490V_drift_1000V__mx17_2": {
+  "unit": "B_0622",
+  "role": "train",
+  "chamber": "B",
+  "mounting": "B_0622",
+  "map_variant": "full",
+  "block": "blocks/B_0622.json",
+  "w0": {
+   "x": -0.1941068941166578,
+   "y": -0.21389969833322262
+  },
+  "kw": {
+   "x": 0.9974465283534033,
+   "y": 0.9941235392212603
+  },
+  "v_drift": 38.195221009757915,
+  "n_const": {
+   "x": 562,
+   "y": 562
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 562,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det2_det3_overnight_6-22-26__resist_495V_drift_1000V__mx17_2": {
+  "unit": "B_0622",
+  "role": "train",
+  "chamber": "B",
+  "mounting": "B_0622",
+  "map_variant": "full",
+  "block": "blocks/B_0622.json",
+  "w0": {
+   "x": -0.2132962402609958,
+   "y": -0.2091807144076935
+  },
+  "kw": {
+   "x": 1.0007901624855842,
+   "y": 1.0081418156862143
+  },
+  "v_drift": 37.790925697212835,
+  "n_const": {
+   "x": 523,
+   "y": 523
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 523,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det2_det3_overnight_6-22-26__resist_500V_drift_1000V__mx17_2": {
+  "unit": "B_0622",
+  "role": "train",
+  "chamber": "B",
+  "mounting": "B_0622",
+  "map_variant": "full",
+  "block": "blocks/B_0622.json",
+  "w0": {
+   "x": -0.20606630997314393,
+   "y": -0.20705816379430625
+  },
+  "kw": {
+   "x": 1.0046540580613343,
+   "y": 1.016922611862367
+  },
+  "v_drift": 37.711436983356045,
+  "n_const": {
+   "x": 497,
+   "y": 497
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 497,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det2_det3_overnight_6-22-26__resist_505V_drift_1000V__mx17_2": {
+  "unit": "B_0622",
+  "role": "train",
+  "chamber": "B",
+  "mounting": "B_0622",
+  "map_variant": "full",
+  "block": "blocks/B_0622.json",
+  "w0": {
+   "x": -0.2288015085515791,
+   "y": -0.1916829066026379
+  },
+  "kw": {
+   "x": 0.990440734102881,
+   "y": 1.0108745067273213
+  },
+  "v_drift": 38.365167252586104,
+  "n_const": {
+   "x": 485,
+   "y": 485
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 485,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det2_det3_overnight_6-22-26__resist_510V_drift_1000V__mx17_2": {
+  "unit": "B_0622",
+  "role": "train",
+  "chamber": "B",
+  "mounting": "B_0622",
+  "map_variant": "full",
+  "block": "blocks/B_0622.json",
+  "w0": {
+   "x": -0.16760443425170946,
+   "y": -0.19610351605555756
+  },
+  "kw": {
+   "x": 1.001398635470583,
+   "y": 1.0226961423019845
+  },
+  "v_drift": 38.01550630919764,
+  "n_const": {
+   "x": 448,
+   "y": 448
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 448,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det2_det3_overnight_6-22-26__resist_515V_drift_1000V__mx17_2": {
+  "unit": "B_0622",
+  "role": "train",
+  "chamber": "B",
+  "mounting": "B_0622",
+  "map_variant": "full",
+  "block": "blocks/B_0622.json",
+  "w0": {
+   "x": -0.17523866109985306,
+   "y": -0.1605400173162392
+  },
+  "kw": {
+   "x": 0.9899860024185136,
+   "y": 1.0177348437792877
+  },
+  "v_drift": 38.237473760999926,
+  "n_const": {
+   "x": 331,
+   "y": 331
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 331,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det2_det3_overnight_6-22-26__resist_520V_drift_1000V__mx17_2": {
+  "unit": "B_0622",
+  "role": "train",
+  "chamber": "B",
+  "mounting": "B_0622",
+  "map_variant": "full",
+  "block": "blocks/B_0622.json",
+  "w0": {
+   "x": -0.1869178945184887,
+   "y": -0.1546622604691036
+  },
+  "kw": {
+   "x": 1.0147782444180629,
+   "y": 1.0467678373117566
+  },
+  "v_drift": 37.65738584462811,
+  "n_const": {
+   "x": 246,
+   "y": 246
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 246,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det2_det3_overnight_6-22-26__resist_525V_drift_1000V__mx17_2": {
+  "unit": "B_0622",
+  "role": "train",
+  "chamber": "B",
+  "mounting": "B_0622",
+  "map_variant": "full",
+  "block": "blocks/B_0622.json",
+  "w0": {
+   "x": -0.20017414424110852,
+   "y": -0.20604166932583523
+  },
+  "kw": {
+   "x": 1.0296815738020664,
+   "y": 1.0577330323940926
+  },
+  "v_drift": 36.458769164668915,
+  "n_const": {
+   "x": 154,
+   "y": 154
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 154,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det2_det3_overnight_6-22-26__short_run__mx17_2": {
+  "unit": "B_0622",
+  "role": "train",
+  "chamber": "B",
+  "mounting": "B_0622",
+  "map_variant": "full",
+  "block": "blocks/B_0622.json",
+  "w0": {
+   "x": -0.20811630316956323,
+   "y": -0.21376192102852964
+  },
+  "kw": {
+   "x": 0.9959145488455922,
+   "y": 1.0036437943884575
+  },
+  "v_drift": 38.994193589865056,
+  "n_const": {
+   "x": 1108,
+   "y": 1108
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 1108,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det2_det3_overnight_6-22-26__long_run__mx17_3": {
+  "unit": "A_0622",
+  "role": "train",
+  "chamber": "A",
+  "mounting": "A_0622",
+  "map_variant": "full",
+  "block": "blocks/A_0622.json",
+  "w0": {
+   "x": 0.03317611881990454,
+   "y": -0.22212874007827343
+  },
+  "kw": {
+   "x": 1.6111905824817796,
+   "y": 1.7162050814034426
+  },
+  "v_drift": 12.248024691221481,
+  "n_const": {
+   "x": 3634,
+   "y": 3114
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 11972,
+  "cens_x": 0.6965,
+  "cens_y": 0.7399,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": false,
+  "note": "",
+  "x_map_recommended": false,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": false,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det2_det3_overnight_6-22-26__resist_450V_drift_1000V__mx17_3": {
+  "unit": "A_0622",
+  "role": "train",
+  "chamber": "A",
+  "mounting": "A_0622",
+  "map_variant": "full",
+  "block": "blocks/A_0622.json",
+  "w0": {
+   "x": 0.13926140726408473,
+   "y": -0.2583031570753162
+  },
+  "kw": {
+   "x": 1.5987616346313103,
+   "y": 1.6002008191207062
+  },
+  "v_drift": 13.577560538569985,
+  "n_const": {
+   "x": 149,
+   "y": 157
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 524,
+  "cens_x": 0.7156,
+  "cens_y": 0.7004,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": false,
+  "note": "",
+  "x_map_recommended": false,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": false,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det2_det3_overnight_6-22-26__resist_455V_drift_1000V__mx17_3": {
+  "unit": "A_0622",
+  "role": "train",
+  "chamber": "A",
+  "mounting": "A_0622",
+  "map_variant": "full",
+  "block": "blocks/A_0622.json",
+  "w0": {
+   "x": -0.011999068445402137,
+   "y": -0.2371023866551252
+  },
+  "kw": {
+   "x": 1.5350786266796799,
+   "y": 1.6488537960370866
+  },
+  "v_drift": 12.131725570718729,
+  "n_const": {
+   "x": 153,
+   "y": 160
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 524,
+  "cens_x": 0.708,
+  "cens_y": 0.6947,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": false,
+  "note": "",
+  "x_map_recommended": false,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": false,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det2_det3_overnight_6-22-26__resist_460V_drift_1000V__mx17_3": {
+  "unit": "A_0622",
+  "role": "train",
+  "chamber": "A",
+  "mounting": "A_0622",
+  "map_variant": "full",
+  "block": "blocks/A_0622.json",
+  "w0": {
+   "x": -0.00898540338240515,
+   "y": -0.20620217487634146
+  },
+  "kw": {
+   "x": 1.6367800619101107,
+   "y": 1.606832977168298
+  },
+  "v_drift": 12.201436300882731,
+  "n_const": {
+   "x": 135,
+   "y": 154
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 521,
+  "cens_x": 0.7409,
+  "cens_y": 0.7044,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": false,
+  "note": "",
+  "x_map_recommended": false,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": false,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det2_det3_overnight_6-22-26__resist_465V_drift_1000V__mx17_3": {
+  "unit": "A_0622",
+  "role": "train",
+  "chamber": "A",
+  "mounting": "A_0622",
+  "map_variant": "full",
+  "block": "blocks/A_0622.json",
+  "w0": {
+   "x": 0.17182557665816547,
+   "y": -0.2401222271775935
+  },
+  "kw": {
+   "x": 1.2125999858123961,
+   "y": 1.3976476469345611
+  },
+  "v_drift": 10.433359710971427,
+  "n_const": {
+   "x": 101,
+   "y": 99
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 494,
+  "cens_x": 0.7955,
+  "cens_y": 0.7996,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": false,
+  "note": "",
+  "x_map_recommended": false,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": false,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det2_det3_overnight_6-22-26__resist_470V_drift_1000V__mx17_3": {
+  "unit": "A_0622",
+  "role": "train",
+  "chamber": "A",
+  "mounting": "A_0622",
+  "map_variant": "full",
+  "block": "blocks/A_0622.json",
+  "w0": {
+   "x": 0.016330951714956084,
+   "y": -0.21285238917399554
+  },
+  "kw": {
+   "x": 1.3444090184219981,
+   "y": 1.6350368358845042
+  },
+  "v_drift": 10.163234955144747,
+  "n_const": {
+   "x": 93,
+   "y": 107
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 514,
+  "cens_x": 0.8191,
+  "cens_y": 0.7918,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": false,
+  "note": "",
+  "x_map_recommended": false,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": false,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det2_det3_overnight_6-22-26__resist_475V_drift_1000V__mx17_3": {
+  "unit": "A_0622",
+  "role": "train",
+  "chamber": "A",
+  "mounting": "A_0622",
+  "map_variant": "full",
+  "block": "blocks/A_0622.json",
+  "w0": {
+   "x": 0.028157581549855436,
+   "y": -0.31447724546171874
+  },
+  "kw": {
+   "x": 1.709747265317693,
+   "y": 1.707675012775309
+  },
+  "v_drift": 12.828310706269306,
+  "n_const": {
+   "x": 137,
+   "y": 137
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 504,
+  "cens_x": 0.7282,
+  "cens_y": 0.7282,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": false,
+  "note": "",
+  "x_map_recommended": false,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": false,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det2_det3_overnight_6-22-26__resist_480V_drift_1000V__mx17_3": {
+  "unit": "A_0622",
+  "role": "train",
+  "chamber": "A",
+  "mounting": "A_0622",
+  "map_variant": "full",
+  "block": "blocks/A_0622.json",
+  "w0": {
+   "x": -0.11464962065656349,
+   "y": -0.29416312114179605
+  },
+  "kw": {
+   "x": 1.3635877768775249,
+   "y": 1.6780992260063863
+  },
+  "v_drift": 11.236184069428525,
+  "n_const": {
+   "x": 93,
+   "y": 99
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 464,
+  "cens_x": 0.7996,
+  "cens_y": 0.7866,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": false,
+  "note": "",
+  "x_map_recommended": false,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": false,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det2_det3_overnight_6-22-26__resist_485V_drift_1000V__mx17_3": {
+  "unit": "A_0622",
+  "role": "train",
+  "chamber": "A",
+  "mounting": "A_0622",
+  "map_variant": "full",
+  "block": "blocks/A_0622.json",
+  "w0": {
+   "x": 0.04993441287242961,
+   "y": -0.2967625544958867
+  },
+  "kw": {
+   "x": 1.7875223561971354,
+   "y": 1.7024393116633458
+  },
+  "v_drift": 11.189337841802029,
+  "n_const": {
+   "x": 133,
+   "y": 133
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 519,
+  "cens_x": 0.7437,
+  "cens_y": 0.7437,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": false,
+  "note": "",
+  "x_map_recommended": false,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": false,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det2_det3_overnight_6-22-26__resist_490V_drift_1000V__mx17_3": {
+  "unit": "A_0622",
+  "role": "train",
+  "chamber": "A",
+  "mounting": "A_0622",
+  "map_variant": "full",
+  "block": "blocks/A_0622.json",
+  "w0": {
+   "x": 0.24435806516504927,
+   "y": -0.11253726469433258
+  },
+  "kw": {
+   "x": 1.4942679244711479,
+   "y": 1.6034069692269788
+  },
+  "v_drift": 13.089259220537857,
+  "n_const": {
+   "x": 189,
+   "y": 173
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 556,
+  "cens_x": 0.6601,
+  "cens_y": 0.6888,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": false,
+  "note": "",
+  "x_map_recommended": false,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": false,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det2_det3_overnight_6-22-26__resist_495V_drift_1000V__mx17_3": {
+  "unit": "A_0622",
+  "role": "train",
+  "chamber": "A",
+  "mounting": "A_0622",
+  "map_variant": "full",
+  "block": "blocks/A_0622.json",
+  "w0": {
+   "x": 0.07603316296133641,
+   "y": -0.24225485550764786
+  },
+  "kw": {
+   "x": 1.5193941397117672,
+   "y": 1.6596462775543652
+  },
+  "v_drift": 12.099481029502066,
+  "n_const": {
+   "x": 155,
+   "y": 144
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 556,
+  "cens_x": 0.7212,
+  "cens_y": 0.741,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": false,
+  "note": "",
+  "x_map_recommended": false,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": false,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det2_det3_overnight_6-22-26__resist_500V_drift_1000V__mx17_3": {
+  "unit": "A_0622",
+  "role": "train",
+  "chamber": "A",
+  "mounting": "A_0622",
+  "map_variant": "full",
+  "block": "blocks/A_0622.json",
+  "w0": {
+   "x": 0.07323555118581554,
+   "y": -0.0037980723518266906
+  },
+  "kw": {
+   "x": 1.6251912528994068,
+   "y": 1.7759734842514574
+  },
+  "v_drift": 13.679500784908582,
+  "n_const": {
+   "x": 175,
+   "y": 144
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 543,
+  "cens_x": 0.6777,
+  "cens_y": 0.7348,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": false,
+  "note": "",
+  "x_map_recommended": false,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": false,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det2_det3_overnight_6-22-26__resist_505V_drift_1000V__mx17_3": {
+  "unit": "A_0622",
+  "role": "train",
+  "chamber": "A",
+  "mounting": "A_0622",
+  "map_variant": "full",
+  "block": "blocks/A_0622.json",
+  "w0": {
+   "x": -0.0035704038548622385,
+   "y": -0.17575214566741246
+  },
+  "kw": {
+   "x": 1.5935894066717784,
+   "y": 1.5497470835092861
+  },
+  "v_drift": 13.682587567459896,
+  "n_const": {
+   "x": 182,
+   "y": 145
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 552,
+  "cens_x": 0.6703,
+  "cens_y": 0.7373,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": false,
+  "note": "",
+  "x_map_recommended": false,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": false,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det2_det3_overnight_6-22-26__resist_510V_drift_1000V__mx17_3": {
+  "unit": "A_0622",
+  "role": "train",
+  "chamber": "A",
+  "mounting": "A_0622",
+  "map_variant": "full",
+  "block": "blocks/A_0622.json",
+  "w0": {
+   "x": 0.1051575134772885,
+   "y": -0.17697759665915247
+  },
+  "kw": {
+   "x": 1.593943188486336,
+   "y": 1.6996640714554971
+  },
+  "v_drift": 12.788055744844286,
+  "n_const": {
+   "x": 145,
+   "y": 123
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 499,
+  "cens_x": 0.7094,
+  "cens_y": 0.7535,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": false,
+  "note": "",
+  "x_map_recommended": false,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": false,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det2_det3_overnight_6-22-26__resist_515V_drift_1000V__mx17_3": {
+  "unit": "A_0622",
+  "role": "train",
+  "chamber": "A",
+  "mounting": "A_0622",
+  "map_variant": "full",
+  "block": "blocks/A_0622.json",
+  "w0": {
+   "x": 0.056604079936416515,
+   "y": -0.3103371652477086
+  },
+  "kw": {
+   "x": 1.6336727433884537,
+   "y": 1.6392865638494762
+  },
+  "v_drift": 11.906317276200868,
+  "n_const": {
+   "x": 96,
+   "y": 68
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 349,
+  "cens_x": 0.7249,
+  "cens_y": 0.8052,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": false,
+  "note": "",
+  "x_map_recommended": false,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": false,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det2_det3_overnight_6-22-26__resist_520V_drift_1000V__mx17_3": {
+  "unit": "A_0622",
+  "role": "train",
+  "chamber": "A",
+  "mounting": "A_0622",
+  "map_variant": "full",
+  "block": "blocks/A_0622.json",
+  "w0": {
+   "x": -0.08372542112992565,
+   "y": -0.24577620968569439
+  },
+  "kw": {
+   "x": 1.542954940297511,
+   "y": 1.4357905442789254
+  },
+  "v_drift": 11.780293788729722,
+  "n_const": {
+   "x": 78,
+   "y": 71
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 306,
+  "cens_x": 0.7451,
+  "cens_y": 0.768,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": false,
+  "note": "",
+  "x_map_recommended": false,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": false,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det2_det3_overnight_6-22-26__resist_525V_drift_1000V__mx17_3": {
+  "unit": "A_0622",
+  "role": "train",
+  "chamber": "A",
+  "mounting": "A_0622",
+  "map_variant": "full",
+  "block": "blocks/A_0622.json",
+  "w0": {
+   "x": -0.017905459780564334,
+   "y": -0.1961454105878002
+  },
+  "kw": {
+   "x": 1.556832303898776,
+   "y": 1.6837013129104494
+  },
+  "v_drift": 11.625188578180536,
+  "n_const": {
+   "x": 72,
+   "y": 65
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 304,
+  "cens_x": 0.7632,
+  "cens_y": 0.7862,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": false,
+  "note": "",
+  "x_map_recommended": false,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": false,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det2_det3_overnight_6-22-26__short_run__mx17_3": {
+  "unit": "A_0622",
+  "role": "train",
+  "chamber": "A",
+  "mounting": "A_0622",
+  "map_variant": "full",
+  "block": "blocks/A_0622.json",
+  "w0": {
+   "x": 0.0846934003909939,
+   "y": -0.2613215685868215
+  },
+  "kw": {
+   "x": 1.5769173027272494,
+   "y": 1.5408001556592679
+  },
+  "v_drift": 14.905445022302299,
+  "n_const": {
+   "x": 458,
+   "y": 420
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 1253,
+  "cens_x": 0.6345,
+  "cens_y": 0.6648,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": false,
+  "note": "",
+  "x_map_recommended": false,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": false,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det3_day_6-25-26__long_run__mx17_3": {
+  "unit": "A_0625",
+  "role": "train",
+  "chamber": "A",
+  "mounting": "A_0625",
+  "map_variant": "full",
+  "block": "blocks/A_0625.json",
+  "w0": {
+   "x": 0.05245738784945265,
+   "y": -0.2030037398948445
+  },
+  "kw": {
+   "x": 1.0176392054545107,
+   "y": 1.0158167014951678
+  },
+  "v_drift": 22.421208429932715,
+  "n_const": {
+   "x": 6278,
+   "y": 6279
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 6279,
+  "cens_x": 0.0001593,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": true
+ },
+ "c26__mx17_det3_det4_overnight_6-23-26__long_run__mx17_3": {
+  "unit": "",
+  "role": "nomap",
+  "chamber": "A",
+  "mounting": "A_0623",
+  "map_variant": "none",
+  "block": null,
+  "n_gate": 3113,
+  "note": "pass-1 angles are uncorrelated with the M3 reference (corr 0.01): no angle map is possible",
+  "ntracks_unavailable": true,
+  "x_map_recommended": false,
+  "y_map_recommended": false
+ },
+ "c26__mx17_det3_det4_overnight_6-23-26__longer_run__mx17_3": {
+  "unit": "",
+  "role": "nomap",
+  "chamber": "A",
+  "mounting": "A_0623",
+  "map_variant": "none",
+  "block": null,
+  "n_gate": 102,
+  "note": "pass-1 angles are uncorrelated with the M3 reference (corr 0.01): no angle map is possible",
+  "ntracks_unavailable": true,
+  "x_map_recommended": false,
+  "y_map_recommended": false
+ },
+ "c26__mx17_det3_det4_overnight_6-23-26__resist_465V_drift_600V__mx17_3": {
+  "unit": "",
+  "role": "nomap",
+  "chamber": "A",
+  "mounting": "A_0623",
+  "map_variant": "none",
+  "block": null,
+  "n_gate": 18,
+  "note": "pass-1 angles are uncorrelated with the M3 reference (corr 0.01): no angle map is possible",
+  "ntracks_unavailable": true,
+  "x_map_recommended": false,
+  "y_map_recommended": false
+ },
+ "c26__mx17_det3_det4_overnight_6-23-26__resist_470V_drift_600V__mx17_3": {
+  "unit": "",
+  "role": "nomap",
+  "chamber": "A",
+  "mounting": "A_0623",
+  "map_variant": "none",
+  "block": null,
+  "n_gate": 28,
+  "note": "pass-1 angles are uncorrelated with the M3 reference (corr 0.01): no angle map is possible",
+  "ntracks_unavailable": true,
+  "x_map_recommended": false,
+  "y_map_recommended": false
+ },
+ "c26__mx17_det3_det4_overnight_6-23-26__resist_475V_drift_600V__mx17_3": {
+  "unit": "",
+  "role": "nomap",
+  "chamber": "A",
+  "mounting": "A_0623",
+  "map_variant": "none",
+  "block": null,
+  "n_gate": 27,
+  "note": "pass-1 angles are uncorrelated with the M3 reference (corr 0.01): no angle map is possible",
+  "ntracks_unavailable": true,
+  "x_map_recommended": false,
+  "y_map_recommended": false
+ },
+ "c26__mx17_det3_det4_overnight_6-23-26__resist_480V_drift_600V__mx17_3": {
+  "unit": "",
+  "role": "nomap",
+  "chamber": "A",
+  "mounting": "A_0623",
+  "map_variant": "none",
+  "block": null,
+  "n_gate": 35,
+  "note": "pass-1 angles are uncorrelated with the M3 reference (corr 0.01): no angle map is possible",
+  "ntracks_unavailable": true,
+  "x_map_recommended": false,
+  "y_map_recommended": false
+ },
+ "c26__mx17_det3_det4_overnight_6-23-26__resist_485V_drift_600V__mx17_3": {
+  "unit": "",
+  "role": "nomap",
+  "chamber": "A",
+  "mounting": "A_0623",
+  "map_variant": "none",
+  "block": null,
+  "n_gate": 56,
+  "note": "pass-1 angles are uncorrelated with the M3 reference (corr 0.01): no angle map is possible",
+  "ntracks_unavailable": true,
+  "x_map_recommended": false,
+  "y_map_recommended": false
+ },
+ "c26__mx17_det3_det4_overnight_6-23-26__resist_490V_drift_600V__mx17_3": {
+  "unit": "",
+  "role": "nomap",
+  "chamber": "A",
+  "mounting": "A_0623",
+  "map_variant": "none",
+  "block": null,
+  "n_gate": 58,
+  "note": "pass-1 angles are uncorrelated with the M3 reference (corr 0.01): no angle map is possible",
+  "ntracks_unavailable": true,
+  "x_map_recommended": false,
+  "y_map_recommended": false
+ },
+ "c26__mx17_det3_det4_overnight_6-23-26__resist_495V_drift_600V__mx17_3": {
+  "unit": "",
+  "role": "nomap",
+  "chamber": "A",
+  "mounting": "A_0623",
+  "map_variant": "none",
+  "block": null,
+  "n_gate": 79,
+  "note": "pass-1 angles are uncorrelated with the M3 reference (corr 0.01): no angle map is possible",
+  "ntracks_unavailable": true,
+  "x_map_recommended": false,
+  "y_map_recommended": false
+ },
+ "c26__mx17_det3_det4_overnight_6-23-26__resist_500V_drift_600V__mx17_3": {
+  "unit": "",
+  "role": "nomap",
+  "chamber": "A",
+  "mounting": "A_0623",
+  "map_variant": "none",
+  "block": null,
+  "n_gate": 78,
+  "note": "pass-1 angles are uncorrelated with the M3 reference (corr 0.01): no angle map is possible",
+  "ntracks_unavailable": true,
+  "x_map_recommended": false,
+  "y_map_recommended": false
+ },
+ "c26__mx17_det3_det4_overnight_6-23-26__resist_505V_drift_600V__mx17_3": {
+  "unit": "",
+  "role": "nomap",
+  "chamber": "A",
+  "mounting": "A_0623",
+  "map_variant": "none",
+  "block": null,
+  "n_gate": 84,
+  "note": "pass-1 angles are uncorrelated with the M3 reference (corr 0.01): no angle map is possible",
+  "ntracks_unavailable": true,
+  "x_map_recommended": false,
+  "y_map_recommended": false
+ },
+ "c26__mx17_det3_det4_overnight_6-23-26__resist_510V_drift_600V__mx17_3": {
+  "unit": "",
+  "role": "nomap",
+  "chamber": "A",
+  "mounting": "A_0623",
+  "map_variant": "none",
+  "block": null,
+  "n_gate": 102,
+  "note": "pass-1 angles are uncorrelated with the M3 reference (corr 0.01): no angle map is possible",
+  "ntracks_unavailable": true,
+  "x_map_recommended": false,
+  "y_map_recommended": false
+ },
+ "c26__mx17_det3_det4_overnight_6-23-26__resist_515V_drift_600V__mx17_3": {
+  "unit": "",
+  "role": "nomap",
+  "chamber": "A",
+  "mounting": "A_0623",
+  "map_variant": "none",
+  "block": null,
+  "n_gate": 61,
+  "note": "pass-1 angles are uncorrelated with the M3 reference (corr 0.01): no angle map is possible",
+  "ntracks_unavailable": true,
+  "x_map_recommended": false,
+  "y_map_recommended": false
+ },
+ "c26__mx17_det3_det4_overnight_6-23-26__resist_520V_drift_600V__mx17_3": {
+  "unit": "",
+  "role": "nomap",
+  "chamber": "A",
+  "mounting": "A_0623",
+  "map_variant": "none",
+  "block": null,
+  "n_gate": 63,
+  "note": "pass-1 angles are uncorrelated with the M3 reference (corr 0.01): no angle map is possible",
+  "ntracks_unavailable": true,
+  "x_map_recommended": false,
+  "y_map_recommended": false
+ },
+ "c26__mx17_det3_det4_overnight_6-23-26__resist_525V_drift_600V__mx17_3": {
+  "unit": "",
+  "role": "nomap",
+  "chamber": "A",
+  "mounting": "A_0623",
+  "map_variant": "none",
+  "block": null,
+  "n_gate": 93,
+  "note": "pass-1 angles are uncorrelated with the M3 reference (corr 0.01): no angle map is possible",
+  "ntracks_unavailable": true,
+  "x_map_recommended": false,
+  "y_map_recommended": false
+ },
+ "c26__mx17_det3_det4_overnight_6-23-26__short_run__mx17_3": {
+  "unit": "",
+  "role": "nomap",
+  "chamber": "A",
+  "mounting": "A_0623",
+  "map_variant": "none",
+  "block": null,
+  "n_gate": 2,
+  "note": "pass-1 angles are uncorrelated with the M3 reference (corr 0.01): no angle map is possible",
+  "ntracks_unavailable": true,
+  "x_map_recommended": false,
+  "y_map_recommended": false
+ },
+ "c26__mx17_det3_p2_det1_overnight_6-27-26__long_run_p2_det1_sanity_check__mx17_3": {
+  "unit": "A_0627",
+  "role": "train",
+  "chamber": "A",
+  "mounting": "A_0627",
+  "map_variant": "full",
+  "block": "blocks/A_0627.json",
+  "w0": {
+   "x": -0.05464540053652313,
+   "y": -0.16162025289206686
+  },
+  "kw": {
+   "x": 1.0089982602404686,
+   "y": 0.998779342215478
+  },
+  "v_drift": 37.194792579340906,
+  "n_const": {
+   "x": 14066,
+   "y": 14066
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 14066,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det3_saturday_scan_6-27-26__drift_scan_resist_490V_drift_100V__mx17_3": {
+  "unit": "A_0627",
+  "role": "tilt_only",
+  "chamber": "A",
+  "mounting": "A_0627",
+  "map_variant": "full",
+  "block": "blocks/A_0627.json",
+  "w0": {
+   "x": -0.003102199379162276,
+   "y": -0.03497035753604126
+  },
+  "kw": {
+   "x": 0.8690271536372581,
+   "y": 1.2536710619880713
+  },
+  "v_drift": 2.554702284913296,
+  "n_const": {
+   "x": 459,
+   "y": 458
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": false,
+  "n_gate": 459,
+  "cens_x": 0.0,
+  "cens_y": 0.002179,
+  "ntracks_unavailable": true,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": false,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": false,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det3_saturday_scan_6-27-26__hv_scan2_resist_460V_drift_1000V__mx17_3": {
+  "unit": "A_0627",
+  "role": "train",
+  "chamber": "A",
+  "mounting": "A_0627",
+  "map_variant": "full",
+  "block": "blocks/A_0627.json",
+  "w0": {
+   "x": -0.03941513844598269,
+   "y": -0.15451635243071174
+  },
+  "kw": {
+   "x": 1.0071901241113397,
+   "y": 0.9966074720054526
+  },
+  "v_drift": 36.219827909247826,
+  "n_const": {
+   "x": 458,
+   "y": 458
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 458,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det3_saturday_scan_6-27-26__hv_scan2_resist_470V_drift_1000V__mx17_3": {
+  "unit": "A_0627",
+  "role": "train",
+  "chamber": "A",
+  "mounting": "A_0627",
+  "map_variant": "full",
+  "block": "blocks/A_0627.json",
+  "w0": {
+   "x": -0.08820560213323236,
+   "y": -0.15589815165851637
+  },
+  "kw": {
+   "x": 1.0097943727017578,
+   "y": 0.9953314946812394
+  },
+  "v_drift": 36.2894629036264,
+  "n_const": {
+   "x": 462,
+   "y": 462
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 462,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det3_saturday_scan_6-27-26__hv_scan2_resist_480V_drift_1000V__mx17_3": {
+  "unit": "A_0627",
+  "role": "train",
+  "chamber": "A",
+  "mounting": "A_0627",
+  "map_variant": "full",
+  "block": "blocks/A_0627.json",
+  "w0": {
+   "x": -0.035451214964499204,
+   "y": -0.1455950043597806
+  },
+  "kw": {
+   "x": 1.0147729985092933,
+   "y": 0.9943719485751898
+  },
+  "v_drift": 36.36852383561239,
+  "n_const": {
+   "x": 505,
+   "y": 505
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 505,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det3_saturday_scan_6-27-26__hv_scan2_resist_490V_drift_1000V__mx17_3": {
+  "unit": "A_0627",
+  "role": "train",
+  "chamber": "A",
+  "mounting": "A_0627",
+  "map_variant": "full",
+  "block": "blocks/A_0627.json",
+  "w0": {
+   "x": -0.06523606633778531,
+   "y": -0.17251662148998972
+  },
+  "kw": {
+   "x": 0.9953415184462296,
+   "y": 0.9919055161096285
+  },
+  "v_drift": 36.66519138109803,
+  "n_const": {
+   "x": 502,
+   "y": 502
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 502,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det3_saturday_scan_6-27-26__hv_scan2_resist_500V_drift_1000V__mx17_3": {
+  "unit": "A_0627",
+  "role": "train",
+  "chamber": "A",
+  "mounting": "A_0627",
+  "map_variant": "full",
+  "block": "blocks/A_0627.json",
+  "w0": {
+   "x": -0.06682154634405432,
+   "y": -0.187291361456098
+  },
+  "kw": {
+   "x": 1.0063603099217568,
+   "y": 0.9965013502447707
+  },
+  "v_drift": 36.86114531829028,
+  "n_const": {
+   "x": 475,
+   "y": 475
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 475,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det3_saturday_scan_6-27-26__hv_scan2_resist_510V_drift_1000V__mx17_3": {
+  "unit": "A_0627",
+  "role": "train",
+  "chamber": "A",
+  "mounting": "A_0627",
+  "map_variant": "full",
+  "block": "blocks/A_0627.json",
+  "w0": {
+   "x": -0.0691306472444242,
+   "y": -0.16482652990848307
+  },
+  "kw": {
+   "x": 1.017362553241396,
+   "y": 1.0181181094378648
+  },
+  "v_drift": 36.4486029991355,
+  "n_const": {
+   "x": 489,
+   "y": 489
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 489,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det3_saturday_scan_6-27-26__hv_scan2_resist_520V_drift_1000V__mx17_3": {
+  "unit": "A_0627",
+  "role": "train",
+  "chamber": "A",
+  "mounting": "A_0627",
+  "map_variant": "full",
+  "block": "blocks/A_0627.json",
+  "w0": {
+   "x": -0.04349583884555092,
+   "y": -0.18192125745349283
+  },
+  "kw": {
+   "x": 1.0045551833224586,
+   "y": 1.014742533120172
+  },
+  "v_drift": 35.90223278617406,
+  "n_const": {
+   "x": 316,
+   "y": 316
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 316,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det3_saturday_scan_6-27-26__hv_scan_resist_425V_drift_1000V__mx17_3": {
+  "unit": "A_0627",
+  "role": "train",
+  "chamber": "A",
+  "mounting": "A_0627",
+  "map_variant": "full",
+  "block": "blocks/A_0627.json",
+  "w0": {
+   "x": -0.08353394218464454,
+   "y": -0.14385613735248495
+  },
+  "kw": {
+   "x": 1.0046711038415859,
+   "y": 0.987202617038528
+  },
+  "v_drift": 36.200856873402955,
+  "n_const": {
+   "x": 379,
+   "y": 379
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 379,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det3_saturday_scan_6-27-26__hv_scan_resist_435V_drift_1000V__mx17_3": {
+  "unit": "A_0627",
+  "role": "train",
+  "chamber": "A",
+  "mounting": "A_0627",
+  "map_variant": "full",
+  "block": "blocks/A_0627.json",
+  "w0": {
+   "x": -0.08781066709101305,
+   "y": -0.1400703881830058
+  },
+  "kw": {
+   "x": 1.006532546535453,
+   "y": 0.9804125963895844
+  },
+  "v_drift": 36.51741614369093,
+  "n_const": {
+   "x": 387,
+   "y": 387
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 387,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det3_saturday_scan_6-27-26__hv_scan_resist_445V_drift_1000V__mx17_3": {
+  "unit": "A_0627",
+  "role": "train",
+  "chamber": "A",
+  "mounting": "A_0627",
+  "map_variant": "full",
+  "block": "blocks/A_0627.json",
+  "w0": {
+   "x": -0.03054524135338044,
+   "y": -0.14389423203751772
+  },
+  "kw": {
+   "x": 1.001267233011138,
+   "y": 0.994687315464482
+  },
+  "v_drift": 36.403787975641556,
+  "n_const": {
+   "x": 403,
+   "y": 403
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 403,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det3_saturday_scan_6-27-26__hv_scan_resist_455V_drift_1000V__mx17_3": {
+  "unit": "A_0627",
+  "role": "train",
+  "chamber": "A",
+  "mounting": "A_0627",
+  "map_variant": "full",
+  "block": "blocks/A_0627.json",
+  "w0": {
+   "x": -0.07210525233369827,
+   "y": -0.18315132861589015
+  },
+  "kw": {
+   "x": 0.9951033393405782,
+   "y": 0.9905541507197325
+  },
+  "v_drift": 36.80638159412271,
+  "n_const": {
+   "x": 436,
+   "y": 436
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 436,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det3_saturday_scan_6-27-26__hv_scan_resist_465V_drift_1000V__mx17_3": {
+  "unit": "A_0627",
+  "role": "train",
+  "chamber": "A",
+  "mounting": "A_0627",
+  "map_variant": "full",
+  "block": "blocks/A_0627.json",
+  "w0": {
+   "x": -0.03497706637456645,
+   "y": -0.16610876891610324
+  },
+  "kw": {
+   "x": 1.0044999321397778,
+   "y": 0.9876137028612364
+  },
+  "v_drift": 36.74497967525191,
+  "n_const": {
+   "x": 472,
+   "y": 472
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 472,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det3_saturday_scan_6-27-26__hv_scan_resist_475V_drift_1000V__mx17_3": {
+  "unit": "A_0627",
+  "role": "train",
+  "chamber": "A",
+  "mounting": "A_0627",
+  "map_variant": "full",
+  "block": "blocks/A_0627.json",
+  "w0": {
+   "x": -0.09453266955030416,
+   "y": -0.14056497556460965
+  },
+  "kw": {
+   "x": 0.9989766144555929,
+   "y": 1.0005773076642273
+  },
+  "v_drift": 36.46823003828581,
+  "n_const": {
+   "x": 476,
+   "y": 476
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 476,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det3_saturday_scan_6-27-26__hv_scan_resist_485V_drift_1000V__mx17_3": {
+  "unit": "A_0627",
+  "role": "train",
+  "chamber": "A",
+  "mounting": "A_0627",
+  "map_variant": "full",
+  "block": "blocks/A_0627.json",
+  "w0": {
+   "x": -0.07355335517589638,
+   "y": -0.1726471508658695
+  },
+  "kw": {
+   "x": 0.9976314905783655,
+   "y": 0.9929643269546446
+  },
+  "v_drift": 36.6742743151225,
+  "n_const": {
+   "x": 478,
+   "y": 478
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 478,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det3_saturday_scan_6-27-26__hv_scan_resist_495V_drift_1000V__mx17_3": {
+  "unit": "A_0627",
+  "role": "train",
+  "chamber": "A",
+  "mounting": "A_0627",
+  "map_variant": "full",
+  "block": "blocks/A_0627.json",
+  "w0": {
+   "x": -0.045288782034596665,
+   "y": -0.14741906755008088
+  },
+  "kw": {
+   "x": 1.0054611346423965,
+   "y": 1.0027250293846854
+  },
+  "v_drift": 36.4405070337035,
+  "n_const": {
+   "x": 492,
+   "y": 492
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 492,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det3_saturday_scan_6-27-26__hv_scan_resist_505V_drift_1000V__mx17_3": {
+  "unit": "A_0627",
+  "role": "train",
+  "chamber": "A",
+  "mounting": "A_0627",
+  "map_variant": "full",
+  "block": "blocks/A_0627.json",
+  "w0": {
+   "x": -0.045093531211167395,
+   "y": -0.15560613323577943
+  },
+  "kw": {
+   "x": 1.0078808431939477,
+   "y": 0.9938164276641557
+  },
+  "v_drift": 36.93868231625382,
+  "n_const": {
+   "x": 454,
+   "y": 454
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 454,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det3_saturday_scan_6-27-26__hv_scan_resist_515V_drift_1000V__mx17_3": {
+  "unit": "A_0627",
+  "role": "train",
+  "chamber": "A",
+  "mounting": "A_0627",
+  "map_variant": "full",
+  "block": "blocks/A_0627.json",
+  "w0": {
+   "x": 0.00984989573095017,
+   "y": -0.15802970814372183
+  },
+  "kw": {
+   "x": 1.0033829956410911,
+   "y": 1.0052342185233158
+  },
+  "v_drift": 36.91027250110629,
+  "n_const": {
+   "x": 370,
+   "y": 370
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 370,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det3_saturday_scan_6-27-26__hv_scan_resist_525V_drift_1000V__mx17_3": {
+  "unit": "A_0627",
+  "role": "train",
+  "chamber": "A",
+  "mounting": "A_0627",
+  "map_variant": "full",
+  "block": "blocks/A_0627.json",
+  "w0": {
+   "x": -0.07070765880737259,
+   "y": -0.23537439949770314
+  },
+  "kw": {
+   "x": 1.0227786531065683,
+   "y": 1.0195079545996402
+  },
+  "v_drift": 36.1040337787851,
+  "n_const": {
+   "x": 223,
+   "y": 223
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 223,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "sat_det3": {
+  "unit": "A_0627",
+  "role": "train",
+  "chamber": "A",
+  "mounting": "A_0627",
+  "map_variant": "full",
+  "block": "blocks/A_0627.json",
+  "w0": {
+   "x": -0.05084962876605069,
+   "y": -0.15498400504403997
+  },
+  "kw": {
+   "x": 1.033243336453285,
+   "y": 1.020498511288866
+  },
+  "v_drift": 35.8,
+  "n_const": {
+   "x": 4654,
+   "y": 4654
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 4654,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det3_saturday_scan_6-27-26__drift_scan_resist_490V_drift_1100V__mx17_3": {
+  "unit": "A_0627",
+  "role": "tilt_only",
+  "chamber": "A",
+  "mounting": "A_0627",
+  "map_variant": "full",
+  "block": "blocks/A_0627.json",
+  "w0": {
+   "x": -0.04516418162177749,
+   "y": -0.16460942796214964
+  },
+  "kw": {
+   "x": 1.0070641369933604,
+   "y": 0.9948338522917114
+  },
+  "v_drift": 38.848819806726304,
+  "n_const": {
+   "x": 465,
+   "y": 465
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": false,
+  "n_gate": 465,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det3_saturday_scan_6-27-26__drift_scan_resist_490V_drift_300V__mx17_3": {
+  "unit": "A_0627",
+  "role": "tilt_only",
+  "chamber": "A",
+  "mounting": "A_0627",
+  "map_variant": "full",
+  "block": "blocks/A_0627.json",
+  "w0": {
+   "x": -0.03471542842743354,
+   "y": -0.037352775956430655
+  },
+  "kw": {
+   "x": 0.9936903563531286,
+   "y": 1.0806148033176357
+  },
+  "v_drift": 8.13396638189972,
+  "n_const": {
+   "x": 448,
+   "y": 448
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": false,
+  "n_gate": 448,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": false,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": false,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det3_saturday_scan_6-27-26__drift_scan_resist_490V_drift_500V__mx17_3": {
+  "unit": "A_0627",
+  "role": "tilt_only",
+  "chamber": "A",
+  "mounting": "A_0627",
+  "map_variant": "full",
+  "block": "blocks/A_0627.json",
+  "w0": {
+   "x": -0.03552303757574848,
+   "y": -0.05897038854033416
+  },
+  "kw": {
+   "x": 1.0002364291455323,
+   "y": 1.004955771989958
+  },
+  "v_drift": 15.651927067432858,
+  "n_const": {
+   "x": 532,
+   "y": 532
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": false,
+  "n_gate": 532,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det3_saturday_scan_6-27-26__drift_scan_resist_490V_drift_700V__mx17_3": {
+  "unit": "A_0627",
+  "role": "tilt_only",
+  "chamber": "A",
+  "mounting": "A_0627",
+  "map_variant": "full",
+  "block": "blocks/A_0627.json",
+  "w0": {
+   "x": -0.029029588607488496,
+   "y": -0.11419415648776288
+  },
+  "kw": {
+   "x": 1.0082385283850959,
+   "y": 0.9951781513454576
+  },
+  "v_drift": 24.928127900704467,
+  "n_const": {
+   "x": 548,
+   "y": 509
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": false,
+  "n_gate": 551,
+  "cens_x": 0.005445,
+  "cens_y": 0.07623,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det3_saturday_scan_6-27-26__drift_scan_resist_490V_drift_900V__mx17_3": {
+  "unit": "A_0627",
+  "role": "tilt_only",
+  "chamber": "A",
+  "mounting": "A_0627",
+  "map_variant": "full",
+  "block": "blocks/A_0627.json",
+  "w0": {
+   "x": -0.0524179996118135,
+   "y": -0.11193192208041605
+  },
+  "kw": {
+   "x": 0.9996481783959855,
+   "y": 0.992111161484267
+  },
+  "v_drift": 33.45316264797501,
+  "n_const": {
+   "x": 515,
+   "y": 515
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": false,
+  "n_gate": 515,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det3_test_6-22-26__short_run__mx17_3": {
+  "unit": "A_0622",
+  "role": "train",
+  "chamber": "A",
+  "mounting": "A_0622",
+  "map_variant": "full",
+  "block": "blocks/A_0622.json",
+  "w0": {
+   "x": 0.07465455947043412,
+   "y": -0.2555419218316685
+  },
+  "kw": {
+   "x": 1.5677429061319144,
+   "y": 1.6081249875735208
+  },
+  "v_drift": 13.583246318187333,
+  "n_const": {
+   "x": 434,
+   "y": 368
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 1232,
+  "cens_x": 0.6477,
+  "cens_y": 0.7013,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": false,
+  "note": "",
+  "x_map_recommended": false,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": false,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det3_det4_overnight_6-23-26__long_run__mx17_4": {
+  "unit": "E",
+  "role": "train",
+  "chamber": "E",
+  "mounting": "E",
+  "map_variant": "full",
+  "block": "blocks/E.json",
+  "w0": {
+   "x": -0.30850503416424346,
+   "y": -0.46134494985207547
+  },
+  "kw": {
+   "x": 0.9503029366129259,
+   "y": 1.0120986458788428
+  },
+  "v_drift": 35.89249620713754,
+  "n_const": {
+   "x": 1610,
+   "y": 1610
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 1610,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": false,
+  "x_edge_use_pass1": true,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": true
+ },
+ "c26__mx17_det3_det4_overnight_6-23-26__longer_run__mx17_4": {
+  "unit": "E",
+  "role": "train",
+  "chamber": "E",
+  "mounting": "E",
+  "map_variant": "full",
+  "block": "blocks/E.json",
+  "w0": {
+   "x": -0.15610921114800055,
+   "y": -0.365358519332238
+  },
+  "kw": {
+   "x": 0.9538860467150551,
+   "y": 0.9930638272930372
+  },
+  "v_drift": 27.79264440452216,
+  "n_const": {
+   "x": 246,
+   "y": 241
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 274,
+  "cens_x": 0.1022,
+  "cens_y": 0.1204,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": false,
+  "x_edge_use_pass1": true,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": true
+ },
+ "c26__mx17_det3_det4_overnight_6-23-26__resist_465V_drift_600V__mx17_4": {
+  "unit": "E",
+  "role": "tiny",
+  "chamber": "E",
+  "mounting": "E",
+  "map_variant": "full",
+  "block": "blocks/E.json",
+  "w0": {
+   "x": -0.30850503416424346,
+   "y": -0.46134494985207547
+  },
+  "kw": {
+   "x": 1.0834681550210004,
+   "y": 1.1539232494198388
+  },
+  "v_drift": 31.4810771225205,
+  "n_const": {
+   "x": 0,
+   "y": 0
+  },
+  "const_src": "borrowed:c26__mx17_det3_det4_overnight_6-23-26__long_run__mx17_4",
+  "map_borrowed": false,
+  "map_trained_here": false,
+  "n_gate": 51,
+  "cens_x": 0.1373,
+  "cens_y": 0.09804,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": false,
+  "x_edge_use_pass1": true,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": true
+ },
+ "c26__mx17_det3_det4_overnight_6-23-26__resist_470V_drift_600V__mx17_4": {
+  "unit": "E",
+  "role": "tiny",
+  "chamber": "E",
+  "mounting": "E",
+  "map_variant": "full",
+  "block": "blocks/E.json",
+  "w0": {
+   "x": -0.30850503416424346,
+   "y": -0.46134494985207547
+  },
+  "kw": {
+   "x": 1.0834681550210004,
+   "y": 1.1539232494198388
+  },
+  "v_drift": 31.4810771225205,
+  "n_const": {
+   "x": 0,
+   "y": 0
+  },
+  "const_src": "borrowed:c26__mx17_det3_det4_overnight_6-23-26__long_run__mx17_4",
+  "map_borrowed": false,
+  "map_trained_here": false,
+  "n_gate": 58,
+  "cens_x": 0.1207,
+  "cens_y": 0.1379,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": false,
+  "x_edge_use_pass1": true,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": true
+ },
+ "c26__mx17_det3_det4_overnight_6-23-26__resist_475V_drift_600V__mx17_4": {
+  "unit": "E",
+  "role": "tiny",
+  "chamber": "E",
+  "mounting": "E",
+  "map_variant": "full",
+  "block": "blocks/E.json",
+  "w0": {
+   "x": -0.30850503416424346,
+   "y": -0.46134494985207547
+  },
+  "kw": {
+   "x": 1.0834681550210004,
+   "y": 1.1539232494198388
+  },
+  "v_drift": 31.4810771225205,
+  "n_const": {
+   "x": 0,
+   "y": 0
+  },
+  "const_src": "borrowed:c26__mx17_det3_det4_overnight_6-23-26__long_run__mx17_4",
+  "map_borrowed": false,
+  "map_trained_here": false,
+  "n_gate": 57,
+  "cens_x": 0.1228,
+  "cens_y": 0.1053,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": false,
+  "x_edge_use_pass1": true,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": true
+ },
+ "c26__mx17_det3_det4_overnight_6-23-26__resist_480V_drift_600V__mx17_4": {
+  "unit": "E",
+  "role": "tiny",
+  "chamber": "E",
+  "mounting": "E",
+  "map_variant": "full",
+  "block": "blocks/E.json",
+  "w0": {
+   "x": -0.30850503416424346,
+   "y": -0.46134494985207547
+  },
+  "kw": {
+   "x": 1.0834681550210004,
+   "y": 1.1539232494198388
+  },
+  "v_drift": 31.4810771225205,
+  "n_const": {
+   "x": 0,
+   "y": 0
+  },
+  "const_src": "borrowed:c26__mx17_det3_det4_overnight_6-23-26__long_run__mx17_4",
+  "map_borrowed": false,
+  "map_trained_here": false,
+  "n_gate": 41,
+  "cens_x": 0.09756,
+  "cens_y": 0.04878,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": false,
+  "x_edge_use_pass1": true,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": true
+ },
+ "c26__mx17_det3_det4_overnight_6-23-26__resist_485V_drift_600V__mx17_4": {
+  "unit": "E",
+  "role": "tiny",
+  "chamber": "E",
+  "mounting": "E",
+  "map_variant": "full",
+  "block": "blocks/E.json",
+  "w0": {
+   "x": -0.30850503416424346,
+   "y": -0.46134494985207547
+  },
+  "kw": {
+   "x": 1.0834681550210004,
+   "y": 1.1539232494198388
+  },
+  "v_drift": 31.4810771225205,
+  "n_const": {
+   "x": 0,
+   "y": 0
+  },
+  "const_src": "borrowed:c26__mx17_det3_det4_overnight_6-23-26__long_run__mx17_4",
+  "map_borrowed": false,
+  "map_trained_here": false,
+  "n_gate": 54,
+  "cens_x": 0.1481,
+  "cens_y": 0.01852,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": false,
+  "x_edge_use_pass1": true,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": true
+ },
+ "c26__mx17_det3_det4_overnight_6-23-26__resist_490V_drift_600V__mx17_4": {
+  "unit": "E",
+  "role": "tiny",
+  "chamber": "E",
+  "mounting": "E",
+  "map_variant": "full",
+  "block": "blocks/E.json",
+  "w0": {
+   "x": -0.30850503416424346,
+   "y": -0.46134494985207547
+  },
+  "kw": {
+   "x": 1.0834681550210004,
+   "y": 1.1539232494198388
+  },
+  "v_drift": 31.4810771225205,
+  "n_const": {
+   "x": 0,
+   "y": 0
+  },
+  "const_src": "borrowed:c26__mx17_det3_det4_overnight_6-23-26__long_run__mx17_4",
+  "map_borrowed": false,
+  "map_trained_here": false,
+  "n_gate": 37,
+  "cens_x": 0.1351,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": false,
+  "x_edge_use_pass1": true,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": true
+ },
+ "c26__mx17_det3_det4_overnight_6-23-26__resist_495V_drift_600V__mx17_4": {
+  "unit": "E",
+  "role": "tiny",
+  "chamber": "E",
+  "mounting": "E",
+  "map_variant": "full",
+  "block": "blocks/E.json",
+  "w0": {
+   "x": -0.30850503416424346,
+   "y": -0.46134494985207547
+  },
+  "kw": {
+   "x": 1.2444029646388417,
+   "y": 1.3253232279041007
+  },
+  "v_drift": 27.409726203850987,
+  "n_const": {
+   "x": 0,
+   "y": 0
+  },
+  "const_src": "borrowed:c26__mx17_det3_det4_overnight_6-23-26__long_run__mx17_4",
+  "map_borrowed": false,
+  "map_trained_here": false,
+  "n_gate": 50,
+  "cens_x": 0.08,
+  "cens_y": 0.12,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": false,
+  "x_edge_use_pass1": true,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": true
+ },
+ "c26__mx17_det3_det4_overnight_6-23-26__resist_500V_drift_600V__mx17_4": {
+  "unit": "E",
+  "role": "tiny",
+  "chamber": "E",
+  "mounting": "E",
+  "map_variant": "full",
+  "block": "blocks/E.json",
+  "w0": {
+   "x": -0.30850503416424346,
+   "y": -0.46134494985207547
+  },
+  "kw": {
+   "x": 1.2444029646388417,
+   "y": 1.3253232279041007
+  },
+  "v_drift": 27.409726203850987,
+  "n_const": {
+   "x": 0,
+   "y": 0
+  },
+  "const_src": "borrowed:c26__mx17_det3_det4_overnight_6-23-26__long_run__mx17_4",
+  "map_borrowed": false,
+  "map_trained_here": false,
+  "n_gate": 50,
+  "cens_x": 0.08,
+  "cens_y": 0.04,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": false,
+  "x_edge_use_pass1": true,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": true
+ },
+ "c26__mx17_det3_det4_overnight_6-23-26__resist_505V_drift_600V__mx17_4": {
+  "unit": "E",
+  "role": "train",
+  "chamber": "E",
+  "mounting": "E",
+  "map_variant": "full",
+  "block": "blocks/E.json",
+  "w0": {
+   "x": -0.30850503416424346,
+   "y": -0.46134494985207547
+  },
+  "kw": {
+   "x": 1.2444029646388417,
+   "y": 1.3253232279041007
+  },
+  "v_drift": 27.409726203850987,
+  "n_const": {
+   "x": 0,
+   "y": 0
+  },
+  "const_src": "borrowed:c26__mx17_det3_det4_overnight_6-23-26__long_run__mx17_4",
+  "map_borrowed": false,
+  "map_trained_here": false,
+  "n_gate": 62,
+  "cens_x": 0.04839,
+  "cens_y": 0.1129,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": false,
+  "x_edge_use_pass1": true,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": true
+ },
+ "c26__mx17_det3_det4_overnight_6-23-26__resist_510V_drift_600V__mx17_4": {
+  "unit": "E",
+  "role": "train",
+  "chamber": "E",
+  "mounting": "E",
+  "map_variant": "full",
+  "block": "blocks/E.json",
+  "w0": {
+   "x": -0.15610921114800055,
+   "y": -0.365358519332238
+  },
+  "kw": {
+   "x": 0.9672119853230134,
+   "y": 1.006937085678422
+  },
+  "v_drift": 27.409726203850987,
+  "n_const": {
+   "x": 0,
+   "y": 0
+  },
+  "const_src": "borrowed:c26__mx17_det3_det4_overnight_6-23-26__longer_run__mx17_4",
+  "map_borrowed": false,
+  "map_trained_here": false,
+  "n_gate": 63,
+  "cens_x": 0.06349,
+  "cens_y": 0.09524,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": false,
+  "x_edge_use_pass1": true,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": true
+ },
+ "c26__mx17_det3_det4_overnight_6-23-26__resist_515V_drift_600V__mx17_4": {
+  "unit": "E",
+  "role": "tiny",
+  "chamber": "E",
+  "mounting": "E",
+  "map_variant": "full",
+  "block": "blocks/E.json",
+  "w0": {
+   "x": -0.15610921114800055,
+   "y": -0.365358519332238
+  },
+  "kw": {
+   "x": 0.9672119853230134,
+   "y": 1.006937085678422
+  },
+  "v_drift": 27.409726203850987,
+  "n_const": {
+   "x": 0,
+   "y": 0
+  },
+  "const_src": "borrowed:c26__mx17_det3_det4_overnight_6-23-26__longer_run__mx17_4",
+  "map_borrowed": false,
+  "map_trained_here": false,
+  "n_gate": 42,
+  "cens_x": 0.119,
+  "cens_y": 0.119,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": false,
+  "x_edge_use_pass1": true,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": true
+ },
+ "c26__mx17_det3_det4_overnight_6-23-26__resist_520V_drift_600V__mx17_4": {
+  "unit": "E",
+  "role": "tiny",
+  "chamber": "E",
+  "mounting": "E",
+  "map_variant": "full",
+  "block": "blocks/E.json",
+  "w0": {
+   "x": -0.15610921114800055,
+   "y": -0.365358519332238
+  },
+  "kw": {
+   "x": 0.9672119853230134,
+   "y": 1.006937085678422
+  },
+  "v_drift": 27.409726203850987,
+  "n_const": {
+   "x": 0,
+   "y": 0
+  },
+  "const_src": "borrowed:c26__mx17_det3_det4_overnight_6-23-26__longer_run__mx17_4",
+  "map_borrowed": false,
+  "map_trained_here": false,
+  "n_gate": 38,
+  "cens_x": 0.05263,
+  "cens_y": 0.02632,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": false,
+  "x_edge_use_pass1": true,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": true
+ },
+ "c26__mx17_det3_det4_overnight_6-23-26__resist_525V_drift_600V__mx17_4": {
+  "unit": "E",
+  "role": "train",
+  "chamber": "E",
+  "mounting": "E",
+  "map_variant": "full",
+  "block": "blocks/E.json",
+  "w0": {
+   "x": -0.15610921114800055,
+   "y": -0.365358519332238
+  },
+  "kw": {
+   "x": 0.9538860467150551,
+   "y": 0.9930638272930372
+  },
+  "v_drift": 27.79264440452216,
+  "n_const": {
+   "x": 0,
+   "y": 0
+  },
+  "const_src": "borrowed:c26__mx17_det3_det4_overnight_6-23-26__longer_run__mx17_4",
+  "map_borrowed": false,
+  "map_trained_here": false,
+  "n_gate": 61,
+  "cens_x": 0.08197,
+  "cens_y": 0.1148,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": false,
+  "x_edge_use_pass1": true,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": true
+ },
+ "c26__mx17_det3_det4_overnight_6-23-26__short_run__mx17_4": {
+  "unit": "E",
+  "role": "train",
+  "chamber": "E",
+  "mounting": "E",
+  "map_variant": "full",
+  "block": "blocks/E.json",
+  "w0": {
+   "x": -0.15610921114800055,
+   "y": -0.365358519332238
+  },
+  "kw": {
+   "x": 0.9538860467150551,
+   "y": 0.9930638272930372
+  },
+  "v_drift": 27.79264440452216,
+  "n_const": {
+   "x": 0,
+   "y": 0
+  },
+  "const_src": "borrowed:c26__mx17_det3_det4_overnight_6-23-26__longer_run__mx17_4",
+  "map_borrowed": false,
+  "map_trained_here": false,
+  "n_gate": 63,
+  "cens_x": 0.1746,
+  "cens_y": 0.3016,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": false,
+  "x_edge_use_pass1": true,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": true
+ },
+ "g_det4": {
+  "unit": "E",
+  "role": "train",
+  "chamber": "E",
+  "mounting": "E",
+  "map_variant": "full",
+  "block": "blocks/E.json",
+  "w0": {
+   "x": -0.09676072386874256,
+   "y": -0.1955546709418736
+  },
+  "kw": {
+   "x": 0.9072465423462835,
+   "y": 0.9280916144285655
+  },
+  "v_drift": 33.0,
+  "n_const": {
+   "x": 2773,
+   "y": 2849
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 3128,
+  "cens_x": 0.1135,
+  "cens_y": 0.08919,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": false,
+  "x_edge_use_pass1": true,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": true
+ },
+ "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_400V_det7_400V_drift_700V__mx17_6": {
+  "unit": "C_long",
+  "role": "borrowed",
+  "chamber": "C",
+  "mounting": "C_0626",
+  "map_variant": "full",
+  "block": "blocks/C_long.json",
+  "w0": {
+   "x": 0.03331556158715703,
+   "y": -0.36596638250774843
+  },
+  "kw": {
+   "x": 1.0426480270538527,
+   "y": 1.0622974350944905
+  },
+  "v_drift": 29.965531558821677,
+  "n_const": {
+   "x": 159,
+   "y": 155
+  },
+  "const_src": "fit",
+  "map_borrowed": true,
+  "map_trained_here": false,
+  "n_gate": 188,
+  "cens_x": 0.1543,
+  "cens_y": 0.1755,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_405V_det7_405V_drift_700V__mx17_6": {
+  "unit": "C_long",
+  "role": "borrowed",
+  "chamber": "C",
+  "mounting": "C_0626",
+  "map_variant": "full",
+  "block": "blocks/C_long.json",
+  "w0": {
+   "x": 0.09567671184672286,
+   "y": -0.4404073571788702
+  },
+  "kw": {
+   "x": 1.0293684679347088,
+   "y": 1.0534574732400857
+  },
+  "v_drift": 30.867472903771695,
+  "n_const": {
+   "x": 371,
+   "y": 351
+  },
+  "const_src": "fit",
+  "map_borrowed": true,
+  "map_trained_here": false,
+  "n_gate": 414,
+  "cens_x": 0.1039,
+  "cens_y": 0.1522,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_410V_det7_410V_drift_700V__mx17_6": {
+  "unit": "C_long",
+  "role": "borrowed",
+  "chamber": "C",
+  "mounting": "C_0626",
+  "map_variant": "full",
+  "block": "blocks/C_long.json",
+  "w0": {
+   "x": 0.08231956258218828,
+   "y": -0.46027605368974184
+  },
+  "kw": {
+   "x": 1.0238007975203263,
+   "y": 1.064693432757744
+  },
+  "v_drift": 29.965531558821677,
+  "n_const": {
+   "x": 207,
+   "y": 220
+  },
+  "const_src": "fit",
+  "map_borrowed": true,
+  "map_trained_here": false,
+  "n_gate": 252,
+  "cens_x": 0.1786,
+  "cens_y": 0.127,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_415V_det7_415V_drift_700V__mx17_6": {
+  "unit": "C_long",
+  "role": "borrowed",
+  "chamber": "C",
+  "mounting": "C_0626",
+  "map_variant": "full",
+  "block": "blocks/C_long.json",
+  "w0": {
+   "x": 0.07616954604576022,
+   "y": -0.4488270531938031
+  },
+  "kw": {
+   "x": 1.0188480579865953,
+   "y": 1.0428952701850787
+  },
+  "v_drift": 31.42576898166464,
+  "n_const": {
+   "x": 409,
+   "y": 401
+  },
+  "const_src": "fit",
+  "map_borrowed": true,
+  "map_trained_here": false,
+  "n_gate": 455,
+  "cens_x": 0.1011,
+  "cens_y": 0.1187,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_420V_det7_420V_drift_700V__mx17_6": {
+  "unit": "C_long",
+  "role": "borrowed",
+  "chamber": "C",
+  "mounting": "C_0626",
+  "map_variant": "full",
+  "block": "blocks/C_long.json",
+  "w0": {
+   "x": 0.03499050672482042,
+   "y": -0.44055133155614984
+  },
+  "kw": {
+   "x": 1.028743872512597,
+   "y": 1.0293713529437187
+  },
+  "v_drift": 29.965531558821677,
+  "n_const": {
+   "x": 204,
+   "y": 206
+  },
+  "const_src": "fit",
+  "map_borrowed": true,
+  "map_trained_here": false,
+  "n_gate": 225,
+  "cens_x": 0.09333,
+  "cens_y": 0.08444,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_425V_det7_425V_drift_700V__mx17_6": {
+  "unit": "C_long",
+  "role": "borrowed",
+  "chamber": "C",
+  "mounting": "C_0626",
+  "map_variant": "full",
+  "block": "blocks/C_long.json",
+  "w0": {
+   "x": 0.1017302872114361,
+   "y": -0.4167436424303622
+  },
+  "kw": {
+   "x": 1.013005909922596,
+   "y": 1.0227677437175338
+  },
+  "v_drift": 31.538526686844804,
+  "n_const": {
+   "x": 391,
+   "y": 386
+  },
+  "const_src": "fit",
+  "map_borrowed": true,
+  "map_trained_here": false,
+  "n_gate": 419,
+  "cens_x": 0.06683,
+  "cens_y": 0.07876,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_430V_det7_430V_drift_700V__mx17_6": {
+  "unit": "C_long",
+  "role": "borrowed",
+  "chamber": "C",
+  "mounting": "C_0626",
+  "map_variant": "full",
+  "block": "blocks/C_long.json",
+  "w0": {
+   "x": 0.10472931884449503,
+   "y": -0.35450453823946354
+  },
+  "kw": {
+   "x": 0.9921686126578166,
+   "y": 1.0200940882214846
+  },
+  "v_drift": 30.614757373818282,
+  "n_const": {
+   "x": 184,
+   "y": 194
+  },
+  "const_src": "fit",
+  "map_borrowed": true,
+  "map_trained_here": false,
+  "n_gate": 217,
+  "cens_x": 0.1521,
+  "cens_y": 0.106,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_435V_det7_435V_drift_700V__mx17_6": {
+  "unit": "C_long",
+  "role": "borrowed",
+  "chamber": "C",
+  "mounting": "C_0626",
+  "map_variant": "full",
+  "block": "blocks/C_long.json",
+  "w0": {
+   "x": 0.09365973386904564,
+   "y": -0.40623104104454355
+  },
+  "kw": {
+   "x": 1.0198411596817,
+   "y": 1.023456755225187
+  },
+  "v_drift": 31.388267962031225,
+  "n_const": {
+   "x": 396,
+   "y": 400
+  },
+  "const_src": "fit",
+  "map_borrowed": true,
+  "map_trained_here": false,
+  "n_gate": 421,
+  "cens_x": 0.05938,
+  "cens_y": 0.04988,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_440V_det7_440V_drift_700V__mx17_6": {
+  "unit": "C_long",
+  "role": "borrowed",
+  "chamber": "C",
+  "mounting": "C_0626",
+  "map_variant": "full",
+  "block": "blocks/C_long.json",
+  "w0": {
+   "x": 0.13564940139289933,
+   "y": -0.4139583382137803
+  },
+  "kw": {
+   "x": 1.01838953508394,
+   "y": 1.034642081780518
+  },
+  "v_drift": 30.35982171108429,
+  "n_const": {
+   "x": 138,
+   "y": 146
+  },
+  "const_src": "fit",
+  "map_borrowed": true,
+  "map_trained_here": false,
+  "n_gate": 153,
+  "cens_x": 0.09804,
+  "cens_y": 0.04575,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_445V_det7_445V_drift_700V__mx17_6": {
+  "unit": "C_long",
+  "role": "borrowed",
+  "chamber": "C",
+  "mounting": "C_0626",
+  "map_variant": "full",
+  "block": "blocks/C_long.json",
+  "w0": {
+   "x": 0.10532188001589436,
+   "y": -0.45010429500324023
+  },
+  "kw": {
+   "x": 1.0285390464762396,
+   "y": 1.0261649673320423
+  },
+  "v_drift": 31.135277105848726,
+  "n_const": {
+   "x": 437,
+   "y": 438
+  },
+  "const_src": "fit",
+  "map_borrowed": true,
+  "map_trained_here": false,
+  "n_gate": 458,
+  "cens_x": 0.04585,
+  "cens_y": 0.04367,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_465V_det7_465V_drift_700V__mx17_6": {
+  "unit": "C_long",
+  "role": "borrowed",
+  "chamber": "C",
+  "mounting": "C_0626",
+  "map_variant": "full",
+  "block": "blocks/C_long.json",
+  "w0": {
+   "x": 0.07350189970202017,
+   "y": -0.5046725744161779
+  },
+  "kw": {
+   "x": 1.0032736140237004,
+   "y": 1.0235722578260946
+  },
+  "v_drift": 32.006331869305534,
+  "n_const": {
+   "x": 412,
+   "y": 421
+  },
+  "const_src": "fit",
+  "map_borrowed": true,
+  "map_trained_here": false,
+  "n_gate": 423,
+  "cens_x": 0.026,
+  "cens_y": 0.004728,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_480V_det7_480V_drift_700V__mx17_6": {
+  "unit": "C_long",
+  "role": "borrowed",
+  "chamber": "C",
+  "mounting": "C_0626",
+  "map_variant": "full",
+  "block": "blocks/C_long.json",
+  "w0": {
+   "x": 0.053511973748847065,
+   "y": -0.42947730406896967
+  },
+  "kw": {
+   "x": 1.0249554685729112,
+   "y": 1.039646827254417
+  },
+  "v_drift": 29.626586983357758,
+  "n_const": {
+   "x": 240,
+   "y": 234
+  },
+  "const_src": "fit",
+  "map_borrowed": true,
+  "map_trained_here": false,
+  "n_gate": 242,
+  "cens_x": 0.008264,
+  "cens_y": 0.03306,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_485V_det7_485V_drift_700V__mx17_6": {
+  "unit": "C_long",
+  "role": "borrowed",
+  "chamber": "C",
+  "mounting": "C_0626",
+  "map_variant": "full",
+  "block": "blocks/C_long.json",
+  "w0": {
+   "x": 0.09189702645030536,
+   "y": -0.42251017838121446
+  },
+  "kw": {
+   "x": 0.9876207071154565,
+   "y": 1.0293499550079022
+  },
+  "v_drift": 31.888594116520427,
+  "n_const": {
+   "x": 441,
+   "y": 412
+  },
+  "const_src": "fit",
+  "map_borrowed": true,
+  "map_trained_here": false,
+  "n_gate": 443,
+  "cens_x": 0.004515,
+  "cens_y": 0.06998,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_495V_det7_495V_drift_700V__mx17_6": {
+  "unit": "C_long",
+  "role": "borrowed",
+  "chamber": "C",
+  "mounting": "C_0626",
+  "map_variant": "full",
+  "block": "blocks/C_long.json",
+  "w0": {
+   "x": 0.07539896609504516,
+   "y": -0.41221841636489376
+  },
+  "kw": {
+   "x": 1.0202601043688677,
+   "y": 1.0664083225906777
+  },
+  "v_drift": 31.13514851929812,
+  "n_const": {
+   "x": 337,
+   "y": 293
+  },
+  "const_src": "fit",
+  "map_borrowed": true,
+  "map_trained_here": false,
+  "n_gate": 341,
+  "cens_x": 0.01173,
+  "cens_y": 0.1408,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_500V_det7_500V_drift_700V__mx17_6": {
+  "unit": "C_long",
+  "role": "borrowed",
+  "chamber": "C",
+  "mounting": "C_0626",
+  "map_variant": "full",
+  "block": "blocks/C_long.json",
+  "w0": {
+   "x": 0.13410038754512701,
+   "y": -0.3395600839674291
+  },
+  "kw": {
+   "x": 1.0102059288692662,
+   "y": 1.0405178261379868
+  },
+  "v_drift": 29.898439971275792,
+  "n_const": {
+   "x": 137,
+   "y": 105
+  },
+  "const_src": "fit",
+  "map_borrowed": true,
+  "map_trained_here": false,
+  "n_gate": 140,
+  "cens_x": 0.02143,
+  "cens_y": 0.25,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "g_det6_long": {
+  "unit": "C_long",
+  "role": "train",
+  "chamber": "C",
+  "mounting": "C_0626",
+  "map_variant": "full",
+  "block": "blocks/C_long.json",
+  "w0": {
+   "x": 0.07716236207139567,
+   "y": -0.3660718284150851
+  },
+  "kw": {
+   "x": 1.1063755428692035,
+   "y": 1.146919259723471
+  },
+  "v_drift": 24.17,
+  "n_const": {
+   "x": 4772,
+   "y": 4057
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 4981,
+  "cens_x": 0.04196,
+  "cens_y": 0.1855,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det6_det7_overnight_6-26-26__longer_run__mx17_6": {
+  "unit": "C_longer",
+  "role": "train",
+  "chamber": "C",
+  "mounting": "C_0626",
+  "map_variant": "full",
+  "block": "blocks/C_longer.json",
+  "w0": {
+   "x": -0.030094581896038978,
+   "y": -0.25091730521524647
+  },
+  "kw": {
+   "x": 1.022079616671642,
+   "y": 1.0461935738640598
+  },
+  "v_drift": 19.917378656797002,
+  "n_const": {
+   "x": 1747,
+   "y": 1699
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 2191,
+  "cens_x": 0.2026,
+  "cens_y": 0.2246,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": true
+ },
+ "c26__mx17_det6_det7_overnight_6-26-26__resist_det6_505V_det7_480V_drift_700V__mx17_6": {
+  "unit": "C_long",
+  "role": "borrowed",
+  "chamber": "C",
+  "mounting": "C_0626",
+  "map_variant": "full",
+  "block": "blocks/C_long.json",
+  "w0": {
+   "x": 0.08399309346195245,
+   "y": -0.32040370158446896
+  },
+  "kw": {
+   "x": 1.0351785329188423,
+   "y": 1.0823968785889695
+  },
+  "v_drift": 23.82268365646238,
+  "n_const": {
+   "x": 350,
+   "y": 291
+  },
+  "const_src": "fit",
+  "map_borrowed": true,
+  "map_trained_here": false,
+  "n_gate": 388,
+  "cens_x": 0.09794,
+  "cens_y": 0.25,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det6_det7_overnight_6-26-26__resist_det6_510V_det7_485V_drift_700V__mx17_6": {
+  "unit": "C_long",
+  "role": "borrowed",
+  "chamber": "C",
+  "mounting": "C_0626",
+  "map_variant": "full",
+  "block": "blocks/C_long.json",
+  "w0": {
+   "x": 0.07177320007591409,
+   "y": -0.2279243314456109
+  },
+  "kw": {
+   "x": 1.0137343205840714,
+   "y": 1.0964539547451704
+  },
+  "v_drift": 23.040406735047384,
+  "n_const": {
+   "x": 290,
+   "y": 227
+  },
+  "const_src": "fit",
+  "map_borrowed": true,
+  "map_trained_here": false,
+  "n_gate": 344,
+  "cens_x": 0.157,
+  "cens_y": 0.3401,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det6_det7_overnight_6-26-26__resist_det6_515V_det7_490V_drift_700V__mx17_6": {
+  "unit": "C_long",
+  "role": "borrowed",
+  "chamber": "C",
+  "mounting": "C_0626",
+  "map_variant": "full",
+  "block": "blocks/C_long.json",
+  "w0": {
+   "x": 0.02595885204376756,
+   "y": -0.4474699225113543
+  },
+  "kw": {
+   "x": 1.0347491588597602,
+   "y": 1.0889171768062285
+  },
+  "v_drift": 22.566750872200842,
+  "n_const": {
+   "x": 235,
+   "y": 179
+  },
+  "const_src": "fit",
+  "map_borrowed": true,
+  "map_trained_here": false,
+  "n_gate": 291,
+  "cens_x": 0.1924,
+  "cens_y": 0.3849,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det6_det7_overnight_6-26-26__resist_det6_520V_det7_495V_drift_700V__mx17_6": {
+  "unit": "C_long",
+  "role": "borrowed",
+  "chamber": "C",
+  "mounting": "C_0626",
+  "map_variant": "full",
+  "block": "blocks/C_long.json",
+  "w0": {
+   "x": 0.05099755564827121,
+   "y": -0.2901600716646483
+  },
+  "kw": {
+   "x": 1.0496690053730808,
+   "y": 1.1039940613916057
+  },
+  "v_drift": 21.71625178567206,
+  "n_const": {
+   "x": 183,
+   "y": 154
+  },
+  "const_src": "fit",
+  "map_borrowed": true,
+  "map_trained_here": false,
+  "n_gate": 246,
+  "cens_x": 0.2561,
+  "cens_y": 0.374,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det6_det7_overnight_6-26-26__resist_det6_525V_det7_500V_drift_700V__mx17_6": {
+  "unit": "C_long",
+  "role": "borrowed",
+  "chamber": "C",
+  "mounting": "C_0626",
+  "map_variant": "full",
+  "block": "blocks/C_long.json",
+  "w0": {
+   "x": 0.027429652779287602,
+   "y": -0.2611712411694463
+  },
+  "kw": {
+   "x": 1.0497572613932729,
+   "y": 1.1330248330961332
+  },
+  "v_drift": 21.32267357088027,
+  "n_const": {
+   "x": 172,
+   "y": 145
+  },
+  "const_src": "fit",
+  "map_borrowed": true,
+  "map_trained_here": false,
+  "n_gate": 240,
+  "cens_x": 0.2833,
+  "cens_y": 0.3958,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": false
+ },
+ "c26__mx17_det6_det7_overnight_6-26-26__resist_det6_530V_det7_505V_drift_700V__mx17_6": {
+  "unit": "C_longer",
+  "role": "borrowed",
+  "chamber": "C",
+  "mounting": "C_0626",
+  "map_variant": "full",
+  "block": "blocks/C_longer.json",
+  "w0": {
+   "x": 0.014520896412908515,
+   "y": -0.3379576085123638
+  },
+  "kw": {
+   "x": 1.0665313828295795,
+   "y": 1.0981337510680662
+  },
+  "v_drift": 21.114908636953697,
+  "n_const": {
+   "x": 87,
+   "y": 69
+  },
+  "const_src": "fit",
+  "map_borrowed": true,
+  "map_trained_here": false,
+  "n_gate": 134,
+  "cens_x": 0.3507,
+  "cens_y": 0.4851,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": true
+ },
+ "c26__mx17_det6_det7_overnight_6-26-26__short_run__mx17_6": {
+  "unit": "C_longer",
+  "role": "borrowed",
+  "chamber": "C",
+  "mounting": "C_0626",
+  "map_variant": "full",
+  "block": "blocks/C_longer.json",
+  "w0": {
+   "x": 0.00707325932808693,
+   "y": -0.20755862276649525
+  },
+  "kw": {
+   "x": 1.0121519551842577,
+   "y": 1.0227321487011864
+  },
+  "v_drift": 17.868240169204654,
+  "n_const": {
+   "x": 638,
+   "y": 625
+  },
+  "const_src": "fit",
+  "map_borrowed": true,
+  "map_trained_here": false,
+  "n_gate": 813,
+  "cens_x": 0.2153,
+  "cens_y": 0.2312,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": null,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": true
+ },
+ "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_400V_det7_400V_drift_700V__mx17_7": {
+  "unit": "D_0626",
+  "role": "train",
+  "chamber": "D",
+  "mounting": "D_0626",
+  "map_variant": "full",
+  "block": "blocks/D_0626.json",
+  "w0": {
+   "x": 0.19818577555195915,
+   "y": -0.24056135353010952
+  },
+  "kw": {
+   "x": 1.0287742820934185,
+   "y": 0.9904323997582112
+  },
+  "v_drift": 39.307268805968484,
+  "n_const": {
+   "x": 66,
+   "y": 120
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 120,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": 200.0,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": true
+ },
+ "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_405V_det7_405V_drift_700V__mx17_7": {
+  "unit": "D_0626",
+  "role": "train",
+  "chamber": "D",
+  "mounting": "D_0626",
+  "map_variant": "full",
+  "block": "blocks/D_0626.json",
+  "w0": {
+   "x": 0.11158150471101759,
+   "y": -0.24577831040217796
+  },
+  "kw": {
+   "x": 1.0354002606488508,
+   "y": 0.9862498533633219
+  },
+  "v_drift": 38.92089132426221,
+  "n_const": {
+   "x": 134,
+   "y": 262
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 262,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": 200.0,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": true
+ },
+ "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_410V_det7_410V_drift_700V__mx17_7": {
+  "unit": "D_0626",
+  "role": "train",
+  "chamber": "D",
+  "mounting": "D_0626",
+  "map_variant": "full",
+  "block": "blocks/D_0626.json",
+  "w0": {
+   "x": 0.10644097521409991,
+   "y": -0.2120258655240935
+  },
+  "kw": {
+   "x": 1.0257608578365471,
+   "y": 0.9957355990056366
+  },
+  "v_drift": 39.15001583129792,
+  "n_const": {
+   "x": 79,
+   "y": 141
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 141,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": 200.0,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": true
+ },
+ "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_415V_det7_415V_drift_700V__mx17_7": {
+  "unit": "D_0626",
+  "role": "train",
+  "chamber": "D",
+  "mounting": "D_0626",
+  "map_variant": "full",
+  "block": "blocks/D_0626.json",
+  "w0": {
+   "x": 0.11327429061828005,
+   "y": -0.2505672440057349
+  },
+  "kw": {
+   "x": 1.0195382067663339,
+   "y": 0.9919253045989659
+  },
+  "v_drift": 38.9993402961527,
+  "n_const": {
+   "x": 141,
+   "y": 285
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 285,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": 200.0,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": true
+ },
+ "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_420V_det7_420V_drift_700V__mx17_7": {
+  "unit": "D_0626",
+  "role": "train",
+  "chamber": "D",
+  "mounting": "D_0626",
+  "map_variant": "full",
+  "block": "blocks/D_0626.json",
+  "w0": {
+   "x": 0.0973691445072579,
+   "y": -0.23884655123781115
+  },
+  "kw": {
+   "x": 1.013624140755968,
+   "y": 1.0004199476320035
+  },
+  "v_drift": 39.569821979164246,
+  "n_const": {
+   "x": 62,
+   "y": 121
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 121,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": 200.0,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": true
+ },
+ "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_425V_det7_425V_drift_700V__mx17_7": {
+  "unit": "D_0626",
+  "role": "train",
+  "chamber": "D",
+  "mounting": "D_0626",
+  "map_variant": "full",
+  "block": "blocks/D_0626.json",
+  "w0": {
+   "x": 0.08795725099426467,
+   "y": -0.23825168452024456
+  },
+  "kw": {
+   "x": 1.013478373794486,
+   "y": 0.99990464815254
+  },
+  "v_drift": 39.13453539271095,
+  "n_const": {
+   "x": 129,
+   "y": 286
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 286,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": 200.0,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": true
+ },
+ "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_430V_det7_430V_drift_700V__mx17_7": {
+  "unit": "D_0626",
+  "role": "train",
+  "chamber": "D",
+  "mounting": "D_0626",
+  "map_variant": "full",
+  "block": "blocks/D_0626.json",
+  "w0": {
+   "x": 0.11008033741884429,
+   "y": -0.24848613664174368
+  },
+  "kw": {
+   "x": 1.0253738718696657,
+   "y": 1.0029744310745583
+  },
+  "v_drift": 38.77716241799416,
+  "n_const": {
+   "x": 63,
+   "y": 154
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 154,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": 200.0,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": true
+ },
+ "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_435V_det7_435V_drift_700V__mx17_7": {
+  "unit": "D_0626",
+  "role": "train",
+  "chamber": "D",
+  "mounting": "D_0626",
+  "map_variant": "full",
+  "block": "blocks/D_0626.json",
+  "w0": {
+   "x": 0.15790830315450124,
+   "y": -0.28135927331604804
+  },
+  "kw": {
+   "x": 1.0114056524105095,
+   "y": 0.9806340112531361
+  },
+  "v_drift": 39.32581702450401,
+  "n_const": {
+   "x": 122,
+   "y": 280
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 280,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": 200.0,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": true
+ },
+ "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_440V_det7_440V_drift_700V__mx17_7": {
+  "unit": "D_0626",
+  "role": "train",
+  "chamber": "D",
+  "mounting": "D_0626",
+  "map_variant": "full",
+  "block": "blocks/D_0626.json",
+  "w0": {
+   "x": 0.11008033741884429,
+   "y": -0.24848613664174368
+  },
+  "kw": {
+   "x": 1.0124597932024593,
+   "y": 0.990342462326929
+  },
+  "v_drift": 39.27177102301644,
+  "n_const": {
+   "x": 0,
+   "y": 0
+  },
+  "const_src": "borrowed:c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_430V_det7_430V_drift_700V__mx17_7",
+  "map_borrowed": false,
+  "map_trained_here": false,
+  "n_gate": 104,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": 200.0,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": true
+ },
+ "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_445V_det7_445V_drift_700V__mx17_7": {
+  "unit": "D_0626",
+  "role": "train",
+  "chamber": "D",
+  "mounting": "D_0626",
+  "map_variant": "full",
+  "block": "blocks/D_0626.json",
+  "w0": {
+   "x": 0.12801681279006533,
+   "y": -0.24324088664278654
+  },
+  "kw": {
+   "x": 1.0127879140218845,
+   "y": 0.9923719631344543
+  },
+  "v_drift": 39.39407819597959,
+  "n_const": {
+   "x": 128,
+   "y": 300
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 300,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": 200.0,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": true
+ },
+ "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_465V_det7_465V_drift_700V__mx17_7": {
+  "unit": "D_0626",
+  "role": "train",
+  "chamber": "D",
+  "mounting": "D_0626",
+  "map_variant": "full",
+  "block": "blocks/D_0626.json",
+  "w0": {
+   "x": 0.0568414381177205,
+   "y": -0.2752183097579584
+  },
+  "kw": {
+   "x": 1.043019358496627,
+   "y": 1.0066070515726893
+  },
+  "v_drift": 39.12104161504395,
+  "n_const": {
+   "x": 102,
+   "y": 257
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 257,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": 200.0,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": true
+ },
+ "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_480V_det7_480V_drift_700V__mx17_7": {
+  "unit": "D_0626",
+  "role": "train",
+  "chamber": "D",
+  "mounting": "D_0626",
+  "map_variant": "full",
+  "block": "blocks/D_0626.json",
+  "w0": {
+   "x": 0.11008033741884429,
+   "y": -0.24848613664174368
+  },
+  "kw": {
+   "x": 1.037817473944987,
+   "y": 1.0151462008596188
+  },
+  "v_drift": 38.3122178676722,
+  "n_const": {
+   "x": 0,
+   "y": 0
+  },
+  "const_src": "borrowed:c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_430V_det7_430V_drift_700V__mx17_7",
+  "map_borrowed": false,
+  "map_trained_here": false,
+  "n_gate": 126,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": 200.0,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": true
+ },
+ "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_485V_det7_485V_drift_700V__mx17_7": {
+  "unit": "D_0626",
+  "role": "train",
+  "chamber": "D",
+  "mounting": "D_0626",
+  "map_variant": "full",
+  "block": "blocks/D_0626.json",
+  "w0": {
+   "x": 0.18611406439893458,
+   "y": -0.2703202993873363
+  },
+  "kw": {
+   "x": 1.0594100585380988,
+   "y": 1.0397297158081684
+  },
+  "v_drift": 38.3227519527301,
+  "n_const": {
+   "x": 84,
+   "y": 209
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 209,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": 200.0,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": true
+ },
+ "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_495V_det7_495V_drift_700V__mx17_7": {
+  "unit": "D_0626",
+  "role": "train",
+  "chamber": "D",
+  "mounting": "D_0626",
+  "map_variant": "full",
+  "block": "blocks/D_0626.json",
+  "w0": {
+   "x": 0.11856709738214337,
+   "y": -0.3006757469789887
+  },
+  "kw": {
+   "x": 1.0541973768839312,
+   "y": 1.0333654757536253
+  },
+  "v_drift": 38.4528535432033,
+  "n_const": {
+   "x": 68,
+   "y": 174
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 174,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": 200.0,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": true
+ },
+ "c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_500V_det7_500V_drift_700V__mx17_7": {
+  "unit": "D_0626",
+  "role": "train",
+  "chamber": "D",
+  "mounting": "D_0626",
+  "map_variant": "full",
+  "block": "blocks/D_0626.json",
+  "w0": {
+   "x": 0.11008033741884429,
+   "y": -0.24848613664174368
+  },
+  "kw": {
+   "x": 1.048926759706744,
+   "y": 1.0260128026643107
+  },
+  "v_drift": 37.90644942624388,
+  "n_const": {
+   "x": 0,
+   "y": 0
+  },
+  "const_src": "borrowed:c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_430V_det7_430V_drift_700V__mx17_7",
+  "map_borrowed": false,
+  "map_trained_here": false,
+  "n_gate": 78,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": 200.0,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": true
+ },
+ "g_det7_long": {
+  "unit": "D_0626",
+  "role": "train",
+  "chamber": "D",
+  "mounting": "D_0626",
+  "map_variant": "full",
+  "block": "blocks/D_0626.json",
+  "w0": {
+   "x": 0.15381249671332375,
+   "y": -0.2131788565507531
+  },
+  "kw": {
+   "x": 1.0338233399827113,
+   "y": 1.0264965107852455
+  },
+  "v_drift": 36.8,
+  "n_const": {
+   "x": 1032,
+   "y": 2680
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 2680,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": 200.0,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": true
+ },
+ "c26__mx17_det6_det7_overnight_6-26-26__longer_run__mx17_7": {
+  "unit": "D_0626",
+  "role": "train",
+  "chamber": "D",
+  "mounting": "D_0626",
+  "map_variant": "full",
+  "block": "blocks/D_0626.json",
+  "w0": {
+   "x": 0.15814746977200456,
+   "y": -0.17259980426031377
+  },
+  "kw": {
+   "x": 1.0363504995666883,
+   "y": 1.0137544358126946
+  },
+  "v_drift": 33.9418229892549,
+  "n_const": {
+   "x": 562,
+   "y": 1508
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 1508,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": 200.0,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": true
+ },
+ "c26__mx17_det6_det7_overnight_6-26-26__resist_det6_505V_det7_480V_drift_700V__mx17_7": {
+  "unit": "D_0626",
+  "role": "train",
+  "chamber": "D",
+  "mounting": "D_0626",
+  "map_variant": "full",
+  "block": "blocks/D_0626.json",
+  "w0": {
+   "x": 0.15240269311879942,
+   "y": -0.2298243135778891
+  },
+  "kw": {
+   "x": 1.0329969814544984,
+   "y": 1.009047676744255
+  },
+  "v_drift": 36.715283015058695,
+  "n_const": {
+   "x": 91,
+   "y": 236
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 236,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": 200.0,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": true
+ },
+ "c26__mx17_det6_det7_overnight_6-26-26__resist_det6_510V_det7_485V_drift_700V__mx17_7": {
+  "unit": "D_0626",
+  "role": "train",
+  "chamber": "D",
+  "mounting": "D_0626",
+  "map_variant": "full",
+  "block": "blocks/D_0626.json",
+  "w0": {
+   "x": 0.10276986856777591,
+   "y": -0.17072587819032622
+  },
+  "kw": {
+   "x": 1.0280807591021435,
+   "y": 0.9919339910618954
+  },
+  "v_drift": 36.29944310236715,
+  "n_const": {
+   "x": 93,
+   "y": 257
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 257,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": 200.0,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": true
+ },
+ "c26__mx17_det6_det7_overnight_6-26-26__resist_det6_515V_det7_490V_drift_700V__mx17_7": {
+  "unit": "D_0626",
+  "role": "train",
+  "chamber": "D",
+  "mounting": "D_0626",
+  "map_variant": "full",
+  "block": "blocks/D_0626.json",
+  "w0": {
+   "x": 0.07555981658974077,
+   "y": -0.23647356697863484
+  },
+  "kw": {
+   "x": 1.0249439124437834,
+   "y": 1.003998606218099
+  },
+  "v_drift": 35.87538721146728,
+  "n_const": {
+   "x": 100,
+   "y": 238
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 238,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": 200.0,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": true
+ },
+ "c26__mx17_det6_det7_overnight_6-26-26__resist_det6_520V_det7_495V_drift_700V__mx17_7": {
+  "unit": "D_0626",
+  "role": "train",
+  "chamber": "D",
+  "mounting": "D_0626",
+  "map_variant": "full",
+  "block": "blocks/D_0626.json",
+  "w0": {
+   "x": 0.14688631108012362,
+   "y": -0.18652548234276486
+  },
+  "kw": {
+   "x": 1.0315126982387028,
+   "y": 1.030278557414417
+  },
+  "v_drift": 35.49586564724899,
+  "n_const": {
+   "x": 95,
+   "y": 225
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 225,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": 200.0,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": true
+ },
+ "c26__mx17_det6_det7_overnight_6-26-26__resist_det6_525V_det7_500V_drift_700V__mx17_7": {
+  "unit": "D_0626",
+  "role": "train",
+  "chamber": "D",
+  "mounting": "D_0626",
+  "map_variant": "full",
+  "block": "blocks/D_0626.json",
+  "w0": {
+   "x": 0.3151136437244676,
+   "y": -0.178093153126554
+  },
+  "kw": {
+   "x": 1.0377151372807383,
+   "y": 1.0316694853703103
+  },
+  "v_drift": 35.25889008922674,
+  "n_const": {
+   "x": 73,
+   "y": 202
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 202,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": 200.0,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": true
+ },
+ "c26__mx17_det6_det7_overnight_6-26-26__resist_det6_530V_det7_505V_drift_700V__mx17_7": {
+  "unit": "D_0626",
+  "role": "train",
+  "chamber": "D",
+  "mounting": "D_0626",
+  "map_variant": "full",
+  "block": "blocks/D_0626.json",
+  "w0": {
+   "x": 0.13853786613282237,
+   "y": -0.29536478310027764
+  },
+  "kw": {
+   "x": 1.0078449127272515,
+   "y": 1.0380997344602012
+  },
+  "v_drift": 35.03942840323407,
+  "n_const": {
+   "x": 67,
+   "y": 172
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 172,
+  "cens_x": 0.0,
+  "cens_y": 0.0,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": 200.0,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": true
+ },
+ "c26__mx17_det6_det7_overnight_6-26-26__short_run__mx17_7": {
+  "unit": "D_0626",
+  "role": "train",
+  "chamber": "D",
+  "mounting": "D_0626",
+  "map_variant": "full",
+  "block": "blocks/D_0626.json",
+  "w0": {
+   "x": 0.09197985503289793,
+   "y": -0.1727590898966284
+  },
+  "kw": {
+   "x": 1.041146793823776,
+   "y": 1.0136147341567208
+  },
+  "v_drift": 31.785981586779435,
+  "n_const": {
+   "x": 337,
+   "y": 855
+  },
+  "const_src": "fit",
+  "map_borrowed": false,
+  "map_trained_here": true,
+  "n_gate": 949,
+  "cens_x": 0.03793,
+  "cens_y": 0.09905,
+  "ntracks_unavailable": false,
+  "x_view_valid_from_mm": 200.0,
+  "map_recommended": true,
+  "note": "",
+  "x_map_recommended": true,
+  "x_edge_use_pass1": false,
+  "y_map_recommended": true,
+  "y_edge_use_pass1": true
+ }
+}
