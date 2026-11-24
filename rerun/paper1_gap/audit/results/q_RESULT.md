@@ -348,5 +348,87 @@ The drift-line test removes it by balancing the sign of tan. This explanation is
 
 ## Not answered here
 
-Only item 20 (n_TOF, the re-audit session's) is not treated here; item 7 and the second half of item 12 remain open. Item 7 (flattening below 700 V) is not caused by the depth grid
-(Table 1). Items 9, 12 and 19 are in the second round above.
+Only item 20 (n_TOF, the re-audit session's) is not treated here. Item 7 is answered in the fourth round below (the end
+of the recorded waveform). The second half of item 12 (a gain that follows the gap) and chamber E's low b remain open.
+
+## Fourth round (2026-11-24, evening): item 7 answered, the 500 V drift time, the range of the gaps
+
+Script: `q7_window.py` (output `$WORK/audit/q16/q7_window.json`). `gaps_all/make_gaps.py` now leaves out rows whose column
+runs past the end of the recorded stack.
+
+**Item 7 (the gap map flattens below 700 V): answered. The drift column at 300 and 500 V is longer than the recorded
+waveform.** The DREAM record ends 2019 ns after the trigger, and the tracks start at t0 = 270–320 ns. So at most about
+1730 ns of drift column can be seen. The angle-scale velocity of each drift-scan row (measured against the telescope)
+gives the expected column duration T = 28.2 mm / v. At 700, 900 and 1100 V, T is 1131, 843 and 726 ns, and the median
+q_u90 is 0.80 T in all three rows (0.800–0.804). At 500 V, T is 1802 ns, which is longer than the record, and q_u90 is
+0.77 T. At 300 V, T is 3467 ns, twice the record, and q_u90 is 0.40 T. In fact the median q_u90 is the same at 300 V
+and at 500 V (1395 and 1384 ns), although the velocity differs by a factor of 1.9.
+
+R4 tested the window with a cap on q_u90 itself, and with q_u50. Both tests miss how the cut acts. q_u90 is a quantile of
+the charge that is visible. When the column is cut by the end of the record, the visible charge fills the record from t0
+to its end, whatever the gap is. Therefore every quantile, q_u50 included, then measures 2019 ns − t0 and not the gap.
+It also lies well before the record end, so a cap on q_u90 does not reach it.
+
+Two tests show that this is what happens.
+
+1. *The drift time follows the start time.* If the column is cut, a track that starts later has less room, so its q_u90
+   falls by about one nanosecond per nanosecond of t0. If the column is not cut, q_u90 does not depend on t0.
+
+   | drift V | T expected (ns) | median q_u90 / T | d q_u90 / d t0, X | d q_u90 / d t0, Y |
+   |---|---|---|---|---|
+   | 300 | 3467 | 0.40 | −0.76 ± 0.61 | −0.95 ± 0.54 |
+   | 500 | 1802 | 0.77 | −1.16 ± 0.41 | −1.29 ± 0.58 |
+   | 700 | 1131 | 0.80 | +0.45 ± 0.28 | −0.16 ± 0.28 |
+   | 900 | 843 | 0.80 | +0.10 ± 0.20 | −0.02 ± 0.19 |
+   | 1100 | 726 | 0.80 | +0.18 ± 0.18 | +0.03 ± 0.16 |
+   | 1000 (golden run 2) | 760 | 0.80 | −0.05 ± 0.04 | +0.02 ± 0.03 |
+
+   At 500 V the two views together give −1.2 ± 0.3, which is 3.6σ from zero. At 700 V and above the slope is zero.
+
+2. *Emulation.* We took the golden run 1 (and, separately, the 700 V row), stretched every column to the velocity of
+   500 V or 300 V, capped q_u90 at 0.80 × (2019 ns − t0), and refitted the map exactly as R4 did. A fixed gap shape then
+   gives:
+
+   | | gww (ln per (100 mm)²) | guu | golden-ridge amplitude | median q_u90 (ns) |
+   |---|---|---|---|---|
+   | 500 V, measured | −0.022 ± 0.013 | −0.023 ± 0.013 | 0.24 ± 0.18 | 1384 |
+   | 500 V, emulated from golden run 1 / from 700 V | −0.033 / −0.023 | +0.007 / +0.002 | 0.24 / 0.17 | 1361 / 1369 |
+   | 300 V, measured | +0.029 ± 0.018 | −0.023 ± 0.015 | 0.29 ± 0.23 | 1395 |
+   | 300 V, emulated | 0.000 / −0.001 | 0.000 / −0.001 | 0.00 / 0.01 | 1377 |
+   | (templates: golden run 1 / 700 V) | −0.103 / −0.127 | +0.027 / +0.033 | 1.14 / 1.44 | |
+
+   The emulation reproduces the curvature, the loss of the ridge and the median drift time at 500 V. At 300 V the
+   emulated map is completely flat, and the measured one is flat within 1.6σ. In the emulation 65–73 % of the 500 V
+   tracks are cut. Only 23 % have charge in the last recorded sample, because the deep end of a cut column is weak.
+   This is why the "rail" count of R4 and of Table 1 looked small.
+
+Therefore the flattening below 700 V is a property of the measurement, not of the foil. The cathode keeps its shape
+from 300 to 1100 V as far as the data can tell. The drift-scan rows at 300 and 500 V cannot give a gap map, and the
+gap-map statements of R4 about them (its points 4 and 5, and the "threshold or contact" possibility) are withdrawn.
+The voltage-independence of the shape over 700–1100 V stands, and so does the conclusion that the mounting, not the
+drift voltage, changes the map.
+
+**The timing velocity at 500 V is a limit.** The same cut acts on the head-on stack that gives Paper I's timing
+velocity (`rerun/paper1_gas/pg_twov.py`). The stack fit at 500 V puts the end of the column at T = 1592 ns, which is
+where the recorded stack ends (1590 ns). The angle-scale velocity predicts 1800 ns. So the timing velocity
+17.7 ± 2.1 µm/ns at 177 V/cm is an upper limit, and the gap v_ang × T = 24.9 ± 2.9 mm from that row is a lower limit.
+Both points have large errors, so the fits move little:
+- Water fit of the drift scan (`results/gas.json`): 0.967 % (0.945–0.987) with the 500 V point, 0.970 % (0.947–0.992)
+  without it.
+- Gap of chamber A from v_ang × T: 28.24 ± 0.41 mm (χ² 4.8, four fields) with it, 28.30 ± 0.41 mm (χ² 3.4, three
+  fields) without it. `gaps_all` now leaves the row out.
+
+**The range of the gaps.** With the 500 V row left out, v_ang × T gives A 28.30 ± 0.41, B 31.09 ± 0.29, C 28.71 ± 0.37,
+D 29.70 ± 0.32 and E 29.54 ± 0.40 mm. The five chambers range from 28.3 to 31.1 mm. Their mean is 29.5 mm, and the
+spread between chambers is 1.1 mm rms, around the design value of 30 mm. The geometric gaps agree (28.0 to 31.1 mm).
+Dylan (11-24): the drift windows are made by hand, so a spread of this size is expected from their construction.
+
+**Item 12, second half: one candidate excluded.** A cathode bump that is narrow compared with the gap changes the
+field only near the cathode. One might expect the drift time then to grow only as the length (β_eff = 0), which would
+raise the predicted d ln q / d ln T from 0.6 to about 1.1. It does not work. The potential difference along the column
+is fixed, so the field averaged along the column is V / g_local for any width of the bump, and to first order
+δT/T = (1 + β) δg/g whatever its width. The other half of the link stays unexplained.
+
+**Chamber E's low amplitude b: one candidate excluded.** E ran at 600 V in a drier gas (v = 31–37 µm/ns at 200 V/cm),
+so its β is smaller than the β = 0.68 at which b is quoted. A smaller β would raise the fitted b, not lower it. E's low
+b (0.17, 0.09, mostly on Y) remains unexplained.

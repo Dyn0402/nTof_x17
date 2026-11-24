@@ -7,6 +7,15 @@ Scripts (`rerun/paper1_gap/audit/`): `r4_01_fetch.py`, `r4_01b_fetch_other.py` (
 Outputs here: `analysis.json`, `summary.json`, `fits_main.json`, `fits_alt.json`, `inject.json`, `selcheck_template.json`, `tables.md` (all tables, including the 19 mesh-scan sub-runs), `eos/` (event tables and bundles).
 Figures: `fig1_coef_vs_drift.png` (coefficients against drift voltage, with 6-25 and golden marked), `fig2_maps_quadratic.png`, `fig2b_maps_spline.png` (maps side by side), `fig3_mesh_scan.png`, `fig4_time_blocks.png`.
 
+> **Correction (follow-up q, fourth round, 2026-11-24 evening; `q_RESULT.md`, `q7_window.py`).** Points 4 and 5 of the
+> verdict are withdrawn. The flattening at 300 and 500 V is the end of the recorded waveform: the drift column there
+> (1800 and 3470 ns from the angle-scale velocity) is longer than the record after the track start (about 1730 ns), so
+> q_u90 and q_u50 measure 2019 ns − t0 and not the gap (d q_u90 / d t0 = −1.2 ± 0.3 at 500 V, 0 at 700 V and above).
+> The window tests of point 5 capped q_u90 itself, which lies well before the record end, and q_u50 is cut in the same
+> way. A fixed gap shape cut at the record end reproduces the 500 V map. The comparison of 6-27 at 500 V with 6-25
+> (point 1) is therefore not valid either; 6-25 itself is not cut (v = 22 µm/ns, T = 1280 ns). Points 2 and 3 stand,
+> except that 6-22 is censored by the depth grid (follow-up q, item 8).
+
 ## Verdict
 
 **Mounting, mainly. The drift voltage changes the map only below about 700 V, not as V^2, and not toward the 6-25 shape. Whether that low-voltage change is the foil or the measurement is undecided.**
