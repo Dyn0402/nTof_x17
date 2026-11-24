@@ -512,15 +512,14 @@
  "_stability": {
   "chamber_means": {
    "det3": {
-    "mean": 1.2483927741079293,
-    "mean_err": 0.08045016344958071,
+    "mean": 1.1622982938021436,
+    "mean_err": 0.0953524359362229,
     "runs": [
      "det3",
      "det3_day625",
      "det3_d700",
      "det3_d500",
-     "det3_p2",
-     "det3_o23"
+     "det3_p2"
     ]
    },
    "det2": {
@@ -561,13 +560,13 @@
     ]
    }
   },
-  "n_runs": 19,
-  "max_abs_z": 1.8316222657193606,
-  "n_within_2sigma": 19,
+  "n_runs": 18,
+  "max_abs_z": 1.4379511618231187,
+  "n_within_2sigma": 18,
   "n_loo_within_2sigma": 18,
-  "n_loo": 19,
-  "n_err_below_0p25": 12,
-  "rms_frac_err_below_0p25": 0.09068934717324231,
+  "n_loo": 18,
+  "n_err_below_0p25": 11,
+  "rms_frac_err_below_0p25": 0.07618576604180424,
   "run_depths": {
    "det3": {
     "chamber": "det3",
@@ -593,11 +592,6 @@
     "chamber": "det3",
     "depth": 1.2315538465123665,
     "err": 0.20391238173708087
-   },
-   "det3_o23": {
-    "chamber": "det3",
-    "depth": 1.4610848833173595,
-    "err": 0.14987176672449723
    },
    "det2": {
     "chamber": "det2",

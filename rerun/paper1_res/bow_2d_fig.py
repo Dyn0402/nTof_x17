@@ -33,9 +33,10 @@ FIGD = os.path.join(HERE, 'figures')
 ORDER = ('det3', 'det2', 'det6', 'det7', 'det4')
 NAME = {'det3': 'A', 'det2': 'B', 'det6': 'C', 'det7': 'D', 'det4': 'E'}
 RIM = 1.5                  # 150 mm in units of 100 mm
-# the 19-run consistency set: (row, chamber)
+# the consistency set: (row, chamber). Dylan 2026-11-24: chamber A on 23 June dropped from Paper I (its pass-1 angles
+# are uncorrelated with M3, r = 0.01, so its bow fit is not a measurement); 18 runs.
 CH = {'det3': 'det3', 'det3_day625': 'det3', 'det3_d700': 'det3', 'det3_d500': 'det3', 'det3_p2': 'det3',
-      'det3_o23': 'det3', 'det2': 'det2', 'det2_o22long': 'det2', 'det2_o17': 'det2', 'det6': 'det6',
+      'det2': 'det2', 'det2_o22long': 'det2', 'det2_o17': 'det2', 'det6': 'det6',
       'det6_longer': 'det6', 'det6_hv505': 'det6', 'det6_hv530': 'det6', 'det7': 'det7', 'det7_longer': 'det7',
       'det7_hv480': 'det7', 'det7_hv505': 'det7', 'det4': 'det4', 'det4_o23': 'det4'}
 EDGES5 = np.linspace(25, 375, 6)
