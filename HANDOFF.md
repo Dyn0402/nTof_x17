@@ -1,46 +1,60 @@
 # Handoff
 
-## Chamber A gap, surfaces and angle map: audited — updated 2026-11-24 (dylan-MS-7C84)
+## Chamber A gap, surfaces and angle map: audited; bench re-finalization with per-mounting maps to do — updated 2026-11-24 (dylan-MS-7C84)
 
-**Resume:** Dylan decides on three things (below); then rewrite Paper I `app:gapmap` and, if he agrees, build per-mounting spline maps in a bench re-finalization.
+**Resume:** build per-mounting spline angle maps for the bench (table-level re-finalization), then requote Paper I §6; start from `rerun/paper1_gap/audit/AUDIT_2026-11-24.md`.
 
-**Goal:** Dylan asked for a thorough audit of the 11-23 gap / two-surface / angle-map result before the analysis is rerun and the paper rewritten, and for any improvement it opens.
+**Goal:** Dylan asked for an audit of the 11-23 gap / two-surface / angle-map result before rerunning the analysis and rewriting the paper. The audit is done. Dylan decided (11-24): (1) ship per-mounting spline maps in a bench re-finalization, done by another session from this handoff; (2) rewrite `app:gapmap` and fix the end of §5.1 (done); (3) pass the n_TOF findings to the n_TOF re-audit session (done).
 
-**Done (2026-11-24, `rerun/paper1_gap/audit/`; read `AUDIT_2026-11-24.md` or `report.html` first):**
-- The committed chain reruns byte-identically from the EOS inputs.
-- Twelve independent tests, each with `results/<tag>_RESULT.md` and scripts `<tag>_*.py`.
-- **The two-surface picture is confirmed** by four tests the 11-23 analysis did not use:
-  - the X-view and Y-view tilt maps form a gradient field (curl-free fraction 0.96 to 1.00);
-  - the drift lines, measured from the waveforms, start at the mesh with the mesh slope and bend along y as the gap dome predicts (8.8 sigma against a parallel cathode);
-  - the fine gap structure sits on the cathode (k = +0.67 / +0.46, expected +0.5, mesh would give -0.5);
-  - the tilt is predicted by grad h + a grad g, with g from the drift time (`q_u90`) alone.
-- **The cathode foil changes shape with every mounting; the mesh dish is static.** Three mountings of chamber A (6-22, 6-25, 6-27/28) give three gap maps. Inside a mounting the map is stable in time, with mesh voltage, and from 700 to 1100 V drift. The golden mounting has a diagonal ridge of about 1.5 mm.
-- **What does not hold in the appendix as pushed:** the errors of `tab:surfaces` (2 to 3 times too small), "cathode flat along y, follows the board along x", beta = 1.0 +- 0.2 (the fine structure gives 0.69; the X-view smooth velocity map has an unexplained extra variation).
-- **Tracking:** a spline map per mounting gives 0.69 / 0.60 deg (X / Y) on the golden mounting (pass 1 0.92 / 0.81; 42 mm cells 0.74-0.78 / 0.63-0.65), at the statistical limit of the map. The golden map does not transfer to the 6-25 mounting. Per-mounting spline maps gain 17 to 35 % on A, B, C, D; E gains only on Y.
-- **Reference-free correction:** mesh (bow block) + gap term from the drift-time map recovers 33 to 65 % of the gain in the golden mounting and 82 to 91 % in the 6-25 mounting.
-- **n_TOF:** the bench bow block over-corrects A (right for C); A's bench fine map recovers 61 to 87 % of the in-situ map's gain on the A-C lines; the drift-time map gives D a first correction (12 to 13 % in the z view). Nothing was applied.
+**Done (2026-11-24):**
+- **Audit** in `rerun/paper1_gap/audit/`: `AUDIT_2026-11-24.md` (source of `report.html`, built by `make_audit_report.py`), twelve tests with `results/<tag>_RESULT.md` and scripts `<tag>_*.py`. The 11-23 chain reruns byte-identically.
+- **Findings** (numbers and figures in the note):
+  - The two-surface picture is confirmed: the tilt maps of the two views form a gradient field; the drift lines measured from the waveforms have the predicted shape; the fine gap structure is on the cathode; the tilt is predicted by tau = grad h + a grad g with g from the drift time.
+  - The cathode foil changes shape with every mounting (A: 6-22, 6-25, 6-27/28 give three gap maps); the mesh dish is static. Inside a mounting the gap map is stable (time, mesh HV, drift 700-1100 V).
+  - Withdrawn: "cathode flat along y, follows the board along x", beta = 1.0 +- 0.2 (fine structure: 0.69), the errors of the surfaces table (2-3x too small).
+  - A spline map per mounting gives A 0.69 / 0.60 deg (pass 1 0.92 / 0.81), 17-35 % on A, B, C, D; E gains only on Y. A map does not transfer between mountings.
+  - Reference-free correction (bow-block mesh + gap from `q_u90`) recovers 40-90 % of the map gain; amplitude 0.37-0.47 on B, D, A golden, 0.2 on C and A 6-25.
+- **Paper I v2** (commit `9181efb0`): `sections/A4b_surfaces.tex` rewritten; `sections/05_gas.tex` updated between Dylan's two `\todo` markers (left in place); three new figures `gap_mountings`, `gap_driftlines`, `gap_tiltpred` (`rerun/paper1_gap/audit/paperfig.py`, entries in `figures.toml`); `gap_surfaces` is no longer included. Compiles (74 pages with notes), no undefined references.
+- **Overleaf:** pulled Dylan's 11-24 edit of `paper1_v2` (his two markers and a caption fix). The add/add conflict in `A4b_surfaces.tex` was resolved with the repo version on Dylan's OK (Overleaf's copy was the unedited 11-23 push). The push of these changes to the `paper1_v2` Overleaf project was held by the 30-minute guard of `overleaf.sh` and is done by a follow-up command of this session; check `papers/overleaf.sh status paper1_v2` (it should list no file a push would change).
+- **n_TOF:** results sent to session `n_tof-tracking-status-reaudit`; its answer is recorded in the audit note ("Decisions and follow-up") and in `rerun/ntof/improve/reaudit/report.html` §2.6. The n_TOF side is that session's work, not this workstream's.
 
-**Where it stopped:** complete and committed. Nothing is running. No paper text was changed and nothing was shipped.
-- The Overleaf push of the 11-23 table fix is still pending (add/add bridge conflict in `sections/A4b_surfaces.tex`; Overleaf's copy equals the version pushed on 11-23). The appendix on Overleaf therefore still carries the statements the audit withdraws. Needs Dylan's OK: pull, keep the repo version, push paper1_v2 and paper1.
+**In progress / where it stopped:** nothing half-done. No reconstruction code, bundle or pass product was changed. The prototype maps exist only in the audit work directory.
 
-**Next steps (Dylan's decisions):**
-1. Ship per-mounting spline maps in a bench re-finalization? It is a table-level step (the fit does not use v), one map per mounting (C: per row), made by cross-validation inside the mounting. Prototype: `audit/results/a2_final_map_det3.json`, `audit/a2_final.py`, numbers per chamber in `audit/results/r3_RESULT.md`.
-2. Rewrite `app:gapmap` around the model-free results (gradient field, drift-line fan figure, gap maps of three mountings, tau = grad h + a grad g, tracking table), and correct §5.1 / `app:bow` wording. List in the audit note, "Recommendations".
-3. n_TOF Phase 4 candidates: drift-time correction for D; bench fine map with no dish for A against the in-situ map; gap map per chamber into the v(t) scale.
+**Next steps (the re-finalization):**
+1. **Read** `rerun/paper1_gap/audit/AUDIT_2026-11-24.md`, then `results/a2_RESULT.md` (the spline map), `results/r3_RESULT.md` (all chambers, the mounting list, the flags) and `results/c_RESULT.md` (why maps do not transfer).
+2. **Define the mountings** for every bench row of pass 1 (`rerun/PASS1_LEDGER.md`, 156 rows). A mounting = one chamber, not moved (in practice one run directory / night). R3 used: B 6-22 (long, longer, short); A 6-25; A 6-27 + 6-28 (the Saturday scan sub-runs belong to this mounting); E 6-23; E 6-24 (different alignment offsets, so two mountings); C 6-26 (one map PER ROW: v falls 25.0 -> 16.8 um/ns over the night and leave-one-row-out gain is only 12 %); D 6-26 (X view only for x >= 200 mm). Check each grouping with the alignment (z, offsets, theta). Rows of mountings that have no gate table (6-17, the 6-22 det3 rows, 6-23 det3, 6-26 quick and hv_scan) need a decision: either build their gate tables, or leave them on the bow block. A 6-22 has no reference-matched table at all in pass 1.
+3. **Put the map into the bundle and the angle conversion.** Proposed form: a block `bow['phi']` holding the spline (knots, coefficients of the shared potential Phi and of the scale maps S_x, S_y, in tan units), which replaces the quadratic tilt `a_x`/`a_y` and the linear scale `s_x`/`s_y` when present. The mesh height `h`, `h_x`, `h_y` stays (positions use it, and it is static). Code to touch: `wft/reco.py` (`tan_bow`, `bow_UW`, `bow_pairs`, `tan_of`), `wft/calib.py` (bundle field, load/save), tests next to `wft/tests/test_bow_partner.py`, `docs/PARAMETERS.md` (same commit). The conversion is tan = (1e3 w - w0) / (kw v (1 + S_p(U, W))) - A_p(U, W), A = grad Phi, with (U, W) from the reconstructed mid-gap position as `bow_UW` does. Reference implementation: `rerun/paper1_gap/audit/a2_lib.py` (fit) and `a2_final.py` (`evaluate()`, reproduces the fitted map to 1e-13); prototype map `results/a2_final_map_det3.json` (K = 16, K_S = 8).
+4. **Fit one map per mounting** with `a2_lib` on the union of the mounting's gate rows, K and lambda by inner cross-validation on the training part only. w0 and kw stay per row (2 numbers per view, as now, measured after the map is applied; see `rerun/w12/set_w0kw.py --bow-json` and `rerun/calib/bow/bow_finalize.py` for the existing pattern with the bow block).
+5. **Quote only out-of-sample numbers.** For the rows a map was trained on, the paper's resolution must come from 5-block (time) cross-validation: each event's angle from a map trained without its block. Store both (`*_tan_map` from the production map, `*_tan_map_cv` for the quoted numbers). Target table to reproduce within errors: `results/r3_RESULT.md` summary (A 6-27/28 0.688 / 0.599, A 6-25 0.681 / 0.666, B 0.675 / 0.735, C 0.932 / 1.228 time-block but ~12 % gain per row, D 0.802 (x >= 200) / 0.829, E Y only).
+6. **Gates before installing:** the angle s68 of no row gets worse beyond its error; the far fraction does not rise; position residuals unchanged (the map does not touch p0; mid-gap position improves ~5 %); edge zone checked separately (see gotchas); rows at other drift fields in the same mounting use the tilt part only unless the scale part is shown to help (the scale map follows beta(E), the tilt is geometric).
+7. **Then requote Paper I:** §6 angular resolution (`papers/paper1_v2/figs/make_angle_resolution_v2.py`, `rerun/paper1_res/angle_resolution.py`, `NUMBERS_RUNDOWN.md`), the appendix table rows that carry angle numbers, `app:bow` ("Correction, and its transfer to the beam": say that the mesh term is static and the cathode is not, and that the block over-corrects chamber A at n_TOF) and §10.1. Move `tab:mapall` to §6 if Dylan wants. Answer or clear the two `\askDylan` boxes in `05_gas.tex` and `A4b_surfaces.tex`.
+8. **Overleaf v1 project (`paper1`, shared with Stephan):** not pushed. `papers/README.md`: copy to v1 only when Dylan asks. `status paper1` shows what a push would change; expect the same add/add artifact in `A4b_surfaces.tex` on `pull paper1` (keep the repo version, with Dylan's OK).
+9. When the decisions are implemented, delete the work directory (below) and this section.
 
 **Gotchas / decisions:**
-- Never apply a fine map made in one mounting to another mounting. Only the mesh term (bow block) is static.
-- `q_u90` (mean of `x_q_u90`, `y_q_u90`) is the drift-time proxy in every pass-1 table (r = 0.98 with the colsum T). Remove one slope against ln charge first. Saturated events are offset by 0.02 to 0.06 in ln.
-- The straight-line fit weights the mesh end: tau = grad h + a grad g with a about 0.4 (0.2 on C and on A's 6-25 mounting), not 1/2.
-- The geometric gap with the X strips covers two columns of cells in x only: it cannot measure a curvature along x.
-- The telescope-free check with C and D in the same events cannot see the part of the correction common to both chambers (60 to 80 %).
-- Open: 0.2 deg of reproducible curl-free fine tilt not explained by the gap gradient; the X-view velocity map; the gap-map flattening below 700 V; at n_TOF A's gap field differs between muons and late beam tracks in y.
-- Work dir (staged inputs + all test outputs, 1 GB): `$WORK_DATA/claude-jobs/e1a7a26e/gap`. Regenerable from EOS (`README.md` "How to run" + `audit/results/COMMON_brief.md`). Delete when the decisions are taken.
+- **Never apply a fine map made in one mounting to another mounting.** The golden map gave nothing on A 6-25 (`results/c_RESULT.md`). Only the mesh term (bow block `h`) is static.
+- **The spline is fitted on the interior only** (U in [-1.75, 1.75], W in [-1.55, 1.55], i.e. >= 30 mm from the active edge, chamber A's active area; other chambers' areas in `common/mx17_active_area.py`, loader `audit/d_lib.py`). Production tracks in the edge zone need a defined rule (clamp to the domain is the natural choice) and their own check: the tilts are largest at the edges (2-3x larger at n_TOF), and one drift-line slice near the -x edge of A bends the other way.
+- The map is indexed by the reconstructed position; the reference index changes s68 by <= 0.002 deg.
+- Shared potential or two independent tilt maps: equal within errors. The scale maps are worth 0.03-0.04 deg (X) and 0.015-0.02 deg (Y).
+- The spline needs ~2,000 events; 42 mm cells need ~20,000 and fall back to pass 1 below ~3,000. Do not ship cell maps.
+- A2/R3 caveats to fix in production code: lambda sat on the lower grid edge in several folds (extend the grid); the two views were linked with a fixed vy/vx = 0.985; per-row constants in R3 were taken from whole rows (a mild leak; refit them inside the fold).
+- `q_u90` (mean of `x_q_u90`, `y_q_u90`) is the drift-time proxy in every pass-1 table (r = 0.98 with the colsum T). Remove one slope against ln charge. Saturated events are offset by 0.02-0.06 in ln (an offset, not a map).
+- The straight-line fit weights the mesh end: tau = grad h + a grad g with a ~ 0.4, not 1/2. The reference-free route is documented but not needed on the bench, where reference tracks exist.
+- The telescope-free check (C and D in the same events) cannot see the 60-80 % of the correction that is common to both chambers. The drift-time prediction and the magnitude argument cover it (audit note §3.3).
+- Open physics, not blocking: 0.2 deg of reproducible curl-free fine tilt not explained by the gap gradient; the X-view velocity map varies more than the gap explains; the gap map flattens below 700 V; what moves the foil is unknown.
+- **Shared checkout:** another background session commits to `main` in this same working tree. Stage by path, never `git add -A`, and do not switch branches in place.
+- **Work directory** (staged inputs, all test outputs, the figure cache; 1.2 GB): `/media/ucla/work/claude-jobs/e1a7a26e/gap`. The audit scripts take it as their `<work>` argument or have it as default. It is regenerable: `rerun/paper1_gap/README.md` "How to run" for the 11-23 inputs, `audit/results/COMMON_brief.md` for the layout, `pass1_all/` = the 14 `bow_gate_table.parquet` of `Analysis_pass1` with their bundles and alignments, `audit/r4/eos/` = the event tables of the det3 scans (`audit/r4_01_fetch.py`). Keep it until the re-finalization is done.
+- Reports and figures are also on EOS: `/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/paper1_gap/audit/`.
 
 **Key files & commands:**
-- `rerun/paper1_gap/audit/AUDIT_2026-11-24.md`, `report.html` (`make_audit_report.py`); figures also on EOS `x17rerun/paper1_gap/audit/`.
-- `rerun/paper1_gap/README.md` (the 11-23 analysis, with an audit box at the top).
-- `papers/paper1_v2/sections/A4b_surfaces.tex`, `05_gas.tex` (§5.1 end), `A4_bow.tex` (transfer paragraph).
+- `rerun/paper1_gap/audit/AUDIT_2026-11-24.md`, `report.html` — the audit; `../../../.venv/bin/python make_audit_report.py` rebuilds the HTML.
+- `rerun/paper1_gap/audit/a2_lib.py`, `a2_final.py`, `results/a2_final_map_det3.json` — spline map: fit, evaluator, prototype.
+- `rerun/paper1_gap/audit/r3_lib.py`, `r3_run.py` — the same on every mounting; `d_lib.py` — loader for all 14 gate rows.
+- `rerun/paper1_gap/audit/r1_lib.py` — gap field from `q_u90` and the reference-free prediction.
+- `rerun/paper1_gap/audit/paperfig.py <work>` — the three appendix figures; then `.venv/bin/python papers/make_figures.py paper1_v2 --only <name>`.
+- `wft/reco.py` (`tan_bow`, `bow_UW`, `bow_pairs`), `wft/calib.py`, `rerun/calib/bow/bow_finalize.py`, `rerun/calib/bow_node.py`, `rerun/w12/set_w0kw.py` — where the bow block lives today.
+- `papers/paper1_v2/sections/A4b_surfaces.tex`, `05_gas.tex`, `A4_bow.tex`, `10_as_built.tex`, `06_tracking.tex`.
+- Paper build: `cd papers/paper1_v2 && ~/bin/latexmk -pdf main.tex` (or pdflatex + bibtex).
 
 ## Paper I: v1 Overleaf now mirrors v2; Stephan asked about Sec. 3 — updated 2026-11-23 (dylan-MS-7C84)
 

@@ -150,6 +150,18 @@ li{margin:.25em 0} .verdict{background:#f6f8fb;border-left:4px solid #4a6fa5;pad
 <li><b><code>app:bow</code></b>: the transfer statement should say that the mesh dish is static and the cathode is not, and that the block over-corrects chamber A at n_TOF.</li>
 <li>The Overleaf push of the last table fix is still pending (add/add conflict, see HANDOFF). The appendix on Overleaf carries the statements of item 2.</li>
 </ol>
+<h2>Decisions and follow-up (Dylan, 2026-11-24)</h2>
+<ol>
+<li><b>Per-mounting spline maps go into a bench re-finalization.</b> Another session does it from the handoff (<code>HANDOFF.md</code>, section "Chamber A gap, surfaces and angle map"). Nothing is shipped yet.</li>
+<li><b>Paper I was updated the same day.</b> <code>app:gapmap</code> (<code>sections/A4b_surfaces.tex</code>) is rewritten along the list in "Recommendations", with three new figures (<code>paperfig.py</code>: <code>gap_mountings</code>, <code>gap_driftlines</code>, <code>gap_tiltpred</code>). The end of §5.1 (<code>sections/05_gas.tex</code>, between Dylan's two markers) is corrected. <code>app:bow</code> and §10.1 are not yet touched.</li>
+<li><b>n_TOF.</b> The n_TOF re-audit session received these results and tested the three candidates on its side (<code>rerun/ntof/improve/reaudit/report.html</code>, section 2.6; roadmap row 6.11 of <code>AUDIT_FIX_ROADMAP.md</code>). Its answers:</li>
+<ul>
+<li>An in-situ spline map (tilt as the gradient of one potential, as here) reaches the per-track noise floor on A and C, so neither the bench fine map nor the drift-time prediction adds to it there.</li>
+<li>For chamber D an in-situ spline map on the B-D lines and the capsule pointing does better (35.5 / 36.3 to 25.6 / 26.0 x 10^-3) than the drift-time correction (35.9 to 31.4 in one view).</li>
+<li>Using the gap map in the v(t) angle scale is not recommended. On C and D the drift-time map is too large to be a gap alone, and its relation to the cosmic scale is weak on A and C (r = -0.3).</li>
+<li>The n_TOF tilt field is curl-free too. Its beam and beam-off drift-time maps of A agree (r = 0.96), so the disagreement found here in y is a statement about the gradients, where the noise is amplified.</li>
+</ul>
+</ol>
 <h2>What the audit does not rule out</h2>
 <ul>
 <li>A common telescope component of the bench maps has no direct telescope-free test (section 3.3).</li>
