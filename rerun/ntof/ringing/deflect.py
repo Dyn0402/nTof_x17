@@ -105,15 +105,18 @@ def install(mode: str = 'gated', stats: dict | None = None):
                 raw = a.reshape(-1, 512).astype(np.float32) - self.ped
                 w = plain_cm(raw)
                 n_neg = ringing(w, self.noise)
-                if mode == 'all' or n_neg >= GATE_NEG:
+                corrected = mode == 'all' or n_neg >= GATE_NEG
+                if corrected:
                     w = deflect(raw, self.noise)
                     stats['corrected'] = stats.get('corrected', 0) + 1
                 stats['seen'] = stats.get('seen', 0) + 1
+                self._last_corrected = bool(corrected)    # per reader: read by the hits filter (mark_corrected)
                 if with_raw:
                     yield (int(arr['eventId'][j]), int(arr['ftst'][j]), w.T,
                            np.asarray(a, dtype=np.int16).reshape(-1, 512).T)
                 else:
                     yield int(arr['eventId'][j]), int(arr['ftst'][j]), w.T
+    iter_events._marks = True      # sets _last_corrected itself: mark_corrected() has nothing to add
     wio.FeuReader.iter_events = iter_events
     return stats
 
@@ -341,6 +344,11 @@ def mark_corrected():
     stats = _STATS
 
     def it2(self, wanted=None, with_raw=False):
+        # Fallback for an iter_events that does not set _last_corrected itself (install() does since 2026-11-24).
+        # Start from the process-wide count: with 0, the first event of every new reader was marked corrected
+        # whenever any earlier reader had corrected an event (re-audit 2026-11-24).  The count is shared by all
+        # readers, so this path is right only while readers are iterated one after the other.
+        self._n_corr_seen = stats.get('corrected', 0)
         for x in it(self, wanted, with_raw):
             n0 = stats.get('corrected', 0)
             self._last_corrected = n0 > getattr(self, '_n_corr_seen', 0)

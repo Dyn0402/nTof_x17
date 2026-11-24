@@ -109,16 +109,29 @@ def bow_patch(src: Path, meta: Path, bundle_dir: Path, dst: Path) -> dict:
                 max_abs_dtan=float(np.abs(old - new)[ok].max()) if ok.any() else 0.0)
 
 
-def one(run, sub, rows, canon, roots, out, force, vt_path, vt_md5, stage1_dir=None):
+def one(run, sub, rows, canon, roots, out, force, vt_path, vt_md5, stage1_dir=None, allow_missing=False):
+    """One sub-run.  ``allow_missing`` (a test output that covers only some tags and arms, e.g. the phase-4 test
+    campaign, which never runs chamber B): a (tag, arm) pair without a candidates table is skipped instead of
+    failing the sub-run, a tag with no arm at all is dropped, and the sidecar lists what was skipped (``partial``).
+    Never for a production build: the default raises on the first missing canonical file."""
     from sept26_prelim_analysis import build_tracks as BT
     dst = Path(out) / f'tracks_run_{run}_{sub}.parquet'
     if dst.exists() and not force:
         return run, sub, 'exists', None
     try:
         with tempfile.TemporaryDirectory(dir=out, prefix='.view_') as view:
-            missing, bow_log = [], []
+            missing, bow_log, skipped = [], [], []
+            if allow_missing:
+                has = lambda r, arm: (lambda d, stem: (d / f'{stem}.candidates.parquet').exists())(
+                    *canonical(r, arm, canon, roots))
+                skipped = [(r['tag'], arm) for r in rows for arm in L.ARMS if not has(r, arm)]
+                rows = [r for r in rows if any((r['tag'], arm) not in skipped for arm in L.ARMS)]
+                if not rows:
+                    return run, sub, 'no output for this sub-run (allow-missing)', None
             for r in rows:
                 for arm in L.ARMS:
+                    if (r['tag'], arm) in skipped:
+                        continue
                     d, stem = canonical(r, arm, canon, roots)
                     vd = Path(view) / f'mx17_{arm}'
                     vd.mkdir(exist_ok=True)
@@ -148,6 +161,9 @@ def one(run, sub, rows, canon, roots, out, force, vt_path, vt_md5, stage1_dir=No
         tracks.loc[b, 'gated'] = tracks.loc[b, 'gated_reco']
         tracks.loc[b, 'tan_source'] = 'none (B: positions only)'
         meta['n_gated'] = int(tracks['gated'].sum())
+        if allow_missing:
+            meta['partial'] = dict(rule='--allow-missing: (tag, arm) pairs without a candidates table skipped',
+                                   skipped=[list(k) for k in skipped])
         meta['bow_partner_fix'] = dict(rule='candidate tangents of A, C, D recomputed from (w, p0) with each pair\'s own '
                                             'partner (wft.reco.bow_pairs; tracking audit 2026-11-22, finding 21)',
                                        per_tag=bow_log)
@@ -212,6 +228,8 @@ def main():
                     help='trigger-time products (sets $X17_TRIGTIME_DIR; default <X17_SEPT26_OUT>/trigtime)')
     ap.add_argument('--jobs', type=int, default=8)
     ap.add_argument('--force', action='store_true')
+    ap.add_argument('--allow-missing', action='store_true',
+                    help='test outputs only: skip (tag, arm) pairs that have no candidates table instead of failing')
     a = ap.parse_args()
     canon = L.load_canon(a.canon)
     roots = {'stage2': a.stage2, 'side': a.side, 'tests': a.tests, 'rerun_dbeam_L1': a.rerun_dbeam}
@@ -237,7 +255,8 @@ def main():
     print(f'v(t): {a.vt} md5 {vt_md5}', flush=True)
     bad = []
     with ProcessPoolExecutor(a.jobs) as ex:
-        fs = [ex.submit(one, run, sub, rows, canon, roots, a.out, a.force, a.vt, vt_md5, a.stage1_dir)
+        fs = [ex.submit(one, run, sub, rows, canon, roots, a.out, a.force, a.vt, vt_md5, a.stage1_dir,
+                        a.allow_missing)
               for (run, sub), rows in sorted(groups.items())]
         for i, f in enumerate(as_completed(fs)):
             run, sub, msg, err = f.result()
