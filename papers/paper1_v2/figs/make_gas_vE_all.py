@@ -37,7 +37,12 @@ gap = sc['fixed']['gap']
 # longer than the recorded stack (1590 ns), so the stack fit puts T at the data end and the timing velocity there is
 # only an upper limit. It is drawn open and left out of the water fit (0.967 -> 0.970 %, chi2 2.5/3 -> 1.8/2).
 LIMIT_V = (500.0,)
-_fit = [p for p in sc['points'] if p['V'] not in LIMIT_V]
+# 2026-11-24 (Dylan): the 355 V/cm (1000 V) timing point was missing because the gas study stacked only the drift-scan
+# sub-runs. Golden Run 1's head-on stack from the S4 re-check (same model and arm) is added (pg_twov.golden_point).
+import pg_twov                                                     # noqa: E402
+_gp = pg_twov.golden_point()
+SCAN_PTS = sc['points'] + [dict(V=float(_gp['V']), E=_gp['E'], v=_gp['v'], v_err=_gp['v_err'], key='sat_det3 (S4 re-check)')]
+_fit = [p for p in SCAN_PTS if p['V'] not in LIMIT_V]
 _ws = np.arange(0.80, 1.15, 0.0005)
 _c2 = np.array([sum(((p['v'] - GI.v_of(w, p['E'])) / p['v_err']) ** 2 for p in _fit) for w in _ws])
 _i = int(np.argmin(_c2)); _in = _ws[_c2 <= _c2[_i] + 1]
@@ -70,7 +75,7 @@ La = sorted(TW['ladder'].values(), key=lambda L: L['drift_V'])
 xa = np.array([L['drift_V'] / (gap / 10) for L in La]); ya = np.array([L['v_ang'] for L in La])
 ea = np.array([L['v_ang_err'] for L in La])
 ax.errorbar(xa, ya, yerr=ea, fmt='s', ms=4, color=c3, mfc='white', mec=c3, zorder=4, label=r'A: angle-scale $v_\mathrm{d}$ (reference ladder)')
-P = sorted(sc['points'], key=lambda p: p['E'])
+P = sorted(SCAN_PTS, key=lambda p: p['E'])
 PL = [p for p in P if p['V'] in LIMIT_V]; P = [p for p in P if p['V'] not in LIMIT_V]
 xt = np.array([p['E'] for p in P]); yt = np.array([p['v'] for p in P]); et = np.array([p['v_err'] for p in P])
 ax.errorbar(xt, yt, yerr=et, fmt='o', ms=4.5, color=c3, zorder=5, label=r'A: timing $v_\mathrm{d} = g/T$')

@@ -36,6 +36,23 @@ LIMIT_V = (500,)                                # the column also runs past the 
 LADDER_SUBS = ['drift_scan_resist_490V_drift_%dV' % v for v in (100, 300, 500, 700, 900, 1100)] + \
               ['hv_scan2_resist_490V_drift_1000V']
 TBIN = np.arange(-0.60, 0.6001, 0.05)
+# 2026-11-24 (Dylan: why has 355 V/cm an angle-scale point and no timing point?): condor/make_jobs.py stacked only the
+# drift-scan sub-runs, so no 1000 V row of 6-27 got a stack in this package. The S4 re-check fitted the head-on stack of
+# golden Run 1 (sat_det3, 1000 V) with the same model and the same interior arm (s4f_fit, mask_in30):
+# T = 779.4 +- 7.3 ns (rerun/calib/s4/results/s4r/summary.json, det3). It is added here as the 355 V/cm point, with the
+# 1.5 % v_sys that pg_gas adds to every T, and the 1000 V ladder of this package (hv_scan2 490 V, 36.67) for v_ang.
+S4R = os.path.join(REPO, 'rerun', 'calib', 's4', 'results', 's4r', 'summary.json')
+V_SYS = 0.015
+
+
+def golden_point():
+    d = json.load(open(S4R))['det3']
+    T = d['T']; T_err = T * np.hypot(d['T_err'] / T, V_SYS)
+    E = 1000.0 / (GAP_REF / 10)
+    return dict(V=1000, E=E, T=T, T_err=T_err, v=GAP_REF / T * 1e3, v_err=GAP_REF / T * 1e3 * T_err / T,
+                n=d['n'], source='S4 re-check, golden Run 1 (sat_det3), mask_in30')
+
+
 GAP_REF = 28.19                                  # det3 interior gap, S4 re-check (the E and timing-v gap)
 GAP_REF_ERR = 0.19
 GAP_DET4 = (28.6, 0.5)                           # det4 geometric gap (DET4GAP)
@@ -205,7 +222,11 @@ def fig():
     # 2026-11-24 (gap audit, q_RESULT.md fourth round): at 500 V the column (1800 ns from v_ang) runs past the end of the
     # recorded stack (1590 ns), so T there is a lower limit. It is drawn open with an arrow and left out of the mean.
     use = [v for v in map(str, STACK_V) if int(v) not in LIMIT_V]
-    gu = np.array([D['fields'][v]['gap'] for v in use]); gue = np.array([D['fields'][v]['gap_err'] for v in use])
+    GP = golden_point(); La = D['ladder']['1000_hv']
+    GP['v_ang'] = La['v_ang']; GP['gap'] = La['v_ang'] * GP['T'] * 1e-3
+    GP['gap_err'] = GP['gap'] * np.hypot(La['v_ang_err'] / La['v_ang'], GP['T_err'] / GP['T'])
+    gu = np.array([D['fields'][v]['gap'] for v in use] + [GP['gap']])
+    gue = np.array([D['fields'][v]['gap_err'] for v in use] + [GP['gap_err']])
     wt = 1 / gue ** 2
     G = dict(gap=float((gu * wt).sum() / wt.sum()), err=float(1 / np.sqrt(wt.sum())))
     G['chi2'] = float(((gu - G['gap']) ** 2 * wt).sum()); G['ndf'] = len(gu) - 1
@@ -224,7 +245,10 @@ def fig():
             ax.errorbar(x, y, yerr=e, fmt='o', ms=4, color=shade[Vd], zorder=5)
         rows.append(dict(panel='c', drift_V=int(Vd), E=x, gap_mm=y, err=e, v_ang=D['fields'][Vd]['v_ang'],
                          v_timing=D['fields'][Vd]['v_timing'], T_ns=D['fields'][Vd]['T']))
-    ax.legend([hb, hh], ['mean of the three', r'geometric gap $L/\tan\theta$'], loc='upper left', handlelength=1.4)
+    hg = ax.errorbar(GP['E'], GP['gap'], yerr=GP['gap_err'], fmt='D', ms=3.8, color=ps.INK, zorder=5)
+    rows.append(dict(panel='c', drift_V=1000, E=GP['E'], gap_mm=GP['gap'], err=GP['gap_err'], v_ang=GP['v_ang'],
+                     v_timing=GP['v'], T_ns=GP['T']))
+    ax.legend([hb, hh, hg], ['mean of the four', r'geometric gap $L/\tan\theta$', '355 V/cm (Run 1)'], loc='lower right', handlelength=1.4)
     ax.set_xlim(150, 420); ax.set_ylim(21.5, 34)
     ax.set_xlabel(r'drift field $E$ (V/cm)'); ax.set_ylabel(r'gap $g = v_\mathrm{d}\,T$ (mm)')
     hs = [Line2D([], [], color=shade[Vd], marker='o', ms=3.5,

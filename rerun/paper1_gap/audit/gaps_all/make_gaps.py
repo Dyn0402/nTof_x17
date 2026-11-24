@@ -50,6 +50,14 @@ for p in G['points']:
     rows.append(dict(det=p['det'], chamber=PUB[p['det']], run=run, subrun=sub, E=p['E'], V=p['V'], n=p['n'], T=p['T'],
                      T_err=p['T_err'], v_ang=v, g=v * p['T'] / 1e3,
                      g_err=v * p['T'] / 1e3 * np.hypot(p['T_err'] / p['T'], 0.01)))
+# golden Run 1 of chamber A (1000 V): never stacked by the gas study; its S4 re-check stack, as in Paper I fig. two_velocities
+sys.path.insert(0, os.path.join(REPO, 'rerun', 'paper1_gas'))
+import pg_twov  # noqa: E402
+_gp = pg_twov.golden_point()
+_va = json.load(open(os.path.join(REPO, 'rerun/paper1_gas/results/twov.json')))['ladder']['1000_hv']['v_ang']
+rows.append(dict(det='det3', chamber='A', run='mx17_det3_saturday_scan_6-27-26', subrun='long_run_resist_490V_drift_1000V (S4)',
+                 E=_gp['E'], V=1000.0, n=_gp['n'], T=_gp['T'], T_err=_gp['T_err'], v_ang=_va, g=_va * _gp['T'] / 1e3,
+                 g_err=_va * _gp['T'] / 1e3 * np.hypot(_gp['T_err'] / _gp['T'], 0.01)))
 D = pd.DataFrame(rows)
 # attachment flag for 6-26: the ladder_626 times (hours on 6-26) per row key
 t626 = {}
