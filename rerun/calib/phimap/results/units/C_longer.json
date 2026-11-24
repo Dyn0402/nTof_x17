@@ -1,0 +1,249 @@
+{
+ "unit": "C_longer",
+ "mounting": "C_0626",
+ "det": "mx17_6",
+ "domain": [
+  [
+   -1.7,
+   1.69
+  ],
+  [
+   -1.53,
+   1.51
+  ]
+ ],
+ "train_rows": [
+  "c26__mx17_det6_det7_overnight_6-26-26__longer_run__mx17_6"
+ ],
+ "apply_rows": [
+  "c26__mx17_det6_det7_overnight_6-26-26__longer_run__mx17_6",
+  "c26__mx17_det6_det7_overnight_6-26-26__resist_det6_530V_det7_505V_drift_700V__mx17_6",
+  "c26__mx17_det6_det7_overnight_6-26-26__short_run__mx17_6"
+ ],
+ "n_train": 2191,
+ "folds": {
+  "-1": {
+   "K": 9,
+   "KS": 4,
+   "lam": 0.001,
+   "score": 2.583739061125479,
+   "info": {
+    "n_cand": 5,
+    "kmax_allowed": 9,
+    "ksmax_allowed": 6,
+    "lam_edge": "",
+    "k_edge": false,
+    "ks_edge": false,
+    "k_limited": true
+   },
+   "n_train": 2191,
+   "n_fx": 1747,
+   "n_fy": 1699,
+   "n_it": 6,
+   "secs": 0.8
+  },
+  "0": {
+   "K": 6,
+   "KS": 4,
+   "lam": 0.0001,
+   "score": 2.4805240183990978,
+   "info": {
+    "n_cand": 3,
+    "kmax_allowed": 9,
+    "ksmax_allowed": 4,
+    "lam_edge": "",
+    "k_edge": false,
+    "ks_edge": false,
+    "k_limited": false
+   },
+   "n_train": 1669,
+   "n_fx": 1344,
+   "n_fy": 1299,
+   "n_it": 6,
+   "secs": 0.7
+  },
+  "1": {
+   "K": 6,
+   "KS": 4,
+   "lam": 0.0001,
+   "score": 2.682294680302032,
+   "info": {
+    "n_cand": 3,
+    "kmax_allowed": 9,
+    "ksmax_allowed": 4,
+    "lam_edge": "",
+    "k_edge": false,
+    "ks_edge": false,
+    "k_limited": false
+   },
+   "n_train": 1695,
+   "n_fx": 1352,
+   "n_fy": 1306,
+   "n_it": 6,
+   "secs": 0.6
+  },
+  "2": {
+   "K": 6,
+   "KS": 4,
+   "lam": 10.0,
+   "score": 2.6898219975025013,
+   "info": {
+    "n_cand": 3,
+    "kmax_allowed": 9,
+    "ksmax_allowed": 4,
+    "lam_edge": "",
+    "k_edge": false,
+    "ks_edge": false,
+    "k_limited": false
+   },
+   "n_train": 1734,
+   "n_fx": 1391,
+   "n_fy": 1347,
+   "n_it": 5,
+   "secs": 0.5
+  },
+  "3": {
+   "K": 6,
+   "KS": 4,
+   "lam": 0.1,
+   "score": 2.7308326042769413,
+   "info": {
+    "n_cand": 3,
+    "kmax_allowed": 9,
+    "ksmax_allowed": 4,
+    "lam_edge": "",
+    "k_edge": false,
+    "ks_edge": false,
+    "k_limited": false
+   },
+   "n_train": 1797,
+   "n_fx": 1424,
+   "n_fy": 1393,
+   "n_it": 5,
+   "secs": 0.4
+  },
+  "4": {
+   "K": 6,
+   "KS": 4,
+   "lam": 0.01,
+   "score": 2.6869091218195313,
+   "info": {
+    "n_cand": 3,
+    "kmax_allowed": 9,
+    "ksmax_allowed": 4,
+    "lam_edge": "",
+    "k_edge": false,
+    "ks_edge": false,
+    "k_limited": false
+   },
+   "n_train": 1869,
+   "n_fx": 1477,
+   "n_fy": 1451,
+   "n_it": 5,
+   "secs": 0.4
+  }
+ },
+ "rows": {
+  "c26__mx17_det6_det7_overnight_6-26-26__longer_run__mx17_6": {
+   "unit": "C_longer",
+   "role": "train",
+   "const_src": "fit",
+   "v_drift": 19.917378656797002,
+   "n_sel": 2191,
+   "n_const": {
+    "x": 1747,
+    "y": 1699
+   },
+   "w0": {
+    "x": -0.030094581896038978,
+    "y": -0.25091730521524647
+   },
+   "c1": {
+    "x": 20.35714674264302,
+    "y": 20.8374335589582
+   },
+   "kw": {
+    "x": 1.022079616671642,
+    "y": 1.0461935738640598
+   },
+   "old_w0": {
+    "x": 0.05273352117386232,
+    "y": -0.38231839961832215
+   },
+   "old_kw": {
+    "x": 1.0031622676053884,
+    "y": 0.9968377323946117
+   }
+  },
+  "c26__mx17_det6_det7_overnight_6-26-26__resist_det6_530V_det7_505V_drift_700V__mx17_6": {
+   "unit": "C_longer",
+   "role": "borrowed",
+   "const_src": "fit",
+   "v_drift": 21.114908636953697,
+   "n_sel": 134,
+   "n_const": {
+    "x": 87,
+    "y": 69
+   },
+   "w0": {
+    "x": 0.014520896412908515,
+    "y": -0.3379576085123638
+   },
+   "c1": {
+    "x": 22.519712706890456,
+    "y": 23.186993824957472
+   },
+   "kw": {
+    "x": 1.0665313828295795,
+    "y": 1.0981337510680662
+   },
+   "old_w0": {
+    "x": 0.018113143462551107,
+    "y": -0.310863918390475
+   },
+   "old_kw": {
+    "x": 1.0350914076703241,
+    "y": 0.964908592329676
+   }
+  },
+  "c26__mx17_det6_det7_overnight_6-26-26__short_run__mx17_6": {
+   "unit": "C_longer",
+   "role": "borrowed",
+   "const_src": "fit",
+   "v_drift": 17.868240169204654,
+   "n_sel": 813,
+   "n_const": {
+    "x": 638,
+    "y": 625
+   },
+   "w0": {
+    "x": 0.00707325932808693,
+    "y": -0.20755862276649525
+   },
+   "c1": {
+    "x": 18.085374222962383,
+    "y": 18.274423661759528
+   },
+   "kw": {
+    "x": 1.0121519551842577,
+    "y": 1.0227321487011864
+   },
+   "old_w0": {
+    "x": 0.01918957180377323,
+    "y": -0.3204725987166843
+   },
+   "old_kw": {
+    "x": 0.9878105563818802,
+    "y": 1.0121894436181196
+   }
+  }
+ },
+ "reproduction": {
+  "row": "c26__mx17_det6_det7_overnight_6-26-26__longer_run__mx17_6",
+  "n": 2191,
+  "max_abs_diff_x": 1.1102230246251565e-16,
+  "max_abs_diff_y": 2.220446049250313e-16,
+  "note": "fitter spline algebra (Layout.fields @ c) vs wft.reco.bow_pairs with the block installed in the row bundle"
+ },
+ "secs": 1
+}
