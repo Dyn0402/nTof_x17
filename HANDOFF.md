@@ -14,14 +14,7 @@
 
 **Decisions taken without Dylan (gate rule: no row worse), revisit if wanted:** E, A 6-22, A 6-23, B 6-17, A drift-scan 100/300 V stay on the bow block; map only inside its fit domain (edge keeps pass 1); D X map only x >= 200 mm; C railed tracks rescaled per row (not in the edge zone); A 6-27 500-1100 V scan rows use the full map (scale part helps out of sample).
 
-**Waiting for Dylan:**
-1. A4b `\askDylan`: keep the n_TOF sentence ("bow block too strong for A, right for C")? move `tab:mapall` to §6? drop `gap_surfaces`?
-2. D/E railed tracks left out also moves E's quoted number (2.41/2.08 -> 2.33/2.02) although E has no map.
-3. X angle resolution drifts +0.005 +- 0.002 deg/h over Run 1 (2.6 sigma; 1.8 sigma on pass 1), stated in A3, unexplained.
-4. `det_a_timeseries`: its inputs (`twotrack/timeseries_tt`) are gone; only the angle rows were recomputed and merged (`rerun/paper1_timeseries/merge_angle_rows.py`).
-5. **New finding:** chamber A 6-23 (16 rows): pass-1 angles uncorrelated with M3 (r = 0.01) and `n_tracks = 0` in every event. Possibly a pass-1 problem with those rows; not investigated.
-6. Water fit with the Run 2-dominated 355 V/cm point (see step 0) or Saturday gas only.
-7. v1 Overleaf (`paper1`, Stephan's) not pushed.
+**Dylan 11-24 evening: all decisions accepted as they are.** Chamber A 23 June is dropped from Paper I (bow stability set 18 runs; commit "Paper I v2: drop chamber A 23 June", Overleaf 9d7f2688). The Run 1 X-resolution drift (+0.005 deg/h) and the water-fit mix are not investigated further (too small to matter). `det_a_timeseries` needs nothing else: only panel (e) uses the angle. Still open: v1 Overleaf (`paper1`, Stephan's) not pushed; delete the two work dirs (below) when convenient.
 
 **Gotchas:** `~/bin/latexmk` does not exist on the desktop; build with `pdflatex; bibtex; pdflatex; pdflatex` in `papers/paper1_v2`. The audit work dir `/media/ucla/work/claude-jobs/e1a7a26e/gap` (1.2 GB, regenerable) and `$WORK_DATA/claude-jobs/d006ab29/` (pass1_all 157 MB inputs, phimap, map1; map1 also on EOS) can be deleted once the decisions are closed. The n_TOF re-audit session shares this checkout: stage by path.
 
