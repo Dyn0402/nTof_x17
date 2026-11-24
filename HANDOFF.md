@@ -1,80 +1,46 @@
 # Handoff
 
-## Chamber A gap map, mesh + cathode surfaces, drift-direction map — updated 2026-11-24 (dylan-MS-7C84)
+## Chamber A gap, surfaces and angle map: audited — updated 2026-11-24 (dylan-MS-7C84)
 
-**Resume:** independent review of the chamber-A surface analysis (Paper I §5.1 end + appendix app:gapmap), then Dylan decides on shipping the map.
+**Resume:** Dylan decides on three things (below); then rewrite Paper I `app:gapmap` and, if he agrees, build per-mounting spline maps in a bench re-finalization.
 
-**Goal:** re-derive the variation of chamber A's drift gap on pass 1 and check it three ways; reconcile it with the board bow;
-see whether it improves tracking. Dylan wants another model to review it before relying on it.
+**Goal:** Dylan asked for a thorough audit of the 11-23 gap / two-surface / angle-map result before the analysis is rerun and the paper rewritten, and for any improvement it opens.
 
-**Done (2026-11-23/24, all in `rerun/paper1_gap/`, README has the numbers and the run order):**
-- **Gap map** (`gapmap.py`, `gapcompare.py`). Both golden runs (Run 1 sat_det3, Run 2 6-28 p2), per cell, by three methods:
-  - geometric with the X strips (the S4 estimator, ±tan averaged);
-  - geometric with the Y strips (peak, relative only);
-  - v_ladder × T (colsum box T).
-  - Results:
-    - Chamber value 28.17 ± 0.17 / 28.20 ± 0.13 mm, which reproduces S4.
-    - The gap runs from about 27 to 29 mm. Along x it tilts by 0.4–0.8 mm per 100 mm, and along y it domes by about
-      1.2 mm at 150 mm.
-    - d ln v / d ln T = −0.50 ± 0.02, against −0.41 for a gap change and −1 for gas.
-- **Joint fit** (`cellobs.py` → `joint.py`). One quadratic mesh h and one quadratic cathode c are fitted to the positions
-  (hp), w0 = v(∂h + ∂c)/2, the ±tan asymmetry, G, GY, T and v. Error floors per class bring reduced χ² to 1.
-  - The mesh dish without positions agrees with the position route.
-  - The cathode is flat along y and follows the board along x.
-  - β = 1.0 ± 0.2.
-- **Tracking** (`track_test.py`, `track_grid.py`, cross-run validated).
-  - A 42 mm-cell map of w0 + v improves the angle s68 by 16–21 %: X 0.905/0.929 → 0.736/0.776°, Y 0.796/0.809 → 0.627/0.651°.
-  - The structure is 2-D and smooth, not chip timing.
-- **Paper I v2** (pushed to both Overleaf projects):
-  - `sections/05_gas.tex`: the end of §5.1 is rewritten.
-  - New `sections/A4b_surfaces.tex` (app:gapmap) with figure `gap_surfaces` (figures.toml).
-  - Two `\askDylan` boxes are open: keep or move the figure; ship the map.
-- **Report:** `rerun/paper1_gap/report.html`. A copy is on EOS at `x17rerun/paper1_gap/report/`.
-- **Site note:** https://dylan-neff.web.cern.ch/notes/mx17-chamber-a-surfaces.html (3-D view of the surfaces and drift
-  lines, field maps, measured maps). Generator: `make_site_note.py <cellobs.json> <out.html>`.
+**Done (2026-11-24, `rerun/paper1_gap/audit/`; read `AUDIT_2026-11-24.md` or `report.html` first):**
+- The committed chain reruns byte-identically from the EOS inputs.
+- Twelve independent tests, each with `results/<tag>_RESULT.md` and scripts `<tag>_*.py`.
+- **The two-surface picture is confirmed** by four tests the 11-23 analysis did not use:
+  - the X-view and Y-view tilt maps form a gradient field (curl-free fraction 0.96 to 1.00);
+  - the drift lines, measured from the waveforms, start at the mesh with the mesh slope and bend along y as the gap dome predicts (8.8 sigma against a parallel cathode);
+  - the fine gap structure sits on the cathode (k = +0.67 / +0.46, expected +0.5, mesh would give -0.5);
+  - the tilt is predicted by grad h + a grad g, with g from the drift time (`q_u90`) alone.
+- **The cathode foil changes shape with every mounting; the mesh dish is static.** Three mountings of chamber A (6-22, 6-25, 6-27/28) give three gap maps. Inside a mounting the map is stable in time, with mesh voltage, and from 700 to 1100 V drift. The golden mounting has a diagonal ridge of about 1.5 mm.
+- **What does not hold in the appendix as pushed:** the errors of `tab:surfaces` (2 to 3 times too small), "cathode flat along y, follows the board along x", beta = 1.0 +- 0.2 (the fine structure gives 0.69; the X-view smooth velocity map has an unexplained extra variation).
+- **Tracking:** a spline map per mounting gives 0.69 / 0.60 deg (X / Y) on the golden mounting (pass 1 0.92 / 0.81; 42 mm cells 0.74-0.78 / 0.63-0.65), at the statistical limit of the map. The golden map does not transfer to the 6-25 mounting. Per-mounting spline maps gain 17 to 35 % on A, B, C, D; E gains only on Y.
+- **Reference-free correction:** mesh (bow block) + gap term from the drift-time map recovers 33 to 65 % of the gain in the golden mounting and 82 to 91 % in the 6-25 mounting.
+- **n_TOF:** the bench bow block over-corrects A (right for C); A's bench fine map recovers 61 to 87 % of the in-situ map's gain on the A-C lines; the drift-time map gives D a first correction (12 to 13 % in the z view). Nothing was applied.
 
-**Where it stopped:** complete and committed. Nothing is running.
-- **One Overleaf push is pending (both projects).** The last repo edit to `sections/A4b_surfaces.tex` takes the table
-  from unrounded fit values and sets the telescope dish to −0.25 ± 0.16 / −0.05 ± 0.20. It is not on Overleaf: `pull`
-  stops on an add/add conflict in that file.
-- Overleaf's copy is identical to the version this session pushed (checked by diff), so no one edited it there. The
-  conflict is a bridge-history artifact.
-- With Dylan's OK: pull, resolve by keeping the repo version (`git checkout --ours` on that file), commit, then `push`
-  paper1_v2 and paper1.
+**Where it stopped:** complete and committed. Nothing is running. No paper text was changed and nothing was shipped.
+- The Overleaf push of the 11-23 table fix is still pending (add/add bridge conflict in `sections/A4b_surfaces.tex`; Overleaf's copy equals the version pushed on 11-23). The appendix on Overleaf therefore still carries the statements the audit withdraws. Needs Dylan's OK: pull, keep the repo version, push paper1_v2 and paper1.
 
-**Next steps:**
-1. Independent review (another model). Weakest points first:
-   - (a) The geometric gap with the X strips shows about 1/0.7 of the v×T amplitude along y. The joint fit absorbs this into
-     a 1.9 % T floor, and its cause is not identified.
-   - (b) The no-timing subset prefers a flat cathode along x, 2.5σ from the full fit.
-   - (c) r_f along x reads 1.2 over the full interior (the w0 ramp steepens at the edges). This sits in tension with the
-     bow appendix's quoted r_f range.
-   - (d) β fits to 1.0 against Magboltz 0.68.
-   - (e) Check the drift-line tilt sign convention in `joint.py` (w0 = +v(h' + c')/2 was taken from the bundle's A vs h
-     signs, not derived independently).
-   - (f) The tracking gain uses M3-calibrated maps across two runs of one mounting. Check it is not an M3-specific
-     artefact (e.g. split Run 2 in time).
-2. Dylan decides whether to ship a per-chamber 2-D w0 + v map (the bundle `v_map` mechanism) in a bench re-finalization.
-   Do not transfer it to n_TOF.
-3. Dylan's answers to the two `\askDylan` boxes.
+**Next steps (Dylan's decisions):**
+1. Ship per-mounting spline maps in a bench re-finalization? It is a table-level step (the fit does not use v), one map per mounting (C: per row), made by cross-validation inside the mounting. Prototype: `audit/results/a2_final_map_det3.json`, `audit/a2_final.py`, numbers per chamber in `audit/results/r3_RESULT.md`.
+2. Rewrite `app:gapmap` around the model-free results (gradient field, drift-line fan figure, gap maps of three mountings, tau = grad h + a grad g, tracking table), and correct §5.1 / `app:bow` wording. List in the audit note, "Recommendations".
+3. n_TOF Phase 4 candidates: drift-time correction for D; bench fine map with no dish for A against the in-situ map; gap map per chamber into the v(t) scale.
 
 **Gotchas / decisions:**
-- The geometric methods only reach the chamber centre: X strips x 100–320 mm, Y strips y 60–290 mm. This is M3
-  acceptance for |tan| ≥ 0.2, not a cut.
-- The colsum box T is about 3 % longer than the stack T. Use timing maps only relative to their own chamber value.
-- Ruled out as causes of the G vs T mismatch:
-  - RC leakage on Y (X-only and Y-only T agree);
-  - the angle mix across cells (85 % of tracks at |tan| 0.2–0.3 everywhere);
-  - gain (≤ 0.06 mm);
-  - an M3 tan-scale error (it would move G and V in opposite directions).
-- The pass-1 bundle already has FB's linear scale s and quadratic tilt a. `v_map` is empty.
-- Inputs are on EOS (Run 2 caches, gapmap.json, cellobs.json: `x17rerun/paper1_gap/caches/g_det3_wknd/`). Run 1 is S4's
-  `s4_inputs` cache. To rebuild from waveforms: `mirror.py` + `build_incl.py` (desktop, xrootd).
+- Never apply a fine map made in one mounting to another mounting. Only the mesh term (bow block) is static.
+- `q_u90` (mean of `x_q_u90`, `y_q_u90`) is the drift-time proxy in every pass-1 table (r = 0.98 with the colsum T). Remove one slope against ln charge first. Saturated events are offset by 0.02 to 0.06 in ln.
+- The straight-line fit weights the mesh end: tau = grad h + a grad g with a about 0.4 (0.2 on C and on A's 6-25 mounting), not 1/2.
+- The geometric gap with the X strips covers two columns of cells in x only: it cannot measure a curvature along x.
+- The telescope-free check with C and D in the same events cannot see the part of the correction common to both chambers (60 to 80 %).
+- Open: 0.2 deg of reproducible curl-free fine tilt not explained by the gap gradient; the X-view velocity map; the gap-map flattening below 700 V; at n_TOF A's gap field differs between muons and late beam tracks in y.
+- Work dir (staged inputs + all test outputs, 1 GB): `$WORK_DATA/claude-jobs/e1a7a26e/gap`. Regenerable from EOS (`README.md` "How to run" + `audit/results/COMMON_brief.md`). Delete when the decisions are taken.
 
 **Key files & commands:**
-- `rerun/paper1_gap/README.md`: every number and the run order.
-- `rerun/paper1_gap/results/{compare,joint,track_test,track_grid}.json`.
-- `papers/paper1_v2/sections/A4b_surfaces.tex`, `papers/paper1_v2/sections/05_gas.tex` (§5.1 end).
+- `rerun/paper1_gap/audit/AUDIT_2026-11-24.md`, `report.html` (`make_audit_report.py`); figures also on EOS `x17rerun/paper1_gap/audit/`.
+- `rerun/paper1_gap/README.md` (the 11-23 analysis, with an audit box at the top).
+- `papers/paper1_v2/sections/A4b_surfaces.tex`, `05_gas.tex` (§5.1 end), `A4_bow.tex` (transfer paragraph).
 
 ## Paper I: v1 Overleaf now mirrors v2; Stephan asked about Sec. 3 — updated 2026-11-23 (dylan-MS-7C84)
 

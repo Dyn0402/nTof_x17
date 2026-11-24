@@ -1,0 +1,171 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Audit of the chamber A gap and surface analysis (2026-11-24)</title><meta name="viewport" content="width=device-width, initial-scale=1"><style>
+body{font:16px/1.55 Georgia,serif;max-width:60em;margin:2em auto;padding:0 1em;color:#1b1b1b;background:#fff}
+h1{font-size:1.6em} h2{font-size:1.25em;margin-top:2em;border-bottom:1px solid #ccc} h3{font-size:1.05em;margin-top:1.4em}
+table{border-collapse:collapse;margin:1em 0;font-size:.9em} td,th{border:1px solid #bbb;padding:.25em .6em;text-align:left}
+th{background:#f0f0f0} code{font-size:.88em;background:#f4f4f4;padding:0 .2em} figure{margin:1.4em 0}
+figure img{max-width:100%;border:1px solid #ddd} figcaption{font-size:.9em;color:#333;margin-top:.3em}
+li{margin:.25em 0} .verdict{background:#f6f8fb;border-left:4px solid #4a6fa5;padding:.6em 1em}
+</style></head><body>
+<h1>Audit of the chamber A gap and surface analysis (2026-11-24)</h1>
+<p>This note audits <code>rerun/paper1_gap/</code> (Paper I §5.1 and appendix <code>app:gapmap</code>). The audit reran the committed chain, then ran twelve independent tests on the existing data. Each test has its own report in <code>results/&lt;tag&gt;_RESULT.md</code> and its scripts in <code>&lt;tag&gt;_*.py</code>. This file is the source of <code>report.html</code> (<code>make_audit_report.py</code>).</p>
+<h2>Verdict</h2>
+<ul>
+<li><b>The physical picture is right.</b> The drift lines of chamber A are tilted and bent by the shape of two surfaces, the mesh and the cathode. Four new tests that could have failed confirm this. None of them was used by the audited analysis.</li>
+<li><b>Several statements of the appendix do not hold as written.</b> The quoted errors on the surface curvatures are 2 to 3 times too small. "The cathode is flat along y and follows the board along x" is not a stable result. The fitted β = 1.0 is an artifact of averaging the two views. A quadratic surface is the wrong description of the cathode.</li>
+<li><b>The cathode is a foil that changes shape every time the chamber is mounted.</b> The mesh dish is the same in every mounting. The gap map is different in each of the three mountings we have (6-22, 6-25, 6-27/28), and it is stable in time, with the mesh voltage and with the drift voltage (700 to 1100 V) inside one mounting. In the golden mounting the gap has a diagonal ridge about 1.5 mm high.</li>
+<li><b>The tracking gain is real and can be made larger.</b> An unbinned spline map gives an angle resolution (s68) of 0.69° on X and 0.60° on Y, against 0.92° and 0.81° for pass 1. This is 26 % better than pass 1, and it is at the statistical limit of the map. However, the map belongs to one mounting. It does not transfer to another mounting of the same chamber.</li>
+<li><b>Most of the correction can be made without reference tracks.</b> The drift-time map of a mounting gives its gap map, and the tilt follows as ∇h + a ∇g with a ≈ 0.4. In the 6-25 mounting, where the golden map gives nothing, this recovers 82 to 91 % of the gain of that mounting's own reference map.</li>
+<li><b>At n_TOF</b> the bench bow block over-corrects chamber A, the bench fine map of chamber A still helps, and the drift-time map gives chamber D its first angle correction (12 to 13 % in one view).</li>
+</ul>
+<p>The recommended changes to the analysis and to the paper are in the section "Recommendations". Nothing was shipped and no paper text was changed.</p>
+<h2>What was tested</h2>
+<table><tr><th>tag</th><th>question</th><th>result</th></tr><tr><td>repro</td><td>Does the committed chain reproduce from the EOS inputs?</td><td>Yes. Every <code>results/*.json</code> is byte-identical.</td></tr><tr><td>a1</td><td>Is the fine structure of the tilt maps real, and is it a gradient field?</td><td>Yes. Run 1 and run 2 agree with r = 0.91 to 0.99. The curl-free fraction is 0.96 to 1.00.</td></tr><tr><td>e</td><td>Do the drift lines have the shape the two surfaces predict?</td><td>Yes along y (8.8σ against a parallel cathode). The mesh-end slope follows the mesh dish. Along x the curvature is undecided.</td></tr><tr><td>b</td><td>Does the fine gap structure agree with the fine tilt, and on which electrode is it?</td><td>It is on the cathode (k = +0.67 ± 0.12 and +0.46 ± 0.16; +0.5 expected; the mesh would give −0.5).</td></tr><tr><td>r1</td><td>Does ∇h + ½∇g, with g from drift time only, predict the tilt?</td><td>Yes for the smooth part (a ≈ 1.0, b = 0.35 to 0.54). It predicts the 6-25 mounting.</td></tr><tr><td>r4</td><td>Does the gap map follow the drift voltage or the mounting?</td><td>The mounting. Three mountings give three maps.</td></tr><tr><td>f</td><td>Are the errors and the headline statements of the joint fit sound?</td><td>The errors are 2 to 3 times too small. The cathode statements weaken.</td></tr><tr><td>a2</td><td>Can the map be made better, and how robust is the gain?</td><td>A spline map reaches 0.69° / 0.60°. The gain is stable in time.</td></tr><tr><td>c</td><td>Does the golden map apply to the 6-25 mounting of the same chamber?</td><td>No. The mesh dish transfers, the fine map does not.</td></tr><tr><td>d</td><td>Do the other chambers gain, and is the gain confirmed without the telescope?</td><td>B, A and D gain, C less, E not. The telescope-free check confirms the part it can test.</td></tr><tr><td>g</td><td>Does the bench map of a chamber predict its angle bias at n_TOF?</td><td>Partly for A (61 to 87 % of the in-situ gain). Not for C.</td></tr><tr><td>r2</td><td>Does the n_TOF drift-time map predict the n_TOF angle bias?</td><td>Partly. A x 7.5 %, D z view 12 to 13 %, C weak.</td></tr><tr><td>r3</td><td>What would a per-mounting map give on every chamber?</td><td>17 to 35 % on A, B, C and D. Chamber E gains only on Y.</td></tr></table>
+<h2>1. Four new tests of the two-surface picture</h2>
+<p>We call h(x, y) the height of the mesh and c(x, y) the height of the cathode, with z up. The gap is g = c − h. In the long-wavelength limit a drift line at fractional height s (0 at the mesh, 1 at the cathode) has the slope ∇h + s (∇c − ∇h). The audited analysis used only the mean of this slope over the column.</p>
+<h3>1.1 The tilt field is a gradient field</h3>
+<p>An electrostatic distortion of the drift field displaces the drift lines by the gradient of a scalar. The tilt measured by the X strips and the tilt measured by the Y strips must therefore obey ∂τ_x/∂y = ∂τ_y/∂x. An effect of one view (electronics, charge sharing, the resistive layer) has no reason to obey this relation. The audited fit imposed the relation and never tested it.</p>
+<ul>
+<li>At the level of the fitted planes, the two cross gradients differ by (0.6 ± 0.4) and (0.1 ± 0.2) × 10⁻³ per 100 mm in run 1 and run 2. The own-axis gradient is 10.5 × 10⁻³ per 100 mm in both views.</li>
+<li>At fine scale we compare ∂τ_x/∂y of one run with ∂τ_y/∂x of the other run, so that the noise is independent. The correlation is 0.92 to 0.95, which equals the noise ceiling. The curl-free fraction is 0.96 ± 0.02 (42 mm cells) and 1.00 ± 0.02 (34 mm cells).</li>
+<li>The solenoidal part is below 1.5 % of the variance (2σ), which is below 0.05° rms.</li>
+<li>The fine structure itself reproduces between the runs with r = 0.91 to 0.99. Its rms is 0.23 to 0.46° on X and 0.34 to 0.44° on Y. It saturates at cells of 34 to 42 mm.</li>
+</ul>
+<figure><img src="figures/a1_fig_phi.png" alt=""><figcaption>The non-quadratic part of the potential Φ whose gradient is the measured tilt (µm; in the long-wavelength limit Φ = (h + c)/2). Top: 42 mm cells. Bottom: 28 mm cells. Left to right: run 1, run 2, both runs. The diagonal feature and the pattern at the y edges are present in both runs.</figcaption></figure>
+<h3>1.2 The drift lines have the predicted shape</h3>
+<p>We measured the shape of the drift lines directly from the waveforms. For each time sample we take the charge centroid of the track image and compare it with the reference track. The regression on tan θ_ref gives, for each time bin, the height z of the charge and its sideways displacement δ. This calibrates time to depth with the telescope geometry itself, so the shaping of the signal does not enter.</p>
+<p>Charge liberated at height z lands displaced by δ(z) = h′ z + (c′ − h′) z² / (2 g). The slope at the mesh end is therefore the mesh slope, and the curvature is the gradient of the gap.</p>
+<table><tr><th>quantity (10⁻⁴ per 100 mm)</th><th>measured</th><th>audited fit</th><th>flat cathode</th><th>cathode parallel to mesh</th></tr><tr><td>mesh-end slope gradient, X view along x</td><td>+86 ± 11</td><td>+78</td><td></td><td></td></tr><tr><td>mesh-end slope gradient, Y view along y</td><td>+151 ± 14</td><td>+131</td><td></td><td></td></tr><tr><td>curvature gradient, Y view along y</td><td>−133 ± 15</td><td>−109</td><td>−131</td><td>0</td></tr><tr><td>curvature gradient, X view along x</td><td>+73 ± 51</td><td>+28</td><td>−78</td><td>0</td></tr></table>
+<ul>
+<li>The mesh-end slope follows the mesh dish that the position route measures (0.7σ and 1.2σ).</li>
+<li>Along y the drift lines bend with the predicted sign and size. A cathode parallel to the mesh is excluded at 8.8σ.</li>
+<li>Along x four of the five slices show the same constant curvature, which is the tilt of the gap along x. The slice nearest the −x edge bends the other way. For this reason the curvature of the cathode along x is undecided.</li>
+<li>The straight-line fit of the reconstruction weights the mesh end of the column more than the cathode end. The weight of the cathode slope is a = 0.3 to 0.4, not 0.5.</li>
+</ul>
+<figure><img src="figures/e_fig_delta_profiles.png" alt=""><figcaption>Sideways displacement of the drift lines as a function of the height above the mesh, in five slices across the chamber. Top: displacement (the constant removed). Bottom: the same with the linear term removed, which leaves the curvature. Left: X view, slices along x. Right: Y view, slices along y. The lines fan out because the mesh is dished, and in the Y view they bend because the gap changes along y.</figcaption></figure>
+<h3>1.3 The fine gap structure is on the cathode</h3>
+<p>A relief δc on the cathode changes the gap by +δc and tilts the drift lines by +∇(δg)/2. A relief δh on the mesh changes the gap by −δh and tilts the lines by −∇(δg)/2. The regression of the fine tilt on the gradient of the fine gap map (cross-run) gives k = +0.67 ± 0.12 on X and +0.46 ± 0.16 on Y. The mesh alone is excluded at 6 to 9σ. The smooth dish along y behaves like the mesh (k = −0.75).</p>
+<p>The same test gives β for the fine structure: d ln v / d ln T = −0.41 ± 0.08, so β = 0.69 (0.51 to 0.95). Magboltz gives 0.68. The fitted β = 1.0 ± 0.2 of the appendix came from averaging the two views. The smooth velocity map of the X view has a slope of −0.74 ± 0.02, which is neither a gap change (−0.41) nor a gas change (−1). The Y view gives −0.45 ± 0.03. We have not explained the X value.</p>
+<h3>1.4 The tilt is predicted from the drift time</h3>
+<p>If the picture is right, the tilt map follows from the mesh shape and the gap map: τ = ∇h + a ∇g, with a = 1/2 for an equal weighting of the column. The gap map needs no reference track. It comes from the drift time per track (the charge-time quantile <code>q_u90</code> of the fit, which follows the column duration with r = 0.98).</p>
+<ul>
+<li>In the golden mounting the fit τ = a_h ∇h + b ∇g gives a_h = 0.91 to 1.21 and b = 0.35 to 0.54. The expected values are 1 and the weight of section 1.2 (0.3 to 0.4).</li>
+<li>In the 6-25 mounting the Y tilt gradient is twice the golden one (0.0201 ± 0.0003 per 100 mm). The prediction from the golden mesh and the 6-25 drift-time map is 0.0209. Nothing was fitted to the 6-25 angles.</li>
+<li>Used as a correction, the prediction recovers 33 to 65 % of the direct-map gain in the golden mounting and 82 to 91 % in the 6-25 mounting (table in section 3).</li>
+<li>About 70 % of the reproducible fine tilt variance is not explained by the gap gradient. This remainder is still a gradient field and reproduces between the runs (r = 0.77 and 0.91). It amounts to about 0.2°.</li>
+</ul>
+<figure><img src="figures/r1_fig3_tilt_625.png" alt=""><figcaption>The tilt of the 6-25 mounting (mrad). Left: measured with the reference tracks. Middle: predicted from the golden mesh shape and the 6-25 drift-time map. Right: the difference. Top: X view. Bottom: Y view.</figcaption></figure>
+<h2>2. The geometry of chamber A, and how well we measure it</h2>
+<h3>2.1 The mesh is static</h3>
+<p>The mesh height from the position route agrees between the golden mounting and the 6-25 mounting (r = 0.94 ± 0.06 on X and 0.86 ± 0.07 on Y, slopes 1.17 ± 0.17 and 1.10 ± 0.18). With honest errors (resampling over cells, model order, weighting) the depth of the mesh at 150 mm is 0.87 ± 0.28 mm along x and 1.48 ± 0.34 mm along y.</p>
+<h3>2.2 The cathode changes with the mounting</h3>
+<figure><img src="figures/r4_fig2b_maps_spline.png" alt=""><figcaption>Relative drift-time map of chamber A (ln q_u90, percent; 1 % is about 0.17 mm of gap at β = 0.68). From left: golden run 1, golden run 2, the 6-25 mounting, the 6-22 mounting, and the 700 to 1100 V points of the 6-27 drift scan.</figcaption></figure>
+<ul>
+<li><b>Golden mounting (6-27 and 6-28).</b> The gap is longest at the center along y (−1.2 to −1.5 mm per (100 mm)²), it rises along x, and it has a diagonal ridge of about 1.5 mm. The two runs agree with r = 0.98.</li>
+<li><b>6-25 mounting.</b> The gap is shortest at the center along y (+0.6 mm per (100 mm)²) and has a twist. The diagonal ridge is absent.</li>
+<li><b>6-22 mounting.</b> The map is nearly flat.</li>
+<li><b>Inside one mounting the map is stable.</b> It does not change over the 19 sub-runs of the mesh-voltage scan, between 6-27 and 6-28, in time blocks inside a run, or between 700 and 1100 V of drift voltage. The 500 V sub-run of 6-27 does not show the 6-25 shape (5 to 6σ in each curvature term), so the difference between the mountings is not the drift voltage.</li>
+<li><b>Below 700 V</b> the golden map flattens, and it returns at 1000 V. We could not decide whether this is the foil or the response of the time quantile, since the column end is close to the end of the readout window at low field.</li>
+</ul>
+<p>The cathode is a 50 µm kapton foil. Its weight per area is about 0.7 to 1.5 Pa, so a pressure difference of 0.01 mbar across the foil is as large as its weight. A foil that takes a new shape each time the chamber is handled is therefore plausible. We have no direct measurement of what moves it.</p>
+<h3>2.3 Precision</h3>
+<table><tr><th>quantity</th><th>how</th><th>precision</th></tr><tr><td>mesh depth at 150 mm</td><td>positions against the reference</td><td>0.3 mm (systematic: model and weighting)</td></tr><tr><td>potential Φ = (h + c)/2</td><td>tilt maps, both views</td><td>0.035 mm per node at 42 mm; run 1 and run 2 agree with r = 0.96</td></tr><tr><td>gap map</td><td>drift time, no reference</td><td>0.07 to 0.25 mm on the bench, 0.04 to 0.10 mm at n_TOF</td></tr><tr><td>gap gradient along y</td><td>curvature of the drift lines</td><td>11 %</td></tr><tr><td>chamber-wide gap</td><td>S4 estimator</td><td>28.2 mm, unchanged</td></tr></table>
+<h3>2.4 What changes in the appendix table</h3>
+<table><tr><th>quantity</th><th>appendix</th><th>audit</th></tr><tr><td>mesh depth at 150 mm, x</td><td>0.87 ± 0.08</td><td>0.87 ± 0.28</td></tr><tr><td>mesh depth at 150 mm, y</td><td>1.48 ± 0.10</td><td>1.48 ± 0.34</td></tr><tr><td>cathode depth at 150 mm, x</td><td>1.19 ± 0.11</td><td>1.19 ± 0.34</td></tr><tr><td>cathode depth at 150 mm, y</td><td>0.25 ± 0.15</td><td>0.25 ± 0.50</td></tr><tr><td>gap tilt along x (mm per 100 mm)</td><td>0.39 ± 0.08</td><td>0.39 ± 0.21</td></tr><tr><td>β</td><td>1.0 ± 0.2</td><td>0.69 (0.51 to 0.95) from the fine structure</td></tr></table>
+<ul>
+<li>The geometric gap with the X strips covers only two columns of cells in x. It cannot measure a curvature along x. The disagreement between the "no timing" subset and the full fit is therefore a coverage effect.</li>
+<li>A flat cathode along both axes is rejected (Δχ² = 107 for 3 parameters), but only by the timing observables.</li>
+<li>The quadratic coefficients move by more than their errors when a quartic or cubic term is added. A quadratic cathode is not an adequate model, which the maps of section 2.2 show directly.</li>
+<li>The sign convention is confirmed. The timing-free tilt and w0/v agree with slope +1 within errors, and the ladder slope is positive in every cell.</li>
+</ul>
+<h2>3. Tracking</h2>
+<h3>3.1 A better map in the golden mounting</h3>
+<table><tr><th>angle conversion</th><th>X, run 1</th><th>X, run 2</th><th>Y, run 1</th><th>Y, run 2</th></tr><tr><td>pass 1</td><td>0.905</td><td>0.929</td><td>0.796</td><td>0.809</td></tr><tr><td>42 mm cells, other run (appendix)</td><td>0.736</td><td>0.776</td><td>0.627</td><td>0.651</td></tr><tr><td>spline map, other run</td><td>0.678</td><td>0.706</td><td>0.588</td><td>0.617</td></tr><tr><td>mesh + gap from drift time (no reference)</td><td>0.863</td><td>0.852</td><td>0.755</td><td>0.764</td></tr><tr><td>the same with the velocity map from the gap</td><td>0.833</td><td>0.830</td><td>0.740</td><td>0.754</td></tr></table>
+<p>(s68 of θ − θ_ref in degrees, |tan θ_ref| ≤ 0.6.)</p>
+<ul>
+<li>The spline map is 0.034 to 0.070° better than the 42 mm cells (errors 0.005 to 0.009°).</li>
+<li>The learning curve is flat. Its asymptote is 0.685 ± 0.012° on X and 0.597 ± 0.010° on Y, so what remains is the noise of single events and not the error of the map.</li>
+<li>The spline map needs about 2,000 training events. The 42 mm cells need about ten times more.</li>
+<li>The gain is the same when the map is made on one half of a run and applied to the other half.</li>
+<li>The gain is largest for near-vertical tracks and in the outer region. The fraction of X-view tracks with |tan| &lt; 0.1 and an error above 2° falls from 4.9 % to 2.2 %.</li>
+<li>Indexing the map by the reference position instead of the reconstructed position changes s68 by at most 0.002°.</li>
+<li>Constraining both views to one potential neither helps nor hurts within errors. The velocity map is worth 0.03 to 0.04° on X and 0.015 to 0.02° on Y.</li>
+</ul>
+<h3>3.2 The map belongs to one mounting</h3>
+<table><tr><th>arm, 6-25 mounting</th><th>X</th><th>Y</th></tr><tr><td>pass 1</td><td>0.876</td><td>1.030</td></tr><tr><td>golden cell map</td><td>0.799</td><td>1.014</td></tr><tr><td>mesh + gap from the 6-25 drift time (no reference)</td><td>0.819</td><td>0.795</td></tr><tr><td>the same with the velocity map from the gap</td><td>0.756</td><td>0.792</td></tr><tr><td>the 6-25 mounting's own reference map (2-fold)</td><td>0.744</td><td>0.743</td></tr></table>
+<p>The golden fine map adds nothing in the 6-25 mounting. The reference-free prediction recovers 82 ± 3 % of the gain of the mounting's own map on Y, and 91 ± 5 % on X with the velocity map.</p>
+<h3>3.3 Is the gain real without the telescope?</h3>
+<p>A position-dependent error of the telescope slope would also be a gradient field, so section 1.1 cannot exclude it. Three results do not depend on the telescope angle.</p>
+<ul>
+<li>The drift-time map is a chamber-only quantity, and it predicts the tilt (section 1.4), including the change between mountings.</li>
+<li>Chambers C and D were in the telescope together. The difference of their measured slopes does not contain the telescope error. The part of the two corrections that differs between the chambers is confirmed (slope −0.98 ± 0.10 on one axis and −0.47 ± 0.19 on the other, where −1 means a real distortion). However, 60 to 80 % of the two corrections is common to both chambers, and this test cannot see a common part.</li>
+<li>The bench map of chamber A lowers the residual of the A–C cosmic lines at n_TOF, where there is no telescope (section 4).</li>
+</ul>
+<p>In addition, an error of 7 mrad on a telescope with a lever arm of 1.3 m would need position errors of several millimeters, which the telescope residuals exclude. We therefore consider the gain real. The common part of the correction has no direct telescope-free test on the bench.</p>
+<h3>3.4 A per-mounting map on every chamber</h3>
+<p>We made a spline map for every mounting of the five chambers, cross-validated in five time blocks inside the mounting. We also made the reference-free prediction (bundle mesh plus the mounting's own drift-time map, one fitted amplitude b per mounting).</p>
+<table><tr><th>mounting</th><th>events</th><th>pass 1, X / Y</th><th>spline map, X / Y</th><th>gain, X / Y</th><th>reference-free, X / Y</th><th>fitted b</th></tr><tr><td>B (det2), 6-22</td><td>14,230</td><td>0.961 / 0.966</td><td>0.675 / 0.735</td><td>30 % / 24 %</td><td>0.822 / 0.864</td><td>0.37 ± 0.02</td></tr><tr><td>A (det3), 6-27 + 6-28</td><td>18,720</td><td>0.923 / 0.805</td><td>0.688 / 0.599</td><td>26 % / 26 %</td><td>0.819 / 0.728</td><td>0.46</td></tr><tr><td>A (det3), 6-25</td><td>6,279</td><td>0.876 / 1.030</td><td>0.681 / 0.666</td><td>22 % / 35 %</td><td>0.767 / 0.788</td><td>0.22</td></tr><tr><td>C (det6), 6-26</td><td>7,985</td><td>1.183 / 1.480</td><td>0.932 / 1.228</td><td>21 % / 17 %</td><td>1.051 / 1.343</td><td>0.18</td></tr><tr><td>D (det7), 6-26, x ≥ 200 mm / all</td><td>1,934 / 5,137</td><td>0.968 / 1.028</td><td>0.802 / 0.829</td><td>17 % / 19 %</td><td>0.860 / 0.896</td><td>0.47</td></tr><tr><td>E (det4), 6-23</td><td>1,610</td><td>2.405 / 1.627</td><td>2.354 / 1.377</td><td>2 % / 15 %</td><td>2.424 / 1.457</td><td>0.1 to 0.2</td></tr><tr><td>E (det4), 6-24</td><td>3,128</td><td>2.141 / 1.436</td><td>2.120 / 1.324</td><td>1 % / 8 %</td><td>2.121 / 1.372</td><td>0.1 to 0.2</td></tr></table>
+<p>(s68 in degrees; errors 0.005 to 0.02° on A, B, C, D and 0.04 to 0.08° on E.)</p>
+<ul>
+<li>Every chamber gains except the X view of chamber E.</li>
+<li>On A, B and C the learning-curve asymptote is within 0.01 to 0.05° of the table, so more data would not help. D and E are too small to be at the limit.</li>
+<li>The reference-free prediction recovers 40 to 70 % of the gain of the spline map. Its amplitude b is 0.37 to 0.47 on B, D and the golden mounting of A, which agrees with the weight of section 1.2. It is 0.2 on C and on the 6-25 mounting of A, so it must be calibrated for each mounting.</li>
+<li>Applying the reference-free prediction first and a spline map to the remainder gives nothing more for mountings with more than 5,000 events.</li>
+<li><b>Chamber C is not one mounting in this sense.</b> The drift velocity falls from 25.0 to 16.8 µm/ns over the three rows, and the gain with one row left out is only 12 %. Chamber C needs one map per row.</li>
+<li>Chamber D's X view should be quoted on x ≥ 200 mm, because of its faulty half.</li>
+<li>Saturated events have a drift-time quantile lower by 0.02 to 0.06 in ln. This is an offset and not a map (the gap field from unsaturated events agrees with r ≥ 0.97 where the sample is large).</li>
+</ul>
+<figure><img src="figures/r3_gap_B.png" alt=""><figcaption>Gap map of chamber B from the drift time, for comparison with chamber A.</figcaption></figure>
+<h2>4. n_TOF</h2>
+<ul>
+<li><b>The quadratic bow block.</b> At n_TOF the block over-corrects chamber A. About three quarters of its Y gradient is undone by the in-situ map, and the X gradient changes sign. For chamber C the block is right in y and slightly too small in x. This is what we expect if the dish of chamber A is mostly the sag of a horizontal board.</li>
+<li><b>The bench fine map of chamber A</b> lowers the held-out residual of the A–C cosmic lines by 10.8 % on x and 7.3 % on y as it is (in-situ map: 14.6 % and 12.0 %). The agreement is driven by the tilts near the chamber edges, which are 2 to 3 times larger at n_TOF. The bench map of chamber C gives nothing.</li>
+<li><b>The drift-time maps at n_TOF</b> are stable between run parities (r = 0.92 to 0.998), between the early and the late campaign, and between the X and Y quantiles. Their noise is 0.04 to 0.10 mm. The rms of the gap is 0.5 to 0.7 mm on A, 0.8 to 0.9 mm on B, 1.3 to 1.4 mm on C and 1.6 to 1.7 mm on D.</li>
+</ul>
+<figure><img src="figures/r2_fig1_gapmaps.png" alt=""><figcaption>Gap maps of the four chambers at n_TOF from the drift time (mm, for β = 0.68). Top: late beam tracks. Bottom: beam-off tracks. The color scale saturates at ±1.2 mm.</figcaption></figure>
+<table><tr><th>view</th><th>in-situ map</th><th>bench map</th><th>drift time, nominal</th><th>drift time, no dish, plus bench fine map</th></tr><tr><td>A x</td><td>14.8 %</td><td>10.8 %</td><td>7.5 %</td><td>17.6 %</td></tr><tr><td>A y</td><td>11.4 %</td><td>7.3 %</td><td>2.4 %</td><td>1.9 % (8.5 % with fitted amplitudes)</td></tr><tr><td>C x</td><td>16.0 %</td><td>none</td><td>2.2 %</td><td></td></tr><tr><td>C y</td><td>15.4 %</td><td>none</td><td>2.8 %</td><td></td></tr><tr><td>D z view</td><td>(no map exists)</td><td></td><td>12 to 13 %</td><td></td></tr></table>
+<p>(Held-out reduction of the single-view residual of the cosmic lines; errors about 2 points. The in-situ and bench-map columns come from two test runs with slightly different baselines.)</p>
+<ul>
+<li>For chamber D the fitted amplitude is b = 0.44 to 0.50, as expected, and the B–D line residual falls from 35.9 ± 1.2 to 31.4 ± 1.3 (×10⁻³ in tan). Chamber D has no angle correction today.</li>
+<li>For chamber A the gap fields from muons and from late beam tracks disagree in y (r = 0.04). We did not find the cause. The answer for A y therefore depends on which field is used.</li>
+<li>β at n_TOF is not known (no Magboltz grid for the n_TOF gas in the repo), so the amplitudes are empirical.</li>
+</ul>
+<h2>Recommendations</h2>
+<h3>Analysis</h3>
+<ol>
+<li><b>Do not ship the golden cell map as a chamber property.</b> It is a property of the 6-27/28 mounting.</li>
+<li><b>For a bench re-finalization, ship one spline map per mounting</b> (potential Φ and scale maps, K = 16), made by cross-validation inside the mounting. This is a table-level step. The fit does not use the drift velocity, so no waveform re-pass is needed. The prototype for chamber A is <code>results/a2_final_map_det3.json</code> with its evaluator in <code>a2_final.py</code>.</li>
+<li><b>Keep the bow block for the mesh term</b> and add the gap term from the drift time where no reference exists: τ = ∇h + a ∇g. The amplitude a is about 0.4 on three mountings and about 0.2 on two others, so it should be calibrated wherever some reference exists. Chamber E's X view does not gain and can be left out.</li>
+<li><b>n_TOF, three candidates for the Phase 4 roadmap</b>, none applied:</li>
+<ul>
+<li>a drift-time correction for chamber D (first correction for D);</li>
+<li>for chamber A, the bench fine map with no dish, compared with the in-situ map on the capsule pointing;</li>
+<li>the gap map per chamber as an input to the v(t) angle scale, since the gap varies by 0.5 to 1.7 mm rms.</li>
+</ul>
+</ol>
+<h3>Paper I</h3>
+<ol>
+<li><b>Rewrite <code>app:gapmap</code> around the results that do not depend on a quadratic model</b>: the gradient-field test, the shape of the drift lines (the fan figure), the gap maps of the three mountings, the relation τ = ∇h + a ∇g, and the tracking table.</li>
+<li><b>Remove or correct</b>: β = 1.0 ± 0.2; "the cathode is flat along y and follows the board along x"; the errors of <code>tab:surfaces</code>; "the board is not a pure paraboloid" as the explanation of r_f = 1.2 (the −x edge and the cathode contribute).</li>
+<li><b>§5.1 stays.</b> The chamber-wide gap is unchanged. "The gap runs from 27 to 29 mm" should be stated for the golden mounting. The statement that the variation is the gap and not the gas becomes stronger (β = 0.69 from the fine structure).</li>
+<li><b><code>app:bow</code></b>: the transfer statement should say that the mesh dish is static and the cathode is not, and that the block over-corrects chamber A at n_TOF.</li>
+<li>The Overleaf push of the last table fix is still pending (add/add conflict, see HANDOFF). The appendix on Overleaf carries the statements of item 2.</li>
+</ol>
+<h2>What the audit does not rule out</h2>
+<ul>
+<li>A common telescope component of the bench maps has no direct telescope-free test (section 3.3).</li>
+<li>About 0.2° of reproducible, curl-free fine tilt is not explained by the gap gradient. A fine relief of the board is a candidate. The position route is too noisy at fine scale to test it.</li>
+<li>The smooth velocity map of the X view varies more than a gap change predicts.</li>
+<li>The geometric gap shows about 1/0.7 of the timing amplitude along y. This is not resolved.</li>
+<li>The flattening of the gap map below 700 V is not understood.</li>
+<li>What moves the cathode foil between mountings is not identified.</li>
+<li>At n_TOF the gap field of chamber A differs between muons and late beam tracks in y.</li>
+<li>The other chambers have fewer events and no second mounting, so the statement that the cathode changes with the mounting rests on chamber A.</li>
+</ul>
+<h2>Files</h2>
+<ul>
+<li>Reports of the tests: <code>results/&lt;tag&gt;_RESULT.md</code> for a1, a2, b, c, d, e, f, g, r1, r2, r3, r4. The common brief the tests received is <code>results/COMMON_brief.md</code>.</li>
+<li>Scripts: <code>&lt;tag&gt;_*.py</code> in this directory. They read the work directory given in the brief (<code>$WORK_DATA/claude-jobs/e1a7a26e/gap</code>), which is staged from EOS as <code>README.md</code> of <code>rerun/paper1_gap</code> describes, plus <code>pass1_all/</code> (the 14 gate tables) and <code>audit/r4/eos/</code> (event tables of the det3 scans).</li>
+<li>Figures: <code>figures/</code> (PNG, git-ignored; a copy is on EOS under <code>x17rerun/paper1_gap/audit/</code>).</li>
+<li>Spline map of chamber A, golden mounting: <code>results/a2_final_map_det3.json</code>.</li>
+</ul>
+</body></html>

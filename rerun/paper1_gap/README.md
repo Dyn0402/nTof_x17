@@ -4,6 +4,22 @@ Report: [`report.html`](report.html) (built by `make_report.py`; PNGs are git-ig
 `/eos/experiment/ntof/data/x17/cosmic_bench/x17rerun/paper1_gap/report/`). Paper candidate figure: `figures/gap_profiles.pdf`.
 Numbers: `results/compare.json`.
 
+## Audit, 2026-11-24 (read this before using any number below)
+
+An independent audit of this analysis is in [`audit/AUDIT_2026-11-24.md`](audit/AUDIT_2026-11-24.md) (`audit/report.html`).
+It reran the chain (byte-identical) and ran twelve new tests. What changes:
+
+- **The two-surface picture is confirmed** by four tests this analysis did not use: the tilt field is curl-free, the
+  drift lines have the predicted shape, the fine gap structure sits on the cathode, and the tilt is predicted from the
+  drift-time map (`q_u90`) plus the mesh shape, with no reference track.
+- **The cathode is a foil that changes shape with every mounting.** The mesh dish is static. The gap map of the golden
+  mounting (dome along y, tilt along x, a diagonal ridge of about 1.5 mm) is not the gap map of the 6-25 or the 6-22
+  mounting. So the 42 mm cell map below is a property of the 6-27/28 mounting, not of chamber A.
+- **Errors of the joint fit are 2 to 3 times too small**, and the statements "cathode flat along y, follows the board
+  along x" and "beta = 1.0 +- 0.2" do not hold (beta = 0.69 from the fine structure).
+- **A spline map per mounting gives 0.69 / 0.60 deg (X / Y) on the golden mounting** (pass 1: 0.92 / 0.81) and 17 to
+  35 % on chambers A, B, C and D. Prototype: `audit/results/a2_final_map_det3.json`, `audit/a2_final.py`.
+
 ## Verdict
 
 - **The gap of chamber A is not uniform.** Three independent measurements show the same pattern, in both golden runs:
