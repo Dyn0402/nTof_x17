@@ -24,6 +24,8 @@ from typing import Dict, Optional
 
 import numpy as np
 
+from . import bow_phi as _bow_phi
+
 # hyper names in the order the calibration optimiser uses them
 HYPER_NAMES = ('c1', 'c2', 'kY', 'tau_s', 'sigma_s', 'sigma_p0', 'Dp')
 
@@ -203,6 +205,9 @@ class CalibrationBundle:
     # Tan form (2026-10-29): a block with a_p (cu, cw, auu, aww, auw in tan, = A_p / (kw v) of its source row) gives
     #     tan_p = (w*1e3 - w0[p]) / (kw[p] * v * S) - a_p(U, W)
     # which transfers across drift fields; it takes precedence over A_p (rerun/calib/bow/BOW_TRANSFER.md).
+    # Per-mounting spline map (2026-11-24, wft/bow_phi.py): bow['phi'] = {version, K, KS, knots, phi, cx, cy, sx, sy, ...}
+    # in tan units REPLACES the tilt (a_p / A_p) and the scale (s_p, v_map) of this block; h, h_x, h_y stay.  Checked at
+    # load and save (bow_phi.validate); lists only, so it round-trips through bundle.json unchanged.
     bow: Dict[str, object] = field(default_factory=dict)
 
     # --- per-event angle error floor (model audit F3, ws_floor 2026-10-27): the measured core angular resolution of
@@ -255,6 +260,8 @@ class CalibrationBundle:
         self.provenance = prov
         check_kernel_ordering(self.hyper, where=path)
         check_xy_pairing(self.xy_pairing, where=path)
+        if (self.bow or {}).get('phi'):
+            _bow_phi.validate(self.bow['phi'], where=path)
         meta = dict(hyper={k: _hyper_value(v) for k, v in self.hyper.items()},
                     v_drift=float(self.v_drift),
                     dt_xy={str(k): float(v) for k, v in self.dt_xy.items()},
@@ -287,6 +294,8 @@ class CalibrationBundle:
         z = np.load(os.path.join(path, 'arrays.npz'))
         check_kernel_ordering(m['hyper'], where=path)
         check_xy_pairing(m.get('xy_pairing') or {}, where=path)
+        if (m.get('bow') or {}).get('phi'):
+            _bow_phi.validate(m['bow']['phi'], where=path)
         return cls(hyper=m['hyper'], v_drift=m['v_drift'],
                    grid=z['grid'], tmpl={'x': z['tmpl_x'], 'y': z['tmpl_y']},
                    gain={'x': z['gain_x'], 'y': z['gain_y']},

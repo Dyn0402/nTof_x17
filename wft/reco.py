@@ -23,6 +23,7 @@ import numpy as np
 from .calib import (CalibrationBundle, check_xy_pairing, XY_SELECT_MODES as PAIR_SELECT_MODES,
                     XY_SPLIT_CORROB_MODES as SPLIT_CORROB_MODES)
 from . import model as wm
+from . import bow_phi as _bow_phi
 
 # ---------------------------------------------------------------- quality
 TAN_MIN_SLOPE = 0.08       # below this the timing carries no slope information
@@ -421,15 +422,24 @@ def tan_const(cal: CalibrationBundle, plane: str, w: float) -> float:
     return float((w * 1e3 - cal.w0.get(plane, 0.0)) / (cal.kw.get(plane, 1.0) * cal.v_drift))
 
 
-def tan_bow(cal: CalibrationBundle, plane: str, w: float, U: float, W: float) -> float:
+def tan_bow(cal: CalibrationBundle, plane: str, w: float, U: float, W: float, use_phi: bool = True) -> float:
     """tan = (w - w0 - A_bow(U, W)) / (kw v S): S = FA's v_rel(x, y) at (100 U + 200, 100 W + 200) when the bundle has a
     v_map, else FB's linear scale 1 + su U + sw W (never both: the v map IS the scale variation, FA spec).
 
     A block with ``a_<plane>`` (the tilt as a geometric tan offset, a = A / (kw v) of the row it was measured on) uses
     tan = (w - w0) / (kw v S) - a(U, W) instead.  The tilt is v r_f dh/du, so in tan it does not change with the drift
     field: a det3 shape measured at 1000 V transfers to its 500 V row in this form, not in um/ns
-    (rerun/calib/bow/BOW_TRANSFER.md, 2026-10-29).  Blocks without it are unchanged."""
+    (rerun/calib/bow/BOW_TRANSFER.md, 2026-10-29).  Blocks without it are unchanged.
+
+    A block with ``phi`` (wft/bow_phi.py, the per-mounting spline map) uses
+    tan = (w - w0) / (kw v (1 + S_p(U, W))) - A_p(U, W) with (U, W) clamped to the map's domain, replacing the tilt and
+    the scale above (also the v_map scale).  With ``use_phi=False``, or a non-finite U or W, the block's other terms
+    are applied as if it had no ``phi``."""
     b = getattr(cal, 'bow', None) or {}
+    if b.get('phi') and use_phi and np.isfinite(U) and np.isfinite(W):
+        ax, ay, sx, sy = _bow_phi.evaluate(b['phi'], U, W)
+        A, S = (float(ax[0]), float(sx[0])) if plane == 'x' else (float(ay[0]), float(sy[0]))
+        return float((w * 1e3 - cal.w0.get(plane, 0.0)) / (cal.kw.get(plane, 1.0) * cal.v_drift * (1.0 + S)) - A)
     A, s = b.get(f'A_{plane}') or {}, b.get(f's_{plane}') or {}
     if (getattr(cal, 'v_map', None) or {}).get('xy'):
         S = v_rel_xy(cal, 100.0 * U + 200.0, 100.0 * W + 200.0)
@@ -445,12 +455,18 @@ def tan_bow(cal: CalibrationBundle, plane: str, w: float, U: float, W: float) ->
 BOW_UW_MAX = 2.2
 
 
+def _bow_UW_raw(cal: CalibrationBundle, fx=None, fy=None) -> tuple:
+    """(U, W) as ``bow_UW`` computes them, before the guard (NaN and off-plate values are kept)."""
+    U = ((fx.p0 + BOW_MID_MM * tan_const(cal, 'x', fx.w)) - 200.0) / 100.0 if fx is not None else 0.0
+    W = ((fy.p0 + BOW_MID_MM * tan_const(cal, 'y', fy.w)) - 200.0) / 100.0 if fy is not None else 0.0
+    return U, W
+
+
 def bow_UW(cal: CalibrationBundle, fx=None, fy=None) -> tuple:
     """(U, W) of a track from its views' mesh positions and constant-mapping tangents; a missing view gives 0, and so
     does a view whose point is off the plate (|U|, |W| > BOW_UW_MAX: an absurd fit of that view would otherwise set the
     other view's bow tangent and mesh height, pass-1 review 2026-10-30: <= 0.2 % of events)."""
-    U = ((fx.p0 + BOW_MID_MM * tan_const(cal, 'x', fx.w)) - 200.0) / 100.0 if fx is not None else 0.0
-    W = ((fy.p0 + BOW_MID_MM * tan_const(cal, 'y', fy.w)) - 200.0) / 100.0 if fy is not None else 0.0
+    U, W = _bow_UW_raw(cal, fx, fy)
     ok = lambda c: bool(np.isfinite(c) and abs(c) <= BOW_UW_MAX)
     return (U if ok(U) else 0.0), (W if ok(W) else 0.0)
 
@@ -467,10 +483,13 @@ def apply_bow(cal: CalibrationBundle, fx=None, fy=None, skip=()) -> None:
     if not (getattr(cal, 'bow', None) or (getattr(cal, 'v_map', None) or {}).get('xy')):
         return
     U, W = bow_UW(cal, fx, fy)
+    use_phi = True
+    if (getattr(cal, 'bow', None) or {}).get('phi'):    # a non-finite position: the plain bow block for this event
+        use_phi = all(bool(np.isfinite(c)) for c in _bow_UW_raw(cal, fx, fy))
     for p, f in (('x', fx), ('y', fy)):
         if f is None or any(f is g for g in skip):
             continue
-        t = tan_bow(cal, p, f.w, U, W)
+        t = tan_bow(cal, p, f.w, U, W, use_phi=use_phi)
         f.tan_theta, f.theta_deg = float(t), float(np.degrees(np.arctan(t)))
         f.slope_reliable = bool(abs(t) >= TAN_MIN_SLOPE)
         f._bow_h = float(bow_h(cal, U, W, p))
@@ -481,7 +500,10 @@ def bow_pairs(cal: CalibrationBundle, wx, p0x, wy, p0y) -> dict:
 
     Returns ``tan_x, tan_y`` (the bow tangents), ``a_x, a_y`` (the v-independent tilt term of a block with ``a_<p>``,
     tan = (w - w0) / (kw v S) - a; 0 otherwise) and ``h_x, h_y`` (each view's mesh height).  Equal to the scalar path
-    to rounding (wft/tests/test_bow_partner.py).  Pass 1 used it to undo the winner re-mapping (audit finding 21)."""
+    to rounding (wft/tests/test_bow_partner.py).  Pass 1 used it to undo the winner re-mapping (audit finding 21).
+
+    With a ``phi`` block (wft/bow_phi.py) ``a_x, a_y`` are its tilt A_p and tan = (w - w0)/(kw v (1 + S_p)) - A_p, at the
+    guarded (U, W) clamped to the map's domain; a pair whose position is NaN keeps the plain block's value."""
     wx, p0x, wy, p0y = (np.asarray(v, float) for v in (wx, p0x, wy, p0y))
     b = getattr(cal, 'bow', None) or {}
     if (getattr(cal, 'v_map', None) or {}).get('xy'):
@@ -490,9 +512,13 @@ def bow_pairs(cal: CalibrationBundle, wx, p0x, wy, p0y) -> dict:
     tc = {p: (w * 1e3 - cal.w0.get(p, 0.0)) / kv[p] for p, w in (('x', wx), ('y', wy))}
     U = ((p0x + BOW_MID_MM * tc['x']) - 200.0) / 100.0
     W = ((p0y + BOW_MID_MM * tc['y']) - 200.0) / 100.0
+    phi = b.get('phi')
+    phi_ok = np.isfinite(U) & np.isfinite(W)    # with a ``phi`` block, other pairs use the plain bow block
     with np.errstate(invalid='ignore'):
         U = np.where(np.isfinite(U) & (np.abs(U) <= BOW_UW_MAX), U, 0.0)
         W = np.where(np.isfinite(W) & (np.abs(W) <= BOW_UW_MAX), W, 0.0)
+    if phi:
+        phi_out = _bow_phi.evaluate(phi, U, W)
     out = {}
     for p, w in (('x', wx), ('y', wy)):
         A, sb = b.get(f'A_{p}') or {}, b.get(f's_{p}') or {}
@@ -504,6 +530,10 @@ def bow_pairs(cal: CalibrationBundle, wx, p0x, wy, p0y) -> dict:
         else:
             av = np.zeros_like(U)
             out[f'tan_{p}'] = (w * 1e3 - cal.w0.get(p, 0.0) - _bow_poly(A, U, W)) / (kv[p] * S)
+        if phi:
+            Ap, Sp = (phi_out[0], phi_out[2]) if p == 'x' else (phi_out[1], phi_out[3])
+            out[f'tan_{p}'] = np.where(phi_ok, (w * 1e3 - cal.w0.get(p, 0.0)) / (kv[p] * (1.0 + Sp)) - Ap, out[f'tan_{p}'])
+            av = np.where(phi_ok, Ap, av)
         out[f'a_{p}'] = av
         h = b.get(f'h_{p}') or b.get('h')
         out[f'h_{p}'] = (_bow_poly(h, U, W, ('gu', 'gw'), ('kuu', 'kww', 'kuw')) * np.ones_like(U)) if h else np.zeros_like(U)
@@ -524,8 +554,9 @@ def tan_of(cal: CalibrationBundle, plane: str, w: float, p0: float) -> float:
     tan = (w * 1e3 - cal.w0.get(plane, 0.0)) / kv
     if getattr(cal, 'bow', None) or (getattr(cal, 'v_map', None) or {}).get('xy'):
         # one view alone: its own coordinate, the other 0 (apply_bow redoes it with both views once paired)
-        c = (p0 + BOW_MID_MM * tan - 200.0) / 100.0 if np.isfinite(p0) and np.isfinite(tan) else 0.0
-        return tan_bow(cal, plane, w, c if plane == 'x' else 0.0, c if plane == 'y' else 0.0)
+        ok = bool(np.isfinite(p0) and np.isfinite(tan))
+        c = (p0 + BOW_MID_MM * tan - 200.0) / 100.0 if ok else 0.0
+        return tan_bow(cal, plane, w, c if plane == 'x' else 0.0, c if plane == 'y' else 0.0, use_phi=ok)
     m = (getattr(cal, 'angle_map', None) or {}).get(plane)
     if m and np.isfinite(tan) and np.isfinite(p0):
         p = p0 + ANGLE_MAP_MID_MM * tan
