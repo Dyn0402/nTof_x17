@@ -11,6 +11,7 @@ Run 2 = `p2_det3` (registry key `c26__mx17_det3_p2_det1_overnight_6-27-26`, subr
 
 - **Paper:** `03_setups.tex:49` "The one difference is the drift velocity, 35.8 against 37.2 um/ns, as the gas dried through the night".
   `06_gas.tex:11` "timing velocity 17.7--37.2 um/ns at 177--390 V/cm" (37.2 there is the top of the scan, 1100 V on the cathode).
+  2026-11-24: the 177 V/cm (500 V) timing velocity is an upper limit (drift column longer than the recorded waveform); the text now quotes 25.2--37.2 um/ns at 248--390 V/cm, the water fit and the v x T gap (28.3 +- 0.5 mm, chi2 2.8/2) leave it out (`rerun/paper1_gap/audit/results/q_RESULT.md`, fourth round).
 - **Source:** the two numbers are two different estimators, and 37.2 for Run 2 has nothing to do with the 37.2 of the scan.
   - 35.8 = Run 1's *timing* velocity (head-on stack, gap/T): `rerun/calib/physics_inputs.json` key `det3.v_timing_um_ns` = 35.8;
     `rerun/paper1_res/results/rows.csv` (`sat_det3`) `v_drift` = 35.8.

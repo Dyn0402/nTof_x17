@@ -32,6 +32,7 @@ RES = os.path.join(HERE, 'results', 'twov.json')
 OUT = os.path.join(HERE, 'figures')
 RUN = 'mx17_det3_saturday_scan_6-27-26'
 STACK_V = (500, 700, 900, 1100)                 # the fields with a timing fit (300 V: the column overruns the window)
+LIMIT_V = (500,)                                # the column also runs past the recorded stack here: T is a lower limit
 LADDER_SUBS = ['drift_scan_resist_490V_drift_%dV' % v for v in (100, 300, 500, 700, 900, 1100)] + \
               ['hv_scan2_resist_490V_drift_1000V']
 TBIN = np.arange(-0.60, 0.6001, 0.05)
@@ -201,7 +202,14 @@ def fig():
     ax.legend(ps.view_handles(color=ps.MUTED), ['X', 'Y'], loc='lower right')
 
     ax = axs[2]
-    G = D['gap_mean']
+    # 2026-11-24 (gap audit, q_RESULT.md fourth round): at 500 V the column (1800 ns from v_ang) runs past the end of the
+    # recorded stack (1590 ns), so T there is a lower limit. It is drawn open with an arrow and left out of the mean.
+    use = [v for v in map(str, STACK_V) if int(v) not in LIMIT_V]
+    gu = np.array([D['fields'][v]['gap'] for v in use]); gue = np.array([D['fields'][v]['gap_err'] for v in use])
+    wt = 1 / gue ** 2
+    G = dict(gap=float((gu * wt).sum() / wt.sum()), err=float(1 / np.sqrt(wt.sum())))
+    G['chi2'] = float(((gu - G['gap']) ** 2 * wt).sum()); G['ndf'] = len(gu) - 1
+    print(f"gap from v_ladder x T without {LIMIT_V} V: {G['gap']:.2f} +- {G['err']:.2f} mm, chi2 {G['chi2']:.1f}/{G['ndf']}")
     E = [D['fields'][v]['E'] for v in map(str, STACK_V)]
     g = [D['fields'][v]['gap'] for v in map(str, STACK_V)]
     ge = [D['fields'][v]['gap_err'] for v in map(str, STACK_V)]
@@ -209,10 +217,14 @@ def fig():
     ax.axhline(G['gap'], color=ps.INK, lw=1.0, zorder=2)
     hh = ax.axhspan(GAP_REF - GAP_REF_ERR, GAP_REF + GAP_REF_ERR, fc='none', hatch='////', ec=ps.ACCENT, lw=0, zorder=2)
     for x, y, e, Vd in zip(E, g, ge, map(str, STACK_V)):
-        ax.errorbar(x, y, yerr=e, fmt='o', ms=4, color=shade[Vd], zorder=5)
+        if int(Vd) in LIMIT_V:          # lower limit: open marker, arrow up
+            ax.plot(x, y, 'o', ms=4, color=shade[Vd], mfc='white', zorder=5)
+            ax.annotate('', xy=(x, y + 2.5), xytext=(x, y), arrowprops=dict(arrowstyle='->', color=shade[Vd], lw=0.8))
+        else:
+            ax.errorbar(x, y, yerr=e, fmt='o', ms=4, color=shade[Vd], zorder=5)
         rows.append(dict(panel='c', drift_V=int(Vd), E=x, gap_mm=y, err=e, v_ang=D['fields'][Vd]['v_ang'],
                          v_timing=D['fields'][Vd]['v_timing'], T_ns=D['fields'][Vd]['T']))
-    ax.legend([hb, hh], ['mean of the four', r'geometric gap $L/\tan\theta$'], loc='upper left', handlelength=1.4)
+    ax.legend([hb, hh], ['mean of the three', r'geometric gap $L/\tan\theta$'], loc='upper left', handlelength=1.4)
     ax.set_xlim(150, 420); ax.set_ylim(21.5, 34)
     ax.set_xlabel(r'drift field $E$ (V/cm)'); ax.set_ylabel(r'gap $g = v_\mathrm{d}\,T$ (mm)')
     hs = [Line2D([], [], color=shade[Vd], marker='o', ms=3.5,
