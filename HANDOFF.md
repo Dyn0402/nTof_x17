@@ -2,7 +2,14 @@
 
 ## Chamber A gap, surfaces and angle map: audited; bench re-finalization with per-mounting maps to do — updated 2026-11-24 (dylan-MS-7C84)
 
-**Resume:** build per-mounting spline angle maps for the bench (table-level re-finalization), then requote Paper I §6; start from `rerun/paper1_gap/audit/AUDIT_2026-11-24.md`.
+**Resume:** audit questions done (all but #20); next: bench re-finalization with per-mounting maps + censored-track rule, then Paper I §6.
+
+**Afternoon 11-24 (follow-up session, dylan-MS-7C84):**
+- All outstanding audit items but #20 (n_TOF) answered or narrowed: `rerun/paper1_gap/audit/results/q_RESULT.md` (three rounds), answers marked under each item in `AUDIT_2026-11-24.md` (`report.html` rebuilt). Open: #7 (flattening below 700 V) and half of #12 (a gain that follows the gap).
+- Internal gap table of every bench chamber: `rerun/paper1_gap/audit/gaps_all/report.html` (A 28.2, C 28.7, D 29.7, E 29.5, B 31.1 mm; v_ang x T agrees with the geometric gaps).
+- Paper I v2 (pushed to Overleaf `paper1_v2`): 22 June removed entirely, fig `gap_mountings` two panels, "third" -> "second mounting", drift windows may have been swapped between chambers (Dylan), b on 25 June explained, Limits mention chamber E. v1 (`paper1`, Stephan's) not pushed.
+- `papers/overleaf.sh`: push now records the pushed commit as merged (join), `adopt` for the one-off repair; the recurring add/add conflict is fixed (`papers/README.md`).
+- Decisions waiting for Dylan: which of item 1 (fine mesh relief), item 12 (charge follows the gap), item 5 (gap flat along x, edge rise below 80 mm) go into the appendix; whether to push to the v1 project.
 
 **Goal:** Dylan asked for an audit of the 11-23 gap / two-surface / angle-map result before rerunning the analysis and rewriting the paper. The audit is done. Dylan decided (11-24): (1) ship per-mounting spline maps in a bench re-finalization, done by another session from this handoff; (2) rewrite `app:gapmap` and fix the end of §5.1 (done); (3) pass the n_TOF findings to the n_TOF re-audit session (done).
 
