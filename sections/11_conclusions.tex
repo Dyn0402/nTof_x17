@@ -11,7 +11,7 @@ section 5.6 in three sentences (the long version is in \cref{app:moved}).}
   \centering\small
   \caption{The five chambers on the cosmic bench (chamber~E's position resolution is from the beam). Efficiencies are
   kept-track efficiencies in the interior (\cref{sec:effdef}); chamber~A's single-track efficiency over the full active
-  area is 94.8\,\%. C, D and E were calibrated on the runs they are quoted on. Dashes: not measured. The scan row is a single short
+  area is 94.8\,\%. The angular resolutions are those of the maps of the drift direction, cross-validated in blocks of time (\cref{sec:angle}). Chamber~E has no map, and the tracks of D and E that reach the end of the depth grid are left out. Dashes: not measured. The scan row is a single short
   scan point per chamber (150--770 rays), an indication only for C and D (\cref{sec:hvscan}).}
   \label{tab:summary}
   \setlength{\tabcolsep}{4.5pt}
@@ -23,7 +23,7 @@ section 5.6 in three sentences (the long version is in \cref{app:moved}).}
     efficiency at the long-run voltage [\%] & 92.3 & 90.3 & 74.4 & 68.0 & 40.9 \\
     highest point of the voltage scan [\%] & $93.8\pm0.9$ & $92.2\pm1.0$ & $85.8\pm1.9$ & $89.8\pm2.5$ & -- \\
     its voltage ($\pm5$) [V] & 470 & 480 & 480 & 430 & -- \\
-    angular resolution X / Y [\textdegree] & 0.99 / 0.90 & 1.05 / 1.13 & 1.26 / 1.51 & 1.23 / 1.46 & 2.41 / 2.08 \\
+    angular resolution X / Y [\textdegree] & 0.76 / 0.69 & 0.80 / 0.90 & 1.08 / 1.35 & 1.03 / 1.15 & 2.33 / 2.02 \\
     position resolution X / Y [\textmu m] & 128 / 113 & 163 / 176 & -- & -- & 138 / 120 \\
     event time; uncorrelated part [ns] & 41; 22 & 42; 28 & 78; 53 & 46; 26 & -- \\
     X fraction of the charge & 0.485 & 0.513 & 0.504 & 0.485 & 0.509 \\
@@ -35,9 +35,9 @@ section 5.6 in three sentences (the long version is in \cref{app:moved}).}
 \end{table}
 
 \paragraph{What a chamber delivers.} A single compact resistive Micromegas TPC with a 28\,mm drift gap measures the
-direction of a track with a resolution of 1.0\textdegree{} and 0.9\textdegree{} in its two views. This resolution is
-independent of the track angle, the gain and the drift field, and it is measured on tracks that were not used in the
-calibration. It meets the first requirement of \cref{sec:requirement}, an angular resolution of about one degree. It is
+direction of a track with a resolution of 0.8\textdegree{} and 0.7\textdegree{} in its two views. This resolution
+depends little on the track angle, the gain and the drift field, and it is measured on tracks that were held out of the
+fit of the map of the drift direction. It meets the first requirement of \cref{sec:requirement}, an angular resolution of about one degree. It is
 also smaller than the multiple scattering that leptons of 3 to 16\,MeV undergo in the air and in the entrance foils
 before they are measured. The chamber needs no external calibration of its drift velocity. Two velocity measurements
 and a geometric measurement of the gap, all taken from the data, agree to 2\,\%, and the measured velocity also serves
@@ -65,8 +65,8 @@ measure no dead time after a discharge. Its cost is in the reconstruction, which
 charge (\cref{sec:reco}). \emph{Resistive strips} draw a dark current of about 1\,\textmu A at the working point. No
 board with a uniform resistive layer was on the bench for comparison. \emph{The orientation of the strips} placed the
 10\,\% of the area lost to passivation where it was wanted. However, the better resolution that was expected across the
-strips is not observed. Chamber~A measures the angle better along the strips (0.99\textdegree{} across,
-0.90\textdegree{} along), chamber~B measures it better across them, and the position residuals of the two views agree
+strips is not observed. Chamber~A measures the angle better along the strips (0.76\textdegree{} across,
+0.69\textdegree{} along), chamber~B measures it better across them, and the position residuals of the two views agree
 to 12\,\textmu m. The two sides left without passivation have a fringe field that extends over 20 to 30\,mm. This
 costs a fiducial margin for the angle measurement and 0.9 points of efficiency.
 

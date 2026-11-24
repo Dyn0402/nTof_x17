@@ -34,6 +34,13 @@ REPO = os.path.abspath(os.path.join(HERE, '..', '..', '..'))
 sys.path.insert(0, os.path.join(REPO, 'papers'))
 sys.path.insert(0, os.path.join(REPO, 'rerun', 'paper1_timing'))
 import paper_style as ps  # noqa: E402
+sys.path.insert(0, os.path.join(REPO, 'rerun', 'calib', 'phimap', 'map1'))
+import angles_cv as AC  # noqa: E402
+
+# 2026-11-24 (bench re-finalization step 5): panel (b) takes the angle of the per-mounting map of A 6-27/28 (five-time-block
+# cross-validated, interior only; pass 1 elsewhere) for the events of the same paper selection (03_angles interior_good,
+# per_event.npz of each row fetched from EOS), joined by event id. ANGRES_ANGLES=pass1 draws the earlier csv.
+MODE = os.environ.get('ANGRES_ANGLES', 'map1')
 from matched_rows import widths, s68  # noqa: E402
 
 RUN = 'mx17_det3_saturday_scan_6-27-26'
@@ -58,6 +65,30 @@ def wfit(V, y, e):
 def doubling(f):
     return dict(doubling_V=float(np.log(2) / f['b']), doubling_err=float(np.log(2) / f['b'] ** 2 * f['b_err']),
                 chi2=f['chi2'], dof=f['dof'])
+
+
+def map1_angles(H):
+    """Replace s68, its error, n and the angle scale of every row of hv_metrics.csv by the map1 values on the npz selection;
+    the csv values stay as *_csv, and the pass-1 restatement of the same sample as *_p1 (closure of the selection)."""
+    if MODE != 'map1':
+        return H
+    H = H.copy()
+    new = {}
+    for r in H.itertuples():
+        for var in ('cv', 'p1'):
+            new[(r.key, var)] = AC.restat(r.key, variant=var, exclude_railed=True)
+    for v in 'xy':
+        for c in (f's68_{v}', f's68_{v}_err', f'n_{v}', f'scale_{v}', f'scale_{v}_err'):
+            H[c + '_csv'] = H[c]
+        H[f's68_{v}_p1'] = [new[(k, 'p1')][v]['s68'] for k in H.key]
+        H[f'scale_{v}_p1'] = [new[(k, 'p1')][v]['scale'] for k in H.key]
+        H[f'frac_map_used_{v}'] = [new[(k, 'cv')][v]['frac_used'] for k in H.key]
+        H[f's68_{v}'] = [new[(k, 'cv')][v]['s68'] for k in H.key]
+        H[f's68_{v}_err'] = [new[(k, 'cv')][v]['s68_err'] for k in H.key]
+        H[f'n_{v}'] = [new[(k, 'cv')][v]['n'] for k in H.key]
+        H[f'scale_{v}'] = [new[(k, 'cv')][v]['scale'] for k in H.key]
+        H[f'scale_{v}_err'] = [new[(k, 'cv')][v]['scale_err'] for k in H.key]
+    return H
 
 
 # ---------------------------------------------------------------- (ii) gain
@@ -215,6 +246,7 @@ def main():
     I = current_vs_gain(sc)
     Tj, tim = timing(a.timing_rows, a.events)
     H = pd.read_csv(os.path.join(REPO, 'rerun', 'paper1_ops', 'figures', 'hv_metrics.csv')).sort_values('resist_V')
+    H = map1_angles(H)
 
     ps.use()
     import matplotlib.ticker as mt
@@ -249,7 +281,7 @@ def main():
     ax = axs[1]
     for v in 'xy':
         ser(ax, H.resist_V, H[f's68_{v}'], H[f's68_{v}_err'], 'o', filled=(v == 'x'), ls=ps.VIEW_LS[v])
-    ax.set_ylim(0, 1.45); ax.set_ylabel(r'angle $s_{68}$ [deg]')
+    ax.set_ylim(0, 1.2 if MODE == 'map1' else 1.45); ax.set_ylabel(r'angle $s_{68}$ [deg]')
     t2 = ax.twinx(); t2.grid(False); t2.spines['right'].set_visible(True)
     for v in 'xy':
         t2.errorbar(H.resist_V, H[f'scale_{v}'], yerr=H[f'scale_{v}_err'], color=ps.MUTED, marker='^', ms=2.4,
@@ -299,6 +331,7 @@ def main():
         timing_quoted={int(V): dict(sigma_xy=float(r.sigma_xy), sigma_xy_err=float(r.sigma_xy_err),
                                     sigma_evt=float(r.sigma_evt), sigma_evt_err=float(r.sigma_evt_err))
                        for V, r in tim.iterrows()},
+        angles=MODE,
         flat_425_505=dict(s68_x=[float(flat.s68_x.min()), float(flat.s68_x.max())],
                           s68_y=[float(flat.s68_y.min()), float(flat.s68_y.max())],
                           pos_core_x=[float(flat.pos_core_x.min()), float(flat.pos_core_x.max())],
