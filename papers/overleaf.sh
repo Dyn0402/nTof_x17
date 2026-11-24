@@ -6,6 +6,7 @@
 #   papers/overleaf.sh push <paper>    send this repo's commits under papers/<paper>/ to Overleaf
 #   papers/overleaf.sh sync <paper>    pull, then push
 #   papers/overleaf.sh status <paper>  who is ahead, what Overleaf changed, any hold (read-only)
+#   papers/overleaf.sh adopt <paper>   one-off: record Overleaf's tip as merged when its text equals a repo version
 #   papers/overleaf.sh hold <paper> "why"   block every push (Stephan is editing); release lifts it
 #   papers/overleaf.sh release <paper>
 #
@@ -19,11 +20,13 @@
 #   - push fetches first, refuses if Overleaf has edits this repo has not merged (it lists them and the files they
 #     changed), refuses while a hold is set, and prints exactly which files it is about to change. There is no time
 #     guard any more (removed 2026-11-24: it measured the bridge's commit time, which a fetch resets, not the edit).
+#   - push records the pushed commit as merged (a join commit, no file change), so the next pull starts from it.
+#     Before 2026-11-24 it did not, and every pull after a push conflicted on the lines just pushed.
 #   - hold/release: a tracked flag file papers/.overleaf-hold-<paper>, so it holds on every machine.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 cmd=${1:-}; paper=${2:-}; flag=${3:-}
-[[ -n $cmd && -d papers/$paper ]] || { sed -n 2,11p "$0"; exit 1; }
+[[ -n $cmd && -d papers/$paper ]] || { sed -n 2,12p "$0"; exit 1; }
 remote=overleaf-$paper
 
 # The remote comes from papers/overleaf_remotes.txt (tracked), so a fresh clone or another machine needs no setup.
@@ -42,6 +45,22 @@ fi
 
 clean() {
   git diff --quiet && git diff --cached --quiet || { echo "commit or stash your changes first"; exit 1; }
+}
+
+# Record an Overleaf commit as merged into this repo's history, without changing any file: a commit with this repo's
+# tree, parents HEAD and <split>, and the git-subtree trailers. Without it, the next pull merges from an older base and
+# every line edited since then conflicts with itself (the "add/add bridge conflict" of 11-23 and 11-24). The branch is
+# moved with update-ref, so a dirty working tree (another session's edits) is not touched.
+join() {
+  local split=$1 head; head=$(git rev-parse HEAD)
+  git merge-base --is-ancestor "$split" "$head" && return 0
+  local j; j=$(git commit-tree "$head^{tree}" -p "$head" -p "$split" -m "Record Overleaf $paper at ${split:0:8} as merged (no file change)
+
+git-subtree-dir: $prefix
+git-subtree-mainline: $head
+git-subtree-split: $split")
+  git update-ref -m "overleaf.sh join $paper" "$(git symbolic-ref HEAD)" "$j" "$head"
+  echo "recorded Overleaf ${split:0:8} as merged (${j:0:8}); push origin main to share it"
 }
 
 case $cmd in
@@ -120,10 +139,24 @@ push)
   split=$(git subtree split -q --prefix="$prefix")
   echo "This push changes in Overleaf:"; git diff --stat "$remote"/main "$split" | sed 's/^/  /'
   git push -q "$remote" "$split":refs/heads/main
+  join "$split"
+  ;;
+adopt)
+  # One-off repair for a project pushed before push recorded its joins: if Overleaf's text is exactly a version this
+  # repo already committed under $prefix (so Overleaf holds no edit of its own), record Overleaf's tip as merged.
+  git fetch -q "$remote"
+  tip=$(git rev-parse "$remote"/main); want=$(git rev-parse "$tip^{tree}")
+  found=
+  for c in $(git rev-list -n 200 HEAD -- "$prefix"); do
+    [[ $(git rev-parse "$c:$prefix") == "$want" ]] && { found=$c; break; }
+  done
+  [[ -n $found ]] || { echo "REFUSED: Overleaf's text matches no recent repo version of $prefix: it has edits. Pull and resolve with Dylan."; exit 1; }
+  echo "Overleaf ${tip:0:8} has the same text as repo commit ${found:0:8}: no Overleaf edits to lose."
+  join "$tip"
   ;;
 sync)
   "$0" pull "$paper" && "$0" push "$paper" ${3:-}
   ;;
 *)
-  sed -n 2,11p "$0"; exit 1 ;;
+  sed -n 2,12p "$0"; exit 1 ;;
 esac
