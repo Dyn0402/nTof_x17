@@ -349,7 +349,7 @@ The drift-line test removes it by balancing the sign of tan. This explanation is
 ## Not answered here
 
 Only item 20 (n_TOF, the re-audit session's) is not treated here. Item 7 is answered in the fourth round below (the end
-of the recorded waveform). The second half of item 12 (a gain that follows the gap) and chamber E's low b remain open.
+of the recorded waveform), item 12 and chamber E's low b in the fifth round.
 
 ## Fourth round (2026-11-24, evening): item 7 answered, the 500 V drift time, the range of the gaps
 
@@ -423,12 +423,83 @@ D 29.70 ± 0.32 and E 29.54 ± 0.40 mm. The five chambers range from 28.3 to 31.
 spread between chambers is 1.1 mm rms, around the design value of 30 mm. The geometric gaps agree (28.0 to 31.1 mm).
 Dylan (11-24): the drift windows are made by hand, so a spread of this size is expected from their construction.
 
-**Item 12, second half: one candidate excluded.** A cathode bump that is narrow compared with the gap changes the
+**Item 12, second half: one candidate excluded** *(and the half turns out not to be significant; fifth round)*. A cathode bump that is narrow compared with the gap changes the
 field only near the cathode. One might expect the drift time then to grow only as the length (β_eff = 0), which would
 raise the predicted d ln q / d ln T from 0.6 to about 1.1. It does not work. The potential difference along the column
 is fixed, so the field averaged along the column is V / g_local for any width of the bump, and to first order
 δT/T = (1 + β) δg/g whatever its width. The other half of the link stays unexplained.
 
-**Chamber E's low amplitude b: one candidate excluded.** E ran at 600 V in a drier gas (v = 31–37 µm/ns at 200 V/cm),
-so its β is smaller than the β = 0.68 at which b is quoted. A smaller β would raise the fitted b, not lower it. E's low
-b (0.17, 0.09, mostly on Y) remains unexplained.
+**Chamber E's low amplitude b.** *(Corrected in the fifth round: Magboltz gives β = 0.84 for E's gas and field, not a
+smaller β. Quoting b at β = 0.68 then lowers E's b by about 9 %. E is explained in the fifth round below.)*
+
+## Fifth round (2026-11-24, night): the 355 V/cm timing point, item 12 and chamber E
+
+Scripts: `q12_null.py`, `qE_dilution.py`, `qE_axes.py`, `qE_null.py`, `qE_geomgap.py`, `qE_gas.py`. Outputs in
+`$WORK/audit/q16/` (same names, `.json`).
+
+**The missing timing point at 355 V/cm (Dylan).** The gas study stacked only the drift-scan sub-runs
+(`rerun/paper1_gas/condor/make_jobs.py`), and the drift scan has no 1000 V sub-run, so no 1000 V row got a column
+duration. The angle-scale point at 355 V/cm comes from the 1000 V mesh-scan sub-run, which the ladder script reads. The
+S4 re-check had fitted the head-on stack of golden Run 1 with the same model and the same interior arm:
+T = 779.4 ± 7.3 ns. With it, the timing velocity at 355 V/cm is 36.2 ± 0.6 µm/ns (on the Magboltz curve, +0.1 %),
+the water fit gives 0.97 % (χ² 1.8 for 3 degrees of freedom), and the gap of chamber A from v × T is 28.4 ± 0.4 mm from
+four fields (χ² 3.0 for 3). Paper I v2 and both figures are updated (`pg_twov.golden_point`).
+
+**Item 12: the charge follows the gap as the path length predicts.** The slope d ln q / d ln T = 1.30 ± 0.19 had an
+event-bootstrap error. The fine charge map has its own reproducible structure (about 7 % rms, most of the map), and over
+about 60 cells it can line up with the fine drift-time map by chance. We measured this chance level by shifting the
+drift-time maps cyclically on the cell grid against the charge maps (63 to 99 shifts):
+
+| cells | slope | null mean | null sd | shifts at or above the slope |
+|---|---|---|---|---|
+| 6 × 6 | 1.06 | −0.03 | 0.74 | 9 % |
+| 8 × 8 | 1.30 | −0.02 | 0.68 | 0 of 63 |
+| 10 × 10 | 1.44 | −0.02 | 0.59 | 0 of 99 |
+
+The realistic uncertainty of the slope is therefore about ± 0.6–0.7, not ± 0.19. The link between charge and gap is
+real (no shifted map reaches it on 8 × 8 or 10 × 10 cells), and its size agrees with the path length and the field
+(0.60–0.67) within about one standard deviation. Nothing else is needed. The earlier statement that the drift-time map
+follows the gain map "at 7σ" has the same problem: its significance is about 2σ.
+
+**Chamber E's low amplitude: a gas gradient along y, plus few tracks.** Five tests:
+
+1. *Few tracks.* Subsamples of E's size (1,500 events) of the large mountings, with the field rebuilt from the subsample
+   as for E, give b lower by 22 % (A golden: 0.456 → 0.354 ± 0.042) and 32 % (B: 0.367 → 0.248 ± 0.042). D, itself
+   small, rises (0.47 → 0.63 ± 0.10). With the field from the full mounting, b is unchanged, so the loss comes from the
+   noise of the field. This explains part of E, not a factor of 3 to 5.
+2. *The real uncertainty of b.* Shifting the field against the tracks (48 shifts of at least 60 mm) gives a null spread
+   of b of 0.09 (A), 0.12 (B), 0.13 (D), and 0.06 / 0.05 (E, whose Y gradient gives a long lever arm). The event
+   bootstrap (0.01–0.05) underestimates the uncertainty of every b in this audit by a factor of 2 to 10.
+3. *Which view.* E's X view gives b = 0.41 ± 0.35 and 0.28 ± 0.15 (null sd), normal within errors. The Y view gives
+   0.15 ± 0.06 and 0.06 ± 0.05, well below the other chambers. E's drift-time field has a strong y gradient (rms of the
+   scaled gradient 0.021 and 0.034, against 0.014 on A): q_u90 falls by about 0.17 in ln across the chamber, while the
+   charge has no matching slope (so it is not gain through the walk). A regression on both gradient components is
+   unstable on E (the diagonal and cross terms trade places with the choice of field), so the axes cannot be separated
+   from the tilt.
+4. *Geometric gap along y* (E 6-24 inclined-track cache, X strips, no timing). The two y halves give 30.99 ± 0.52 and
+   30.27 ± 0.64 mm, a difference of 0.7 ± 0.8 mm. E's drift time predicts 1.7 mm if the whole gradient is gap
+   (G0 / (1 + β) × Δ ln q_u90, β = 0.84). This is 1.2σ low, so it cannot decide alone.
+5. *Gap or gas along y.* Per y slice, the angle-scale velocity against the drift time: a gap gives
+   d ln v / d ln T = −β / (1 + β) = −0.46 in E's gas, a gas change gives −1.
+
+   | mounting | along y | along x |
+   |---|---|---|
+   | A golden (control) | −0.52 ± 0.02 | −0.50 ± 0.02 |
+   | E 6-23 | −0.67 ± 0.12 | +0.15 ± 0.25 (small range) |
+   | E 6-24 | −0.70 ± 0.12 | −0.75 ± 0.16 |
+
+   E along y gives −0.68 ± 0.09 together, 2.6σ from a pure gap and 3.8σ from a pure gas change. About 40 ± 16 % of E's
+   drift-time gradient along y is therefore a velocity gradient, that is, a gas that changes along the chamber. E was
+   in its first two days after installation, and a gradient along the gas flow is plausible while the gas dries. A
+   velocity gradient does not tilt the drift lines.
+
+Together: a gap share of 0.6, the loss from few tracks (× 0.75) and the β conversion (× 0.91) predict
+b_y ≈ 0.45 × 0.6 × 0.75 × 0.91 ≈ 0.18 (0.1–0.27), against 0.15 ± 0.06 and 0.06 ± 0.05 measured. The geometric gap
+agrees (0.7 ± 0.8 mm, against 1.0 mm predicted for a gap share of 0.6). E is consistent with the other chambers.
+
+**Consequences.** Every b and every cross-run map slope in this audit should carry a spatial-null uncertainty, not an
+event bootstrap. For the per-mounting spline maps this changes nothing: they are cross-validated in time blocks. For
+the reference-free route, the drift-time map of a chamber can contain a gas gradient; the gap-or-gas ratio per axis is
+the check before the map is used as a gap.
+
+With this round, every outstanding item of the audit except 20 (n_TOF) is answered.
