@@ -44,12 +44,12 @@ compare each with the all-off reference.
 | item | where | state |
 |---|---|---|
 | Code with the fixes | repo `main`, commit named in `HANDOFF.md` | committed and pushed |
-| Baseline view with the spline map | `$WORK_DATA/ntof_pass1/stage3_r3_final/` (desktop) | see `HANDOFF.md` for whether the build finished |
+| Baseline view with the spline map | `$WORK_DATA/ntof_pass1/stage3_r3_final/` (desktop) | built and verified 2026-11-24 |
 | Spline map | `rerun/ntof/stage3/angle_map/angle_map_r3.json` | in the repo |
 | Job-list generator | `make_jobs.py` here | tested locally |
 | Submit file | `phase4.sub` here | unchanged; flavour and `maxmat` are submit macros |
 | Chain and comparisons | `stage3_chain.sh`, `compare.py`, `compare_lines.py` here | tested (chain on the `ref` outputs of the morning; `compare_lines.py` on pass-1 cosmic tables) |
-| Deployment on lxplus, job lists there, the validation cluster | see `HANDOFF.md` ("In progress") | done by the writing session if it says so; otherwise section 3 |
+| Deployment on lxplus, job lists there, the validation cluster | `lxplus:~/x17rerun/code_77fb1d31`, `p4jobs_77fb1d31/` | done 2026-11-24: `ref` reproduces `stage3_r3_final`, `all` runs (see `HANDOFF.md`); start at section 4 |
 
 The switches are all off by default, so the code reproduces pass 1. Checked on 2026-11-24 on 400 events of run_145
 (chamber A): 1,094 of 1,095 candidates are identical to pass 1, and the one that differs is a degenerate 78-strip

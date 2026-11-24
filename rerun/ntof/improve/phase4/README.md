@@ -1,5 +1,8 @@
 # Phase 4: the test re-reconstruction (started 2026-11-23)
 
+**To run the campaign, read [`CAMPAIGN.md`](CAMPAIGN.md)** (the handoff of 2026-11-24: what is prepared, the checks,
+the commands, what decides each switch). This file describes the switches and keeps the history.
+
 Phase 4 of `../AUDIT_FIX_ROADMAP.md` collects the fixes that act only through a new reconstruction. Each fix is in
 the code behind a switch whose default is the pass-1 behaviour, so pass 1 is unchanged. We re-reconstruct five test
 sub-runs with each switch on alone, and with all of them on together, and compare the results with pass 1. Dylan then
@@ -10,13 +13,15 @@ decides whether a pass 2 is worth it.
 | roadmap | what it changes | how it is turned on |
 |---|---|---|
 | 4.3 | The children of a two-track split get the same t0 prior at the trigger as the one-track fit. With pass 1 they have no prior, and 27-28 % of them rail at the ±180 ns box edge. | `WFT_DIAG=reco.TWO_TRACK_T0_PRIOR=1` |
-| 4.4 | The clusters offered to the fit are ranked by charge among those with at least 3 strips. Pass 1 ranks them by strip count, so a wide noise band can take a slot from a short bright track. | `WFT_DIAG=seed.SEED_RANK=charge` |
+| 4.4 | The clusters offered to the fit are ranked by charge among those with at least 3 strips, and the cap of five counts the clusters that survive the wide-band veto. Pass 1 ranks them by strip count and applies the cap before the veto, so a wide noise band can take a slot from a short bright track. | `WFT_DIAG=seed.SEED_RANK=charge,seed.SEED_CAP_AFTER_VETO=1` |
 | 4.5 | A plane the clustering left empty gets the bench's 2-strip head-on seeds and the whole-plane rescue window. | `ntof_reco.py --headon-rescue` |
 | 4.6 | `quality_ok` takes its reference median from triggers at ≥ 12 ms. Pass 1 takes it from all triggers, so the post-flash ringing sets it. This is a stage-3 switch: it needs no re-reconstruction. | `X17_QUALITY_REF_LATE_MS=12` when building stage 3 |
 | 4.7 | The candidates table carries `bow_h`. | always (a new column) |
 | 4.9 | Chamber D's permanently oscillating channels (19 x, 42 y not yet masked) are added to its hot list. | the bundles `bundles_osc/` (`../../ringing/make_osc_bundles.py`) |
 | 4.10 | The gated ringing correction of the A/C waveforms (`deflect`, mode `deflect_hits`). | `ntof_reco.py --ringing deflect_hits` |
-| 4.11 | The candidates table carries each candidate's 20-bin depth profile (`q_profile`). | `WFT_DIAG=reco.STORE_PROFILES=1` |
+| 4.11 | The candidates table carries each candidate's 20-bin depth profile (`q_profile`). On in every configuration since 2026-11-24. | `WFT_DIAG=reco.STORE_PROFILES=1` |
+| 4.1 | The x–y column-time tolerance of n_TOF (A 151, C 296, D 535 ns) in place of the bench value of the bundles (197, 456, 726 ns). | `ntof_reco.py --tc-tol <ns>` |
+| 2.8 | Every candidate carries `n_sig5` and `q_sig5`: the strips of its fit window above 5σ and their summed peaks. With the ringing correction on, `n_sig5 ≥ 1` in both views is the waveform test of the ringing rule (`quality_join.py --low-charge r28`). | always (new columns) |
 | 4.12 | The seeding significance floor is judged within 30 mm instead of over the whole plane. | `WFT_DIAG=seed.SIG_FLOOR_LOCAL_MM=30` |
 
 Item 4.8 (three small output fixes) is not done yet. The wider t0 box (4.2) was tested by injection and gains little
@@ -56,6 +61,9 @@ Item 4.8 (three small output fixes) is not done yet. The wider t0 box (4.2) was 
     because the ringing correction removes many early fits. The campaign costs about 10,000 to 12,000 core-hours.
 
 ## Before submitting (re-audit 2026-11-24, roadmap 6.6)
+
+**Done on the afternoon of 2026-11-24** (items 1 to 6; see `CAMPAIGN.md` for the state and what is left). The list is
+kept as the record of what the re-audit asked for.
 
 1. Correct the seed ranking (4.4): rank by significance and apply the cap after the wide-band veto.
 2. Make `--ringing` write the per-track waveform flag, and store the depth profiles in every configuration.

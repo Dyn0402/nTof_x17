@@ -844,86 +844,59 @@ redeployed (dylan-cern-site 91d4386). Inputs on the desktop: $WORK_DATA/claude-j
 - Deck: `WORK_DATA=~/work_data .venv/bin/python papers/paper1/make_figures_deck.py --out <html>` then
   `dylan-cern-site/scripts/add-note.py <html> --slug mx17-paper1-figures --force --deploy`.
 
-## n_TOF tracking audit fixes: re-audited 11-24, test campaign NOT submitted, r3 map candidate — updated 2026-11-24 (dylan-MS-7C84)
+## n_TOF tracking: spline map built, fixes in, test campaign deployed and validated, NOT submitted — updated 2026-11-24 (dylan-MS-7C84)
 
-**Resume:** read `rerun/ntof/improve/reaudit/report.html`; Dylan decides on the r3 map and on the changes to the test campaign (next steps below).
+**Resume:** run the phase-4 test campaign from `rerun/ntof/improve/phase4/CAMPAIGN.md` (start at its section 4; sections 2–3 are done, see below).
 
-**Goal:** close every loose end of the 11-21 tracking audit on existing data, so that a possible pass 2 (week-long
-re-reco) is the last one. Plan and status per item: `rerun/ntof/improve/AUDIT_FIX_ROADMAP.md`.
+**Goal:** Dylan, 2026-11-24: run with the spline map, make the fixes for the re-processing, write up what we do not
+understand and look into it before the rerun, then hand the campaign to another session. Dylan decides after the test
+campaign whether a second pass runs, and with which switches.
 
-**Done (all on main, pushed):**
-- 11-22/23: phases 0-3, `stage3_r2_final` (the new baseline view), x/y matching study, ringing open items (see roadmap).
-- 11-23 t0/pile-up study (`rerun/ntof/improve/t0_study/README.md`, section "The injection test"):
-  - Injection: real in-time late tracks shifted by k x 60 ns and added to empty / one-track late triggers, re-reco'd
-    (`inject.py`, `inject_ana.py`). tc follows the arrival (A: within 10 ns from -120 to +420 ns); t0 moves <= 90 ns;
-    angle < 0.5 deg within -120..+300 ns; accidental pairs keep their opening angle there (median < 0.2 deg).
-  - Finding (roadmap 4.12): two in-time tracks > 50 mm apart are both found only 76 % (A) / 71 % (C). Mostly the
-    plane-wide seeding floor (`wft/seed.py` SIG_REL_FLOOR, SIG_FLOOR_LOCAL_MM = 0); a 30 mm local floor gives 87 / 84 %.
-    The G4 digitised pairs go through the same seeder (P(2|2 leptons) A 0.48, C 0.42), so data/G4 already includes it
-    to first order: a fix is an efficiency gain, not a bias removal.
-  - Accidental fraction settled (`look10.py`, `look11.py`; zero-offset injection `--k-fixed 0`, label _k0): in-time
-    pair tail at |dtc| >= 300 ns is 6.7 +- 0.7 % (A) / 19.5 +- 1.2 % (C) from injection, = wall-confirmed data pairs.
-    Constant-source accidentals hiding in the rate fit's constant term: A +8 % of a at cuts 250-300 ns, 0 at 400-500 ns;
-    C negative at all cuts. So the rate fit's accidental shares hold (A 6.7 %, C 10.5 % on stage3_r2_final); the
-    earlier ~13 % for A came from the template's tail. Systematic: <= ~8 % of A's correlated term (the 250-400 ns excess).
-  - Wider t0 box (WFT_DIAG model.LM_T0_RANGE=360, label _t0w360): in-time unchanged, early tracks stop railing but t0
-    moves only 5-20 ns more (the 15 ns prior holds it); A angle at -360 ns 2.9 -> 2.4 deg. Not worth a pass-2 item alone.
-- Phase-4 code behind switches, all default = pass 1 (`rerun/ntof/improve/phase4/README.md` has the table): 4.3
-  reco.TWO_TRACK_T0_PRIOR, 4.4 seed.SEED_RANK=charge, 4.5 ntof_reco --headon-rescue, 4.6 X17_QUALITY_REF_LATE_MS
-  (stage 3), 4.7 bow_h column (always on), 4.9 D osc bundles (`ringing/make_osc_bundles.py`, on EOS
-  tests/phase4_e86028b5/bundles_osc), 4.10 ntof_reco --ringing deflect_hits, 4.11 reco.STORE_PROFILES, 4.12
-  seed.SIG_FLOOR_LOCAL_MM=30. Tests: wft + rerun/ntof + sept26 suites pass (test_profile_is_retired fails on clean
-  main too). Code deployed on lxplus as `~/x17rerun/code_e86028b5`.
+**Done (all on main, pushed; code commit `77fb1d31`):**
+- **Spline angle map r3 in the chain.** `rerun/ntof/stage3/spline_map.py`, `rerun/ntof/improve/spline_map_{lib,fit}.py`,
+  `run_r3_chain.sh`, map `rerun/ntof/stage3/angle_map/angle_map_r3.json` (md5 746d4066…). The new baseline view is
+  `$WORK_DATA/ntof_pass1/stage3_r3_final/` (desktop, built 12:18). Verified against `stage3_r2_final`: 543 tables,
+  identical row counts (49.6 M) and arm order, every table on the spline map, B rows unchanged, two new flag columns
+  (`d_hole`, `b_box`). Gated tracks change by −0.3 % (C prod) to −1.3 % (A beam-off), all through `in_acceptance`
+  except 6,401 D rows (the D fiducial rule). Beam check `$WORK_DATA/ntof_pass1/ana_r3/spline_map/beam_final.csv`:
+  the map removes the cell structure (cell rms A 16.2 → 5.9, C 20.5 → 14.7, D 34.0 → 10.8 × 10⁻³ in tan).
+- **Reconstruction fixes behind switches, default = pass 1** (table in `rerun/ntof/improve/phase4/README.md`): seed
+  cap after the wide-band veto, per-candidate `n_sig5`/`q_sig5` and `rescued` carried to stage 3, `ntof_reco --tc-tol`,
+  profiles stored everywhere. Table-level: `quality_join.py --low-charge q600|r28`, `d_hole`, `b_box`, `--b-box-cut`
+  (defaults leave `gated` unchanged). Geant4: `digitise.py` refuses steps beyond the mesh (`X17_G4_W_MESH`).
+  Smoke test with switches off: 1,094 of 1,095 candidates identical to pass 1.
+- **Open questions written up and investigated**: `rerun/ntof/improve/reaudit/OPEN_QUESTIONS.md` (17 items, tests X1–X3
+  under `$WORK_DATA/claude-jobs/eb8200b3/`). Main answers: the drift time does predict A's angle scale once the edges,
+  the per-view split and the C/D 1200 ns truncation are handled (X1); Geant4 reconstructs 3–10 % steep because it was
+  reconstructed with data bundles and the EAR2 library's mesh is at 35.1 mm, not 30.1 (X2); the morning's D "−6.6 %"
+  was a wrong t0 pin in the sizing bundle (X3).
+- **Deployed:** slim code `lxplus:~/x17rerun/code_77fb1d31` (185 MB); osc bundles on EOS
+  `tests/phase4_77fb1d31/bundles_osc/` (D_E2_beam_L1 pin checked −17.8/−11.2, D_E2_cos); job lists
+  `lxplus:~/x17rerun/ntof/pass1/p4jobs_77fb1d31/` (local copy `$WORK_DATA/claude-jobs/eb8200b3/p4jobs_77fb1d31`).
+- **Validation cluster** (18 jobs, configurations `ref` and `all`, clusters 4736887/90/93/97, logs
+  `p4jobs_77fb1d31/log_val_*`, outputs `out/val_ref`, `out/val_all`): all 18 finished, exit 0, 18 starts = 18 completions, no holds. `ref` reproduces `stage3_r3_final`: every gated track matched on A, C (2,106) and D (173), no track only in one set, largest difference 1.1e-5 mm in position, 1.4e-6 in tan, 1.4e-4 ns in t0 (tolerance level; outputs differ in the last digits between nodes). One small difference: D `censored_window` 0.5945 against 0.5932 of rows, which does not change `gated`. `all` ran without error and its candidates carry `rescued`, `q_profile`, `n_sig5`, `q_sig5`. Comparison: `$WORK_DATA/ntof_pass1/phase4/val_ref/compare/`. condor_budget size: A/C OK (ref median 66 min, max 4.7 h on run_139 C; peak memory 1.0 GB); D NOT OK only because each D log had 3 jobs (needs 5). The sizing records are on lxplus.
 
-**Re-audit of 2026-11-24** (`rerun/ntof/improve/reaudit/report.html`, README there; roadmap phase 6):
-- `ref` (code `e86028b5`, every switch off) reproduces `stage3_r2_final` on 8 A/C acquisitions (cluster 4729151, outputs
-  `out/reftest/`): all gated tracks matched, largest difference 1.3e-6 mm.
-- The phase-4 chain failed on every sub-run (no chamber-B files). Fixed: `ntof_stage3.py --allow-missing`,
-  `phase4/stage3_chain.sh`. New: `phase4/compare.py`. `deflect.py` fixed (corrected-event flag per reader).
-- First look at `all` against pass 1 (sizing cluster, 8 A/C + 4 D acquisitions): late tracks A +3.7 %, C +8.1 %
-  (head-on rescue, wall-confirmed), early A fakes removed by the ringing correction, D −6.6 % real late tracks.
-- A spline angle map (r3 candidate, `reaudit/tests/W2a_map_r3/`) is 16-26 % better than the current map on held-out
-  cosmic lines in A, C and D, and is at the noise of a track. Table level. Not applied.
-- Drift geometry at n_TOF: tilt field curl-free; drift-time maps stable but not a gap map on C/D; pointing confirms the
-  map and helps only D. Per-track timing gains 0.4-3.3 %: no timing correction, no joint x-y fit.
-- Chamber D: efficiency hole at x_local 0-60 mm for the whole campaign; no scale correction (Geant4 check). B: noisy box
-  through run_132.
+**In progress / where it stopped:** nothing running. The campaign (1,848 jobs, about 10,000–12,000 core-hours) is not submitted.
 
-**In progress / where it stopped:**
-- Nothing is running. Sizing cluster 4729099 finished (12/12, exit 0; D jobs 6.9-7.6 h). The campaign is not submitted.
-- Not run: the single-switch configurations, the injection test on the new code, any cosmic sub-run.
-
-**Next steps (Dylan decides each):**
-1. r3 map: wire `apply_r3.py` into `rerun/ntof/stage3/map_view.py` and build the view with it (roadmap 6.1). It must
-   be refitted after any new reconstruction (minutes).
-2. Table-level items 6.2-6.5 (D fiducial region, B box, the charge rule and the other decided flags, the D
-   oscillating-channel flag).
-3. Before submitting the test campaign: the list in `rerun/ntof/improve/phase4/README.md` ("Before submitting"):
-   seed rank by significance, the waveform flag in `--ringing`, profiles everywhere, a configuration with the n_TOF
-   x-y tolerance, D on run_104, 2-3 beam-off cosmic sub-runs, D single switches before `all`, `tomorrow` for D,
-   redeploy the code, free AFS space (quota 90 %). Cost about 10,000-12,000 core-hours.
-4. Submit, then per configuration `bash rerun/ntof/improve/phase4/stage3_chain.sh <cfg>` and
-   `phase4/compare.py --cfg <dir>/final --ref <ref dir>/final`. What decides each switch: Table 2 of the report.
-5. Decide pass 2. From the measurements it gains efficiency and purity (4-8 % late tracks near normal incidence, a
-   cleaner sample before 12 ms, second tracks), not angle resolution.
-6. Still open: 4.8; chamber D in the t0 study; the Geant4 digitisation side findings (roadmap 6.10).
+**Next steps:**
+1. `ssh lxplus lxstore status` (AFS was at 91 %); free space with `lxstore offload` if needed, ask Dylan before deleting old `code_*`.
+2. Submit per `CAMPAIGN.md` section 4 with `code=$HOME/x17rerun/code_77fb1d31`, `ref` first, sum of `maxmat` × 4 < 1,000 cores.
+   The D validation logs had only 3 jobs each, so `condor_budget size` says NOT OK for D alone; the A/C logs passed.
+   Size D on the combined validation logs or on the first `ref` D jobs before opening D wide.
+3. Post-process per configuration (`CAMPAIGN.md` section 6), judge each switch by the table of section 7 (written before the results), write the report, give Dylan the table.
+4. Dylan decides pass 2 (section 8).
 
 **Gotchas / decisions:**
-- Dylan 11-23: A/C ringing cut (q >= 600 + waveform flag before 8 ms, flag alone after); HOLD the switch (2.11) and
-  the 6 h downstream rerun until the pass-2 decision; `t0_railed` stays a flag.
-- Injection method: donor charge keeps its own trigger phase, so the y view is shifted k_y = k +- 1 when the two
-  events' (ftst_x - ftst_y) differ (else a 60 ns x-y error in 45 % of injections). k < 0 fills the opened end samples
-  with the donor's last sample (approximate). Running > 4 local injections at once overloads the desktop (load 26).
-- Two-track pairs can swap x/y combination: match pairs view by view (inject_ana does).
-- `ntof_stage3` labels code_stage2 from the canon (ed0b1162) even for test outputs: cosmetic.
-- Desktop has no xrdcp/xrdfs binaries; the chain streams `tar` over `ssh lxplus` (interactive /eos is allowed).
-- Outputs (regenerable, ucla): `$WORK_DATA/ntof_pass1/ana/t0_study/inject/` (ana_*.txt tables, matched*.parquet),
-  `$WORK_DATA/ntof_pass1/bundles/pf_osc/`. Smoke output `$WORK_DATA/claude-jobs/e84cd258/p4smoke` deletable.
+- Every D beam row uses the L1 pin bundle (`D_E2_beam_L1`). The morning's sizing cluster used `D_E2_beam` (+36 ns on every D t0): its D numbers are void.
+- The spline map and the quality references of `stage3_r3_final` are held fixed in the test chain; after a real pass 2 the map is refitted (`run_r3_chain.sh`, minutes).
+- Dylan 11-23: A/C ringing rule `r28`; HOLD the EOS/ledger switch (roadmap 2.11) and the 6 h downstream rerun until the pass-2 decision; `t0_railed` stays a flag.
+- Geant4 must not be re-digitised before `OPEN_QUESTIONS.md` item 7 is fixed (simulation bundle, `X17_G4_W_MESH=35.1` for `ear2_L19p5`); results built on the EAR2 library (pair response, pose fits) are biased by +6–7 % in slope.
+- Desktop has no xrootd binaries: the chain streams `tar` over `ssh lxplus`.
+- `wft/tests/test_two_track.py::test_accepted_split_replaces_its_parent` can fail under load; `test_profile_is_retired` fails on main.
 
-**Key files & commands:**
-- `rerun/ntof/improve/t0_study/{inject.py,inject_ana.py,look10.py,look11.py,README.md}`
-- `rerun/ntof/improve/phase4/{README.md,make_jobs.py,phase4.sub,stage3_chain.sh}`
-- `rerun/ntof/ntof_reco.py` (--ringing, --headon-rescue), `ntof_tracking/wft_beam.py` (HEADON_RESCUE_BEAM)
+**Key files:** `rerun/ntof/improve/phase4/{CAMPAIGN.md,README.md,make_jobs.py,phase4.sub,stage3_chain.sh,compare.py,compare_lines.py}`,
+`rerun/ntof/improve/reaudit/{report.html,OPEN_QUESTIONS.md}`, `rerun/ntof/improve/AUDIT_FIX_ROADMAP.md`, `rerun/ntof/improve/run_r3_chain.sh`.
+
 
 ## n_TOF pass 1 downstream (P7): the analysis moved onto pass 1 — updated 2026-11-20 (dylan-MS-7C84)
 
