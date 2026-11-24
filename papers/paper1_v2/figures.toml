@@ -302,5 +302,29 @@ title = "Chamber A: gap along x and y with the joint mesh + cathode model; angle
 state = "current"
 source = "rerun/paper1_gap/figures/gap_surfaces.pdf"
 section_state = "partial"
-note = "2026-11-23. Appendix app:gapmap. Pass 1, det3 golden rows (Run 1 sat_det3, Run 2 6-28 p2). (a, b) x5 / y5 profiles, both runs combined (gapcompare.py), line = joint.py 'all' arm averaged over the other coordinate. (c) track_grid.py: s68 of theta - theta_ref, maps made on the other run, w0 + v, bilinear, reconstructed mid-gap position."
+note = "2026-11-24: no longer included in app:gapmap after the audit (the quadratic joint fit is not the headline any more); keep or drop is an open question to Dylan in the appendix. 2026-11-23. Appendix app:gapmap. Pass 1, det3 golden rows (Run 1 sat_det3, Run 2 6-28 p2). (a, b) x5 / y5 profiles, both runs combined (gapcompare.py), line = joint.py 'all' arm averaged over the other coordinate. (c) track_grid.py: s68 of theta - theta_ref, maps made on the other run, w0 + v, bilinear, reconstructed mid-gap position."
 producer = "cd rerun/paper1_gap && ../../.venv/bin/python gapmap.py <work> && ../../.venv/bin/python cellobs.py <work> && ../../.venv/bin/python gapcompare.py <work> && ../../.venv/bin/python joint.py <work> && ../../.venv/bin/python track_grid.py <work> && ../../.venv/bin/python gapfig.py <work>"
+
+[fig.gap_mountings]
+title = "Chamber A: relative drift time over the active area in its three mountings (22 June, 25 June, 27 and 28 June)"
+state = "current"
+source = "rerun/paper1_gap/audit/figures/gap_mountings.pdf"
+section_state = "partial"
+note = "2026-11-24. Appendix app:gapmap. From audit test r4 (spline maps of ln q_u90, K=12, interior >= 30 mm): 22 June overnight long run (drift 1000 V), 25 June day long run (drift 500 V), and 6-27 Run 1 + 6-28 Run 2 fitted together (drift 1000 V). Percent of the map mean, one colour bar."
+producer = "cd rerun/paper1_gap/audit && ../../../.venv/bin/python paperfig.py <work>"
+
+[fig.gap_driftlines]
+title = "Chamber A: measured sideways displacement of the drift lines against height above the mesh, five slices per view"
+state = "current"
+source = "rerun/paper1_gap/audit/figures/gap_driftlines.pdf"
+section_state = "partial"
+note = "2026-11-24. Appendix app:gapmap. From audit test e (waveform slices, Run 1 + Run 2 combined, tables in audit e/tables.md). Top: delta minus its constant with the quadratic fit; bottom: the same with the fitted linear term removed. Slice positions in mm from the chamber centre."
+producer = "cd rerun/paper1_gap/audit && ../../../.venv/bin/python paperfig.py <work>"
+
+[fig.gap_tiltpred]
+title = "Chamber A, 25 June mounting: drift tilt measured with the reference tracks, predicted from the mesh shape and the drift-time map, and the difference"
+state = "current"
+source = "rerun/paper1_gap/audit/figures/gap_tiltpred.pdf"
+section_state = "partial"
+note = "2026-11-24. Appendix app:gapmap. From audit test r1 (r625:perview, golden mesh, b = 0.5, beta 1.28, 8 x 8 cells, constant removed, tilt in mrad). 25 June day long run."
+producer = "cd rerun/paper1_gap/audit && ../../../.venv/bin/python paperfig.py <work>"

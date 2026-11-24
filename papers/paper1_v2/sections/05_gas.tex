@@ -55,23 +55,41 @@ Across the cells, their values are correlated with coefficients between 0.8 and 
 
 All three measurements show the same pattern. The gap increases along $x$ by 0.4 to 0.8\,mm per 100\,mm. This
 corresponds to a tilt of the cathode relative to the mesh of about 0.2 to 0.5\textdegree. Along $y$, the gap is
-largest near the center and shorter toward both ends, by about 0.5\,mm at 100\,mm from the center. This shape along
-$y$ is the one expected if the cathode were flat above the dished readout board of \cref{sec:bow}. A fit of the
-measured dish to the cell values gives 0.5 to 0.8 of its depth. Over the interior the gap therefore ranges from about
-27 to about 29\,mm, and the cell values scatter by 0.5 to 0.7\,mm around the mean of 28.2\,mm. The product of the
-velocity and the duration shows the same pattern as the geometric gap, but with about 0.7 of its amplitude. The size
-of the variation is therefore known to about 30\,\%.
+largest near the center and shorter toward both ends, by about 0.5\,mm at 100\,mm from the center. Over the interior
+the gap therefore ranges from about 27 to about 29\,mm, and the cell values scatter by 0.5 to 0.7\,mm around the mean
+of 28.2\,mm. The product of the velocity and the duration shows the same pattern as the geometric gap, but with about
+0.7 of its amplitude. The size of the variation is therefore known to about 30\,\%.
 
 This variation is a change of the gap, and not a change of the gas. At a fixed drift voltage, a shorter gap means a
 higher drift field. Since the drift velocity increases with the field, a shorter gap shortens the drift time by more
 than the change of the gap itself. Magboltz predicts $\mathrm{d}\ln\vd/\mathrm{d}\ln T=-0.41$ for a change of the gap,
-while a change of the gas composition would give $-1$. The cells give $-0.50\pm0.02$.
-\Cref{app:gapmap} fits one model of the mesh and the cathode to all of these measurements together with those of
-the bow. The drift direction alone predicts the same dome along $y$, and a finer map of the drift direction improves
-the angle resolution of chamber~A by 16 to 21\,\%.
-\askDylan{New 2026-11-23 (pass 1, both golden runs): \texttt{rerun/paper1\_gap/report.html}. The profile figure is in
-\cref{app:gapmap} (\cref{fig:gapsurf}); move it here instead? Keep or shorten these paragraphs?
-Chamber~E: 30.48\,mm in the configuration, 28.6\,mm geometric, 27.9\,mm used for the SPS gas fit (\cref{app:beam}).}
+while a change of the gas composition would give $-1$. We measure this ratio on the part of the variation that is
+finer than a smooth surface, and we take the velocity from one run and the drift time from the other run, so that the
+noise of a cell does not enter. The result is $-0.41\pm0.08$. The smooth part of the variation gives $-0.45\pm0.03$
+with the velocity of the Y strips. With the velocity of the X strips it gives $-0.74\pm0.02$, which is neither value.
+The velocity of the X strips therefore varies across the chamber by more than the gap can explain, and we have not
+identified the reason.
+
+The drift time alone gives a map of the gap, without the reference tracks, since the drift time of a track changes
+with the local gap. With this map we find that the pattern above belongs to one mounting of the chamber and not to the
+chamber itself. We have data from three mountings of chamber~A in the test stand, on 22~June, on 25~June and on 27 and
+28~June. Run~1 and Run~2 were taken in the third mounting. The three mountings give three different maps of the gap
+(\cref{app:gapmap}, \cref{fig:gapmount}). Within one mounting the map does not change with time, with the mesh voltage
+or with the drift voltage between 700 and 1100\,V. The dish of the readout board, in contrast, is the same in the two
+mountings where we can measure it. The cathode is a foil of 50\,\textmu m, and these results indicate that the foil
+takes a slightly different shape each time the chamber is handled. The mean gap of $28.2$\,mm is measured in the
+third mounting only.
+
+\Cref{app:gapmap} describes these measurements. It shows that the drift lines are tilted and bent by the shapes of
+the mesh and of the cathode, as measured directly from the signals, and that the tilt can be predicted from the dish
+of the board and the map of the gap. A map of the drift direction made for one mounting improves the angle resolution
+of chamber~A in that mounting by 26\,\%.
+\askDylan{Updated 2026-11-24 after the audit (\texttt{rerun/paper1\_gap/audit/report.html}). Removed: ``the shape
+along $y$ is the one expected for a flat cathode above the dish, 0.5 to 0.8 of its depth'' (it holds only in the third
+mounting; the 25~June mounting has the opposite curvature). Changed: the gap-or-gas ratio ($-0.50\pm0.02$ averaged
+two views that disagree). New: the paragraph on the three mountings. Still open from before: move a gap figure here
+(now \cref{fig:gapmount}, the three maps)? Chamber~E: 30.48\,mm in the configuration, 28.6\,mm geometric, 27.9\,mm
+used for the SPS gas fit (\cref{app:beam}).}
 \todo[]{End update here}
 
 \begin{figure}[tbp]
