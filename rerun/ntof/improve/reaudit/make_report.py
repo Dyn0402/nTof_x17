@@ -402,6 +402,31 @@ add('<h3>2.5 What a track\'s own timing tells</h3>',
     ]),
     '<p>For this reason we propose no timing correction and no joint x–y fit.</p>')
 
+add('<h3>2.6 The three n_TOF candidates of the bench audit</h3>',
+    '<p>The bench audit lists three candidates for n_TOF (its HANDOFF section, item 3). Our tests answer each of them. '
+    'The widths below are held out on the cosmic lines. The two audits quote different widths for "no map", because '
+    'the bench audit uses all lines and we use clean lines, so we compare the relative gains.</p>',
+    table(['Candidate of the bench audit', 'Its measured gain', 'With the spline map (r3)', 'Reading'], [
+        ['A drift-time correction for chamber D',
+         'D z view 35.9 → 31.4 × 10⁻³ (−13 %), y view 0 to 3 %',
+         'D 35.5 / 36.3 → 25.6 / 26.0 × 10⁻³ (−28 % in both views)',
+         'The spline map on the B–D lines and the pointing gives more, in both views. The drift-time route stays '
+         'useful as a check that needs no reference.'],
+        ['The bench fine map of chamber A, with no dish, against the in-situ map',
+         'A x 17.6 %, A y 1.9 % (8.5 % with fitted amplitudes)',
+         'A x −35 %, A y −24 % against no map',
+         'The in-situ spline map is better in both views. The bench map is an independent confirmation of the shape.'],
+        ['The gap map of each chamber as an input to the v(t) angle scale',
+         'not measured there',
+         'The drift-time map correlates with the cosmic scale at only −0.3 on A and C, and on C and D it is not a gap map.',
+         'We do not recommend it. The spline scale measures the scale directly.'],
+    ]),
+    '<p>The spline map is at the noise of a single track on A and C, so a term added on top of it has nothing left '
+    'to gain there. The mapping between the bench frame and the n_TOF local frame, which test T6 could not find, is '
+    'derived in <code>rerun/paper1_gap/audit/results/g_RESULT.md</code>, section 1. One point of the bench audit '
+    'remains open here too: the gap-gradient field of A from beam-off muons and from late beam tracks disagree along '
+    'y (r = 0.04), although the drift-time maps themselves agree between the two samples (r = 0.96 on 50 mm cells).</p>')
+
 # ------------------------------------------------------------------------------------------------------------- part 3
 add('<h2>3. The plan we recommend</h2>',
     '<p>The plan separates what needs no new reconstruction from what does. The table-level steps come first, because '
