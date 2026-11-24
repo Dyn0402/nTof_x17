@@ -2,7 +2,13 @@
 
 ## Chamber A gap, surfaces and angle map: audited; bench re-finalization with per-mounting maps to do — updated 2026-11-24 (dylan-MS-7C84)
 
-**Resume:** audit questions done (all but #20); next: bench re-finalization with per-mounting maps + censored-track rule, then Paper I §6.
+**Resume:** audit questions done (all but #20; item 7 answered 11-24 evening); next: bench re-finalization with per-mounting maps + censored-track rule, then Paper I §6.
+
+**Evening 11-24 (session `cosmic-bench-drift-windows`, dylan-MS-7C84):**
+- **Item 7 answered:** the low-voltage flattening is the end of the recorded waveform. At 500 V the drift column (1800 ns) is longer than the record after the track start (~1730 ns), at 300 V twice as long; every quantile then measures 2019 ns - t0 (d q_u90/d t0 = -1.2 +- 0.3 at 500 V, 0 at >= 700 V), and a fixed gap shape cut at the record end reproduces the flat map. R4 points 4-5 withdrawn. `rerun/paper1_gap/audit/q7_window.py`, `results/q_RESULT.md` (fourth round).
+- Same cut: the 500 V **timing velocity (17.7) is an upper limit** and its v x T gap a lower limit. Paper I v2 updated and pushed to Overleaf `paper1_v2`: §5.1 gap 28.3 +- 0.5 mm from three fields, **range of the five chambers 28.3-31.1 mm (mean 29.5, 1.1 mm rms), attributed to the hand-built drift windows (Dylan)**, askStephan box removed; §5.2 timing range 25.2-37.2 at 248-390 V/cm, water fit chi2 1.8/2 (0.97 % unchanged); figures two_velocities (c) and gas_vE_all draw the point open with an arrow; app:gapmap Limits rewritten (no flattening of the foil, factor 1.4 dropped), beta on 25 June from Magboltz (1.25; b agrees to ~5 %). `gaps_all` drops the row (A 28.30 +- 0.41).
+- **`papers/overleaf.sh` push fixed**: `git subtree split` failed ("cache for 09801818 already exists") because the join trailers were copied to Overleaf. A push now sends the repo's subtree tree with Overleaf's tip as parent (fast-forward), joins carry no trailers (`papers/README.md`).
+- Still open: the second half of item 12 (a gain that follows the gap; one candidate excluded) and chamber E's low b (drier gas would raise b, not lower it). Both are stated limits.
 
 **Afternoon 11-24 (follow-up session, dylan-MS-7C84):**
 - All outstanding audit items but #20 (n_TOF) answered or narrowed: `rerun/paper1_gap/audit/results/q_RESULT.md` (three rounds), answers marked under each item in `AUDIT_2026-11-24.md` (`report.html` rebuilt). Open: #7 (flattening below 700 V) and half of #12 (a gain that follows the gap).
