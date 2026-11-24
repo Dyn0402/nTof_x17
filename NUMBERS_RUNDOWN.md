@@ -206,3 +206,5 @@ Notes on the table:
 - Dish depths: the sheet's pass-1 1-D per-view numbers (A 1.24, B 1.98, C 1.50, D 1.46, E 1.90 mean of X and Y; per view 0.90-2.45 mm) are a different estimator; the text of `08b_bow.tex` and the figure `bow_profiles` use the 2-D fit above.
 - Water of A is for the drift scan at one water for 500-1100 V; the golden runs of the other chambers are single-field values at the row's field (B 321, C 250, D 238, E 197 V/cm).
 - C's f is from a 92 %-saturated sample (f_sat 0.92) and D's from 14 % unsaturated events; C's and D's charge quantities beyond f are not measurable (`paper1_charge` README).
+
+- 2026-11-24 (Dylan): chamber A on 23 June dropped from Paper I (pass-1 angles uncorrelated with M3, r = 0.01). Bow stability set 19 -> 18 runs (`rerun/paper1_res/bow_2d_fig.py` CH): all 18 within 2 sigma, largest 1.4 sigma (was 1.8), 18/18 leave-one-out (was 18/19), chamber A mean depth 1.16 +- 0.10 mm (was 1.25 +- 0.08), 11 runs with error < 0.25 mm scatter 7.6 % rms (was 12 runs, 9 %). The slot sentence (A 23 June in the lower slot, 1.46 mm) is removed; no second lower-slot run of A remains.
