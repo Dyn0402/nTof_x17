@@ -33,8 +33,7 @@ the Geant4 material model.
 
 ## Drift gap near the record end + chamber D's failed stack fit — updated 2026-11-25 (dylan-MS-7C84)
 
-**Resume:** one decision for Dylan, the askDylan box in Paper I Sec. 5. Should C's gap be quoted with the loss of charge
-fitted (30.1 mm) or with the uniform column (29.4 mm, the current text, which states +0.7 mm as a limit)?
+**Resume:** closed for now; Dylan is proofing/editing Paper I (11-25: "keep everything else as is"). Open: Sec. 5 askDylan (C gap).
 
 **Done:**
 - `rerun/paper1_gap/window_bias/` (README, report.html). The record end does not bias T when it is after the column. E 6-24
@@ -44,6 +43,9 @@ fitted (30.1 mm) or with the uniform column (29.4 mm, the current text, which st
   in EOS `x17rerun/paper1_gas/fit_v2`. D water 0.48 -> 0.44 %, D gap 30.2 -> 29.4 mm, drying D 0.67 -> 0.33 %.
   `x_width.fit_x` now raises on an empty stack.
 - Paper I Sec. 5 (gaps, record-end and attachment paragraph, D water, drying), conclusions table; figs gas_drying, gas_vE_all.
+
+**Next steps (only if Dylan asks):** the C-gap choice in the Sec. 5 askDylan box; move the column triangles of Fig.
+two_velocities (a) by +60 ns; rerun the gas "nights" figure and the CERN-site gas note on fit_v2 (only D changes).
 
 **Gotchas:** inputs in `/media/ucla/work/claude-jobs/a21e7df1/gapwin` (350 MB, copies of EOS; delete when done). Other
 paper1_gas consumers of fit_v1 were not rerun: the nights figure and the CERN-site gas note (only D changes).
