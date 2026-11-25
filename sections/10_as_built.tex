@@ -34,7 +34,7 @@ observable uses only the amplitudes, with no times and no fitted angle. The angl
 changes across the chamber with the predicted sign in all ten views, and by more than two standard deviations in eight
 of them.
 
-The bow is a static property of each chamber. Nineteen runs, taken on other nights, in the other slot of the bench
+The bow is a static property of each chamber. Eighteen runs, taken on other nights, in the other slot of the bench
 and at other voltages, all give the depth of their chamber within two standard deviations. A bow of the reference
 planes could imitate the position observable, but not the other two. Its contribution to the depth is bounded at
 $0.4\pm0.2$\,mm (\cref{app:bow}).
@@ -44,7 +44,13 @@ is one surface per chamber, which is applied to the drift direction and to the h
 on tracks that were held out of the fit of the surface. It improves the angular resolution by a median of 16\,\% over
 the ten views. For chamber~A, the angular resolution improves from 1.10 to 0.99\textdegree{} in X and from 1.07 to
 0.90\textdegree{} in Y. The position residual improves by 5 to 18\,\%.
-\askDylan{One new caveat, from the agent that rebuilt the figure. The bow fit has no position cut, and 7--15\,\% of its tracks
+
+The mesh height belongs to the board, and it is the same in every mounting of a chamber. The angle depends on the
+cathode as well, and the cathode changes its shape from one mounting to the next (\cref{app:gapmap}). For the angle we
+therefore use a map of the drift direction for each mounting, wherever the reference tracks allow it
+(\cref{sec:angle}). The map improves chamber~A further, from 0.99 to 0.76\textdegree{} in X and from 0.90 to
+0.69\textdegree{} in Y. The quadratic block is still used for the height of the track point, and for the angle of the data
+that have no map.\askDylan{One new caveat, from the agent that rebuilt the figure. The bow fit has no position cut, and 7--15\,\% of its tracks
 lie within 30\,mm of an unpassivated $x$ side, where the field fringes (\cref{sec:edge}). Without them the dish depths move
 by at most 0.2\,mm (within $1\sigma$), but the X-view gradient of $w_0$ rises, and $r_f$ on X goes from 0.71 to 1.10 on
 chamber~A and from 0.87 to 1.85 on chamber~C, outside the physical range. So ``$r_f$ between 0.52 and 1.00 on all ten views''
@@ -100,7 +106,7 @@ side (and the numbers are re-derived; Y should improve), or this paragraph says 
   \includegraphics[width=\linewidth]{edge_turnon}
   \caption{Chamber~A near its sides, against the distance of the reference ray (or of the charge centroid in (c)) to
   the physical edge of the strip plane: (a) the efficiency, (b) the bias of the angle of the view perpendicular to the
-  side, against the reference, (c) the duration of the drift column relative to the interior. Solid: the unpassivated
+  side, against the reference (within 30\,mm of the border the angle of the bow block, beyond 30\,mm the angle of the map), (c) the duration of the drift column relative to the interior. Solid: the unpassivated
   $x$ sides; dashed: the passivated $y$ sides. Dotted vertical lines: where the passivation ends on the low-$y$
   (18.0\,mm) and high-$y$ (18.7\,mm) side. Error bars: binomial in (a); $1.25\,s_{68}/\sqrt{n}$ in (b). In (b), bins in
   which fewer than 30\,\% of the rays are detected are not shown; in (c) no trigger has its charge centroid in the

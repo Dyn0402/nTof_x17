@@ -11,6 +11,7 @@ Run 2 = `p2_det3` (registry key `c26__mx17_det3_p2_det1_overnight_6-27-26`, subr
 
 - **Paper:** `03_setups.tex:49` "The one difference is the drift velocity, 35.8 against 37.2 um/ns, as the gas dried through the night".
   `06_gas.tex:11` "timing velocity 17.7--37.2 um/ns at 177--390 V/cm" (37.2 there is the top of the scan, 1100 V on the cathode).
+  2026-11-24: the 177 V/cm (500 V) timing velocity is an upper limit (drift column longer than the recorded waveform); the text now quotes 25.2--37.2 um/ns at 248--390 V/cm, the water fit and the v x T gap leave it out; with golden Run 1's stack at 355 V/cm added (S4 re-check, T 779.4 ns) the gap is 28.4 +- 0.4 mm (chi2 3.0/3) and the water 0.97 % (chi2 1.8/3); five chambers 28.4-31.1 mm, mean 29.5, 1.0 mm rms (`rerun/paper1_gap/audit/results/q_RESULT.md`, fourth round).
 - **Source:** the two numbers are two different estimators, and 37.2 for Run 2 has nothing to do with the 37.2 of the scan.
   - 35.8 = Run 1's *timing* velocity (head-on stack, gap/T): `rerun/calib/physics_inputs.json` key `det3.v_timing_um_ns` = 35.8;
     `rerun/paper1_res/results/rows.csv` (`sat_det3`) `v_drift` = 35.8.
@@ -94,6 +95,17 @@ Run 2 = `p2_det3` (registry key `c26__mx17_det3_p2_det1_overnight_6-27-26`, subr
 - **Use:** caption "(a) chamber A ... plateau pool of 30 rows (70 470 reference rays; Runs 1 and 2 are two of the rows)"; quote 92.3 % (Runs 1+2) in the text and drop the 92.6 % from the caption, or write "golden-run interior efficiency (pass-1 tables): A 92.6 (Run 1) ...". For C and D state that the map pools scan points near the plateau and the numbers are the 495 V long run.
 
 ## 7. Angular resolution: A 0.98 vs 0.99; B 1.03/1.08 vs 1.05/1.13; decile range 0.82-0.94
+
+**Requoted 2026-11-24 on the per-mounting maps (bench re-finalization step 5; everything below this box is the pass-1 / bow-block rundown, kept for the history).**
+Producer `figs/make_angle_resolution_v2.py` (ANGRES_ANGLES=map1 default, `pass1` = the numbers below), angle from `rerun/calib/phimap/map1/angles_cv.py`:
+five-time-block cross-validated map angle where the map is used (30 mm interior), pass 1 elsewhere; the paper's own selection (03_angles interior_good,
+per_event.npz joined by event id; the pass-1 restatement on this sample closes with the old numbers to 1e-3 deg). Railed tracks: rescaled on C, left out on D and E.
+- A Runs 1+2 X 0.759 +- 0.005 / Y 0.693 +- 0.005 (25 422 / 25 359); Run 1 0.750 / 0.677, Run 2 0.763 / 0.698; bow block on the same tracks 0.987 / 0.899; no correction 1.099 / 1.070.
+- B (6-22 long run, 16 746 / 16 675) 0.801 / 0.903 (bow block 1.045 / 1.125); C 1.084 / 1.349 (6 565 / 6 596; bow block 1.256 / 1.506); D 1.029 / 1.149 (2 689 / 2 311 after leaving out 5.8 / 17.4 % railed; bow block on the same tracks 1.179 / 1.355, on all 1.232 / 1.461); E 2.333 / 2.015 (5 130 / 5 546 after leaving out 8 / 9 % railed; no map, bow block; all tracks 2.412 / 2.076).
+- A Gaussian core sigma 0.697 / 0.628, 93.3 / 92.3 % inside, chi2/ndf 25.5/13 and 72.8/11, s68/sigma 1.09 / 1.10; tail > 5 deg 3.38 / 3.43 % (3.44 / 3.44 % before: the map does not touch the tail).
+- gain scan (18 hv_scan rows) X 0.68-0.81, Y 0.62-0.74 (425-505 V), scale 0.995-1.005; drift scan 167-367 V/cm X 0.68-0.78, Y 0.66-0.80 (100 V/cm no map: 1.96 / 2.04); time series run means X 0.75 / 0.76, Y 0.68 / 0.70 (X trend +0.005 +- 0.002 deg/h, 2.6 sigma).
+- pointing: 0.76 / 0.69 deg -> 3.05 / 2.77 mm (position share 0.15 / 0.19 %), `figs/out/pointing.json`.
+- Appendix `tab:mapall`: `rerun/calib/phimap/RESULT.md` ("Against the r3 targets", the C three-row table); its drift-time column is the earlier r3 test, not redone.
 
 - **Paper:** `02_design.tex:32` "A 0.98/0.90, B 1.03/1.08"; `08_tracking.tex:7-8` "A 0.99/0.90; B 1.05/1.13"; `03_setups.tex:47-48` Run 1/Run 2 "0.975 / 0.991 in X and 0.896 / 0.900 in Y"; `05_efficiency.tex:64`.
 - **Source:** `rerun/paper1_res/results/angle_resolution.json` (Runs 1+2, 03_angles interior_good, pass arm), `rows.csv`, `PASS1_RESOLUTION_2026-10-31.md`.
@@ -194,3 +206,43 @@ Notes on the table:
 - Dish depths: the sheet's pass-1 1-D per-view numbers (A 1.24, B 1.98, C 1.50, D 1.46, E 1.90 mean of X and Y; per view 0.90-2.45 mm) are a different estimator; the text of `08b_bow.tex` and the figure `bow_profiles` use the 2-D fit above.
 - Water of A is for the drift scan at one water for 500-1100 V; the golden runs of the other chambers are single-field values at the row's field (B 321, C 250, D 238, E 197 V/cm).
 - C's f is from a 92 %-saturated sample (f_sat 0.92) and D's from 14 % unsaturated events; C's and D's charge quantities beyond f are not measurable (`paper1_charge` README).
+
+- 2026-11-24 (Dylan): chamber A on 23 June dropped from Paper I (pass-1 angles uncorrelated with M3, r = 0.01). Bow stability set 19 -> 18 runs (`rerun/paper1_res/bow_2d_fig.py` CH): all 18 within 2 sigma, largest 1.4 sigma (was 1.8), 18/18 leave-one-out (was 18/19), chamber A mean depth 1.16 +- 0.10 mm (was 1.25 +- 0.08), 11 runs with error < 0.25 mm scatter 7.6 % rms (was 12 runs, 9 %). The slot sentence (A 23 June in the lower slot, 1.46 mm) is removed; no second lower-slot run of A remains.
+
+## 16. Two-track separation and the other last bow-block angles (requoted 2026-11-25 on the per-mounting maps)
+
+- **Two-track overlay (Sec. 8.4, Fig. `two_track_separation`).** Same 2 400 overlays + 400 checks (condor 4666850, 11-11), no refit: the map
+  changes only the slope-to-angle conversion. Each muon's own X and Y candidates go through `wft.reco.bow_pairs` with the map1 bundle of
+  `sat_det3`, plus the donor event's CV shift (`angles_cv.row_angles`; rms 0.06-0.08 deg). Opening angle in space s68: 0.93-1.20 deg above
+  3 mm (1.38 below, 33 pairs), was 1.23-1.50 on the bow block. One track: 0.66-0.68 deg (both views pooled) at every separation; single
+  check X 0.74 / Y 0.61 (200 donors). Separation error s68 0.73-1.11 mm above 3 mm (was 0.79-1.12; mid-gap uses the tan). Efficiencies
+  identical. `TT_ANGLES=table` reproduces the 11-11 json bit for bit; `_pass1` and `_map1prod` jsons kept for comparison (in-sample map:
+  same within 0.01-0.02 deg). Conclusions: "1.3 deg" above 18 mm -> 1.0 deg (1.03-1.08 in the three bins).
+- **Abstract / intro / Sec. 9.3.** Abstract 1.0/0.9 -> 0.8/0.7 deg; intro "0.9 or better" -> 0.8; Sec. 9.3 and Fig. `gas_scatter` (b): the
+  dashed chamber line at 0.73 deg (mean of 0.76 / 0.69, was 1.0), crossing of the fit-minus-entry angle at 6.3 MeV ("below about 6 MeV",
+  was 5).
+- **Angle-scale velocity and the gaps (Sec. 5).** v_ang = v_drift x mean kw now comes from the map1 bundles (the constants the
+  quoted angles use), everywhere it enters Paper I; rows without a map are unchanged. Chamber A ladders (`pg_twov.py extract
+  --ladder-only --map1`; pass-1 mode reproduces the old twov.json exactly): 500/700/900/1100 V -> +0.26/+0.17/-0.41/+0.09 %.
+  355 V/cm golden point (`rerun/calib/s4/golden_355_vang.py`): Run 1 now from sat_det3's own map1 bundle, no longer the hv_scan2
+  proxy (36.665 -> 36.762), Run 2 37.195 -> 37.339; Run 2 / Run 1 +1.6 % (was 1.4 %); gaps 28.65 / 28.49 mm, sum 28.53 +- 0.15.
+  Mean of the four fields 28.43 +- 0.32 mm, chi2 3.2/3 (was 28.37, 2.9/3). Water fit unchanged (timing only): 0.958 %, chi2 2.62/3.
+  Angle-scale points around the water curve above 100 V/cm: -2.4 to +2.4 % (was -2.6 to +2.1).
+  Other chambers (`make_gaps.py`, `GAPS_ANGLES=pass1` for the old ones in `*_pass1.csv`): B 31.09 -> 31.45, C 28.71 -> 29.44,
+  D 29.70 -> 30.19 (chi2 6.9 -> 12.6 / 6), E 29.54 (no map). C moves because map1 measures kw without the railed tracks (read
+  3-10 % flat); D's X kw is measured on x >= 200 mm only. Geometric gaps: B 31.12, C 28.0 +- 1.0, D 29.44 +- 1.12, E 30.48;
+  C now differs by 1.4 mm (1.3 sigma), so "within 1 mm" holds for B, D, E only. Range 28.4-31.4 mm, mean 29.8, rms about 30 mm 1.0.
+  Not changed, on purpose: `gas_drying` and the chamber A time series re-estimate kw per time block with the pass-1 bow block and
+  anchor to the timing velocity, so a constant factor from the map cancels.
+
+## 17. Drift time near the end of the record; chamber D's failed stack fit (2026-11-25)
+
+- Study: `rerun/paper1_gap/window_bias/` (README, report.html). A record that ends after the drift column does not bias T
+  (toys within 5 ns; real stacks of A, B and D's long run cut to 120 ns after the column move by 1-7 ns). E 6-24, the
+  shortest quoted margin (116 ns), moves < 0.2 mm and shows no attachment (tau 22 us, T +2 ns).
+- Attachment biases T low, more so with a short record. C's 26 June rows prefer tau ~ 2 us (1.5-2.4 sigma per row): gap
+  29.44 -> 30.13 mm with the loss fitted. D's HV-scan rows: 29.38 -> 29.63. Paper I quotes the uniform column and states
+  the +0.7 mm (askDylan in Sec. 5).
+- D's long run `g_det7_long|in30` in fit_v1 was the fit's starting point (T 820, rms NaN). Refitted on X ch >= 256:
+  798.6 +- 17.2 ns (fit_v2 on EOS). D water 0.48 -> 0.44 % [0.39, 0.48]; D gap 30.19 -> 29.38 mm (chi2 12.6 -> 4.4 / 6);
+  drying D 0.68 -> 0.35 now 0.67 -> 0.33 %, correlation 0.976. Mean of the five gaps 29.6 mm, 1.1 mm rms about 30.

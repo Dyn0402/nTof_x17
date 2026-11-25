@@ -42,7 +42,7 @@ SIG_HIT = 1.0                          # position error of the single hit of the
 SEG = mc.G_DRIFT                       # 28.2 mm measured segment (normal incidence)
 SIG_X = (0.1, 0.5, 1.0, 2.0)
 SIG_TH = np.arange(0.0, 3.01, 0.25)    # deg
-MEAS = dict(theta_x=0.99, theta_y=0.90, x_intr=0.12, x_core=0.5)
+MEAS = dict(theta_x=0.76, theta_y=0.69, x_intr=0.12, x_core=0.5)
 Q68 = 0.6826894921
 TH_CH = 0.95                           # chamber angle resolution used for the pair numbers (mean of X and Y)
 TH_REQ = 1.0                           # the requirement drawn in (b) [deg]
@@ -388,7 +388,7 @@ def main():
         notes='pointing = s68 of the impact parameter in one projection; analytic = normal incidence '
               'sqrt(sx^2+(d sth)^2); toy averages isotropic tracks over the efficient area (path d/cos alpha).',
     )
-    for th in (0.99, 0.90):
+    for th in (0.76, 0.69, 0.99, 0.90):   # 11-24: chamber A on the maps (0.76 / 0.69); the bow-block values kept
         for sx in (0.12, 0.5):
             k = f'theta{th:.2f}_x{sx:g}'
             num['pointing_mm'][k] = round(float(analytic(sx, th)), 2)

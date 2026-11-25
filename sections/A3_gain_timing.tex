@@ -7,9 +7,12 @@ existed and was unused.}
 
 \subsection{Runs 1 and 2 against time}
 \Cref{fig:timeseries} shows chamber~A as a function of time through its two long runs. The charge, the efficiency and
-the position, angle and time resolutions are flat over the ten hours and agree between the two runs. The angular
-resolution is 0.975 and 0.991\textdegree{} in X and 0.896 and 0.900\textdegree{} in Y, and the uncorrelated time
-resolution is 22.4 and 22.2\,ns. The only quantity that changes is the drift velocity. To compare the two runs we use
+the position and time resolutions are flat over the ten hours and agree between the two runs. The angular
+resolution, with the cross-validated map of \cref{sec:angle}, is 0.75 and 0.76\textdegree{} in X and 0.68 and
+0.70\textdegree{} in Y, and the uncorrelated time resolution is 22.4 and 22.2\,ns. The angular resolution in Y is flat.
+In X it rises by $0.005\pm0.002$\textdegree{} per hour, which is 0.05\textdegree{} over the ten hours and 2.6 standard
+deviations. We have no explanation for this rise, and it is small compared with the resolution. The quantity that
+changes most is the drift velocity. To compare the two runs we use
 a single estimator, the angle-scale velocity anchored to the timing velocity of Run~1. With this estimator the drift
 velocity is 35.8\,\textmu m/ns in Run~1 and 36.4\,\textmu m/ns in Run~2, and it rises from 36.2 to 36.6 during the
 night. This is an increase of $+1.8\,\%$, which corresponds to the water content falling from 0.99 to 0.94\,\%
@@ -22,15 +25,17 @@ Run~2's velocity with the angle-scale factor folded in), and 37.2 is by coincide
   \caption{Chamber~A through Runs 1 and 2 (night of 27--28 June), in bins of time. (a) Drift velocity from the
   reference tracks and from the duration of the drift column and, right axis, the water it corresponds to. (b) Median
   track charge and the fraction of saturated tracks. (c) Efficiency in the interior and over the full area. (d) Core of
-  the position residual. (e) Angular resolution. (f) Time resolution. X filled, Y open. Dotted lines: the mean of each
+  the position residual. (e) Angular resolution (map angle, cross-validated). (f) Time resolution. X filled, Y open. Dotted lines: the mean of each
   run.}
   \label{fig:timeseries}
 \end{figure}
 
 \subsection{Angular resolution against drift field}
-In the drift-field scan of chamber~A at 490\,V, the angular resolution stays between 0.92 and 0.97\textdegree{} in X
-and between 0.87 and 1.00\textdegree{} in Y from 167 to 367\,V/cm, with about 650 tracks per point. At 100\,V/cm the
-drift column no longer fits in the readout window, and the angular resolution is 2.0\textdegree.
+In the drift-field scan of chamber~A at 490\,V, the angular resolution stays between 0.68 and 0.78\textdegree{} in X
+and between 0.66 and 0.80\textdegree{} in Y from 167 to 367\,V/cm, with about 650 tracks per point. These points use
+the map of the mounting, which was fitted at 355\,V/cm and not on these rows, so they are held out of the fit. With
+the bow block alone, the same points give 0.92 to 0.97\textdegree{} and 0.87 to 1.00\textdegree. At 100\,V/cm the
+drift column no longer fits in the readout window, and the angular resolution is 2.0\textdegree{} with no map.
 
 \subsection{Time resolution: what it depends on}\label{app:timingdetails}
 \Cref{fig:timing} shows the time resolution of chamber~A as a function of the size of the early signal. We define the

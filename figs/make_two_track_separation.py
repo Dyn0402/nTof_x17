@@ -53,6 +53,47 @@ FEU = dict(x=7, y=8)
 R_MM, DT0, MARGIN, ANG_MAX, MID = 5.0, 30.0, 6.0, 20.0, 15.0
 SEP_BINS = [0, 3, 6, 9, 12, 18, 24, 40, 80]
 FAR = 100.0
+# Angles of the scored candidates (plot step only; the fits do not depend on it).  'map1' (default since 2026-11-25): the
+# per-mounting angle map of the bench re-finalization (production map1 bundle of the row, interior only, pass-1 bow block
+# outside its domain), applied with wft.reco.bow_pairs to each muon's own X and Y candidates, plus the donor event's
+# cross-validation shift (cv - prod of rerun/calib/phimap/map1/angles_cv.row_angles('sat_det3'), the angle Paper I quotes;
+# rms 0.06-0.08 deg per event, s68 of Run 1 0.738/0.672 in sample against 0.750/0.677 CV).  'map1prod': without that shift
+# (the shipped table's map, in sample for these donors).  'pass1': the same code path
+# with the pass-1 bundle (bow block).  'table': the candidates' stored tan_theta (the 2026-11-11 figure; 7 % of the
+# candidates carry a tangent mapped with another partner's position, up to 0.015 in tan).
+ANGLES = os.environ.get('TT_ANGLES', 'map1')
+BUNDLES = dict(map1prod=os.environ.get('TT_MAP1_BUNDLE') or os.path.join(CJ, 'd006ab29/map1', REL, 'mx17_3/calib_bundle'),
+               map1=os.environ.get('TT_MAP1_BUNDLE') or os.path.join(CJ, 'd006ab29/map1', REL, 'mx17_3/calib_bundle'),
+               pass1=os.environ.get('TT_PASS1_BUNDLE') or os.path.join(CJ, 'd006ab29/pass1_all', REL, 'mx17_3/calib_bundle'))
+_CAL = {}
+
+
+def _cv_shift():
+    """Per donor event: cv - prod map tangent per view (0 where the map is not used), indexed by event_id."""
+    if 'cv' not in _CAL:
+        sys.path[:0] = [os.path.join(REPO, 'rerun/calib/phimap/map1'), os.path.join(REPO, 'rerun/calib/phimap')]
+        import angles_cv
+        d = angles_cv.row_angles('sat_det3')
+        _CAL['cv'] = pd.DataFrame({p: np.where(d[f'{p}_used'], d[f'{p}_cv'] - d[f'{p}_prod'], 0.0) for p in 'xy'},
+                                  index=d.index).fillna(0.0)
+    return _CAL['cv']
+
+
+def tan_pair(cx, cy, donor=None):
+    """(tan_x, tan_y) of one muon from its X and Y candidates, in the angle convention ANGLES (donor = its event id)."""
+    if ANGLES == 'table':
+        return float(cx.tan_theta), float(cy.tan_theta)
+    kind = 'map1' if ANGLES.startswith('map1') else ANGLES
+    if kind not in _CAL:
+        from wft.calib import CalibrationBundle
+        _CAL[kind] = CalibrationBundle.load(BUNDLES[kind])
+    from wft import reco
+    q = reco.bow_pairs(_CAL[kind], [cx.w], [cx.p0], [cy.w], [cy.p0])
+    tx, ty = float(q['tan_x'][0]), float(q['tan_y'][0])
+    if ANGLES == 'map1':
+        sh = _cv_shift().loc[donor]
+        tx, ty = tx + sh['x'] * bool(q['phi_x'][0]), ty + sh['y'] * bool(q['phi_y'][0])
+    return tx, ty
 
 
 def cfg_ns():
@@ -348,9 +389,10 @@ def score_tables(M, C):
             if fa:
                 cx, cy = pick['x'][0].loc[pick['x'][1]], pick['y'][0].loc[pick['y'][1]]
                 r['a_paired'] = bool(cx.track_id >= 0 and cx.track_id == cy.track_id)
+                tp = dict(zip('xy', tan_pair(cx, cy, m.a)))
                 for p, c in (('x', cx), ('y', cy)):
                     r[f'res_{p}'] = c.p0 - ref['a'][f'mesh_{p}']
-                    r[f'dth_{p}'] = np.degrees(np.arctan(c.tan_theta) - np.arctan(ref['a'][f'tan_{p}']))
+                    r[f'dth_{p}'] = np.degrees(np.arctan(tp[p]) - np.arctan(ref['a'][f'tan_{p}']))
             out.append(r); continue
         fb = all(pick[p][2] is not None for p in 'xy')
         r['b_found'] = fb
@@ -373,7 +415,8 @@ def score_tables(M, C):
             r['reconstructed'] = bool(ta >= 0 and tb >= 0 and ta != tb and c['a']['y'].track_id == ta
                                       and c['b']['y'].track_id == tb)
             # geometry of the pair: reco against reference
-            rt = {k: {p: (c[k][p].p0, c[k][p].tan_theta) for p in 'xy'} for k in 'ab'}
+            tk = {k: dict(zip('xy', tan_pair(c[k]['x'], c[k]['y'], getattr(m, k)))) for k in 'ab'}
+            rt = {k: {p: (c[k][p].p0, tk[k][p]) for p in 'xy'} for k in 'ab'}
             tt = {k: {p: (ref[k][f'mesh_{p}'], ref[k][f'tan_{p}']) for p in 'xy'} for k in 'ab'}
             for nm, S in (('reco', rt), ('ref', tt)):
                 r[f'{nm}_open'] = _open(S['a']['x'][1], S['a']['y'][1], S['b']['x'][1], S['b']['y'][1])
@@ -552,10 +595,13 @@ def main():
     T = score_tables(M, C)
     res = summarise(T, tm)
     res['sample'] = a.prefix
+    res['angles'] = dict(convention=ANGLES, bundle=BUNDLES.get(ANGLES))
     os.makedirs(OUT, exist_ok=True)
     name = 'two_track_separation' if a.prefix == 'run' else f'two_track_separation_{a.prefix}'
+    if ANGLES != 'map1':
+        name += f'_{ANGLES}'
     json.dump(res, open(os.path.join(OUT, name + '.json'), 'w'), indent=1, default=float)
-    T.to_parquet(os.path.join(WORK, f'{a.prefix}_scored.parquet'))
+    T.to_parquet(os.path.join(WORK, f'{a.prefix}_scored_{ANGLES}.parquet'))
     print(json.dumps({k: v for k, v in res.items() if k != 'bins'}, indent=1, default=float))
     for b in res['bins']:
         print(b['lo'], b['hi'], b['n'], 'reco', b['reconstructed']['p'], 'resolved', b['resolved']['p'],

@@ -37,7 +37,7 @@ L = mc.G_DRIFT
 DZ = 0.1
 PITCH = 0.78
 SIG_POS = 0.12
-MEAS_ANG = 1.0              # deg, chamber resolution on muons (0.99 X / 0.90 Y)
+MEAS_ANG = 0.73             # deg, chamber resolution on muons: mean of X 0.76 / Y 0.69 (map, chamber A Runs 1+2; was 1.0 on the bow block)
 T_MU = 4000.0               # MeV kinetic, a typical cosmic muon (mean ~4 GeV at sea level)
 T_TAB = (3, 4, 5, 8, 12, 16)
 

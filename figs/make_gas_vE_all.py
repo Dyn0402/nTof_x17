@@ -33,7 +33,22 @@ S = json.load(open(GAS / 'results' / 'summary.json'))['golden_water']
 TW = json.load(open(GAS / 'results' / 'twov.json'))
 sc = D['scan']
 gap = sc['fixed']['gap']
-w0, (wlo, whi) = sc['fixed']['water'], sc['fixed']['water_68']
+# 2026-11-24 (gap audit, q_RESULT.md fourth round): at 500 V the drift column (1800 ns from the angle-scale velocity) is
+# longer than the recorded stack (1590 ns), so the stack fit puts T at the data end and the timing velocity there is
+# only an upper limit. It is drawn open and left out of the water fit (0.967 -> 0.970 %, chi2 2.5/3 -> 1.8/2).
+LIMIT_V = (500.0,)
+# 2026-11-24 (Dylan): the 355 V/cm (1000 V) timing point was missing because the gas study stacked only the drift-scan
+# sub-runs. Golden Run 1's head-on stack from the S4 re-check (same model and arm) is added (pg_twov.golden_point).
+import pg_twov                                                     # noqa: E402
+_gp = pg_twov.golden_point()
+SCAN_PTS = sc['points'] + [dict(V=float(_gp['V']), E=_gp['E'], v=_gp['v'], v_err=_gp['v_err'], key='sat_det3 + p2 night (S4, Run 1+2)')]
+_fit = [p for p in SCAN_PTS if p['V'] not in LIMIT_V]
+_ws = np.arange(0.80, 1.15, 0.0005)
+_c2 = np.array([sum(((p['v'] - GI.v_of(w, p['E'])) / p['v_err']) ** 2 for p in _fit) for w in _ws])
+_i = int(np.argmin(_c2)); _in = _ws[_c2 <= _c2[_i] + 1]
+w0, (wlo, whi) = float(_ws[_i]), (float(_in.min()), float(_in.max()))
+WFIT = dict(water=w0, water_68=[wlo, whi], chi2=float(_c2[_i]), ndf=len(_fit) - 1, gap=gap, excluded_V=list(LIMIT_V))
+print(f'water fit without {LIMIT_V} V: {w0:.3f} % [{wlo:.3f}, {whi:.3f}], chi2 {_c2[_i]:.2f}/{len(_fit) - 1}')
 c3 = ps.DET_COLOR['det3']
 r2 = lambda x: f'{x:.2f}'
 
@@ -59,14 +74,25 @@ ax.plot(E, [GI.v_of(0.0, e) for e in E], ':', color=ps.MUTED, lw=0.9, zorder=2, 
 La = sorted(TW['ladder'].values(), key=lambda L: L['drift_V'])
 xa = np.array([L['drift_V'] / (gap / 10) for L in La]); ya = np.array([L['v_ang'] for L in La])
 ea = np.array([L['v_ang_err'] for L in La])
+# Dylan 2026-11-24: at 355 V/cm (1000 V) Run 1 and Run 2 are summed, for the angle-scale velocity too (golden_point:
+# stack-event-weighted mean of Run 1's hv_scan2 ladder and Run 2's pass bundle)
+_i1000 = [L['drift_V'] for L in La].index(1000)
+ya[_i1000], ea[_i1000] = _gp['v_ang'], _gp['v_ang_err']
 ax.errorbar(xa, ya, yerr=ea, fmt='s', ms=4, color=c3, mfc='white', mec=c3, zorder=4, label=r'A: angle-scale $v_\mathrm{d}$ (reference ladder)')
-P = sorted(sc['points'], key=lambda p: p['E'])
+P = sorted(SCAN_PTS, key=lambda p: p['E'])
+PL = [p for p in P if p['V'] in LIMIT_V]; P = [p for p in P if p['V'] not in LIMIT_V]
 xt = np.array([p['E'] for p in P]); yt = np.array([p['v'] for p in P]); et = np.array([p['v_err'] for p in P])
 ax.errorbar(xt, yt, yerr=et, fmt='o', ms=4.5, color=c3, zorder=5, label=r'A: timing $v_\mathrm{d} = g/T$')
+xl = np.array([p['E'] for p in PL]); yl = np.array([p['v'] for p in PL])
+ax.plot(xl, yl, marker='o', ls='none', ms=4.5, color=c3, mfc='white', zorder=5)   # upper limit: open, arrow down
+for x, y in zip(xl, yl):
+    ax.annotate('', xy=(x, y - 4.0), xytext=(x, y), arrowprops=dict(arrowstyle='->', color=c3, lw=0.8), zorder=5)
 for x, y, e in zip(xa, ya, ea):
     rows.append(dict(kind='A_angle_scale_v', E=x, v=y, v_err=e, magboltz=GI.v_of(w0, x)))
 for x, y, e in zip(xt, yt, et):
     rows.append(dict(kind='A_timing_v', E=x, v=y, v_err=e, magboltz=GI.v_of(w0, x)))
+for p in PL:
+    rows.append(dict(kind='A_timing_v_upper_limit', E=p['E'], v=p['v'], v_err=p['v_err'], magboltz=GI.v_of(w0, p['E'])))
 
 # chambers B-E: one long-run timing point each, in their own colour and marker
 for det in (OTH if SHOW_OTH else ()):
@@ -88,6 +114,9 @@ ar.axhline(1.0, color=ps.MODEL, lw=1.0)
 ar.fill_between(E, np.minimum(lo, hi) / vm, np.maximum(lo, hi) / vm, color=ps.MODEL, alpha=0.12, lw=0)
 ar.errorbar(xa, ya / mz(xa), yerr=ea / mz(xa), fmt='s', ms=4, color=c3, mfc='white', mec=c3, zorder=4)
 ar.errorbar(xt, yt / mz(xt), yerr=et / mz(xt), fmt='o', ms=4.5, color=c3, zorder=5)
+ar.plot(xl, yl / mz(xl), marker='o', ls='none', ms=4.5, color=c3, mfc='white', zorder=5)
+ar.annotate('', xy=(xl[0], yl[0] / mz(xl)[0] - 0.05), xytext=(xl[0], yl[0] / mz(xl)[0]),
+            arrowprops=dict(arrowstyle='->', color=c3, lw=0.8)) if len(PL) else None
 ar.set_ylim(0.9, 1.26); ar.set_xlim(20, 415); ax.set_xlim(20, 415)
 ax.set_xlabel(r'drift field $E = V/g$ (V/cm)')
 ar.set_xlabel(r'drift field $E = V/g$ (V/cm)'); ar.set_ylabel(r'$v_\mathrm{d}\,/\,v_{\mathrm{d}}^{\mathrm{Magboltz}}$')
@@ -96,6 +125,7 @@ if SHOW_OTH and '--nolabels' not in sys.argv:
     exec(open(Path(__file__).with_name('_gas_labels.py')).read())
 out = Path(__file__).resolve().parent / 'out' / 'gas_vE_all'
 ps.save(fig, out, data=pd.DataFrame(rows))
+json.dump(WFIT, open(out.with_name('gas_vE_all_waterfit.json'), 'w'), indent=1)
 json.dump({ps.NAME[d]: dict(E=S[d]['E'], v=S[d]['v'], v_err=S[d]['v_err'], water_pct=S[d]['water']) for d in OTH},
           open(out.with_suffix('.json'), 'w'), indent=1)
 print('ok', out)

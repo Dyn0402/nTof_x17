@@ -1,0 +1,355 @@
+{
+ "rows": [
+  {
+   "key": "air",
+   "label": "air, target to window",
+   "material": "air",
+   "thickness_mm": 200.0,
+   "fill": 1,
+   "assumed": false,
+   "group": "front",
+   "X0_cm": 30390.041,
+   "x_over_X0_pct": 0.06581,
+   "theta0_deg": {
+    "4MeV": 3.241,
+    "8MeV": 1.701,
+    "16MeV": 0.875
+   }
+  },
+  {
+   "key": "window",
+   "label": "entrance window, Mylar",
+   "material": "mylar",
+   "thickness_mm": 0.06,
+   "fill": 1,
+   "assumed": false,
+   "group": "front",
+   "X0_cm": 28.536,
+   "x_over_X0_pct": 0.02103,
+   "theta0_deg": {
+    "4MeV": 1.722,
+    "8MeV": 0.904,
+    "16MeV": 0.465
+   }
+  },
+  {
+   "key": "gap5",
+   "label": "gas gap",
+   "material": "gas",
+   "thickness_mm": 5.0,
+   "fill": 1,
+   "assumed": false,
+   "group": "front",
+   "X0_cm": 11974.092,
+   "x_over_X0_pct": 0.00418,
+   "theta0_deg": {
+    "4MeV": 0.698,
+    "8MeV": 0.366,
+    "16MeV": 0.188
+   }
+  },
+  {
+   "key": "kapton",
+   "label": "drift cathode, Kapton",
+   "material": "kapton",
+   "thickness_mm": 0.05,
+   "fill": 1,
+   "assumed": false,
+   "group": "front",
+   "X0_cm": 28.577,
+   "x_over_X0_pct": 0.0175,
+   "theta0_deg": {
+    "4MeV": 1.555,
+    "8MeV": 0.816,
+    "16MeV": 0.419
+   }
+  },
+  {
+   "key": "cu",
+   "label": "drift cathode, copper",
+   "material": "Cu",
+   "thickness_mm": 0.009,
+   "fill": 1,
+   "assumed": true,
+   "group": "front",
+   "X0_cm": 1.435,
+   "x_over_X0_pct": 0.06271,
+   "theta0_deg": {
+    "4MeV": 3.156,
+    "8MeV": 1.656,
+    "16MeV": 0.851
+   }
+  },
+  {
+   "key": "drift",
+   "label": "drift gas (28.2 mm measured)",
+   "material": "gas",
+   "thickness_mm": 28.2,
+   "fill": 1,
+   "assumed": false,
+   "group": "drift",
+   "X0_cm": 11974.092,
+   "x_over_X0_pct": 0.02355,
+   "theta0_deg": {
+    "4MeV": 1.834,
+    "8MeV": 0.963,
+    "16MeV": 0.495
+   }
+  },
+  {
+   "key": "mesh",
+   "label": "mesh, steel (calendered)",
+   "material": "steel",
+   "thickness_mm": 0.02,
+   "fill": 0.443,
+   "assumed": false,
+   "group": "back",
+   "X0_cm": 1.73,
+   "x_over_X0_pct": 0.05122,
+   "theta0_deg": {
+    "4MeV": 2.822,
+    "8MeV": 1.481,
+    "16MeV": 0.761
+   }
+  },
+  {
+   "key": "ampgap",
+   "label": "amplification gap",
+   "material": "gas",
+   "thickness_mm": 0.15,
+   "fill": 1,
+   "assumed": false,
+   "group": "back",
+   "X0_cm": 11974.092,
+   "x_over_X0_pct": 0.00013,
+   "theta0_deg": {
+    "4MeV": 0.095,
+    "8MeV": 0.05,
+    "16MeV": 0.026
+   }
+  },
+  {
+   "key": "esl",
+   "label": "resistive strips",
+   "material": "paste",
+   "thickness_mm": 0.01,
+   "fill": 0.2049,
+   "assumed": true,
+   "group": "back",
+   "X0_cm": 28.571,
+   "x_over_X0_pct": 0.00072,
+   "theta0_deg": {
+    "4MeV": 0.258,
+    "8MeV": 0.135,
+    "16MeV": 0.07
+   }
+  },
+  {
+   "key": "ins",
+   "label": "insulator, polyimide + prepreg",
+   "material": "fr4",
+   "thickness_mm": 0.05,
+   "fill": 1,
+   "assumed": false,
+   "group": "back",
+   "X0_cm": 19.412,
+   "x_over_X0_pct": 0.02576,
+   "theta0_deg": {
+    "4MeV": 1.928,
+    "8MeV": 1.012,
+    "16MeV": 0.52
+   }
+  },
+  {
+   "key": "pads",
+   "label": "pads, copper",
+   "material": "Cu",
+   "thickness_mm": 0.034,
+   "fill": 0.76,
+   "assumed": false,
+   "group": "back",
+   "X0_cm": 1.435,
+   "x_over_X0_pct": 0.18004,
+   "theta0_deg": {
+    "4MeV": 5.645,
+    "8MeV": 2.963,
+    "16MeV": 1.523
+   }
+  },
+  {
+   "key": "d2",
+   "label": "prepreg",
+   "material": "fr4",
+   "thickness_mm": 0.1,
+   "fill": 1,
+   "assumed": false,
+   "group": "back",
+   "X0_cm": 19.412,
+   "x_over_X0_pct": 0.05152,
+   "theta0_deg": {
+    "4MeV": 2.831,
+    "8MeV": 1.486,
+    "16MeV": 0.764
+   }
+  },
+  {
+   "key": "ystr",
+   "label": "Y strips, copper",
+   "material": "Cu",
+   "thickness_mm": 0.017,
+   "fill": 0.458,
+   "assumed": false,
+   "group": "back",
+   "X0_cm": 1.435,
+   "x_over_X0_pct": 0.05425,
+   "theta0_deg": {
+    "4MeV": 2.913,
+    "8MeV": 1.529,
+    "16MeV": 0.786
+   }
+  },
+  {
+   "key": "d3",
+   "label": "prepreg",
+   "material": "fr4",
+   "thickness_mm": 0.1,
+   "fill": 1,
+   "assumed": false,
+   "group": "back",
+   "X0_cm": 19.412,
+   "x_over_X0_pct": 0.05152,
+   "theta0_deg": {
+    "4MeV": 2.831,
+    "8MeV": 1.486,
+    "16MeV": 0.764
+   }
+  },
+  {
+   "key": "xstr",
+   "label": "X strips, copper",
+   "material": "Cu",
+   "thickness_mm": 0.017,
+   "fill": 0.457,
+   "assumed": false,
+   "group": "back",
+   "X0_cm": 1.435,
+   "x_over_X0_pct": 0.05413,
+   "theta0_deg": {
+    "4MeV": 2.91,
+    "8MeV": 1.527,
+    "16MeV": 0.785
+   }
+  },
+  {
+   "key": "d4",
+   "label": "prepreg",
+   "material": "fr4",
+   "thickness_mm": 0.1,
+   "fill": 1,
+   "assumed": false,
+   "group": "back",
+   "X0_cm": 19.412,
+   "x_over_X0_pct": 0.05152,
+   "theta0_deg": {
+    "4MeV": 2.831,
+    "8MeV": 1.486,
+    "16MeV": 0.764
+   }
+  },
+  {
+   "key": "l7",
+   "label": "via lands, copper",
+   "material": "Cu",
+   "thickness_mm": 0.034,
+   "fill": 0.53,
+   "assumed": false,
+   "group": "back",
+   "X0_cm": 1.435,
+   "x_over_X0_pct": 0.12555,
+   "theta0_deg": {
+    "4MeV": 4.629,
+    "8MeV": 2.43,
+    "16MeV": 1.249
+   }
+  },
+  {
+   "key": "d5",
+   "label": "prepreg + polyimide",
+   "material": "fr4",
+   "thickness_mm": 0.05,
+   "fill": 1,
+   "assumed": false,
+   "group": "back",
+   "X0_cm": 19.412,
+   "x_over_X0_pct": 0.02576,
+   "theta0_deg": {
+    "4MeV": 1.928,
+    "8MeV": 1.012,
+    "16MeV": 0.52
+   }
+  },
+  {
+   "key": "roh",
+   "label": "Rohacell",
+   "material": "rohacell",
+   "thickness_mm": 5.0,
+   "fill": 1,
+   "assumed": true,
+   "group": "back",
+   "X0_cm": 769.231,
+   "x_over_X0_pct": 0.065,
+   "theta0_deg": {
+    "4MeV": 3.219,
+    "8MeV": 1.69,
+    "16MeV": 0.869
+   }
+  },
+  {
+   "key": "backfoil",
+   "label": "back foil, Mylar",
+   "material": "mylar",
+   "thickness_mm": 0.025,
+   "fill": 1,
+   "assumed": true,
+   "group": "back",
+   "X0_cm": 28.536,
+   "x_over_X0_pct": 0.00876,
+   "theta0_deg": {
+    "4MeV": 1.057,
+    "8MeV": 0.555,
+    "16MeV": 0.285
+   }
+  }
+ ],
+ "totals_x_over_X0_pct": {
+  "front": 0.1712,
+  "front_noCu": 0.1085,
+  "with_drift": 0.1948,
+  "behind": 0.7458
+ },
+ "totals_theta0_deg": {
+  "front": {
+   "4MeV": 5.491,
+   "8MeV": 2.882,
+   "16MeV": 1.482
+  },
+  "front_noCu": {
+   "4MeV": 4.272,
+   "8MeV": 2.242,
+   "16MeV": 1.153
+  },
+  "with_drift": {
+   "4MeV": 5.895,
+   "8MeV": 3.094,
+   "16MeV": 1.59
+  },
+  "behind": {
+   "4MeV": 12.306,
+   "8MeV": 6.459,
+   "16MeV": 3.32
+  }
+ },
+ "readout_board_um": 502.0,
+ "mesh_equivalent_steel_um": 8.86,
+ "notes": "Highland per projection with momentum; patterned layers averaged over their pattern; dagger = assumed; drift gas Ar/iC4H10 95/5 at 1 atm."
+}

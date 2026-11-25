@@ -29,17 +29,55 @@ fitted angles agree with those of the reference tracks.
 The gap itself can be measured from geometry, with no drift velocity involved. An inclined track crosses the gap over
 a length $L$ along the strips, so that $g=L/\tan\theta$. This gives $28.19\pm0.19$\,mm for chamber~A. The product of
 the angle-scale velocity and the duration of the drift column is a second, independent measurement of the same gap.
-Over the four drift fields of chamber~A's drift scan, this product gives $28.2\pm0.5$\,mm ($\chi^2=4.1$ for 3 degrees
-of freedom; \crefp{fig:twov}{c}). The two velocity measurements and the geometric gap are therefore consistent to
-2\,\%.
+Over four drift fields between 248 and 390\,V/cm, three from chamber~A's drift scan and the operating point, this
+product gives $28.4\pm0.3$\,mm ($\chi^2=3.2$ for 3 degrees of freedom; \crefp{fig:twov}{c}). At the operating point
+we sum Run~1 and Run~2. Run~2 was taken the following night, in drier gas. Its drift time is 2\,\% shorter and its
+angle-scale velocity 1.6\,\% higher than those of Run~1, so the two runs give the same gap ($28.7\pm0.3$\,mm and
+$28.5\pm0.2$\,mm). The two velocity measurements and the geometric gap are therefore consistent
+to 2\,\%. At the lowest field, 177\,V/cm, the drift column lasts about 1800\,ns, which is longer than the recorded
+waveform (\crefp{fig:twov}{a}). The measured duration at this field is therefore cut by the end of the record, and the
+gap obtained from it is only a lower limit.
 
-The measured gap is 1.8\,mm shorter than the design value of 30\,mm, which is set by the aluminum frame acting as the
-spacer. The data determine the mean gap but not the reason it is shorter. The bow of the readout board
-(\cref{sec:bow}) cannot explain it, since a mesh dished away from the cathode would make the gap longer at the center
-rather than shorter. We have no measurement of the position of the cathode.
-\askStephan{Is a gap of 28.2\,mm at the center plausible (cathode bulging toward the mesh under the overpressure of the
-5\,mm gas gap behind it, frame height)? The other chambers' geometric gaps in our tables are 28.0 (C), 29.4 (D) and
-31.1\,mm (B).}
+The same product of the angle-scale velocity and the duration of the drift column gives the gap of the other four
+chambers. It is 31.4\,mm for chamber~B, 29.4\,mm for chamber~C, 29.4\,mm for chamber~D and 29.5\,mm for chamber~E,
+each with an uncertainty of 0.3 to 0.4\,mm. For chamber~D, the angle-scale velocity of the X view is measured only on the
+half of the chamber with $x\ge200$\,mm, where the map of the drift direction is used (\cref{sec:angle}). The geometric
+gaps of chambers B, D and E agree with these values within 1\,mm. For chamber~C the geometric gap is $28.0\pm1.0$\,mm,
+so the two measurements differ by 1.4\,mm, which is 1.3 times their combined uncertainty.
+
+The drift time is measured only if the end of the drift column lies inside the recorded waveform. Chamber~E has the
+shortest record after the column: in its long run of 24~June, the stack of tracks ends 120\,ns after the last charge
+reaches the strips, while the response of the electronics lasts about 500\,ns. We checked what such a short record
+does to the fitted duration in two ways. First, we fitted simulated stacks made with the model of the fit itself and
+cut at the same place. The fit returns the true duration within 5\,ns, as long as the record ends after the column.
+Second, we cut the measured stacks of the other chambers, which have 400 to 800\,ns of record after the column, at
+120\,ns, and fitted them again. For chambers A and B and the long run of chamber~D, the duration changes by 1 to
+7\,ns, which is less than 1\,\%. For the runs of chambers C and D on 26~June it changes by 8 to 116\,ns, which is the
+effect of attachment described below. The short record of chamber~E therefore changes its gap by less than 0.2\,mm,
+provided that chamber~E has no attachment, which we check below. A record that ends before the column does bias the
+duration, and this is why the point at 177\,V/cm is only a lower limit. A second effect makes a short record matter
+more. If electrons are lost to attachment during the drift, the charge of the column falls with the drift time,
+and the fit of a uniform column returns a duration that is too short. A short record makes this bias larger, since
+less of the falling edge is seen. We fitted every stack again with an exponential loss of charge along the column.
+The chambers A, B and E show no loss (the attachment time is above 9\,\textmu s), and the fitted durations change by
+less than 3\,ns. The stacks of chamber~C on 26~June prefer an attachment time of about 2\,\textmu s, at 1.5 to 2.4
+standard deviations in each run. With this loss, their durations would be about 2\,\% longer on average, and the gap
+of chamber~C would be 0.7\,mm larger. We have no independent measurement of the attachment in chamber~C, so we
+quote the gap of the uniform column and state this as a limit of the measurement.
+\askDylan{Attachment in chamber C (window\_bias study, \texttt{rerun/paper1\_gap/window\_bias/README.md}): keep the
+uniform-column gap of C (29.4\,mm) and state the possible +0.7\,mm, as written here, or quote the gap with the loss of
+charge fitted (30.1\,mm, 2.1\,mm from the geometric gap of 28.0\,mm)? D's hv-scan rows also lean that way (+0.25\,mm on
+D's gap, each row below 2$\sigma$). D's long run had a failed stack fit in the gas study (T = the starting value, 820\,ns); it is
+now fitted on X channels 256--511 (798.6\,ns), which moves D's gap from 30.2 to 29.4\,mm and its water from 0.48 to
+0.44\,\%.}
+
+The gaps of the five chambers therefore range from 28.4\,mm (chamber~A) to 31.4\,mm (chamber~B). Their mean is
+29.6\,mm, and they scatter by 1.1\,mm rms around the design value of 30\,mm. The design value is set by the aluminum
+frame that acts as the spacer, while the cathode foil is mounted on a drift window that is assembled by hand. We
+therefore attribute the spread between chambers to the construction of the drift windows. We have no direct
+measurement of the position of the cathode in any chamber.
+
+\todo[]{Start update here}
 
 The gap is not the same everywhere on chamber~A. To measure how it varies, we divide the interior of the chamber (at
 least 30\,mm from the edge of the active area) into cells of about 100\,mm and measure the gap in each cell. We use the
@@ -52,23 +90,44 @@ Across the cells, their values are correlated with coefficients between 0.8 and 
 
 All three measurements show the same pattern. The gap increases along $x$ by 0.4 to 0.8\,mm per 100\,mm. This
 corresponds to a tilt of the cathode relative to the mesh of about 0.2 to 0.5\textdegree. Along $y$, the gap is
-largest near the center and shorter toward both ends, by about 0.5\,mm at 100\,mm from the center. This shape along
-$y$ is the one expected if the cathode were flat above the dished readout board of \cref{sec:bow}. A fit of the
-measured dish to the cell values gives 0.5 to 0.8 of its depth. Over the interior the gap therefore ranges from about
-27 to about 29\,mm, and the cell values scatter by 0.5 to 0.7\,mm around the mean of 28.2\,mm. The product of the
-velocity and the duration shows the same pattern as the geometric gap, but with about 0.7 of its amplitude. The size
-of the variation is therefore known to about 30\,\%.
+largest near the center and shorter toward both ends, by about 0.5\,mm at 100\,mm from the center. Over the interior
+the gap therefore ranges from about 27 to about 29\,mm, and the cell values scatter by 0.5 to 0.7\,mm around the mean
+of 28.2\,mm. The product of the velocity and the duration shows the same pattern as the geometric gap, but with about
+0.7 of its amplitude. The size of the variation is therefore known to about 30\,\%.
 
 This variation is a change of the gap, and not a change of the gas. At a fixed drift voltage, a shorter gap means a
 higher drift field. Since the drift velocity increases with the field, a shorter gap shortens the drift time by more
 than the change of the gap itself. Magboltz predicts $\mathrm{d}\ln\vd/\mathrm{d}\ln T=-0.41$ for a change of the gap,
-while a change of the gas composition would give $-1$. The cells give $-0.50\pm0.02$.
-\Cref{app:gapmap} fits one model of the mesh and the cathode to all of these measurements together with those of
-the bow. The drift direction alone predicts the same dome along $y$, and a finer map of the drift direction improves
-the angle resolution of chamber~A by 16 to 21\,\%.
-\askDylan{New 2026-11-23 (pass 1, both golden runs): \texttt{rerun/paper1\_gap/report.html}. The profile figure is in
-\cref{app:gapmap} (\cref{fig:gapsurf}); move it here instead? Keep or shorten these paragraphs?
-Chamber~E: 30.48\,mm in the configuration, 28.6\,mm geometric, 27.9\,mm used for the SPS gas fit (\cref{app:beam}).}
+while a change of the gas composition would give $-1$. We measure this ratio on the part of the variation that is
+finer than a smooth surface, and we take the velocity from one run and the drift time from the other run, so that the
+noise of a cell does not enter. The result is $-0.41\pm0.08$. The smooth part of the variation gives $-0.45\pm0.03$
+with the velocity of the Y strips. With the velocity of the X strips it gives $-0.74\pm0.02$, which is neither value.
+The velocity of the X strips therefore varies across the chamber by more than the gap can explain, and we have not
+identified the reason.
+
+The drift time alone gives a map of the gap, without the reference tracks, since the drift time of a track changes
+with the local gap. With this map we find that the pattern above belongs to one mounting of the chamber and not to the
+chamber itself. We have data from two mountings of chamber~A in the test stand, on 25~June and on 27 and
+28~June. Run~1 and Run~2 were taken in the second one. The two mountings give two different maps of the gap
+(\cref{app:gapmap}, \cref{fig:gapmount}). Within one mounting the map does not change with time, with the mesh voltage
+or with the drift voltage between 700 and 1100\,V. The dish of the readout board, in contrast, is the same in the two
+mountings. The cathode is a foil of 50\,\textmu m on a removable drift window. Either the foil took a different shape
+when the chamber was moved, or a different drift window was mounted: the windows could be exchanged between chambers
+between runs, and we have no record of which window was on which chamber. The mean gap, however, does not change. On 25~June the drift velocity is
+22\,\textmu m/ns, against 37\,\textmu m/ns in Run~1 and Run~2, and the product of the velocity and the drift time
+still gives 28.2\,mm.
+
+\Cref{app:gapmap} describes these measurements. It shows that the drift lines are tilted and bent by the shapes of
+the mesh and of the cathode, as measured directly from the signals, and that the tilt can be predicted from the dish
+of the board and the map of the gap. A map of the drift direction made for one mounting improves the angle resolution
+of chamber~A in that mounting by 25\,\%.
+\askDylan{Updated 2026-11-24 after the audit (\texttt{rerun/paper1\_gap/audit/report.html}). Removed: ``the shape
+along $y$ is the one expected for a flat cathode above the dish, 0.5 to 0.8 of its depth'' (it holds only in the third
+mounting; the 25~June mounting has the opposite curvature). Changed: the gap-or-gas ratio ($-0.50\pm0.02$ averaged
+two views that disagree). New: the paragraph on the mountings. Still open from before: move a gap figure here
+(now \cref{fig:gapmount}, the two maps)? 2026-11-24 later: 22~June dropped entirely (its drift time is cut by the depth bins of the fit; \texttt{audit/results/q\_RESULT.md}), mean gap now shown equal in both mountings. Chamber~E: 30.48\,mm in the configuration, 28.6\,mm geometric, 27.9\,mm
+used for the SPS gas fit (\cref{app:beam}).}
+\todo[]{End update here}
 
 \begin{figure}[tbp]
   \centering
@@ -77,38 +136,42 @@ Chamber~E: 30.48\,mm in the configuration, 28.6\,mm geometric, 27.9\,mm used for
   summed over all strips for tracks near normal incidence, averaged over tracks (points), with the model of a uniform
   column (lines); triangles mark the fitted start and end of the column, whose difference is the drift time
   $T=g/\vd$. (b) Fitted transverse rate $w$, less its offset $w_0$ (\cref{sec:bow}), against the slope of the reference
-  track, X filled and Y open; the slope of each line is the angle-scale velocity, which involves no gap. (c) The
-  product $g=\vd\,T$ per field: mean $28.2\pm0.5$\,mm (gray band), against the geometric gap $28.19\pm0.19$\,mm
-  (hatched), obtained without any drift velocity from the extent in strips of inclined tracks.}
+  track with the tilt and scale of the map of the drift direction (\cref{sec:angle}; tracks inside the region of the
+  map), X filled and Y open; the slope of each line is the angle-scale velocity, which is independent of the gap. (c) The
+  product $g=\vd\,T$ per field: mean of the four fields from 248 to 390\,V/cm, $28.4\pm0.3$\,mm (gray band), against the geometric
+  gap $28.19\pm0.19$\,mm (hatched), obtained without any drift velocity from the extent in strips of inclined tracks.
+  At 177\,V/cm the column is longer than the recorded waveform (in (a), the signal is still high where the data end),
+  so this point is a lower limit (open circle, arrow). Diamond: Run~1 and Run~2 summed at the operating point
+  (355\,V/cm), whose column is measured in the same way but not shown in (a).}
   \label{fig:twov}
 \end{figure}
 
 \subsection{Drift velocity against field: one curve, one number}\label{sec:vE}
-\Cref{fig:vE} shows both velocities of chamber~A as a function of the drift field. The timing velocity increases from
-17.7 to 37.2\,\textmu m/ns between 177 and 390\,V/cm, and the angle-scale velocity from 2.55 to 38.9\,\textmu m/ns over
+\Cref{fig:vE} shows both measured drift velocities of chamber~A as a function of the drift field. The timing velocity increases from
+25.2 to 37.2\,\textmu m/ns between fields of 248 and 390\,V/cm, and the angle-scale velocity from 2.55 to 38.9\,\textmu m/ns over
 seven drift fields. These velocities are not consistent with dry Ar/iC$_4$H$_{10}$, for which the drift velocity would
-be about 40\,\textmu m/ns at the fields used here. They are, however, well described by a
+be 40.9\,\textmu m/ns at 248\,V/cm and 37.7\,\textmu m/ns at 390\,V/cm (Magboltz). They are, however, well described by a
 Magboltz~\cite{Biagi1999} calculation in which the water content of the gas is the only free parameter. A fit to the
-timing velocity gives a water content of 0.97\,\% (68\,\% interval 0.95--0.99\,\%; $\chi^2=2.5$ for 3 degrees of
-freedom). The angle-scale velocities were not used in the fit, and they lie within $-1.7$ to $+1.5\,\%$ of the fitted
-curve.
+timing velocity gives a water content of 0.96\,\% (68\,\% interval 0.94--0.98\,\%; $\chi^2=2.6$ for 3 degrees of
+freedom). The angle-scale velocities were not used in the fit. Above 100\,V/cm, they lie within $-2.4$ to $+2.4\,\%$ of
+the fitted curve. At 177\,V/cm the drift column is longer than the recorded waveform (\cref{sec:gap}). The timing velocity of
+17.7\,\textmu m/ns at this field is therefore only an upper limit, and it is not used in the fit.
 
 The other chambers have no drift-field scan. For them we have only the drift velocity of their long runs, each at a
 single field. A single velocity can always be matched by some water content, so it does not test the model. It can
-only be expressed as an equivalent water content: 0.69\,\% for B, 1.00\,\% for C, 0.48\,\% for D and 0.42\,\% for E.
+only be expressed as an equivalent water content: 0.69\,\% for B, 1.00\,\% for C, 0.44\,\% for D and 0.42\,\% for E.
 This equivalent water content differs between chambers by more than a factor of two, which is one reason we use the
-drift velocity measured in each run (\cref{sec:drying}). Water at this level has a large effect: a water content of
-one percent lowers the drift velocity at 250\,V/cm by about 40\,\%.
-\askDylan{``About 40\,\%'' and ``about 40\,\textmu m/ns'' are read off the dry curve of \cref{fig:vE}; to replace by the
-Magboltz table values.}
+drift velocity measured in each run (\cref{sec:drying}). Water at this level has a large effect: in the Magboltz calculation, a water content of
+one percent lowers the drift velocity at 250\,V/cm from 40.9 to 24.7\,\textmu m/ns, which is 40\,\%.
 
 \begin{figure}[tbp]
   \centering
   \includegraphics[width=\linewidth]{gas_vE_all}
   \caption{Drift velocity against drift field, chamber~A. (a) Drift scan of 27 June: timing velocity $g/T$ from the
-  duration of the drift column ($g=28.19$\,mm; filled circles) and angle-scale velocity from the reference tracks
-  (no gap; open squares). Line: Magboltz for Ar/iC$_4$H$_{10}$ 95/5 with the water fitted to the timing
-  velocity, 0.97\,\% [0.95, 0.99]; gray band, its 68\,\% interval; dotted, dry gas. (b) Ratio of the points to the
+  duration of the drift column ($g=28.19$\,mm; filled circles; open circle with arrow: upper limit at 177\,V/cm, where
+  the column is longer than the recorded waveform, not used in the fit) and angle-scale velocity from the reference
+  tracks (no gap; open squares). Line: Magboltz for Ar/iC$_4$H$_{10}$ 95/5 with the water fitted to the timing
+  velocity, 0.96\,\% [0.94, 0.98]; gray band, its 68\,\% interval; dotted, dry gas. (b) Ratio of the points to the
   curve.}
   \label{fig:vE}
 \end{figure}
@@ -117,8 +180,8 @@ Magboltz table values.}
 The water content also changes with time. Over the night of 26--27 June, the drift velocity of chambers C and D rose
 steadily (\crefp{fig:drying}{a}). To interpret this rise, we invert the Magboltz curve at each chamber's drift field
 to convert the measured velocity into a water content. The water content falls from 1.47 to 0.76\,\% in chamber~C and
-from 0.68 to 0.35\,\% in chamber~D (\crefp{fig:drying}{b}). The excess of water over the final plateau follows the same
-shape in time in both chambers (\crefp{fig:drying}{c}; correlation 0.975). The two chambers reach different plateaus,
+from 0.67 to 0.33\,\% in chamber~D (\crefp{fig:drying}{b}). The excess of water over the final plateau follows the same
+shape in time in both chambers (\crefp{fig:drying}{c}; correlation 0.976). The two chambers reach different plateaus,
 however, so the gas in the two chambers is not the same. Chamber~A dried in the same way but more slowly: its drift
 velocity rose by 1.8\,\% between Run~1 and the end of Run~2, from 35.8 to 36.6\,\textmu m/ns (\cref{app:gain}).
 

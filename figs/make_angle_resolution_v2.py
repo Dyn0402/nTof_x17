@@ -17,6 +17,12 @@ Inputs
   C, D, E and the B check: rerun/paper1_res/results/rows.csv (pass arm, the arm the paper text quotes)
   A bow-off check: the two-track calib bundles (w0, kw, v) applied to the stored transverse speed w.
 
+Angles (2026-11-24, bench re-finalization step 5): ANGRES_ANGLES=map1 (default) takes the angle of the per-mounting maps
+(rerun/calib/phimap/map1/angles_cv.py: the five-time-block cross-validated value where the map is used, in the 30 mm
+interior; pass 1 elsewhere; railed tracks of D and E left out, C rescaled) for the same events of the same selection, joined
+by event id. ANGRES_ANGLES=pass1 reproduces the earlier numbers (bow block only). Both are always written to the json
+(`pass1_same_sample`). Chambers B-E are recomputed from the per_event.npz of their headline rows (fetched from EOS).
+
     .venv/bin/python papers/paper1_v2/figs/make_angle_resolution_v2.py
 Writes papers/paper1_v2/figs/out/angle_resolution_v2.{pdf,png,csv,json}.
 """
@@ -34,6 +40,13 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.abspath(os.path.join(HERE, '..', '..', '..'))
 sys.path.insert(0, os.path.join(REPO, 'papers'))
 import paper_style as ps  # noqa: E402
+sys.path.insert(0, os.path.join(REPO, 'rerun', 'calib', 'phimap', 'map1'))
+import angles_cv as AC  # noqa: E402
+
+MODE = os.environ.get('ANGRES_ANGLES', 'map1')
+KEY_A = {'run1': 'sat_det3',
+         'run2': 'c26__mx17_det3_p2_det1_overnight_6-27-26__long_run_p2_det1_sanity_check__mx17_3'}
+KEY_B = 'c26__mx17_det2_det3_overnight_6-22-26__long_run__mx17_2'
 
 WD = os.environ.get('WORK_DATA', os.path.expanduser('~/work_data'))
 TT = os.path.join(WD, 'claude-jobs', 'twotrack')
@@ -43,7 +56,7 @@ B_NPZ = os.path.join(WD, 'claude-jobs', 'v2_angres', 'B_pass1.npz')
 ROWS = os.path.join(REPO, 'rerun', 'paper1_res', 'results', 'rows.csv')
 HEAD = {'det2': 'c26__mx17_det2_det3_overnight_6-22-26__long_run__mx17_2',
         'det6': 'g_det6_long', 'det7': 'g_det7_long', 'det4': 'g_det4'}
-OUT = os.path.join(HERE, 'out', 'angle_resolution_v2')
+OUT = os.path.join(HERE, 'out', 'angle_resolution_v2' if MODE == 'map1' else 'angle_resolution_v2_pass1')
 LIM, BW, MIN_N, NBOOT = 20.0, 2.0, 50, 300
 RNG = np.random.default_rng(17)
 
@@ -68,9 +81,16 @@ def deg(t):
     return np.degrees(np.arctan(t))
 
 
-def load_npz(path, run):
+def load_npz(path, run, key=None):
+    """Per view: ref, fit (the angle of MODE), fit_p1 (pass 1, same events), w.  map1: the events of the npz joined by id to
+    the map1 tables of registry row `key` (angles_cv.paper_events)."""
     z = np.load(path)
-    return {p: pd.DataFrame(dict(run=run, ref=deg(z[f'{p}_tan_ref']), fit=deg(z[f'{p}_tan_fit']), w=z[f'{p}_w']))
+    if MODE == 'pass1' or key is None:
+        return {p: pd.DataFrame(dict(run=run, ref=deg(z[f'{p}_tan_ref']), fit=deg(z[f'{p}_tan_fit']),
+                                     fit_p1=deg(z[f'{p}_tan_fit']), w=z[f'{p}_w'])) for p in 'xy'}
+    new = AC.paper_events(key, npz=path, variant='cv')
+    return {p: pd.DataFrame(dict(run=run, ref=deg(new[p].ref.values), fit=deg(new[p].fit.values),
+                                 fit_p1=deg(new[p].fit_npz.values), w=new[p].w.values, used=new[p].used.values))
             for p in 'xy'}
 
 
@@ -78,7 +98,7 @@ def load_A():
     parts = {'x': [], 'y': []}
     bowoff = {}
     for run, rel in A_RUNS.items():
-        D = load_npz(os.path.join(TT, 'paper1_eff_twotrack', 'angles', rel, 'mx17_3', 'per_event.npz'), run)
+        D = load_npz(os.path.join(TT, 'paper1_eff_twotrack', 'angles', rel, 'mx17_3', 'per_event.npz'), run, KEY_A[run])
         b = json.load(open(os.path.join(TT, 'Analysis_pass1_twotrack', rel, 'mx17_3', 'wft', 'calib_bundle',
                                         'bundle.json')))
         for p in 'xy':
@@ -112,6 +132,12 @@ def summary(d, by_run=True):
              frac_absdev_gt3=float(np.mean(np.abs(dd - np.median(dd)) > 3)),
              frac_absdev_gt5=float(np.mean(np.abs(dd - np.median(dd)) > 5)),
              ref_range=[float(d.ref.min()), float(d.ref.max())])
+    if 'fit_p1' in d:
+        d1 = (d.fit_p1 - d.ref).to_numpy()
+        o['pass1_same_sample'] = dict(s68=s68(d1), s68_err=boot(d1), median=float(np.median(d1)),
+                                      frac_abs_gt3=float(np.mean(np.abs(d1) > 3)), frac_abs_gt5=float(np.mean(np.abs(d1) > 5)))
+    if 'used' in d:
+        o['frac_map_used'] = float(d.used.mean())
     if 'fit_nobow' in d:
         dn = (d.fit_nobow - d.ref).to_numpy()
         o['bow_off'] = dict(s68=s68(dn), s68_clip5=s68_clip5(dn), median=float(np.median(dn)))
@@ -121,6 +147,8 @@ def summary(d, by_run=True):
             x = (g.fit - g.ref).to_numpy()
             e = dict(n=int(len(x)), s68=s68(x), s68_err=boot(x), median=float(np.median(x)), s68_clip5=s68_clip5(x),
                      frac_abs_gt3=float(np.mean(np.abs(x) > 3)), frac_abs_gt5=float(np.mean(np.abs(x) > 5)))
+            if 'fit_p1' in g:
+                e['pass1_same_sample_s68'] = s68((g.fit_p1 - g.ref).to_numpy())
             if 'fit_nobow' in g:
                 xn = (g.fit_nobow - g.ref).to_numpy()
                 e['bow_off'] = dict(s68=s68(xn), s68_clip5=s68_clip5(xn))
@@ -130,18 +158,18 @@ def summary(d, by_run=True):
 
 def main():
     A, bowsrc = load_A()
-    B = load_npz(B_NPZ, 'B')
+    B = load_npz(B_NPZ, 'B', KEY_B)
     rows = pd.read_csv(ROWS)
     res = dict(definition='s68 = 68th percentile of |d - median(d)|, d = theta_fit - theta_ref [deg], no clip; '
                           'interior_good fiducial (common/mx17_fiducial.py); per-event tables of mx_june_wft/03_angles',
-               sources=dict(A='two-track re-pass (Analysis_pass1_twotrack), Runs 1+2', B='pass 1 (Analysis_pass1), '
+               angles=MODE, sources=dict(A='two-track re-pass (Analysis_pass1_twotrack), Runs 1+2', B='pass 1 (Analysis_pass1), '
                             '22-23 June long run', CDE='rerun/paper1_res/results/rows.csv, pass arm'),
                bow_block_source=bowsrc, A={}, B={}, chambers={})
     for p in 'xy':
         res['A'][p] = summary(A[p]); res['A'][p]['by_ref_bin'] = binned(A[p])
         res['B'][p] = summary(B[p], by_run=False); res['B'][p]['by_ref_bin'] = binned(B[p])
     # (c): A from the per-event tables (summed), B-E headline rows of rows.csv, both arms recorded
-    ch = {'det3': {p: dict(s68=res['A'][p]['s68'], err=res['A'][p]['s68_err'], n=res['A'][p]['n'], arm='pass',
+    ch = {'det3': {p: dict(s68=res['A'][p]['s68'], err=res['A'][p]['s68_err'], n=res['A'][p]['n'], arm=MODE,
                            row='Runs 1+2 summed') for p in 'xy'}}
     for d, key in HEAD.items():
         ch[d] = {}
@@ -149,6 +177,22 @@ def main():
             r = rows[(rows.key == key) & (rows.view == p)].iloc[0]
             ch[d][p] = dict(s68=float(r.ang_s68_pass), err=float(r.ang_s68_err_pass), n=int(r.ang_n_pass), arm='pass',
                             s68_vt=float(r.ang_s68_vt), row=key)
+            if MODE == 'map1':
+                ch[d][p]['rows_csv_pass1_all_events'] = dict(s68=ch[d][p]['s68'], err=ch[d][p]['err'], n=ch[d][p]['n'])
+        if MODE == 'map1':    # B-E from the per_event.npz of the headline row, with the angle of the maps (D, E: railed left out)
+            keyp = KEY_B if d == 'det2' else key
+            for variant, tag in (('cv', 'map'), ('p1', 'pass1_same_sample')):
+                rs = AC.restat(keyp, npz=B_NPZ if d == 'det2' else None, variant=variant, exclude_railed=True)
+                for p in 'xy':
+                    if tag == 'map':
+                        ch[d][p].update(s68=rs[p]['s68'], err=rs[p]['s68_err'], n=rs[p]['n'], arm='map1_cv',
+                                        scale=rs[p]['scale'], frac_map_used=rs[p]['frac_used'])
+                    else:
+                        ch[d][p]['pass1_same_sample'] = dict(s68=rs[p]['s68'], err=rs[p]['s68_err'], n=rs[p]['n'])
+            ra = AC.restat(keyp, npz=B_NPZ if d == 'det2' else None, variant='p1', exclude_railed=False)
+            for p in 'xy':   # all events, pass 1 (the rows.csv footing), and the share of railed tracks left out (D, E)
+                ch[d][p]['pass1_all_events'] = dict(s68=ra[p]['s68'], err=ra[p]['s68_err'], n=ra[p]['n'])
+                ch[d][p]['frac_railed_left_out'] = 1.0 - ch[d][p]['n'] / ra[p]['n']
     res['chambers'] = {ps.NAME[d]: v for d, v in ch.items()}
     res['B_check_rows_csv_vs_per_event'] = {p: [ch['det2'][p]['s68'], res['B'][p]['s68']] for p in 'xy'}
 
@@ -223,8 +267,9 @@ def main():
         fa = np.abs(deg(np.tan(np.radians(A[p].fit.to_numpy()))))[np.abs(dd) > 10]
         res['A'][p]['far10_abs_theta_fit_p10_p50_p90'] = [float(v) for v in np.percentile(fa, [10, 50, 90])]
         res['A'][p]['max_abs_residual'] = float(np.abs(dd).max())
-    a1.set_xlim(-GR, GR); a1.set_ylim(0, 2.6)  # 11-20: box is two short lines, fits left of the peak
-    a1.set_xticks([-6, -4, -2, 0, 2, 4, 6]); a1.set_yticks(np.arange(0, 2.51, 0.5))
+    ytop = 2.6 if MODE == 'pass1' else float(np.ceil(hmax * 1.18 * 2) / 2)   # 11-20: box is two short lines, fits left of the peak
+    a1.set_xlim(-GR, GR); a1.set_ylim(0, ytop)
+    a1.set_xticks([-6, -4, -2, 0, 2, 4, 6]); a1.set_yticks(np.arange(0, ytop + 0.01, 0.5))
     a1.set_xlabel(r'$\theta_{\rm fit}-\theta_{\rm ref}$ [°]')
     a1.set_ylabel(r'tracks per %.1f° [$10^3$]' % GB)
     a1.text(0.03, 0.97, 'Gaussian core\n' + '\n'.join(lines), transform=a1.transAxes, ha='left', va='top',
