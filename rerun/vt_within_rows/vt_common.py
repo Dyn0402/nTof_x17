@@ -72,9 +72,16 @@ def rows(root):
     return out
 
 
-def load_row(wdir, root):
+def load_row(wdir, root, map1_root=None):
     """One row: the event table with clock, the calibration it was reconstructed with, and per view the M3-matched
-    arrays of the ladder (w, tan_ref, bow a and S at the event's U, W)."""
+    arrays of the ladder (w, tan_ref, bow a and S at the event's U, W).
+
+    ``map1_root`` (bench re-finalization, 2026-11-25): the root of the map1 products (``<root>/<run>/<subrun>/<det>/
+    calib_bundle``, rerun/calib/phimap/map1/build_map1.py).  When the row's map1 bundle carries a ``phi`` block, the
+    constants (w0, kw) are the map's and, per view, a = A_p(U, W) and S = 1 + S_p(U, W) of the map (tan = (w - w0) /
+    (kw v S) - a, as wft.reco.bow_pairs), at the (U, W) of the map's constants.  Events outside the map's region get
+    a = S = NaN, so the ladder uses the map's interior only, which is where map1 measured kw.  Rows without a map keep
+    the pass-1 block.  ``views[p]['map']`` flags the events on the map."""
     m = json.load(open(os.path.join(wdir, 'events.meta.json')))
     ac = m['angle_constants']
     run, det = m['run']['run'], m['run']['detector']
@@ -101,6 +108,30 @@ def load_row(wdir, root):
     for p in ('x', 'y'):
         a, S = bow_aS(cal, p, df.U.to_numpy(), df.W.to_numpy())
         df[f'{p}_a'], df[f'{p}_S'] = a, S
+    cal.map1 = False
+    if map1_root:
+        from wft.calib import CalibrationBundle
+        from wft import bow_phi
+        B1 = CalibrationBundle.load(os.path.join(map1_root, run, m['run']['sub_run'], det, 'calib_bundle'))
+        phi = (B1.bow or {}).get('phi')
+        if phi:
+            q = wr.bow_pairs(B1, df.x_w.to_numpy(), df.x_p0.to_numpy(), df.y_w.to_numpy(), df.y_p0.to_numpy())
+            kv = {p: B1.kw[p] * B1.v_drift for p in 'xy'}
+            tc = {p: (df[f'{p}_w'].to_numpy() * 1e3 - B1.w0[p]) / kv[p] for p in 'xy'}
+            U1 = ((df.x_p0.to_numpy() + wr.BOW_MID_MM * tc['x']) - 200.0) / 100.0
+            W1 = ((df.y_p0.to_numpy() + wr.BOW_MID_MM * tc['y']) - 200.0) / 100.0
+            with np.errstate(invalid='ignore'):
+                U1 = np.where(np.isfinite(U1) & (np.abs(U1) <= wr.BOW_UW_MAX), U1, 0.0)
+                W1 = np.where(np.isfinite(W1) & (np.abs(W1) <= wr.BOW_UW_MAX), W1, 0.0)
+            ax, ay, sx, sy = bow_phi.evaluate(phi, U1, W1)
+            for p, A, Sp in (('x', ax, sx), ('y', ay, sy)):
+                use = np.asarray(q[f'phi_{p}'], bool)
+                assert np.allclose(np.asarray(A)[use], q[f'a_{p}'][use]), 'map tilt differs from wft.reco.bow_pairs'
+                df[f'{p}_a'] = np.where(use, A, np.nan)
+                df[f'{p}_S'] = np.where(use, 1.0 + np.asarray(Sp), np.nan)
+                df[f'{p}_map'] = use
+            cal.w0, cal.kw, cal.v_drift = dict(B1.w0), dict(B1.kw), float(B1.v_drift)
+            cal.map1 = True
     z = np.load(os.path.join(wdir, 'angles', 'per_event.npz'))
     views = {}
     for p in ('x', 'y'):
@@ -109,7 +140,8 @@ def load_row(wdir, root):
         e = e[k]
         r = df.loc[e]
         views[p] = dict(eid=e, w=z[f'{p}_w'][k] * 1e3, tan_ref=z[f'{p}_tan_ref'][k], t_h=r.t_h.to_numpy(),
-                        a=r[f'{p}_a'].to_numpy(), S=r[f'{p}_S'].to_numpy(), tan_fit=z[f'{p}_tan_fit'][k])
+                        a=r[f'{p}_a'].to_numpy(), S=r[f'{p}_S'].to_numpy(), tan_fit=z[f'{p}_tan_fit'][k],
+                        map=(r[f'{p}_map'].to_numpy() if f'{p}_map' in r else np.zeros(len(r), bool)))
     return dict(run=run, subrun=m['run']['sub_run'], det=det, key=m['run']['key'], cal=cal, df=df, views=views,
                 resist_V=_resist(m['run']['sub_run'], det), wdir=wdir)
 

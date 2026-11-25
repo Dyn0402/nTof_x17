@@ -32,7 +32,10 @@ import gaps  # noqa: E402
 PUB = {'det2': 'B', 'det3': 'A', 'det4': 'E', 'det6': 'C', 'det7': 'D'}
 COL = {'det2': '#4C72B0', 'det3': '#C44E52', 'det4': '#8172B2', 'det6': '#55A868', 'det7': '#CCB974'}
 G = json.load(open(os.path.join(REPO, 'rerun/paper1_gas/results/gas.json')))
-B = json.load(open(os.path.join(HERE, 'bundles_v.json')))
+# 2026-11-25 (bench re-finalization): v_ang from the map1 bundles (the w0/kw the per-mounting map's angles use;
+# rerun/calib/phimap/map1), GAPS_ANGLES=pass1 for the pass-1 bundles.  Rows without a map: the two are identical.
+ANGLES = os.environ.get('GAPS_ANGLES', 'map1')
+B = json.load(open(os.path.join(HERE, 'bundles_v_map1.json' if ANGLES == 'map1' else 'bundles_v.json')))
 VQ = os.path.join('/media/ucla/work/claude-jobs/e1a7a26e/gap/audit/q16/vT_rows.csv')
 
 
@@ -75,7 +78,8 @@ D['attach'] = ((D.h626.notna() & (D.h626 < 6) & (D.det == 'det6'))
 STACK_END_NS = 1590.0
 D['window'] = (D['T'] >= STACK_END_NS - 60)
 D = D.sort_values(['chamber', 'run', 'E']).reset_index(drop=True)
-D.to_csv(os.path.join(HERE, 'gaps_all.csv'), index=False)
+SUF = '' if ANGLES == 'map1' else '_pass1'
+D.to_csv(os.path.join(HERE, f'gaps_all{SUF}.csv'), index=False)
 
 summ = []
 for det, d in D.groupby('det'):
@@ -91,7 +95,9 @@ if os.path.exists(VQ):
     V['det'] = V.key.str.split(':').str[0]
     V = V[V.rail < 0.12]           # drop rows whose drift time is censored by the depth grid (C's first two)
     S['vq90'] = [float(V[V.det == r.det].g_mm.median()) if (V.det == r.det).any() else np.nan for r in S.itertuples()]
-S.to_csv(os.path.join(HERE, 'gaps_summary.csv'), index=False)
+S.to_csv(os.path.join(HERE, f'gaps_summary{SUF}.csv'), index=False)
+if SUF:
+    print(S.round(3).to_string()); sys.exit(0)
 
 fig, ax = plt.subplots(figsize=(6.4, 4.0))
 for det, d in D.groupby('det'):

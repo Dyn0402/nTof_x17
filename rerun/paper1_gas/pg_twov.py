@@ -69,7 +69,10 @@ def _local(path, root):
     return os.path.join(root, path.split('/cosmic_bench/')[1])
 
 
-def extract(root):
+def extract(root, ladder_only=False, map1_root=None):
+    """ladder_only: keep the stacks of the existing results/twov.json (they use the reference angle only) and redo the
+    ladders and the gaps.  map1_root: the angle-scale velocity of the per-mounting map (vt_common.load_row map1_root;
+    2026-11-25, bench re-finalization: v_ang = v_drift x mean kw of the map1 bundle, ladder on the map's interior)."""
     sys.path[:0] = [os.path.join(REPO, 'rerun', 'calib', 's4'), os.path.join(REPO, 'rerun', 'vt_within_rows')]
     import s4_stacks                    # noqa: E402  (puts cloud_basics on sys.path)
     import s4f_fit                      # noqa: E402
@@ -85,8 +88,12 @@ def extract(root):
             if k.endswith('|in30') and RUN in k and 'T' in r:
                 fits[k] = r
     out = dict(grid_ns=GRID.tolist(), stacks={}, ladder={}, fields={})
+    if ladder_only:
+        old = json.load(open(RES))
+        out['grid_ns'], out['stacks'] = old['grid_ns'], old['stacks']
+    out['angles'] = dict(convention='map1' if map1_root else 'pass1', map1_root=map1_root)
     rng = np.random.default_rng(3)
-    for Vd in STACK_V:
+    for Vd in (() if ladder_only else STACK_V):
         key = next(k for k in fits if f'drift_{Vd}V__' in k)
         arm = fits[key]
         ev = s4f_fit.load(_local(arm['cache'], root))
@@ -116,10 +123,11 @@ def extract(root):
 
     aroot = os.path.join(root, 'Analysis_pass1')
     for s in LADDER_SUBS:
-        R = V.load_row(os.path.join(aroot, RUN, s, 'mx17_3', 'wft'), aroot)
+        R = V.load_row(os.path.join(aroot, RUN, s, 'mx17_3', 'wft'), aroot, map1_root=map1_root)
         cal = R['cal']
         Vd = int(s.rsplit('drift_', 1)[1].rstrip('V'))
-        o = dict(subrun=s, drift_V=Vd, v_drift=cal.v_drift, kw_applied=dict(cal.kw), w0_applied=dict(cal.w0), views={})
+        o = dict(subrun=s, drift_V=Vd, v_drift=cal.v_drift, kw_applied=dict(cal.kw), w0_applied=dict(cal.w0), views={},
+                 map1=bool(getattr(cal, 'map1', False)))
         for p in ('x', 'y'):
             vw = R['views'][p]
             tp = (vw['tan_ref'] + vw['a']) * vw['S']
@@ -273,6 +281,13 @@ def fig():
 
 if __name__ == '__main__':
     if len(sys.argv) > 1 and sys.argv[1] == 'extract':
-        extract(sys.argv[2] if len(sys.argv) > 2 else os.path.join(os.environ.get('WORK_DATA', '/tmp'), 'paper1_gas_twov'))
+        import argparse
+        ap = argparse.ArgumentParser()
+        ap.add_argument('cmd'); ap.add_argument('root', nargs='?',
+                                                default=os.path.join(os.environ.get('WORK_DATA', '/tmp'), 'paper1_gas_twov'))
+        ap.add_argument('--ladder-only', action='store_true', help='keep the stored stacks, redo the ladders and gaps')
+        ap.add_argument('--map1', default=None, help='root of the map1 products ($WORK_DATA/claude-jobs/d006ab29/map1)')
+        a = ap.parse_args()
+        extract(a.root, a.ladder_only, a.map1)
     else:
         fig()
