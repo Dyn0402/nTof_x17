@@ -1,5 +1,28 @@
 # Handoff
 
+## Water ingress and the Mylar window (future-chamber design, parked) — updated 2026-11-26 (dylan-MS-7C84)
+
+**Resume:** parked for later; when Stephan answers q_window (window aluminised or bare?), update docs/WATER_INGRESS.md §2.
+
+**Goal:** know where the chambers' water came from, and record how a future chamber (LNL, upgrades) could keep it out.
+
+**Done:**
+- `docs/WATER_INGRESS.md` (commit 3cd10e50). Each n_TOF chamber adds ~4–8 mg/h of water. A bare 60 µm Mylar window
+  lets in an estimated 3–20 mg/h at hall humidity, so it can be the whole source. An intact aluminium coating cuts
+  this ~35× (negligible).
+- A desiccant inside the chamber was looked at and judged not feasible: ~100–200 g of 3A sieve per month, dust on
+  the mesh, Al in a neutron beam, temperature-dependent release, no breakthrough warning.
+- `q_window` in `docs/detector_spec/spec.py` now also gives the water reason.
+
+**Next steps:**
+1. Get Stephan's answer to q_window (aluminised? one side or both?). It decides whether the window is the source.
+2. Only if Dylan wants it for the LNL design: turn §3 of the note into design text.
+
+**Gotchas / decisions:**
+- The data cannot tell the window from the inter-chamber tubing or the walls: all three enter once per chamber
+  (v swing A 1 : C 3.0 : D 2.9 against 1 : 3 : 4 for a per-chamber source). Stated limitation; no new data possible.
+- The window estimate uses datasheet rates at 38 °C / 90 % RH, scaled by vapour pressure only (±×2).
+
 ## Readout board stack-up: asked Bertrand Mehl (CERN) — updated 2026-11-24 (dylan-MS-7C84)
 
 **Resume:** waiting for Bertrand's reply on the 3498-A stack-up; then fold it into Geant4, the response model and Paper I tab:layers.
