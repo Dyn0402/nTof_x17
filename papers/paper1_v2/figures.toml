@@ -294,8 +294,8 @@ producer = "WORK_DATA=~/work_data .venv/bin/python papers/paper1_v2/figs/make_di
 title = "Two-track separation from overlaid real muons: probability of reconstructing both against separation; opening-angle resolution; separation error"
 state = "current"
 source = "papers/paper1_v2/figs/out/two_track_separation.pdf"
-producer = "WORK_DATA=~/work_data .venv/bin/python papers/paper1_v2/figs/make_two_track_separation.py plot --work ~/work_data/claude-jobs/v2_twotrack/batch --prefix run   # shards from the condor run, figs/two_track_batch/README.md (cluster 4666850, 2026-11-11; outputs on EOS x17rerun/paper1_v2/two_track)"
-note = "2 400 overlays of chamber A Run 1 muons on the final reconstruction; numbers out/two_track_separation.json"
+producer = "WORK_DATA=/media/ucla/work .venv/bin/python papers/paper1_v2/figs/make_two_track_separation.py plot --work /media/ucla/work/claude-jobs/v2_twotrack/batch --prefix run   # shards from the condor run, figs/two_track_batch/README.md (cluster 4666850, 2026-11-11; outputs on EOS x17rerun/paper1_v2/two_track)"
+note = "2 400 overlays of chamber A Run 1 muons on the final reconstruction; numbers out/two_track_separation.json. 2026-11-25: angles rescored on the per-mounting map (TT_ANGLES=map1, default: map1 bundle of sat_det3 via wft.reco.bow_pairs on each muon's own X/Y candidates + the donor's CV shift); no refit (the map changes only the slope-to-angle conversion). Inputs: WORK_DATA=/media/ucla/work, shards in claude-jobs/v2_twotrack/batch, tables in claude-jobs/twotrack, map1 in claude-jobs/d006ab29. TT_ANGLES=table reproduces the 11-11 json exactly (out/two_track_separation_table.json); _pass1 and _map1prod jsons for comparison."
 
 [fig.gap_surfaces]
 title = "Chamber A: gap along x and y with the joint mesh + cathode model; angle resolution against the cell size of a cross-validated drift-tilt + velocity map"
