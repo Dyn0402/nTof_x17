@@ -7,7 +7,7 @@ The two companion papers of `mx_june_cosmic_qa/PAPER_PLAN.md`, as LaTeX, at outl
 | `paper1/` | I. Detector & performance, the first version (cosmic bench + det4 at SPS). Frozen since 2026-11-23: its text is superseded by `paper1_v2/`, and it stays only because v2 still uses its figures and producers | its Overleaf project "MX17 Paper I" (`https://git.overleaf.com/6ad61186fe591228d14dac68`, shared with Stephan) now carries the `paper1_v2/` text: `overleaf.sh … paper1` syncs `papers/paper1_v2/` (third column of `overleaf_remotes.txt`) |
 | `mpgd26_proceedings/` | MPGD2026 proceedings (JINST, 5 pages, due 2027-01-17) | linked 2026-10-20 (`https://git.overleaf.com/6ad72207b122b98dea142d04`) |
 | `infn_in2p3_2026_abstract/` | abstract draft, INFN–IN2P3 detector R&D conference (Frascati, Dec 2026), not submitted | — |
-| `paper1_v2/` | Paper I reorganised (2026-11-10): the same content ordered along the measurement (gas and calibration, angle, efficiency, two particles, chamber as built), two new sections (why the angle; what a straight track misses), rebuilt figures. On 2026-11-23 the v2 text was copied into the shared v1 Overleaf project, so both projects hold the same paper. New figure scripts in `paper1_v2/figs/`, numbers run down in `paper1_v2/NUMBERS_RUNDOWN.md` | linked 2026-11-11 (`https://git.overleaf.com/6af3a464cb8d4f7336894eac`) |
+| `paper1_v2/` | Paper I reorganised (2026-11-10): the same content ordered along the measurement (gas and calibration, angle, efficiency, two particles, chamber as built), two new sections (why the angle; what a straight track misses), rebuilt figures. On 2026-11-23 the v2 text was copied into the shared v1 Overleaf project, so both projects hold the same paper. New figure scripts in `paper1_v2/figs/`, numbers run down in `paper1_v2/NUMBERS_RUNDOWN.md` | "MX17 Paper I" (the `paper1` row; its own v2 project was retired 2026-11-25) |
 | `paper1_audit/` | audit of Paper I (2026-11-10): organisation, key figures, numbers that disagree, plots to add. Open `report.html`; `make_report.py` builds it (and its untracked `thumbs/`) | not synced |
 | `paper2/` | IIa. Reconstruction: the waveform forward model, its calibration, the fleet, one H0 / H2c / W table (NIM A). First prose draft 2026-11-18 (14 pages with notes); new figure scripts in `paper2/figs/` | linked 2026-11-18, "MX17 Paper IIa (reconstruction)" (`https://git.overleaf.com/6afd95721cafc7642db6e620`), not shared |
 | `tpc_mixing_review/` | IIb ("Paper III" internally). The single-time bias: C/N^2 + b measured and decomposed, remedies, what a hit readout must record, literature survey (JINST, a few weeks after I + IIa) | linked 2026-11-18, "MX17 Paper IIb (single-time bias)" (`https://git.overleaf.com/6afd959240ffa63d38038700`), not shared |
@@ -173,12 +173,10 @@ A reorganised copy of Paper I, made after the audit in `paper1_audit/`. `paper1/
 - **Two-track separation** (section 8.4): run 2026-11-11 as condor cluster 4666850 (8 jobs, 8 normal exits, no errors;
   code `~/x17rerun/code_2a99f017_twotrack`, a trimmed archive; outputs EOS `x17rerun/paper1_v2/two_track/`, local copy
   `~/work_data/claude-jobs/v2_twotrack/batch`). Figure: `make_two_track_separation.py plot --work <dir> --prefix run`.
-- **Overleaf:** linked 2026-11-11 to its own project "MX17 Paper I v2 (reorganised)"
-  (`https://git.overleaf.com/6af3a464cb8d4f7336894eac`); `papers/overleaf.sh status|pull|push paper1_v2` as for paper1.
-  Not shared with Stephan. Since 2026-11-23 the v1 project "MX17 Paper I", which Stephan edits, mirrors this folder too:
-  `overleaf.sh status|pull|push paper1` works on `papers/paper1_v2/`. Day to day, work goes to v2 only
-  (`pull`/`push paper1_v2`). Copy to v1 only when Dylan asks (Dylan, 2026-11-23): then `status paper1`, `pull paper1`
-  (this brings any edits by Stephan into `paper1_v2/`; if they conflict, stop and report), and `push paper1`.
+- **Overleaf:** one project only, "MX17 Paper I" (`https://git.overleaf.com/6ad61186fe591228d14dac68`, shared with
+  Stephan), which mirrors this folder: `papers/overleaf.sh status|pull|push paper1`. The separate v2 project
+  (`6af3a464...`, linked 2026-11-11) was retired on 2026-11-25 after a check that all its Overleaf edits are in the
+  repo and in "MX17 Paper I"; Dylan deletes it. Its history stays in the repo (the merged "Update on Overleaf" commits).
 
 ## The feedback note and drafting from it (Paper I, from 2026-11-04)
 

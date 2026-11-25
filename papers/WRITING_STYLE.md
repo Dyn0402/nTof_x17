@@ -6,7 +6,7 @@ pedagogical. This file is what was learned from his writing, to be read before w
 Sources read: his thesis (chapters 2, 3, 5, 6), the sPHENIX Vernier scan note (beam width, simulation), "Separating
 Time Correlated Signal from Noise via Moving Average", the Saclay cosmic bench manual, the 18L/180A teaching manuals,
 and his own Overleaf edits to Sections 1 to 4 of Paper I v2 (the word-level diffs of those edits are the best evidence:
-`git log overleaf-paper1_v2/main --grep='Update on Overleaf'`, then `git show --word-diff`). Local copies of the
+`git log --grep='Update on Overleaf' -- papers/paper1_v2` (the v2 project's edits are merged into the repo), then `git show --word-diff`). Local copies of the
 Overleaf projects: `$WORK_DATA/writing_style_corpus/` (regenerable with `git clone https://git.overleaf.com/<id>`).
 
 ## What his prose does

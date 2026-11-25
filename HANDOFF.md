@@ -113,9 +113,9 @@ and the others.
 
 **Next steps:**
 1. If Stephan emails content for Sec. 3: draft `papers/paper1_v2/sections/03_design.tex` from it, in Dylan's style.
-2. Day to day, work on and push `paper1_v2` only. Copy to v1 ONLY when Dylan asks: `overleaf.sh status paper1`,
-   `pull paper1` (Stephan's edits land in paper1_v2; stop on a conflict), then `push paper1`. Never `--now` on paper1
-   without Dylan's say-so.
+2. **Superseded 2026-11-25:** the v2 Overleaf project is retired (Dylan deletes it). Paper I has one Overleaf project,
+   "MX17 Paper I" (shared with Stephan): `overleaf.sh status paper1`, `pull paper1`, `push paper1`, all on
+   `papers/paper1_v2/`. Never `overleaf.sh ... paper1_v2` again.
 
 **Gotchas / decisions:**
 - The remaining lowercase "section N" / "appendix A" in the PDF are in the draft notes and name the old v1 numbering.
