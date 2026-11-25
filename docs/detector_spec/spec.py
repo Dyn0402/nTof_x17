@@ -293,7 +293,7 @@ QUESTIONS = [
     Q("q_window", "window", 2,
       "The front window: is it 60 µm mylar? Aluminised on one side or both, and how thick is the aluminium (nm)? Which side faces the gas?",
       "60 µm (from the CAD), 100 nm Al on the gas side only. Thickness and sides never measured.",
-      "Material in front of the drift for electrons and positrons; it also decides whether the window is an electrode."),
+      "Material in front of the drift for electrons and positrons; it also decides whether the window is an electrode, and whether water permeating the window can be the chambers' water source (docs/WATER_INGRESS.md)."),
     Q("q_cathode", "cathode", 2,
       "The drift cathode: 50 µm kapton with copper on one side? How thick is the copper, and does it face the drift gas?",
       "50 µm kapton (CAD) + 9 µm copper facing the gas (assumed).",
