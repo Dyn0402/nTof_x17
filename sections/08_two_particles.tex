@@ -111,10 +111,12 @@ Between 3 and 18\,mm it is lower, falling from $74\pm3$\,\% to $53\pm3$\,\% as t
 which is about four strip pitches, it is $11\pm2$\,\%. Without the requirement on the pairing, these probabilities are
 2 to 7 points higher. The limit is therefore resolving the two tracks, and not pairing them.
 
-When both muons are reconstructed, the opening angle of the pair is measured with a resolution of 1.2 to
-1.5\textdegree{} in space at every separation (\crefp{fig:separation}{b}). This is close to $\sqrt2$ times the
-resolution of one track. The separation of the two tracks is measured to 0.8 to 1.1\,mm above 3\,mm
-(\crefp{fig:separation}{c}). A chamber therefore measures the opening angle of a pair that it contains about as well
+When both muons are reconstructed, the opening angle of the pair is measured with a resolution of 0.9 to
+1.2\textdegree{} in space above 3\,mm, and of 1.4\textdegree{} below 3\,mm (\crefp{fig:separation}{b}). These
+angles use the map of the drift direction, as in \cref{sec:angle}. The resolution of one track in these pairs is
+0.66 to 0.68\textdegree{} at every separation, which is the resolution of a single track in the same run. The
+resolution of the opening angle is therefore close to $\sqrt2$ times the resolution of one track. The separation of
+the two tracks is measured to 0.7 to 1.1\,mm above 3\,mm (\crefp{fig:separation}{c}). A chamber therefore measures the opening angle of a pair that it contains about as well
 as two independent tracks allow, down to a separation of 18\,mm. Below this separation it still measures the opening
 angle, but with decreasing efficiency.
 
@@ -127,7 +129,9 @@ empty-partner checks (\texttt{figs/out/two\_track\_separation.json}; batch job i
 26 October run on the earlier reconstruction (joint fit 28/43/50\,\% at 0--6/6--12/12--18\,mm) the final chain does better
 at 6--18\,mm (64--74\,\%); the definitions differ slightly (5\,mm from the reference here, 2\,mm from the donor's own fit
 there; with the old definition the numbers are 14/57/63/65/74\,\% in the five lowest bins). The step at 18\,mm is not
-explained in the text; it is where two columns stop touching.}
+explained in the text; it is where two columns stop touching. 2026-11-25: angles rescored with the map (no refit: the map
+changes only the conversion of the fitted slope to an angle; \texttt{TT\_ANGLES} in the script). Opening angle in space
+was 1.2--1.5\textdegree{} with the bow block; efficiencies and positions are unchanged.}
 \begin{figure}[tbp]
   \centering
   \includegraphics[width=\linewidth]{two_track_separation}
@@ -136,6 +140,7 @@ explained in the text; it is where two columns stop touching.}
   requirement on pairing (open), against the separation of the two tracks at mid-gap in the view where they are
   closer; binomial 68\,\% intervals; dotted, the same for a muon overlaid with an empty event. (b) Resolution of the
   opening angle of the pair ($s_{68}$) in space and in each projection, for pairs with both muons reconstructed.
-  (c) Error on the reconstructed separation: $s_{68}$ (filled) and median (open). The horizontal axis is not linear.}
+  (c) Error on the reconstructed separation: $s_{68}$ (filled) and median (open). Angles with the map of the drift
+  direction (\cref{sec:angle}). The horizontal axis is not linear.}
   \label{fig:separation}
 \end{figure}

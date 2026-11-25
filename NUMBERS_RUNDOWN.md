@@ -208,3 +208,29 @@ Notes on the table:
 - C's f is from a 92 %-saturated sample (f_sat 0.92) and D's from 14 % unsaturated events; C's and D's charge quantities beyond f are not measurable (`paper1_charge` README).
 
 - 2026-11-24 (Dylan): chamber A on 23 June dropped from Paper I (pass-1 angles uncorrelated with M3, r = 0.01). Bow stability set 19 -> 18 runs (`rerun/paper1_res/bow_2d_fig.py` CH): all 18 within 2 sigma, largest 1.4 sigma (was 1.8), 18/18 leave-one-out (was 18/19), chamber A mean depth 1.16 +- 0.10 mm (was 1.25 +- 0.08), 11 runs with error < 0.25 mm scatter 7.6 % rms (was 12 runs, 9 %). The slot sentence (A 23 June in the lower slot, 1.46 mm) is removed; no second lower-slot run of A remains.
+
+## 16. Two-track separation and the other last bow-block angles (requoted 2026-11-25 on the per-mounting maps)
+
+- **Two-track overlay (Sec. 8.4, Fig. `two_track_separation`).** Same 2 400 overlays + 400 checks (condor 4666850, 11-11), no refit: the map
+  changes only the slope-to-angle conversion. Each muon's own X and Y candidates go through `wft.reco.bow_pairs` with the map1 bundle of
+  `sat_det3`, plus the donor event's CV shift (`angles_cv.row_angles`; rms 0.06-0.08 deg). Opening angle in space s68: 0.93-1.20 deg above
+  3 mm (1.38 below, 33 pairs), was 1.23-1.50 on the bow block. One track: 0.66-0.68 deg (both views pooled) at every separation; single
+  check X 0.74 / Y 0.61 (200 donors). Separation error s68 0.73-1.11 mm above 3 mm (was 0.79-1.12; mid-gap uses the tan). Efficiencies
+  identical. `TT_ANGLES=table` reproduces the 11-11 json bit for bit; `_pass1` and `_map1prod` jsons kept for comparison (in-sample map:
+  same within 0.01-0.02 deg). Conclusions: "1.3 deg" above 18 mm -> 1.0 deg (1.03-1.08 in the three bins).
+- **Abstract / intro / Sec. 9.3.** Abstract 1.0/0.9 -> 0.8/0.7 deg; intro "0.9 or better" -> 0.8; Sec. 9.3 and Fig. `gas_scatter` (b): the
+  dashed chamber line at 0.73 deg (mean of 0.76 / 0.69, was 1.0), crossing of the fit-minus-entry angle at 6.3 MeV ("below about 6 MeV",
+  was 5).
+- **Angle-scale velocity and the gaps (Sec. 5).** v_ang = v_drift x mean kw now comes from the map1 bundles (the constants the
+  quoted angles use), everywhere it enters Paper I; rows without a map are unchanged. Chamber A ladders (`pg_twov.py extract
+  --ladder-only --map1`; pass-1 mode reproduces the old twov.json exactly): 500/700/900/1100 V -> +0.26/+0.17/-0.41/+0.09 %.
+  355 V/cm golden point (`rerun/calib/s4/golden_355_vang.py`): Run 1 now from sat_det3's own map1 bundle, no longer the hv_scan2
+  proxy (36.665 -> 36.762), Run 2 37.195 -> 37.339; Run 2 / Run 1 +1.6 % (was 1.4 %); gaps 28.65 / 28.49 mm, sum 28.53 +- 0.15.
+  Mean of the four fields 28.43 +- 0.32 mm, chi2 3.2/3 (was 28.37, 2.9/3). Water fit unchanged (timing only): 0.958 %, chi2 2.62/3.
+  Angle-scale points around the water curve above 100 V/cm: -2.4 to +2.4 % (was -2.6 to +2.1).
+  Other chambers (`make_gaps.py`, `GAPS_ANGLES=pass1` for the old ones in `*_pass1.csv`): B 31.09 -> 31.45, C 28.71 -> 29.44,
+  D 29.70 -> 30.19 (chi2 6.9 -> 12.6 / 6), E 29.54 (no map). C moves because map1 measures kw without the railed tracks (read
+  3-10 % flat); D's X kw is measured on x >= 200 mm only. Geometric gaps: B 31.12, C 28.0 +- 1.0, D 29.44 +- 1.12, E 30.48;
+  C now differs by 1.4 mm (1.3 sigma), so "within 1 mm" holds for B, D, E only. Range 28.4-31.4 mm, mean 29.8, rms about 30 mm 1.0.
+  Not changed, on purpose: `gas_drying` and the chamber A time series re-estimate kw per time block with the pass-1 bow block and
+  anchor to the timing velocity, so a constant factor from the map cancels.
