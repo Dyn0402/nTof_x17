@@ -328,3 +328,10 @@ source = "rerun/paper1_gap/audit/figures/gap_tiltpred.pdf"
 section_state = "partial"
 note = "2026-11-24. Appendix app:gapmap. From audit test r1 (r625:perview, golden mesh, b = 0.5, beta 1.28, 8 x 8 cells, constant removed, tilt in mrad). 25 June day long run."
 producer = "cd rerun/paper1_gap/audit && ../../../.venv/bin/python paperfig.py <work>"
+
+[fig.material_stack]
+title = "Sec. 3: the chamber as a stack of layers: thickness, x/X0 and multiple-scattering angle per layer (replaces Tables 1 and 2)"
+state = "current"
+source = "papers/paper1_v2/figs/out/material_stack.pdf"
+producer = ".venv/bin/python papers/paper1_v2/figs/make_material_stack.py"
+note = "2026-11-25: Stephan's stack-diagram idea. Board from the 3498-A stack-up (502 um in the active area), mesh ASADA 45/19 calendered (Stephan 11-24). Also writes out/material_stack_table.tex, copied into sections/material_table.tex."

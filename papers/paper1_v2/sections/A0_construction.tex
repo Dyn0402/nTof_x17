@@ -1,0 +1,119 @@
+\section{Construction details}\label{app:construction}
+\sectionstate{partial}{\texttt{docs/detector\_spec/CONSTRUCTION\_DOSSIER.md}; Stephan's notes (2026-11-24), the 3498-A
+stack-up, the production Gerbers, bench run configurations, February and May 2026 logbooks. New 2026-11-25.}
+\intent{Everything about how the chambers were built that a reader trying to build or understand one would want, and
+that the body of the paper does not need.}
+
+\subsection{The pad pattern}\label{app:pattern}
+A two-dimensional pad readout joins each pad to an X strip or a Y strip through its own via. In the CAST
+Micromegas~\cite{Abbon2007CAST} the X and Y strips run along the diagonals of the pad grid. In that layout each pad has
+two neighbors on its own strip, and pads of the same strip that touch at a corner can be joined on the pad layer, which
+halves the number of vias. However, the strips then end along the edges of a square at every length, and routing them
+to the connectors is difficult.
+
+In our pattern the X strips run along $x$ and the Y strips along $y$, and the pads alternate between the views in a
+checkerboard (\crefp{fig:chamber}{c}). A pad of strip X$_n$ then shares its four edges with pads of Y strips, and its
+four corners with pads of the neighboring strips X$_{n-1}$ and X$_{n+1}$. No neighbor of a pad belongs to the same
+strip. For this reason the charge of an avalanche is shared among as many strips as possible, and the 512 X and 512 Y
+strips run straight to two edges of the board. The price is one via per pad, which is 262\,144 vias on a board.
+
+\subsection{The readout board}\label{app:boardstack}
+\Cref{tab:boardstack} gives the layers of the readout board as specified to the CERN MPT workshop (offer 3498-A). The
+board has six copper layers (L3 to L8 in the Gerber files, where L1 and L2 are the artwork of the pillars and of the
+resistive print). The layers add up to 528\,\textmu m, and the offer gives 530\,\textmu m. Under the active area,
+L3 has no copper, and L7 carries only the land at the foot of each via.
+
+\begin{table}[tbp]
+  \centering\small
+  \caption{Stack-up of the readout board, from the mesh side down (offer 3498-A of the CERN MPT workshop). Where a
+  copper layer is given as two numbers, the second is the plating. $^\ast$: connector pads and the contacts of the resistive strips; no copper inside the active area.}
+  \label{tab:boardstack}
+  \begin{tabular}{lll}
+    \hline
+    layer & material & thickness \\
+    \hline
+    L3, top copper (contacts only)$^\ast$ & Cu, Ni/Au finish & 9 + 17\,\textmu m \\
+    dielectric & UBE polyimide + EMC prepreg & 25 + 25\,\textmu m \\
+    L4, pads & Cu & 17 + 17\,\textmu m \\
+    dielectric & prepreg & 100\,\textmu m \\
+    L5, Y strips & Cu & 17\,\textmu m \\
+    dielectric & EMC prepreg & 100\,\textmu m \\
+    L6, X strips & Cu & 17\,\textmu m \\
+    dielectric & prepreg & 100\,\textmu m \\
+    L7, via lands & Cu & 17 + 17\,\textmu m \\
+    dielectric & EMC prepreg + UBE polyimide & 25 + 25\,\textmu m \\
+    L8, bottom & no copper & \\
+    \hline
+    total & & 528\,\textmu m \\
+    \hline
+  \end{tabular}
+\end{table}
+\askStephan{Two disagreements with what we used so far: the insulator between the resistive strips and the pads is
+50\,\textmu m here (our charge-spreading model assumed 50\,\textmu m Kapton + 25\,\textmu m glue), and the board is
+0.53\,mm here (1.70\,mm in the mechanical CAD). Questions sent to Bertrand on 2026-11-24.}
+
+\Cref{tab:material} gives the numbers drawn in \cref{fig:stack} for every layer of the chamber.
+\input{sections/material_table}
+
+\subsection{Production at Saclay}\label{app:process}
+\emph{Resistive strips.} The resistive strips are screen printed on the Kapton of the board and cured. Two pastes were
+used during the production. The first, from Saral, is soft. It is easy to remove, which matters when a board has to be
+printed again, but it did not hold at the step from the copper HV contact down to the board. Strips printed with it
+broke there, and the contact had to be repaired with silver glue. Silver is known to migrate under an electric field,
+so such a repair may not last. The second paste, from ESL, is hard. It held at the contact without silver glue, and it
+can be sanded (800 grit, in both directions) to remove resistive spikes, which cause discharges, and to help the
+pillars attach. It is, however, brittle and very hard to remove. All five chambers of this paper have ESL strips. The
+pastes and the uniform, strip and grid patterns were compared on small boards
+($128\times154$\,mm$^2$) in October and November 2025, with an $^{55}$Fe source, cosmic rays and the SPS beam.
+\askStephan{Is there a written result of the small-board tests (uniform/strips/grid, ESL/Saral) we can cite or summarize?}
+
+\emph{Bulk process.} Two layers of Dynamask photoresist (75\,\textmu m each) are laminated on the board, the mesh is laid
+on them, and a third layer is laminated over it. The pillars are exposed through a mask with UV light for 20 minutes, so
+that the layer next to the Kapton polymerizes fully under the mesh. The board is then developed with a chemical spray from
+below, rinsed in de-ionized water, and cured at 145\,\textdegree C, reached in steps of 10\,\textdegree C. Three problems
+appeared in this process:
+\begin{itemize}
+  \item \emph{Waves in the mesh.} At the nominal tension of about 8\,N/cm the mesh formed waves when the board was
+  heated for the cure. A tension of about 2\,N/cm avoids them but is hard to reach on the stretching bench, and
+  12\,N/cm also avoids them but loads the pillars more. All five chambers were made at 12\,N/cm with the stepped cure.
+  Even so, patches of 1--10\,cm across where the mesh is not held by its pillars appeared on several boards, and we do
+  not fully understand them.
+  \item \emph{Pillars.} Small pillars hide less of the gap but hold less well. A wrinkle in the photoresist during the
+  lamination can cost pillars. Before the mesh is laid, the lamination can be removed and redone. After the mesh is
+  laid, a wrinkle only costs the cap of a pillar above the mesh, and the pillar under the mesh still holds the gap. The
+  development time was kept short to avoid losing pillars. On the last boards this left photoresist under the mesh in
+  bands, along the path of the spray, where the efficiency was about 50\,\%.
+  \item \emph{Mesh potential.} After the gamma flash of the first n\_TOF test, the mesh was separated from the ground of
+  the board, so that a circuit could drive it. This was not part of the design. The mesh was cut on a layer of Kapton
+  tape all around the active area and covered with a second layer, and the ground was brought to the mesh through the
+  circuit.
+\end{itemize}
+\askStephan{Pillars as built (\O\,500\,\textmu m on 5\,mm, or \O\,0.6\,mm on 4.68\,mm from the Gerber)? Which of the five
+chambers had the developing residue? Is the mesh of chambers A--E floating or grounded at the board?}
+
+\emph{Qualification.} Each board was tested in a class 100\,000 clean room. The aim was 900\,V on the resistive strips
+with a current below 1\,\textmu A. A thermal camera located the hot spots, and boards were washed to remove residues of
+photoresist. The chambers were then assembled in the clean room and tested on the cosmic bench.
+
+\subsection{The five chambers}\label{app:chambers}
+\Cref{tab:production} lists what was seen on each chamber when it was made, next to what we measure. Most boards were
+printed and bulked more than once during 2026, and we do not have a record of every iteration.
+
+\begin{table}[tbp]
+  \centering\small
+  \caption{The five chambers: when the bulk was made, what was seen at production, and what we measure on the bench.}
+  \label{tab:production}
+  \begin{tabular}{p{0.07\linewidth}p{0.12\linewidth}p{0.38\linewidth}p{0.33\linewidth}}
+    \hline
+    chamber & bulk made & seen at production & measured \\
+    \hline
+    A & 15 June & no defect noted & uniform \\
+    B & 12 June & pillars too large on parts of the board (the mask shifted during the UV exposure) & uniform \\
+    C & about 24 June & lamination redone after wrinkles; a column of waves in the mesh, a spot without pillar caps & discharges over the whole area \\
+    D & 22 June & one or two bubbles in the lamination, pillar caps missing there & discharges over the whole area \\
+    E & 22 June & a few bubbles in the lamination, pillar caps missing there & bands of broken resistive strips (\cref{app:beam}) \\
+    \hline
+  \end{tabular}
+\end{table}
+\askDylan{Chamber D's poorly mounted readout card is an assembly problem, not a bulk one, so it is left out of this
+table. Add it? Also: you think C, D and E all have some broken resistive strips; we only show it for E.}

@@ -1,26 +1,46 @@
-% Numbers: figs/out/material_budget.json (figs/make_material_budget.py). Highland, per projection, electron momentum.
+% Numbers: figs/out/material_stack.json (figs/make_material_stack.py, which also writes this tabular).
+% Highland, per projection, electron momentum. Patterned layers averaged over their pattern.
 \begin{table}[tbp]
-  \centering\small
-  \caption{Material between the target and the end of the drift gap at normal incidence, and the multiple scattering
-  it causes: rms angle $\theta_0$ per projection for electrons of 4, 8 and 16\,MeV kinetic energy (Highland formula;
-  the summed rows apply it to the summed thickness). The aluminisation of the window is ignored. $^\dagger$: the copper
-  thickness of the cathode is assumed.}
+  \centering\footnotesize
+  \caption{The layers of a chamber at the center of the active area, in the order a lepton from the target crosses them,
+  and the multiple scattering each layer causes alone: rms angle $\theta_0$ per projection for electrons of 4, 8 and
+  16\,MeV kinetic energy (Highland formula). For a patterned layer the fill is the fraction of the area that it covers,
+  and $x/X_0$ is averaged over the pattern. The summed rows apply the Highland formula to the summed $x/X_0$. The
+  polyimide of the board is counted as glass-epoxy, and the aluminization of the window is ignored. $^\dagger$: thickness
+  assumed. These are the numbers drawn in \cref{fig:stack}.}
   \label{tab:material}
-  \begin{tabular}{llrrrr}
-    \hline
-     & & & \multicolumn{3}{c}{$\theta_0$ [\textdegree] at} \\
-    layer & thickness & $x/X_0$ [\%] & 4\,MeV & 8\,MeV & 16\,MeV \\
-    \hline
-    air, target to window & 200\,mm & 0.066 & 3.24 & 1.70 & 0.88 \\
-    entrance window, Mylar & 60\,\textmu m & 0.021 & 1.72 & 0.90 & 0.47 \\
-    gas gap & 5\,mm & 0.004 & 0.70 & 0.37 & 0.19 \\
-    drift cathode, Kapton & 50\,\textmu m & 0.018 & 1.55 & 0.82 & 0.42 \\
-    drift cathode, copper$^\dagger$ & 9\,\textmu m & 0.063 & 3.16 & 1.66 & 0.85 \\
-    \hline
-    in front of the drift volume & & 0.171 & 5.49 & 2.88 & 1.48 \\
-    \quad without the copper$^\dagger$ & & 0.109 & 4.27 & 2.24 & 1.15 \\
-    \hline
-    drift gas, Ar/iC$_4$H$_{10}$ 95/5 & 28.2\,mm & 0.024 & 1.83 & 0.96 & 0.49 \\
-    \hline
+  \setlength{\tabcolsep}{3.5pt}
+  \begin{tabular}{llrrrrrr}
+  \hline
+   & & & & & \multicolumn{3}{c}{$\theta_0$ (\textdegree), $e^\pm$ of} \\
+  layer & material & thickness & fill & $x/X_0$ (\%) & 4\,MeV & 8\,MeV & 16\,MeV \\
+  \hline
+  air, target to window & air & 200\,mm &  & 0.0658 & 3.24 & 1.70 & 0.87 \\
+  entrance window, Mylar & Mylar & 60\,\textmu m &  & 0.0210 & 1.72 & 0.90 & 0.46 \\
+  gas gap & Ar/iC$_4$H$_{10}$ 95/5 & 5\,mm &  & 0.0042 & 0.70 & 0.37 & 0.19 \\
+  drift cathode, Kapton & Kapton & 50\,\textmu m &  & 0.0175 & 1.55 & 0.82 & 0.42 \\
+  drift cathode, copper$^\dagger$ & copper & 9\,\textmu m &  & 0.0627 & 3.16 & 1.66 & 0.85 \\
+  drift gas (28.2 mm measured) & Ar/iC$_4$H$_{10}$ 95/5 & 28.2\,mm &  & 0.0236 & 1.83 & 0.96 & 0.49 \\
+  \hline
+  mesh, steel (calendered) & steel (AISI 316) & 20\,\textmu m & 0.44 & 0.0512 & 2.82 & 1.48 & 0.76 \\
+  amplification gap & Ar/iC$_4$H$_{10}$ 95/5 & 150\,\textmu m &  & 0.0001 & 0.09 & 0.05 & 0.03 \\
+  resistive strips$^\dagger$ & resistive paste & 10\,\textmu m & 0.20 & 0.0007 & 0.26 & 0.14 & 0.07 \\
+  insulator, polyimide + prepreg & glass-epoxy & 50\,\textmu m &  & 0.0258 & 1.93 & 1.01 & 0.52 \\
+  pads, copper & copper & 34\,\textmu m & 0.76 & 0.1800 & 5.65 & 2.96 & 1.52 \\
+  prepreg & glass-epoxy & 100\,\textmu m &  & 0.0515 & 2.83 & 1.49 & 0.76 \\
+  Y strips, copper & copper & 17\,\textmu m & 0.46 & 0.0542 & 2.91 & 1.53 & 0.79 \\
+  prepreg & glass-epoxy & 100\,\textmu m &  & 0.0515 & 2.83 & 1.49 & 0.76 \\
+  X strips, copper & copper & 17\,\textmu m & 0.46 & 0.0541 & 2.91 & 1.53 & 0.78 \\
+  prepreg & glass-epoxy & 100\,\textmu m &  & 0.0515 & 2.83 & 1.49 & 0.76 \\
+  via lands, copper & copper & 34\,\textmu m & 0.53 & 0.1256 & 4.63 & 2.43 & 1.25 \\
+  prepreg + polyimide & glass-epoxy & 50\,\textmu m &  & 0.0258 & 1.93 & 1.01 & 0.52 \\
+  Rohacell$^\dagger$ & Rohacell & 5\,mm &  & 0.0650 & 3.22 & 1.69 & 0.87 \\
+  back foil, Mylar$^\dagger$ & Mylar & 25\,\textmu m &  & 0.0088 & 1.06 & 0.55 & 0.29 \\
+  \hline
+  in front of the drift gas & & & & 0.1712 & 5.49 & 2.88 & 1.48 \\
+  \quad without the cathode copper & & & & 0.1085 & 4.27 & 2.24 & 1.15 \\
+  including the drift gas & & & & 0.1948 & 5.89 & 3.09 & 1.59 \\
+  behind the drift gas & & & & 0.7458 & 12.31 & 6.46 & 3.32 \\
+  \hline
   \end{tabular}
 \end{table}
