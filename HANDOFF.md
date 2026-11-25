@@ -31,6 +31,29 @@ the Geant4 material model.
   "Readout stack from the gerbers" below.
 - The hub mail API can create CERN drafts (attachments work) but not delete them.
 
+## Paper I v2 brought fully onto the per-mounting maps — updated 2026-11-25 (dylan-MS-7C84)
+
+**Resume:** nothing half-done. Dylan may want to revisit the decision below (v_ang of chambers B-D from the map1 bundles).
+
+**Done:**
+- Last bow-block angles in the text: abstract 0.8/0.7 deg, intro 0.8, Sec. 9.3 and fig `gas_scatter` (chamber line 0.73 deg, crossing ~6 MeV).
+- Two-track separation (Sec. 8.4, fig `two_track_separation`) rescored on map1 angles without refitting (`TT_ANGLES`, default map1 + the
+  donor's CV shift): opening angle 0.9-1.2 deg above 3 mm (was 1.2-1.5), separation 0.7-1.1 mm, efficiencies unchanged; conclusions 1.0 deg.
+- Angle-scale velocity v_ang = v x mean kw from the map1 bundles everywhere in Sec. 5: chamber A ladders (`pg_twov.py extract --ladder-only
+  --map1`), 355 V/cm point (`rerun/calib/s4/golden_355_vang.py`; Run 1 now from sat_det3's own bundle), gap 28.43 +- 0.32 (chi2 3.2/3),
+  B-D gaps 31.4 / 29.4 / 30.2 mm (`make_gaps.py`, `GAPS_ANGLES=pass1` restores the old). Water fit unchanged.
+- A4b: one sentence relating the 25 June 0.74 deg (earlier study) to the production map's 0.68/0.67 (tab:mapall).
+- Audit of every other Paper I producer: unaffected (positions, charge, timing, efficiency, pairing, bow fits use no fitted angle or kw);
+  `gas_drying` and the A time series re-estimate kw per block and anchor to the timing velocity, so left as they are. Details:
+  `papers/paper1_v2/NUMBERS_RUNDOWN.md` section 16.
+
+**Decision taken without Dylan (revisit if wanted):** B-D gaps on the map1 kw. C moves +0.7 mm because map1's kw leaves out railed tracks
+(read 3-10 % flat) and now sits 1.4 mm (1.3 sigma) from its geometric gap, so Sec. 5 says "within 1 mm" for B, D, E only; D's X kw is
+measured on x >= 200 mm only (said in the text); D's chi2 over its rows rose from 6.9 to 12.6 / 6.
+
+**Gotchas:** inputs fetched to `/media/ucla/work/claude-jobs/a21e7df1/twov` (Analysis_pass1 wft of the 6-27 rows + Run 2, 6 MB) and
+`claude-jobs/v2_twotrack/batch` (overlay shards); both regenerable from EOS, delete when convenient.
+
 ## Bench angle re-finalization with per-mounting maps: DONE (steps 0-5) — updated 2026-11-24 (dylan-MS-7C84, session cosmic-analysis-reprocessing-plan)
 
 **Resume:** all five steps are done, merged and pushed; Paper I v2 is on Overleaf `paper1_v2` (b367fb1d). Only Dylan's decisions below remain.
