@@ -12,6 +12,11 @@ Report: `report.html` (figures in `figures/`; a copy with figures is on EOS
 
 ## Numbers
 
+**2026-11-25: det7 corrected.** The fit_v1 stack fit of g_det7_long (and of det7's short run) had failed silently: an
+empty stack returned the fit's starting point, T = 820 ns. The fits were redone on X ch >= 256 (S4 det7 recipe) in EOS
+`x17rerun/paper1_gas/fit_v2`, which is now the input of pg_gas.py. det7 golden: T 798.6 ± 17.2 ns, water 0.48 -> 0.44 %.
+Details: `rerun/paper1_gap/window_bias/README.md`.
+
 **Water per chamber**: timing v = gap / T of the head-on stack. S4 re-check recipe: pass template, bundle dead list ∪
 strip_gain_audit flags, M3 reference ≥ 30 mm inside, every unsaturated amplitude. Magboltz bench Ar/iso 95/5 + water, fine
 grid `air_merged`. Errors: bootstrap T ⊕ 1.5 %.
@@ -22,7 +27,7 @@ grid `air_merged`. Errors: bootstrap T ⊕ 1.5 %.
 | det3 | 6-27 drift scan, 500–1100 V | 177–390 | 4 fields | **0.97 [0.95, 0.99]**, χ² 2.5/3 | gap profile 29 [28, 30] mm |
 | det4 | g_det4 (6-24) | 197 | 32.70 ± 0.67 | 0.42 [0.40, 0.45] | 0.39–0.45 |
 | det6 | g_det6_long (6-26 06–10 h) | 250 | 24.78 ± 0.86 | 1.00 [0.96, 1.04] | 0.91–1.09 |
-| det7 | g_det7_long (6-26 06–10 h) | 238 | 35.90 ± 0.64 | 0.48 [0.45, 0.51] | 0.38–0.58 |
+| det7 | g_det7_long (6-26 06–10 h) | 238 | 36.87 ± 0.97 | 0.44 [0.39, 0.48] | — |
 
 The pre-pass det3 value (FINDINGS §40, 0.955 %) is reproduced on pass 1. The angle-scale v (v_drift × kw) of every drift-scan
 field, 33–367 V/cm, sits on the same Magboltz curve (`figures/gas_vE_timing.png`).
@@ -30,9 +35,9 @@ field, 33–367 V/cm, sits on the same Magboltz curve (`figures/gas_vE_timing.pn
 **6-26, time-resolved.**
 - **The anchor:** timing stack / ladder on the attachment-free rows (≥ 06:00 and the afternoon HV scan):
   - det6 k = 0.970 ± 0.013 (χ² 6.2/7);
-  - det7 k = 0.984 ± 0.011 (χ² 7.4/7).
-- **Water from the anchored ladder:** det6 **1.47 → 0.76 %**, det7 **0.68 → 0.35 %** over 01:00 → 15:00.
-- **One time shape:** the two excesses over their afternoon plateaus correlate at r = 0.975. det6's is 2.17× det7's.
+  - det7 k = 0.993 ± 0.011 (χ² 6.1/7; was 0.984 with the failed long-run fit, see below).
+- **Water from the anchored ladder:** det6 **1.47 → 0.76 %**, det7 **0.67 → 0.33 %** over 01:00 → 15:00.
+- **One time shape:** the two excesses over their afternoon plateaus correlate at r = 0.976. det6's is 2.09× det7's.
   - The ×2.8 in v (vt_within_rows) is partly Magboltz nonlinearity: v is steeper in water at det6's wetter point.
   - The plateaus differ (0.76 vs 0.35 %), so the two chambers do not share one water.
 

@@ -234,3 +234,15 @@ Notes on the table:
   C now differs by 1.4 mm (1.3 sigma), so "within 1 mm" holds for B, D, E only. Range 28.4-31.4 mm, mean 29.8, rms about 30 mm 1.0.
   Not changed, on purpose: `gas_drying` and the chamber A time series re-estimate kw per time block with the pass-1 bow block and
   anchor to the timing velocity, so a constant factor from the map cancels.
+
+## 17. Drift time near the end of the record; chamber D's failed stack fit (2026-11-25)
+
+- Study: `rerun/paper1_gap/window_bias/` (README, report.html). A record that ends after the drift column does not bias T
+  (toys within 5 ns; real stacks of A, B and D's long run cut to 120 ns after the column move by 1-7 ns). E 6-24, the
+  shortest quoted margin (116 ns), moves < 0.2 mm and shows no attachment (tau 22 us, T +2 ns).
+- Attachment biases T low, more so with a short record. C's 26 June rows prefer tau ~ 2 us (1.5-2.4 sigma per row): gap
+  29.44 -> 30.13 mm with the loss fitted. D's HV-scan rows: 29.38 -> 29.63. Paper I quotes the uniform column and states
+  the +0.7 mm (askDylan in Sec. 5).
+- D's long run `g_det7_long|in30` in fit_v1 was the fit's starting point (T 820, rms NaN). Refitted on X ch >= 256:
+  798.6 +- 17.2 ns (fit_v2 on EOS). D water 0.48 -> 0.44 % [0.39, 0.48]; D gap 30.19 -> 29.38 mm (chi2 12.6 -> 4.4 / 6);
+  drying D 0.68 -> 0.35 now 0.67 -> 0.33 %, correlation 0.976. Mean of the five gaps 29.6 mm, 1.1 mm rms about 30.

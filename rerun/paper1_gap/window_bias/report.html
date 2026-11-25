@@ -1,0 +1,630 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Drift gap: record end and attachment</title>
+<style>body{font-family:sans-serif;max-width:1050px;margin:auto;padding:16px;line-height:1.45}table{border-collapse:collapse;font-size:12px}
+td,th{border:1px solid #ccc;padding:2px 6px}img{max-width:100%}</style></head><body>
+<h1>Drift gap: does the end of the record bias the drift time?</h1>
+<p><b>Verdict.</b> A record that ends after the drift column does not bias the fitted drift time T. The fit recovers T
+within 5 ns in toys, and cutting the real stacks of chambers A and B (and D's long run) at 120 ns after the column moves T by
+1-7 ns. Chamber E's 6-24 long run, the quoted row with the shortest record (116 ns after the column), is therefore fine:
+its gap moves by less than 0.2 mm, and a fit with attachment free finds none (tau 22 us, T +2 ns). Only a record that ends
+before the column end biases T; that is the 177 V/cm point of chamber A, already a lower limit.</p>
+<p><b>What does bias T is attachment</b>, and a short record makes it worse. The uniform-column fit returns T too short when
+the column loses charge with drift time. Chamber C's 26 June rows prefer an attachment time of about 2 us (1.5-2.4 sigma per
+row): with the loss fitted, C's gap is 30.1 instead of 29.4 mm (+0.7 mm). D's 26 June HV-scan rows lean the same way
+(+0.25 mm). This is stated as a limit in Paper I; the choice is Dylan's.</p>
+<p><b>Found on the way: chamber D's long run had no fit.</b> Its interior stack was empty (masked X channels below 270 left
+the +-2 strip offset under the 60 % rule), and x_width.fit_x returned its starting point (T = 820 ns, rms NaN) as a result.
+D's water (0.48 %) and its long-run gap came from that number. Refitted with the S4 det7 recipe (X peak on ch 256-511, all
+events): T = 798.6 +- 17.2 ns (the S4 re-check had 797 +- 17). D's water is now 0.44 %, its gap 29.4 mm (chi2 over its rows
+12.6 -> 4.4 / 6), and D's drying 0.67 -> 0.33 %. fit_x now raises on an empty stack.</p>
+
+<h2>Clock</h2><p>The fit's dt is on predict_x's clock (index 0 = -300 ns) with a template whose grid starts at -360 ns, so the
+last charge of the column reaches the strips at stack time dt + 60 + T. The response then lasts ~500 ns (99 % of its
+area); the falling edge of the stack is the column end convolved with it. Paper I's Fig. two_velocities (a) draws its
+triangles at dt and dt + T, 60 ns early (cosmetic; T is unaffected).</p>
+
+<h2>Record end against column end, every row</h2><img src="figures/margins.png">
+<p>Record end = the last time where more than 60 % of the stacked events still have a sample (rc_diffusion.stack's rule).
+Chamber E's records are short because its leading edges sit late in the readout window for many events (10 % of events end
+720-920 ns after their leading edge).</p>
+
+<h2>Toy: the fit's own model, cut and refitted</h2><img src="figures/toy.png">
+<p>Truth = x_width.predict_x at each template row's fitted parameters (sigma_0, Dd, dt, T), with an exp(-u/tau) loss of
+charge in the attachment panels; white noise of the row's fit rms; six noisy replicas per point. Without attachment, T is
+unbiased for every margin >= 0 and unusable below. With attachment, the uniform fit is short already with the full
+record (-7 to -9 ns at 4 us, -26 to -48 ns at 1.5 us) and shorter still when the record is cut.</p>
+
+<h2>Real stacks cut earlier</h2><img src="figures/datacut.png">
+<p>Shift of T when the real stack of a row with 400-800 ns of margin is cut at a given distance after its own column end
+(same events at every cut; error bars: event bootstrap, 12 resamples). Values at selected cuts (ns):</p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>m</th>
+      <th>0.0</th>
+      <th>50.0</th>
+      <th>116.0</th>
+      <th>200.0</th>
+      <th>300.0</th>
+      <th>500.0</th>
+    </tr>
+    <tr>
+      <th>chamber</th>
+      <th>subrun</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th rowspan="2" valign="top">A</th>
+      <th>drift_scan_resist_490V_drift_700V</th>
+      <td>17.0</td>
+      <td>0.0</td>
+      <td>-3.0</td>
+      <td>-3.0</td>
+      <td>-1.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>drift_scan_resist_490V_drift_900V</th>
+      <td>-5.0</td>
+      <td>-6.0</td>
+      <td>-6.0</td>
+      <td>-3.0</td>
+      <td>-1.0</td>
+      <td>-0.0</td>
+    </tr>
+    <tr>
+      <th rowspan="3" valign="top">B</th>
+      <th>long_run</th>
+      <td>-0.0</td>
+      <td>-2.0</td>
+      <td>-3.0</td>
+      <td>-3.0</td>
+      <td>-1.0</td>
+      <td>-0.0</td>
+    </tr>
+    <tr>
+      <th>longer_run</th>
+      <td>-5.0</td>
+      <td>-7.0</td>
+      <td>-6.0</td>
+      <td>-3.0</td>
+      <td>-1.0</td>
+      <td>-0.0</td>
+    </tr>
+    <tr>
+      <th>short_run</th>
+      <td>23.0</td>
+      <td>13.0</td>
+      <td>1.0</td>
+      <td>-1.0</td>
+      <td>-1.0</td>
+      <td>-0.0</td>
+    </tr>
+    <tr>
+      <th rowspan="8" valign="top">C</th>
+      <th>long_run</th>
+      <td>-101.0</td>
+      <td>-90.0</td>
+      <td>-58.0</td>
+      <td>-35.0</td>
+      <td>-5.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>resist_det6_405V_det7_405V_drift_700V</th>
+      <td>-106.0</td>
+      <td>-106.0</td>
+      <td>-84.0</td>
+      <td>-56.0</td>
+      <td>-23.0</td>
+      <td>-1.0</td>
+    </tr>
+    <tr>
+      <th>resist_det6_415V_det7_415V_drift_700V</th>
+      <td>801.0</td>
+      <td>736.0</td>
+      <td>-29.0</td>
+      <td>-14.0</td>
+      <td>-4.0</td>
+      <td>-0.0</td>
+    </tr>
+    <tr>
+      <th>resist_det6_425V_det7_425V_drift_700V</th>
+      <td>840.0</td>
+      <td>-43.0</td>
+      <td>-30.0</td>
+      <td>-11.0</td>
+      <td>-4.0</td>
+      <td>-0.0</td>
+    </tr>
+    <tr>
+      <th>resist_det6_435V_det7_435V_drift_700V</th>
+      <td>7.0</td>
+      <td>-10.0</td>
+      <td>-11.0</td>
+      <td>-7.0</td>
+      <td>-3.0</td>
+      <td>-0.0</td>
+    </tr>
+    <tr>
+      <th>resist_det6_445V_det7_445V_drift_700V</th>
+      <td>-81.0</td>
+      <td>-50.0</td>
+      <td>-27.0</td>
+      <td>-16.0</td>
+      <td>-3.0</td>
+      <td>-0.0</td>
+    </tr>
+    <tr>
+      <th>resist_det6_465V_det7_465V_drift_700V</th>
+      <td>-21.0</td>
+      <td>-22.0</td>
+      <td>-15.0</td>
+      <td>-10.0</td>
+      <td>-5.0</td>
+      <td>-0.0</td>
+    </tr>
+    <tr>
+      <th>short_run</th>
+      <td>889.0</td>
+      <td>885.0</td>
+      <td>-116.0</td>
+      <td>-71.0</td>
+      <td>-15.0</td>
+      <td>18.0</td>
+    </tr>
+    <tr>
+      <th rowspan="5" valign="top">D</th>
+      <th>long_run</th>
+      <td>11.0</td>
+      <td>9.0</td>
+      <td>7.0</td>
+      <td>2.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>longer_run</th>
+      <td>238.0</td>
+      <td>88.0</td>
+      <td>31.0</td>
+      <td>12.0</td>
+      <td>2.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>resist_det6_405V_det7_405V_drift_700V</th>
+      <td>-58.0</td>
+      <td>-28.0</td>
+      <td>-8.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>resist_det6_415V_det7_415V_drift_700V</th>
+      <td>-76.0</td>
+      <td>-35.0</td>
+      <td>-18.0</td>
+      <td>-2.0</td>
+      <td>-0.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>resist_det6_425V_det7_425V_drift_700V</th>
+      <td>-74.0</td>
+      <td>-51.0</td>
+      <td>-28.0</td>
+      <td>-7.0</td>
+      <td>-2.0</td>
+      <td>-0.0</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>Fit with attachment free</h2><img src="figures/attachment.png">
+<p>The same model with the charge of the slice drifting for u weighted by exp(-u/tau), 1/tau >= 0 free; closure on toys
+recovers T within 5 ns and tau within ~10 % (results/attfit_closure.csv). k_sig = (1/tau) / its bootstrap sd.</p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>chamber</th>
+      <th>run</th>
+      <th>subrun</th>
+      <th>n</th>
+      <th>margin</th>
+      <th>T_uni</th>
+      <th>T_att</th>
+      <th>dT</th>
+      <th>dT_sd</th>
+      <th>tau_us</th>
+      <th>k_sig</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>A</td>
+      <td>mx17_det3_saturday_scan_6-27-26</td>
+      <td>drift_scan_resist_490V_drift_1100V</td>
+      <td>52</td>
+      <td>752.24</td>
+      <td>757.37</td>
+      <td>758.98</td>
+      <td>1.62</td>
+      <td>4.71</td>
+      <td>9.13</td>
+      <td>0.60</td>
+    </tr>
+    <tr>
+      <td>A</td>
+      <td>mx17_det3_saturday_scan_6-27-26</td>
+      <td>drift_scan_resist_490V_drift_900V</td>
+      <td>61</td>
+      <td>688.98</td>
+      <td>819.60</td>
+      <td>819.60</td>
+      <td>0.00</td>
+      <td>5.76</td>
+      <td>inf</td>
+      <td>0.00</td>
+    </tr>
+    <tr>
+      <td>A</td>
+      <td>mx17_det3_saturday_scan_6-27-26</td>
+      <td>drift_scan_resist_490V_drift_700V</td>
+      <td>66</td>
+      <td>402.52</td>
+      <td>1120.57</td>
+      <td>1120.57</td>
+      <td>-0.00</td>
+      <td>0.20</td>
+      <td>inf</td>
+      <td>0.00</td>
+    </tr>
+    <tr>
+      <td>B</td>
+      <td>mx17_det2_det3_overnight_6-22-26</td>
+      <td>long_run</td>
+      <td>790</td>
+      <td>743.35</td>
+      <td>804.79</td>
+      <td>805.92</td>
+      <td>1.12</td>
+      <td>1.39</td>
+      <td>23.68</td>
+      <td>0.97</td>
+    </tr>
+    <tr>
+      <td>B</td>
+      <td>mx17_det2_det3_overnight_6-22-26</td>
+      <td>longer_run</td>
+      <td>146</td>
+      <td>757.81</td>
+      <td>813.54</td>
+      <td>813.54</td>
+      <td>-0.00</td>
+      <td>0.85</td>
+      <td>inf</td>
+      <td>0.00</td>
+    </tr>
+    <tr>
+      <td>B</td>
+      <td>mx17_det2_det3_overnight_6-22-26</td>
+      <td>short_run</td>
+      <td>72</td>
+      <td>770.39</td>
+      <td>812.93</td>
+      <td>812.93</td>
+      <td>-0.00</td>
+      <td>4.95</td>
+      <td>inf</td>
+      <td>0.00</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>mx17_det6_det7_hv_scan_6-26-26</td>
+      <td>resist_det6_405V_det7_405V_drift_700V</td>
+      <td>82</td>
+      <td>653.91</td>
+      <td>850.33</td>
+      <td>956.55</td>
+      <td>106.22</td>
+      <td>53.22</td>
+      <td>0.78</td>
+      <td>2.37</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>mx17_det6_det7_hv_scan_6-26-26</td>
+      <td>resist_det6_415V_det7_415V_drift_700V</td>
+      <td>91</td>
+      <td>594.80</td>
+      <td>893.49</td>
+      <td>922.71</td>
+      <td>29.22</td>
+      <td>25.45</td>
+      <td>1.79</td>
+      <td>1.57</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>mx17_det6_det7_hv_scan_6-26-26</td>
+      <td>resist_det6_420V_det7_420V_drift_700V</td>
+      <td>43</td>
+      <td>646.01</td>
+      <td>850.83</td>
+      <td>909.57</td>
+      <td>58.74</td>
+      <td>47.56</td>
+      <td>1.25</td>
+      <td>1.91</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>mx17_det6_det7_hv_scan_6-26-26</td>
+      <td>resist_det6_425V_det7_425V_drift_700V</td>
+      <td>72</td>
+      <td>647.68</td>
+      <td>889.89</td>
+      <td>921.72</td>
+      <td>31.83</td>
+      <td>25.10</td>
+      <td>1.89</td>
+      <td>1.56</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>mx17_det6_det7_hv_scan_6-26-26</td>
+      <td>resist_det6_435V_det7_435V_drift_700V</td>
+      <td>87</td>
+      <td>604.75</td>
+      <td>923.44</td>
+      <td>926.91</td>
+      <td>3.47</td>
+      <td>16.52</td>
+      <td>11.47</td>
+      <td>0.37</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>mx17_det6_det7_hv_scan_6-26-26</td>
+      <td>resist_det6_445V_det7_445V_drift_700V</td>
+      <td>82</td>
+      <td>643.75</td>
+      <td>911.80</td>
+      <td>937.42</td>
+      <td>25.63</td>
+      <td>18.84</td>
+      <td>2.01</td>
+      <td>2.38</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>mx17_det6_det7_hv_scan_6-26-26</td>
+      <td>resist_det6_465V_det7_465V_drift_700V</td>
+      <td>68</td>
+      <td>620.82</td>
+      <td>933.32</td>
+      <td>933.32</td>
+      <td>0.00</td>
+      <td>6.60</td>
+      <td>inf</td>
+      <td>0.00</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>mx17_det6_det7_overnight_6-26-26</td>
+      <td>long_run</td>
+      <td>92</td>
+      <td>410.34</td>
+      <td>1130.12</td>
+      <td>1152.39</td>
+      <td>22.28</td>
+      <td>12.11</td>
+      <td>3.20</td>
+      <td>2.14</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>mx17_det6_det7_overnight_6-26-26</td>
+      <td>longer_run</td>
+      <td>270</td>
+      <td>366.47</td>
+      <td>1211.19</td>
+      <td>1387.46</td>
+      <td>176.28</td>
+      <td>47.46</td>
+      <td>1.15</td>
+      <td>8.96</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>mx17_det6_det7_overnight_6-26-26</td>
+      <td>short_run</td>
+      <td>230</td>
+      <td>716.95</td>
+      <td>859.66</td>
+      <td>1367.87</td>
+      <td>508.22</td>
+      <td>212.33</td>
+      <td>0.54</td>
+      <td>6.73</td>
+    </tr>
+    <tr>
+      <td>D</td>
+      <td>mx17_det6_det7_hv_scan_6-26-26</td>
+      <td>resist_det6_405V_det7_405V_drift_700V</td>
+      <td>70</td>
+      <td>720.25</td>
+      <td>761.94</td>
+      <td>770.11</td>
+      <td>8.16</td>
+      <td>10.18</td>
+      <td>3.03</td>
+      <td>1.17</td>
+    </tr>
+    <tr>
+      <td>D</td>
+      <td>mx17_det6_det7_hv_scan_6-26-26</td>
+      <td>resist_det6_415V_det7_415V_drift_700V</td>
+      <td>81</td>
+      <td>765.16</td>
+      <td>731.73</td>
+      <td>747.06</td>
+      <td>15.33</td>
+      <td>11.89</td>
+      <td>1.67</td>
+      <td>2.10</td>
+    </tr>
+    <tr>
+      <td>D</td>
+      <td>mx17_det6_det7_hv_scan_6-26-26</td>
+      <td>resist_det6_425V_det7_425V_drift_700V</td>
+      <td>65</td>
+      <td>790.37</td>
+      <td>710.12</td>
+      <td>731.96</td>
+      <td>21.84</td>
+      <td>16.96</td>
+      <td>1.61</td>
+      <td>1.82</td>
+    </tr>
+    <tr>
+      <td>D</td>
+      <td>mx17_det6_det7_hv_scan_6-26-26</td>
+      <td>resist_det6_435V_det7_435V_drift_700V</td>
+      <td>58</td>
+      <td>797.61</td>
+      <td>732.25</td>
+      <td>732.25</td>
+      <td>0.00</td>
+      <td>2.69</td>
+      <td>inf</td>
+      <td>0.00</td>
+    </tr>
+    <tr>
+      <td>D</td>
+      <td>mx17_det6_det7_hv_scan_6-26-26</td>
+      <td>resist_det6_445V_det7_445V_drift_700V</td>
+      <td>48</td>
+      <td>736.31</td>
+      <td>735.30</td>
+      <td>738.01</td>
+      <td>2.72</td>
+      <td>15.07</td>
+      <td>9.51</td>
+      <td>0.33</td>
+    </tr>
+    <tr>
+      <td>D</td>
+      <td>mx17_det6_det7_overnight_6-26-26</td>
+      <td>long_run</td>
+      <td>118</td>
+      <td>731.45</td>
+      <td>798.55</td>
+      <td>800.44</td>
+      <td>1.88</td>
+      <td>4.26</td>
+      <td>17.06</td>
+      <td>0.34</td>
+    </tr>
+    <tr>
+      <td>D</td>
+      <td>mx17_det6_det7_overnight_6-26-26</td>
+      <td>longer_run</td>
+      <td>71</td>
+      <td>419.84</td>
+      <td>872.24</td>
+      <td>872.25</td>
+      <td>0.01</td>
+      <td>0.06</td>
+      <td>inf</td>
+      <td>0.00</td>
+    </tr>
+    <tr>
+      <td>D</td>
+      <td>mx17_det6_det7_overnight_6-26-26</td>
+      <td>short_run</td>
+      <td>48</td>
+      <td>671.00</td>
+      <td>895.29</td>
+      <td>913.49</td>
+      <td>18.20</td>
+      <td>28.83</td>
+      <td>2.38</td>
+      <td>1.15</td>
+    </tr>
+    <tr>
+      <td>E</td>
+      <td>mx17_det3_det4_overnight_6-23-26</td>
+      <td>long_run</td>
+      <td>492</td>
+      <td>313.73</td>
+      <td>844.31</td>
+      <td>844.57</td>
+      <td>0.26</td>
+      <td>2.65</td>
+      <td>60.97</td>
+      <td>0.17</td>
+    </tr>
+    <tr>
+      <td>E</td>
+      <td>mx17_det3_det4_overnight_6-23-26</td>
+      <td>longer_run</td>
+      <td>111</td>
+      <td>307.02</td>
+      <td>887.03</td>
+      <td>946.06</td>
+      <td>59.03</td>
+      <td>30.87</td>
+      <td>1.06</td>
+      <td>2.69</td>
+    </tr>
+    <tr>
+      <td>E</td>
+      <td>mx17_det3_det4_overnight_6-23-26</td>
+      <td>short_run</td>
+      <td>48</td>
+      <td>100.02</td>
+      <td>1031.90</td>
+      <td>1350.00</td>
+      <td>318.10</td>
+      <td>253.88</td>
+      <td>0.71</td>
+      <td>1.05</td>
+    </tr>
+    <tr>
+      <td>E</td>
+      <td>mx17_det4_day_6-24-26</td>
+      <td>long_run</td>
+      <td>722</td>
+      <td>115.87</td>
+      <td>932.12</td>
+      <td>934.44</td>
+      <td>2.32</td>
+      <td>5.38</td>
+      <td>22.39</td>
+      <td>0.46</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>What this does not rule out</h2>
+<ul><li>The attachment model is one shape (exponential loss along the column). Anything else that makes the stack fall
+with drift time (a gain or a coupling that changes with depth) looks the same to the fit; the toys show the size of the
+effect, not its cause.</li>
+<li>Chamber C's attachment is at 1.5-2.4 sigma per row; with more rows the trend is clearer (tau grows through the
+26 June HV scan), but there is no independent attachment measurement for C.</li>
+<li>The toys use white noise; real residuals are correlated. The cut test on real stacks covers that for the
+chambers that have margin to spare, not for E itself.</li></ul>
+<p>Scripts: inventory.py, toy.py, datacut.py, attfit.py, attboot.py, make_report.py (this directory). Inputs: EOS
+x17rerun/paper1_gas (fit_v1, head-on caches) and the arms' template bundles, copied to $WORK_DATA/claude-jobs/a21e7df1/gapwin;
+the corrected fits are x17rerun/paper1_gas/fit_v2 (D replaced, failed arms dropped).</p>
+</body></html>

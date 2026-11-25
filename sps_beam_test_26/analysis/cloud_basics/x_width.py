@@ -102,6 +102,10 @@ def predict_x(h, sig0, Dd, T, A, t_shift, n):
 def fit_x(h, M, T0, free_T=True, sig0_fix=None):
     """sig0_fix: pin sigma_0 (and T at T0) -- the split arm that keeps the sigma_0-Dd trade out."""
     sel = np.all(np.isfinite(M), axis=0)
+    if not sel.any():
+        # 2026-11-25 (rerun/paper1_gap/window_bias): an all-NaN stack used to return the starting point (T = T0, rms nan)
+        # as if it were a fit; det7's 6-26 long run went into the gas and gap numbers that way
+        raise ValueError('fit_x: the stack has no time bin with data in every strip offset (empty stack)')
     n = len(GRID)
     if sig0_fix is not None:
         free_T = False
