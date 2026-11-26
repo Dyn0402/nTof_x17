@@ -1,5 +1,42 @@
 # Handoff
 
+## M3 per-track pointing (cosmic bench, Paper I) — updated 2026-11-27 (dylan-MS-7C84)
+
+**Resume:** per-track M3 pointing study done + report; next: Dylan picks which of 4 Paper I changes to draft.
+
+**Goal:** the M3 pointing depends on χ², angle and position (seen in a P2 analysis). Give every reference track its
+own expected residual width σ_i, test it, and try matching hits within n σ_i instead of a fixed 5 mm.
+
+**Done:**
+- `rerun/m3_pointing/` (README has the run order). Report: `$WORK_DATA/nTof_x17/m3_pointing/report/report.html`;
+  copy + fit products + the χ² > 1 reconstruction on EOS `cosmic_bench/x17rerun/m3_pointing/`. PARAMETERS row added.
+- χ² split into ordinary (plane resolution 172→923 µm X, 228→728 µm Y for |tan| 0→0.32) + angle-independent anomalous part.
+- The covariance of two chambers on the same track (pairs 6-22, 6-23, 6-26) measures M3 with no chamber assumption. Floor at
+  χ² → 0 = 0.81 ± 0.11 / 0.77 ± 0.08 of the Paper I pointing variance (model fit: 0.91 / 0.89).
+- Per-track width: pull spread over χ²/anomaly/angle bins 0.06–0.07 vs 0.23–0.31 constant, also on held-out rows (A Run 1/2,
+  E 6-24). 4×4 position factor (M3 X > +100 mm: ×1.3–1.75).
+- Matching: inside χ² < 1, n σ_i gives the same efficiency as R = 5 mm at equal accidentals (A: 94.86 vs 94.98 %).
+  Chamber A Run 1 re-reconstructed at every χ² (exact closure with pass 1 on recipe events): n = 8 keeps ~95 % up to
+  χ² = 4, acc ≤ 0.29 %, +44 % tracks; R = 5 mm falls to 79 % at χ² 4–8.
+
+**Next steps:**
+1. Dylan chooses among the report's "What this means for Paper I" proposals: Sec. 4 sentence; Sec. 6 add the
+   two-chamber covariance check (A intrinsic → ~150–170 X / 130–150 µm Y, inside the quoted range); App. A1 "why 5 mm"
+   (3σ loses 6.8 pts per-track vs 11 global); optional wider recipe χ² < 4 (needs a condor χ² > 1 reco of every row).
+2. Paper text changes go through `papers/overleaf.sh status/pull` first (paper1_v2 rules, see CLAUDE.md).
+
+**Gotchas / decisions:**
+- Chamber view x is read against M3 Y and view y against M3 X (θ ≈ 90°).
+- The chamber term d0 of the model absorbs constants: not an intrinsic resolution (A: 150 µm on 6-22, ~300+ elsewhere,
+  follows run/mounting, so it cannot pin the top-slot floor).
+- The s68-based covariance is ~0.7× the model's Gaussian one (heavy tails): the position map is normalised to the whole telescope.
+- Top-slot X-view residuals have a 0.04–0.2 % scale-like slope along M3 Y (telescope + chamber pitch, not separated, not corrected).
+- Helper module is `m3common.py` (a `common.py` shadowed the repo's `common/` package).
+
+**Key files & commands:**
+- `rerun/m3_pointing/{decompose,fit,crosscov,posmap,validate,efficiency,extend,make_report}.py` — see README run order.
+- `rerun/m3_pointing/stage_reco.py` + `rerun/outliers/reco_subset.py` — χ² > 1 reco of A Run 1 (~45 min, 14 jobs, local).
+
 ## Water ingress and the Mylar window (future-chamber design, parked) — updated 2026-11-26 (dylan-MS-7C84)
 
 **Resume:** parked for later; when Stephan answers q_window (window aluminised or bare?), update docs/WATER_INGRESS.md §2.
