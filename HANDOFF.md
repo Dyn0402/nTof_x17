@@ -32,6 +32,9 @@ own expected residual width σ_i, test it, and try matching hits within n σ_i i
   follows run/mounting, so it cannot pin the top-slot floor).
 - The s68-based covariance is ~0.7× the model's Gaussian one (heavy tails): the position map is normalised to the whole telescope.
 - Top-slot X-view residuals have a 0.04–0.2 % scale-like slope along M3 Y (telescope + chamber pitch, not separated, not corrected).
+- The two-chamber covariance is compared with the cross-slot prediction Σ g_k(z_top) g_k(z_bot) σ_k² (slot geometry in);
+  transferring the ratio to A's top slot assumes all planes scale alike. Lower-planes-only cases give 0.89–0.92 (top),
+  i.e. A ≈ 150 / 128 µm, still inside the quoted range. Dylan (11-27): keep the paper text as is, no extra sentence.
 - Helper module is `m3common.py` (a `common.py` shadowed the repo's `common/` package).
 
 **Key files & commands:**
