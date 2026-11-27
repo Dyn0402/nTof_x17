@@ -160,7 +160,26 @@ reference track. To remove it, we take tracks near normal incidence and extrapol
 (\crefp{fig:posres}{a}). This leaves $275\pm15$ and $236\pm18$\,\textmu m. We then subtract the pointing resolution
 in quadrature, which leaves the contribution of the chamber: $128\pm33$\,\textmu m in X and $113\pm36$\,\textmu m in
 Y. This subtraction dominates the uncertainty. If the pointing resolution is changed by 10\,\%, the results move to
-63--166 and 62--145\,\textmu m (\crefp{fig:posres}{b}). We therefore quote an intrinsic resolution of about
+63--166 and 62--145\,\textmu m (\crefp{fig:posres}{b}).
+% Two-chamber covariance: rerun/m3_pointing/crosscov.py (pairs 6-22 B/A, 6-23 E/A, 6-26 D/C; |theta| < 5 deg; linear
+% in chi2 of the matched M3 coordinate). Covariance at chi2 -> 0: 0.0405 +- 0.0053 (X view) and 0.0304 +- 0.0033 mm^2
+% (Y view), against 0.0499 and 0.0395 mm^2 predicted. Full per-track model fit: a0 = 0.91 +- 0.04 / 0.89 +- 0.04.
+% Chamber A with these factors: sqrt(275^2 - f 240^2) and sqrt(236^2 - f 210^2), f = 0.81-0.91 / 0.77-0.89.
+
+We check the pointing resolution with a measurement that assumes nothing about any chamber. In three bench runs, two
+chambers were in the telescope at the same time, one in each slot. The residual of each chamber is the error of
+that chamber minus the error of the reference ray at that chamber. The errors of the two chambers are independent of
+each other. Therefore, the covariance of the two residuals contains only the error of the reference ray. For tracks
+within 5\textdegree{} of normal incidence, we extrapolate this covariance linearly to $\chi^2\to0$, as for the width
+above. The result is $0.81\pm0.11$ (X) and $0.77\pm0.08$ (Y) times the covariance predicted from the resolution of the
+reference planes, which is the prediction behind the pointing resolution used here. A fit of a full model of the
+pointing, track by track, to the same events gives 0.91 and 0.89. This means that the pointing resolution used here is
+not too small. If anything, it is 5--12\,\% too large in width. With the measured values, the resolution of chamber~A
+becomes 152--170\,\textmu m in X and 128--148\,\textmu m in Y. These values lie in the upper half of the range above.
+The covariance only contains the part of the error of the reference ray that the two slots share. For this reason,
+it cannot exclude an additional error that affects one slot alone.
+
+We therefore quote an intrinsic resolution of about
 $120\pm60$\,\textmu m for chamber~A near normal incidence. The same procedure for chamber~B gives $163\pm29$ and
 $176\pm21$\,\textmu m.
 

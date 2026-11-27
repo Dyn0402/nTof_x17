@@ -2,7 +2,7 @@
 
 ## M3 per-track pointing (cosmic bench, Paper I) — updated 2026-11-27 (dylan-MS-7C84)
 
-**Resume:** per-track M3 pointing study done + report; next: Dylan picks which of 4 Paper I changes to draft.
+**Resume:** proposals 1 (Sec. 4 sentence) and 2 (Sec. 6 two-chamber covariance check) drafted in Paper I and pushed 11-27; A1 "why 5 mm" and the χ² < 4 recipe still await Dylan.
 
 **Goal:** the M3 pointing depends on χ², angle and position (seen in a P2 analysis). Give every reference track its
 own expected residual width σ_i, test it, and try matching hits within n σ_i instead of a fixed 5 mm.
@@ -20,9 +20,10 @@ own expected residual width σ_i, test it, and try matching hits within n σ_i i
   χ² = 4, acc ≤ 0.29 %, +44 % tracks; R = 5 mm falls to 79 % at χ² 4–8.
 
 **Next steps:**
-1. Dylan chooses among the report's "What this means for Paper I" proposals: Sec. 4 sentence; Sec. 6 add the
-   two-chamber covariance check (A intrinsic → ~150–170 X / 130–150 µm Y, inside the quoted range); App. A1 "why 5 mm"
-   (3σ loses 6.8 pts per-track vs 11 global); optional wider recipe χ² < 4 (needs a condor χ² > 1 reco of every row).
+1. DONE 11-27: Sec. 4 (`04_setups.tex`, pointing per track, below ~1 mm in the recipe) and Sec. 6.x position resolution
+   (`06_tracking.tex`, two-chamber covariance paragraph: A → 152–170 X / 128–148 µm Y; headline 120 ± 60 kept; no new
+   figure panel). Still open for Dylan: App. A1 "why 5 mm" (3σ loses 6.8 pts per-track vs 11 global); optional χ² < 4
+   recipe (needs a condor χ² > 1 reco of every row); A4 bow upper limit; report Fig. 2 as a posres panel.
 2. Paper text changes go through `papers/overleaf.sh status/pull` first (paper1_v2 rules, see CLAUDE.md).
 
 **Gotchas / decisions:**
