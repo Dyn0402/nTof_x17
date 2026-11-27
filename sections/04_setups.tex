@@ -15,6 +15,14 @@ $50\times50$\,cm planes, two above and two below the two slots for chambers unde
 ($40\times40$\,cm), provide a lever arm of 1278\,mm. A track
 reconstructed in them with one cluster per plane and $\chi^2<1.0$ is called the \emph{reference track}, and its
 extrapolation to the chamber under test the \emph{reference ray}. At the chamber, the reference ray pointing resolution is 210--280\,\textmu m per coordinate, with an angle known to better than 0.14\textdegree{} (\cref{sec:angle}).
+% Pointing per track: rerun/m3_pointing/ (report $WORK_DATA/nTof_x17/m3_pointing/report/report.html, 2026-11-26).
+% M3 plane resolution 172 -> 923 um (X planes), 228 -> 728 um (Y planes) for |tan| 0 -> 0.32; M3 part of the
+% residual width (s68) at chi2 0.6-1: 0.79 mm (X view), 0.99 mm (Y view).
+This pointing resolution applies to tracks near normal incidence whose reference track has a $\chi^2$ close to zero.
+The pointing resolution is not the same for every track. It grows with the angle of the track, because the
+resolution of the reference planes degrades at large angle. It also grows with the $\chi^2$ of the reference track,
+because a large $\chi^2$ often signals a scattering kink or a wrong cluster in one of the planes. It depends more weakly on
+where the track crosses the telescope. Within the selection $\chi^2<1.0$, the pointing resolution stays below about 1\,mm.
 These reference planes are MultiGen detectors~\cite{Bouteille2016MultiGen,Radics2019}: resistive Micromegas with a
 two-dimensional readout of 1037 strips per view, which genetic multiplexing~\cite{Procureur2013} reduces to 61 channels
 per view. The same bench recently characterized the Micromegas modules of the sPHENIX TPOT~\cite{TPOT2024}.
